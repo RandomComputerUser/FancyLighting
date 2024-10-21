@@ -14,6 +14,9 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - There is now a separate option to use the sRGB transfer function
 - Improved dithering with overbright rendering and Enhanced Shaders and Colors enabled
 - Enhanced Shaders and Colors now applies overbright rendering to more things
+- Slightly weakened ambient occlusion when gamma correction is disabled to better match how it looks when gamma correction is enabled
+- Increased the range of the ambient occlusion exponent option
+- Tweaked the default ambient occlusion settings
 - Added an option to toggle whether vines block light
 - Fixed graphical glitches with shimmer waterfalls
 - Upgraded to .NET 8

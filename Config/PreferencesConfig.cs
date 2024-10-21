@@ -19,7 +19,7 @@ public sealed class PreferencesConfig : ModConfig
 
     internal float NormalMapsMultiplier() => NormalMapsStrength / 100f;
 
-    internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 50f;
+    internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
 
@@ -117,8 +117,8 @@ public sealed class PreferencesConfig : ModConfig
     }
     private int _ambientOcclusionRadius;
 
-    [Range(5, 100)]
-    [Increment(5)]
+    [Range(20, 400)]
+    [Increment(20)]
     [DefaultValue(DefaultOptions.AmbientOcclusionIntensity)]
     [Slider]
     [DrawTicks]

@@ -29,8 +29,8 @@ public static class DefaultOptions
     public const bool DoNonSolidAmbientOcclusion = true;
     public const bool DoTileEntityAmbientOcclusion = false;
     public const int AmbientOcclusionRadius = 2;
-    public const int AmbientOcclusionIntensity = 90;
-    public const int AmbientLightProportion = 40;
+    public const int AmbientOcclusionIntensity = 200;
+    public const int AmbientLightProportion = 50;
 
     public const bool UseFancyLightingEngine = true;
     public const bool FancyLightingEngineUseTemporal = true;

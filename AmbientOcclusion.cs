@@ -1,4 +1,5 @@
-﻿using FancyLighting.Config;
+﻿using System;
+using FancyLighting.Config;
 using FancyLighting.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -398,6 +399,10 @@ internal sealed class AmbientOcclusion
             power *= 2.2f;
         }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
+        if (!LightingConfig.Instance.DoGammaCorrection())
+        {
+            mult = MathF.Pow(mult, 1.35f); // Crude approximation to try to make it look similar
+        }
 
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var firstShaderBlurStep = radius switch
