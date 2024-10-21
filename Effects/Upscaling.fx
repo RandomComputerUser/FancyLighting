@@ -7,6 +7,16 @@ float2 DitherCoordMult;
 
 #define CUBIC_MULT 0.5503212081491045 // 1 / cbrt(6)
 
+float3 GammaToLinear(float3 color)
+{
+    return pow(color, 2.2);
+}
+
+float3 LinearToGamma(float3 color)
+{
+    return pow(color, 1 / 2.2);
+}
+
 // https://stackoverflow.com/a/42179924
 // https://web.archive.org/web/20180927181721/http://www.java-gaming.org/index.php?topic=35123.0
 float4 Cubic(float v)

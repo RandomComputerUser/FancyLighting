@@ -32,11 +32,11 @@ public static class SkyColors
     {
         Initialize();
 
-        Terraria.On_Main.SetBackColor += _SetBackColor;
-        Terraria.GameContent.On_DontStarveSeed.ModifyNightColor += _ModifyNightColor;
+        Terraria.On_Main.SetBackColor += _Main_SetBackColor;
+        Terraria.GameContent.On_DontStarveSeed.ModifyNightColor += _Main_ModifyNightColor;
     }
 
-    private static void _SetBackColor(
+    private static void _Main_SetBackColor(
         Terraria.On_Main.orig_SetBackColor orig,
         Main.InfoToSetBackColor info,
         out Color sunColor,
@@ -71,7 +71,7 @@ public static class SkyColors
         }
     }
 
-    private static void _ModifyNightColor(
+    private static void _Main_ModifyNightColor(
         Terraria.GameContent.On_DontStarveSeed.orig_ModifyNightColor orig,
         ref Color backColor,
         ref Color moonColor

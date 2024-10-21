@@ -76,9 +76,9 @@ internal sealed class SmoothLighting
     private Shader _overbrightLightOnlyOpaqueShader;
     private Shader _overbrightLightOnlyOpaqueAmbientOcclusionShader;
     private Shader _overbrightMaxShader;
-    private Shader _gammaCorrectionShader;
-    private Shader _gammaCorrectionLightOnlyShader;
-    private Shader _gammaCorrectionBGShader;
+    private Shader _lightOnlyShader;
+    private Shader _brightenBackgroundShader;
+    private Shader _gammaToSrgbShader;
 
     public SmoothLighting(FancyLightingMod mod)
     {
@@ -250,17 +250,17 @@ internal sealed class SmoothLighting
             "OverbrightMax",
             true
         );
-        _gammaCorrectionShader = EffectLoader.LoadEffect(
+        _lightOnlyShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "GammaCorrection"
+            "LightOnly"
         );
-        _gammaCorrectionLightOnlyShader = EffectLoader.LoadEffect(
+        _brightenBackgroundShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "GammaCorrectionLightOnly"
+            "BrightenBackground"
         );
-        _gammaCorrectionBGShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "GammaCorrectionBG"
+        _gammaToSrgbShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Srgb",
+            "GammaToSrgb"
         );
 
         _ditherNoise = ModContent
@@ -298,27 +298,20 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueShader);
         EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueAmbientOcclusionShader);
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
-        EffectLoader.UnloadEffect(ref _gammaCorrectionShader);
-        EffectLoader.UnloadEffect(ref _gammaCorrectionLightOnlyShader);
-        EffectLoader.UnloadEffect(ref _gammaCorrectionBGShader);
+        EffectLoader.UnloadEffect(ref _lightOnlyShader);
+        EffectLoader.UnloadEffect(ref _brightenBackgroundShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
     }
 
-    internal void ApplyGammaCorrectionShader() =>
-        (
-            PreferencesConfig.Instance.RenderOnlyLight
-                ? _gammaCorrectionLightOnlyShader
-                : _gammaCorrectionShader
-        ).Apply();
+    internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
 
-    internal void ApplyGammaCorrectionBGShader() =>
-        _gammaCorrectionBGShader
+    internal void ApplyBrightenBackgroundShader() =>
+        _brightenBackgroundShader
             .SetParameter(
                 "BackgroundBrightnessMult",
                 PreferencesConfig.Instance.UseLightMapToneMapping ? 1.05f : 1.1f
             )
             .Apply();
-
-    internal void ApplyNoFilterShader() => _noFilterShader.Apply();
 
     private void PrintException()
     {
@@ -556,7 +549,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            GammaConverter.SrgbToLinear(ref colors[i++]);
+                            GammaConverter.GammaToLinear(ref colors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -846,9 +839,9 @@ internal sealed class SmoothLighting
                             {
                                 ref var lightColor = ref lights[i++];
 
-                                GammaConverter.SrgbToLinear(ref lightColor);
+                                GammaConverter.GammaToLinear(ref lightColor);
                                 ToneMapper.ToneMap(ref lightColor);
-                                GammaConverter.LinearToSrgb(ref lightColor);
+                                GammaConverter.LinearToGamma(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -892,7 +885,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            GammaConverter.LinearToSrgb(ref colors[i++]);
+                            GammaConverter.LinearToGamma(ref colors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -959,7 +952,7 @@ internal sealed class SmoothLighting
         var low = 0.49f / 255f;
         if (doGammaCorrection)
         {
-            GammaConverter.SrgbToLinear(ref low);
+            GammaConverter.GammaToLinear(ref low);
         }
 
         var ymax = lightMapTileArea.Y + lightMapTileArea.Height;
@@ -1980,7 +1973,7 @@ internal sealed class SmoothLighting
                             : _normalsOverbrightShader
                     : _normalsShader
                 : doScaling // doOverbright is guaranteed to be true here
-                    ? _overbrightMaxShader // if doScaling is true we're rendering tile entities
+                    ? _overbrightMaxShader // if doScaling is true we're rendering tile entities, waterfalls, or NPCs
                     : lightOnly
                         ? background
                             ? doAmbientOcclusion
@@ -2078,6 +2071,48 @@ internal sealed class SmoothLighting
             Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
         }
 
+        Main.spriteBatch.End();
+    }
+
+    internal void GammaToSrgb(
+        RenderTarget2D target,
+        RenderTarget2D tmpTarget,
+        Color clearColor
+    )
+    {
+        Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
+        Main.graphics.GraphicsDevice.Clear(clearColor);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _gammaToSrgbShader
+            .SetParameter(
+                "DitherCoordMult",
+                new Vector2(
+                    target.Width / _ditherNoise.Width,
+                    target.Height / _ditherNoise.Height
+                )
+            )
+            .Apply();
+        Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
+        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.graphics.GraphicsDevice.Clear(clearColor);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
     }
 }

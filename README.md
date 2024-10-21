@@ -9,6 +9,11 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.8.0 (2024-??-??)**
 - Split settings into two pages
-- Made the settings preset change only settings that are considered to affect quality
+- The settings preset now only affects settings in the Quality Settings page
+- Gamma correction now uses 2.2 gamma instead of sRGB
+- There is now a separate option to use the sRGB transfer function
+- Improved dithering with overbright rendering and Enhanced Shaders and Colors enabled
+- Enhanced Shaders and Colors now applies overbright rendering to more things
 - Added an option to toggle whether vines block light
+- Fixed graphical glitches with shimmer waterfalls
 - Upgraded to .NET 8

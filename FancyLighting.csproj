@@ -12,6 +12,7 @@
     <Version>0.8.0</Version>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="effects\Srgb.fx" />
     <None Remove="localization\en-US.hjson" />
   </ItemGroup>
   <ItemGroup>

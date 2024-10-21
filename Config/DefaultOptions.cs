@@ -6,6 +6,7 @@ public static class DefaultOptions
 {
     public const Preset QualityPreset = Preset.MediumPreset;
 
+    public const bool UseSrgbEotf = false;
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
     public const int MinThreadCount = 1;
     public const int MaxThreadCount = 32;

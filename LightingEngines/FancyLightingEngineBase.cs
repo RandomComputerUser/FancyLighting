@@ -185,12 +185,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.DoGammaCorrection())
         {
-            GammaConverter.SrgbToLinear(ref _initialBrightnessCutoff);
-
+            GammaConverter.GammaToLinear(ref _initialBrightnessCutoff);
             GammaConverter.GammaToLinear(ref cutoff);
-            cutoff *= 1.25f; // Gamma is darker than sRGB for dark colors
-
-            GammaConverter.SrgbToLinear(ref basicWorkCutoff);
+            GammaConverter.GammaToLinear(ref basicWorkCutoff);
         }
 
         _logBrightnessCutoff = MathF.Log(cutoff);
@@ -335,7 +332,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 var i = height * x;
                 for (var y = 0; y < height; ++y)
                 {
-                    GammaConverter.SrgbToLinear(ref colors[i++]);
+                    GammaConverter.GammaToLinear(ref colors[i++]);
                 }
             }
         );

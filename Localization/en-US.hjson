@@ -32,7 +32,9 @@ Mods: {
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
 						- Improves simulated normal maps
-						- Performs gamma correction when paired with overbright rendering
+						- Uses gamma-correct lighting when overbright rendering is enabled
+						- Increases background brightness when overbright rendering is enabled
+						- Applies overbright lighting to waterfalls
 						[c/FFFF00:Large Performance Impact]
 						'''
 				}
@@ -199,6 +201,16 @@ Mods: {
 
 				# General
 				
+				UseSrgb: {
+					Label: Use sRGB Transfer Function
+					Tooltip:
+						'''
+						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
+						Enable if dark areas are too bright or washed out
+						[c/FFFF00:Slight Performance Impact]
+						'''
+				}
+
 				ThreadCount: {
 					Label: Thread Count
 					Tooltip:

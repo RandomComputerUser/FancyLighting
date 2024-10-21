@@ -41,6 +41,14 @@ public sealed class PreferencesConfig : ModConfig
         .Select(entry => entry.tileId)
         .ToArray();
 
+    [DefaultValue(DefaultOptions.UseSrgbEotf)]
+    public bool UseSrgb
+    {
+        get => _useSrgb;
+        set { _useSrgb = value; }
+    }
+    private bool _useSrgb;
+
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.ThreadCount)]
