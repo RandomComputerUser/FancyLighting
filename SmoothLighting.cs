@@ -1953,7 +1953,7 @@ internal sealed class SmoothLighting
             if (!hiDef)
             {
                 normalMapRadius *=
-                    0.6f * PreferencesConfig.Instance.NormalMapsMultiplier();
+                    0.6f * MathF.Sqrt(PreferencesConfig.Instance.NormalMapsMultiplier());
                 if (fineNormalMaps)
                 {
                     normalMapRadius *= 1.4f;

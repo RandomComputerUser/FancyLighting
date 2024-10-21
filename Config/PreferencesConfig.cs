@@ -75,7 +75,7 @@ public sealed class PreferencesConfig : ModConfig
     }
     private bool _useLightMapToneMapping;
 
-    [Range(25, 200)]
+    [Range(25, 400)]
     [Increment(25)]
     [DefaultValue(DefaultOptions.NormalMapsStrength)]
     [Slider]
