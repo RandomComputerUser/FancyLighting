@@ -36,7 +36,7 @@ float3 OverbrightLightAt(float2 coords)
 float3 OverbrightLightAtHiDef(float2 coords)
 {
     float3 color = tex2D(LightSampler, coords).rgb;
-    return (65535.0 / 16384) * color;
+    return (65535.0 / 4096) * color;
 }
 
 // Input color should be in gamma space

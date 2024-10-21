@@ -20,5 +20,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Tweaked simulated normal maps when gamma correction is disabled to better match how it looks when gamma correction is enabled
 - Increased the range of the normal maps strength option
 - Added an option to toggle whether vines block light
+- Increased the max overbright brightness with enhanced colors and shaders enabled from 4x to 16x
 - Fixed graphical glitches with shimmer waterfalls
 - Upgraded to .NET 8

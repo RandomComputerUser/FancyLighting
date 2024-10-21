@@ -1208,7 +1208,7 @@ internal sealed class SmoothLighting
 
         var caughtException = 0;
 
-        const int OVERBRIGHT_WHITE = 16384;
+        const int OVERBRIGHT_WHITE = 4096;
         const float OVERBRIGHT_MULT = OVERBRIGHT_WHITE / 65535f;
 
         var brightness = Lighting.GlobalBrightness;
