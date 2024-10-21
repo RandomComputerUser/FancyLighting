@@ -862,14 +862,8 @@ internal sealed class SmoothLighting
 
         if (doGammaCorrection)
         {
-            if (blurLightMap)
-            {
-                Array.Copy(_lights, colors, length);
-            }
-            else
-            {
-                Array.Copy(colors, _lights, length);
-            }
+            var lights = blurLightMap ? _lights : colors;
+            var otherLights = blurLightMap ? colors : _lights;
 
             Parallel.For(
                 0,
@@ -885,7 +879,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            GammaConverter.LinearToGamma(ref colors[i++]);
+                            GammaConverter.LinearToGamma(ref lights[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -902,36 +896,7 @@ internal sealed class SmoothLighting
                 return;
             }
 
-            Parallel.For(
-                0,
-                width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
-                (x) =>
-                {
-                    var i = height * x;
-                    for (var y = 0; y < height; ++y)
-                    {
-                        try
-                        {
-                            GammaConverter.LinearToGamma(ref _lights[i++]);
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Interlocked.Exchange(ref caughtException, 1);
-                            break;
-                        }
-                    }
-                }
-            );
-
-            if (caughtException == 1)
-            {
-                PrintException();
-                return;
-            }
+            Array.Copy(lights, otherLights, length);
         }
         else
         {
