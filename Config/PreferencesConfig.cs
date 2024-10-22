@@ -163,7 +163,7 @@ public sealed class PreferencesConfig : ModConfig
     }
     private int _fancyLightingEngineLightLoss;
 
-    [Range(70, 200)]
+    [Range(50, 200)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightAbsorption)]
     [Slider]

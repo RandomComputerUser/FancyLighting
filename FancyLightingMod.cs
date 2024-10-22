@@ -515,7 +515,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (PreferencesConfig.Instance.UseSrgb)
         {
-            _smoothLightingInstance.GammaToSrgb(screenTarget1, screenTarget2, clearColor);
+            _smoothLightingInstance.GammaToSrgb(screenTarget1, screenTarget2);
         }
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);

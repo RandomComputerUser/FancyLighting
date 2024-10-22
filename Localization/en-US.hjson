@@ -315,7 +315,7 @@ Mods: {
 				}
 
 				FancyLightingEngineLightAbsorption: {
-					Label: Light Absorption of Solid Blocks (% of vanilla)
+					Label: Light Absorption of Solid Blocks (%)
 					Tooltip:
 						'''
 						Controls how much light is absorbed inside solid blocks

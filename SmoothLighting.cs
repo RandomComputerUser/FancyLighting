@@ -2039,14 +2039,9 @@ internal sealed class SmoothLighting
         Main.spriteBatch.End();
     }
 
-    internal void GammaToSrgb(
-        RenderTarget2D target,
-        RenderTarget2D tmpTarget,
-        Color clearColor
-    )
+    internal void GammaToSrgb(RenderTarget2D target, RenderTarget2D tmpTarget)
     {
         Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
-        Main.graphics.GraphicsDevice.Clear(clearColor);
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
             BlendState.Opaque,
@@ -2069,7 +2064,6 @@ internal sealed class SmoothLighting
         Main.spriteBatch.End();
 
         Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.graphics.GraphicsDevice.Clear(clearColor);
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.Opaque,
