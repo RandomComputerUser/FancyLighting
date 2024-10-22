@@ -41,7 +41,7 @@ public static class DefaultOptions
     public const bool UseFancyLightingEngine = true;
     public const bool FancyLightingEngineUseTemporal = true;
     public const bool FancyLightingEngineMakeBrighter = false;
-    public const bool FancyLightingEngineVinesOpaque = true;
+    public const bool FancyLightingEngineVinesOpaque = false;
     public const int FancyLightingEngineLightLoss = 50;
     public const int FancyLightingEngineLightAbsorption = 100;
     public const LightingEngineMode FancyLightingEngineMode = LightingEngineMode.One;

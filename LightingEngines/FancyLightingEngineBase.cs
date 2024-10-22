@@ -7,6 +7,7 @@ using FancyLighting.Util;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Graphics.Light;
+using Terraria.ID;
 using Vec3 = System.Numerics.Vector3;
 
 namespace FancyLighting.LightingEngines;
@@ -14,7 +15,7 @@ namespace FancyLighting.LightingEngines;
 internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 {
     protected int[][] _circles;
-    protected Rectangle _lightMapArea; // Not used in the current version, but still nice to have
+    protected Rectangle _lightMapArea;
     private long _temporalData = 0;
 
     protected const int MAX_LIGHT_RANGE = 64;
@@ -32,10 +33,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     protected float _reciprocalLogSlowestDecay;
     protected float _lightLossExitingSolid;
 
-    protected float[] _lightAirDecay;
+    private float[] _lightAirDecay;
     protected float[] _lightSolidDecay;
-    protected float[] _lightWaterDecay;
-    protected float[] _lightHoneyDecay;
+    private float[] _lightWaterDecay;
+    private float[] _lightHoneyDecay;
+    private float[] _lightVinesDecay;
 
     protected float[][] _lightMask;
 
@@ -131,12 +133,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         _lightSolidDecay = new float[DISTANCE_TICKS + 1];
         _lightWaterDecay = new float[DISTANCE_TICKS + 1];
         _lightHoneyDecay = new float[DISTANCE_TICKS + 1];
+        _lightVinesDecay = new float[DISTANCE_TICKS + 1];
         for (var exponent = 0; exponent <= DISTANCE_TICKS; ++exponent)
         {
             _lightAirDecay[exponent] = 1f;
             _lightSolidDecay[exponent] = 1f;
             _lightWaterDecay[exponent] = 1f;
             _lightHoneyDecay[exponent] = 1f;
+            _lightVinesDecay[exponent] = 1f;
         }
     }
 
@@ -196,13 +200,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void UpdateDecays(LightMap lightMap)
     {
-        foreach (var tileId in PreferencesConfig.Instance._vinesBlockingLight)
-        {
-            Main.tileBlockLight[tileId] = PreferencesConfig
-                .Instance
-                .FancyLightingEngineVinesOpaque;
-        }
-
         var decayMult = LightingConfig.Instance.FancyLightingEngineMakeBrighter
             ? 1f
             : 0.975f;
@@ -274,6 +271,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         UpdateDecay(_lightSolidDecay, lightSolidDecayBaseline);
         UpdateDecay(_lightWaterDecay, lightWaterDecayBaseline);
         UpdateDecay(_lightHoneyDecay, lightHoneyDecayBaseline);
+
+        if (!PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+        {
+            Array.Copy(_lightSolidDecay, _lightVinesDecay, _lightSolidDecay.Length);
+        }
     }
 
     private static void UpdateDecay(float[] decay, float baseline)
@@ -291,29 +293,71 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         }
     }
 
-    protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height) =>
-        Parallel.For(
-            0,
-            width,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
-            (i) =>
-            {
-                var endIndex = height * (i + 1);
-                for (var j = height * i; j < endIndex; ++j)
+    protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
+    {
+        if (PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+        {
+            Parallel.For(
+                0,
+                width,
+                new ParallelOptions
                 {
-                    _lightMask[j] = lightMasks[j] switch
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = height * (i + 1);
+                    for (var j = height * i; j < endIndex; ++j)
                     {
-                        LightMaskMode.Solid => _lightSolidDecay,
-                        LightMaskMode.Water => _lightWaterDecay,
-                        LightMaskMode.Honey => _lightHoneyDecay,
-                        _ => _lightAirDecay,
-                    };
+                        _lightMask[j] = lightMasks[j] switch
+                        {
+                            LightMaskMode.Solid => _lightSolidDecay,
+                            LightMaskMode.Water => _lightWaterDecay,
+                            LightMaskMode.Honey => _lightHoneyDecay,
+                            _ => _lightAirDecay,
+                        };
+                    }
                 }
-            }
-        );
+            );
+        }
+        else
+        {
+            Parallel.For(
+                0,
+                width,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = height * (i + 1);
+                    var x = i + _lightMapArea.X;
+                    var y = _lightMapArea.Y;
+                    for (var j = height * i; j < endIndex; ++j)
+                    {
+                        _lightMask[j] = lightMasks[j] switch
+                        {
+                            LightMaskMode.Solid => IsVine(x, y)
+                                ? _lightVinesDecay
+                                : _lightSolidDecay,
+                            LightMaskMode.Water => _lightWaterDecay,
+                            LightMaskMode.Honey => _lightHoneyDecay,
+                            _ => _lightAirDecay,
+                        };
+                        ++y;
+                    }
+                }
+            );
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsVine(int x, int y)
+    {
+        var tile = Main.tile[x, y];
+        return tile.HasTile && TileID.Sets.IsVine[tile.TileType];
+    }
 
     protected static void ConvertLightColorsToLinear(
         Vector3[] colors,
