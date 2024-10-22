@@ -18,6 +18,8 @@ internal sealed class SmoothLighting
 {
     private Texture2D _colors;
     private Texture2D _colorsBackground;
+    private RenderTarget2D _colorsHiRes;
+    private RenderTarget2D _colorsBackgroundHiRes;
 
     private readonly Texture2D _ditherNoise;
 
@@ -48,6 +50,8 @@ internal sealed class SmoothLighting
     private bool _smoothLightingPositionValid;
     private bool _smoothLightingForeComplete;
     private bool _smoothLightingBackComplete;
+    private bool _smoothLightingForeHiRes;
+    private bool _smoothLightingBackHiRes;
 
     internal RenderTarget2D _cameraModeTarget1;
     internal RenderTarget2D _cameraModeTarget2;
@@ -91,6 +95,8 @@ internal sealed class SmoothLighting
         _smoothLightingPositionValid = false;
         _smoothLightingForeComplete = false;
         _smoothLightingBackComplete = false;
+        _smoothLightingForeHiRes = false;
+        _smoothLightingBackHiRes = false;
 
         _tmpLights = null;
 
@@ -511,6 +517,8 @@ internal sealed class SmoothLighting
         _smoothLightingPositionValid = false;
         _smoothLightingForeComplete = false;
         _smoothLightingBackComplete = false;
+        _smoothLightingForeHiRes = false;
+        _smoothLightingBackHiRes = false;
 
         var length = width * height;
 
@@ -1620,6 +1628,75 @@ internal sealed class SmoothLighting
         }
     }
 
+    private void RenderHiResLighting(
+        Texture2D lights,
+        ref RenderTarget2D hiResLights,
+        bool simulateNormalMaps
+    )
+    {
+        TextureUtil.MakeAtLeastSize(
+            ref hiResLights,
+            16 * lights.Width,
+            16 * lights.Height
+        );
+
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var doOverbright = LightingConfig.Instance.DrawOverbright();
+        var doDitheringSecond = (simulateNormalMaps || doOverbright) && hiDef;
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(hiResLights);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.LinearClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+
+        if (doDitheringSecond)
+        {
+            _bicubicNoDitherHiDefShader
+                .SetParameter("LightMapSize", lights.Size())
+                .SetParameter(
+                    "PixelSize",
+                    new Vector2(1f / lights.Width, 1f / lights.Height)
+                )
+                .Apply();
+        }
+        else
+        {
+            _bicubicDitherShader
+                .SetParameter("LightMapSize", lights.Size())
+                .SetParameter(
+                    "PixelSize",
+                    new Vector2(1f / lights.Width, 1f / lights.Height)
+                )
+                .SetParameter(
+                    "DitherCoordMult",
+                    new Vector2(
+                        16f * lights.Width / _ditherNoise.Width,
+                        16f * lights.Height / _ditherNoise.Height
+                    )
+                )
+                .Apply();
+            Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
+            Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
+        }
+
+        Main.spriteBatch.Draw(
+            lights,
+            Vector2.Zero,
+            _lightMapRenderArea,
+            Color.White,
+            0f,
+            Vector2.Zero,
+            new Vector2(16f),
+            SpriteEffects.None,
+            0f
+        );
+        Main.spriteBatch.End();
+    }
+
     internal void DrawSmoothLighting(
         RenderTarget2D target,
         bool background,
@@ -1827,57 +1904,52 @@ internal sealed class SmoothLighting
         var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
         var doOneStepOnly = !(simulateNormalMaps || doOverbright);
 
+        if (doBicubicUpscaling)
+        {
+            if (background)
+            {
+                if (!_smoothLightingBackHiRes)
+                {
+                    RenderHiResLighting(
+                        lightMapTexture,
+                        ref _colorsBackgroundHiRes,
+                        simulateNormalMaps
+                    );
+                    _smoothLightingBackHiRes = !hiDef || doOverbright;
+                    // If hiDef is true and doOverbright is false, whether normal maps are enabled
+                    // affects the result of the hi res light map
+                }
+
+                lightMapTexture = _colorsBackgroundHiRes;
+            }
+            else
+            {
+                if (!_smoothLightingForeHiRes)
+                {
+                    RenderHiResLighting(
+                        lightMapTexture,
+                        ref _colorsHiRes,
+                        simulateNormalMaps
+                    );
+                    _smoothLightingForeHiRes = !hiDef || doOverbright;
+                }
+
+                lightMapTexture = _colorsHiRes;
+            }
+        }
+
         Main.graphics.GraphicsDevice.SetRenderTarget(doOneStepOnly ? target1 : target2);
         if (doOneStepOnly)
         {
             Main.graphics.GraphicsDevice.Clear(Color.White);
         }
         Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
+            SpriteSortMode.Deferred,
             doOneStepOnly ? FancyLightingMod.MultiplyBlend : BlendState.Opaque,
             SamplerState.LinearClamp,
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-
-        if (doBicubicUpscaling)
-        {
-            if (doDitheringSecond)
-            {
-                _bicubicNoDitherHiDefShader
-                    .SetParameter("LightMapSize", lightMapTexture.Size())
-                    .SetParameter(
-                        "PixelSize",
-                        new Vector2(
-                            1f / lightMapTexture.Width,
-                            1f / lightMapTexture.Height
-                        )
-                    )
-                    .Apply();
-            }
-            else
-            {
-                _bicubicDitherShader
-                    .SetParameter("LightMapSize", lightMapTexture.Size())
-                    .SetParameter(
-                        "PixelSize",
-                        new Vector2(
-                            1f / lightMapTexture.Width,
-                            1f / lightMapTexture.Height
-                        )
-                    )
-                    .SetParameter(
-                        "DitherCoordMult",
-                        new Vector2(
-                            16f * lightMapTexture.Width / _ditherNoise.Width,
-                            16f * lightMapTexture.Height / _ditherNoise.Height
-                        )
-                    )
-                    .Apply();
-                Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
-                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
-            }
-        }
 
         var flippedGravity =
             doScaling
@@ -1896,14 +1968,23 @@ internal sealed class SmoothLighting
             lightMapPosition += _lightMapPositionFlipped - _lightMapPosition;
         }
 
+        var lightMapRectangle = _lightMapRenderArea;
+        if (doBicubicUpscaling)
+        {
+            lightMapRectangle.X *= 16;
+            lightMapRectangle.Y *= 16;
+            lightMapRectangle.Width *= 16;
+            lightMapRectangle.Height *= 16;
+        }
+        var lightMapScale = doBicubicUpscaling ? 1f : 16f;
         Main.spriteBatch.Draw(
             lightMapTexture,
             zoom * (lightMapPosition - target1.Size() / 2f) + target1.Size() / 2f,
-            _lightMapRenderArea,
+            lightMapRectangle,
             Color.White,
             angle,
             Vector2.Zero,
-            16f * new Vector2(zoom.Y, zoom.X),
+            lightMapScale * new Vector2(zoom.Y, zoom.X),
             flippedGravity ? SpriteEffects.None : SpriteEffects.FlipVertically,
             0f
         );

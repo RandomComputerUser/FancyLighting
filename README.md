@@ -14,7 +14,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added a new Extreme preset
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
-- Added settings to apply overbright rendering to more things
+- Added settings to apply overbright lighting to more things
 - Added a setting to toggle whether vines block light
 - Tweaked ambient occlusion when gamma correction is disabled to better match how it looks when gamma correction is enabled
 - Increased the range of the ambient occlusion exponent setting
@@ -22,8 +22,9 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Tweaked simulated normal maps when gamma correction is disabled to better match how it looks when gamma correction is enabled
 - Increased the range of the normal maps strength setting
 - Increased the range of the solid block light absorption setting
-- Improved dithering with overbright rendering and enhanced shaders and colors enabled
+- Improved dithering with overbright lighting and enhanced shaders and colors enabled
 - Increased the max overbright brightness with enhanced colors and shaders enabled from 4x to 16x
+- Optimized overbright lighting
 - Fixed graphical glitches with shimmer waterfalls
 - Fixed a camera mode bug that caused cave backgrounds to be rendered incorrectly
 - Upgraded to .NET 8
