@@ -384,9 +384,7 @@ public sealed class FancyLightingMod : Mod
                     BlendState.AlphaBlend,
                     Main.DefaultSamplerState,
                     DepthStencilState.None,
-                    Main.Rasterizer,
-                    null,
-                    Main.Transform
+                    Main.Rasterizer
                 );
             }
             draw();
@@ -412,9 +410,7 @@ public sealed class FancyLightingMod : Mod
                     BlendState.AlphaBlend,
                     Main.DefaultSamplerState,
                     DepthStencilState.None,
-                    Main.Rasterizer,
-                    null,
-                    Main.Transform
+                    Main.Rasterizer
                 );
             }
 
@@ -456,10 +452,10 @@ public sealed class FancyLightingMod : Mod
         {
             Main.spriteBatch.Begin(
                 SpriteSortMode.Deferred,
-                BlendState.Opaque,
+                BlendState.AlphaBlend,
                 SamplerState.PointClamp,
                 DepthStencilState.None,
-                RasterizerState.CullNone,
+                Main.Rasterizer,
                 null,
                 Main.Transform
             );
