@@ -1938,7 +1938,7 @@ internal sealed class SmoothLighting
                             : _normalsOverbrightShader
                     : _normalsShader
                 : doScaling // doOverbright is guaranteed to be true here
-                    ? _overbrightMaxShader // if doScaling is true we're rendering tile entities, waterfalls, or NPCs
+                    ? _overbrightMaxShader // if doScaling is true we're rendering tile entities, waterfalls, NPCs, etc.
                     : lightOnly
                         ? background
                             ? doAmbientOcclusion

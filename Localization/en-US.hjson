@@ -18,8 +18,8 @@ Mods: {
 					Tooltip:
 						'''
 						A preset for the quality settings may be chosen
-						With high or ultra, do not set waves quality to off except in camera mode
-						[c/FFFF00:Large Performance Impact]
+						[c/FFFF00:The extreme preset requires a relatively fast GPU to run smoothly]
+						[c/FFFF00:When set to high or above, do not set waves quality to off except in camera mode]
 						'''
 				}
 
@@ -34,8 +34,6 @@ Mods: {
 						- Improves simulated normal maps
 						- Uses gamma-correct lighting when overbright rendering is enabled
 						- Increases background brightness when overbright rendering is enabled
-						- Applies overbright lighting to waterfalls
-						[c/FFFF00:Large Performance Impact]
 						'''
 				}
 
@@ -59,7 +57,6 @@ Mods: {
 						Toggles whether to blur the light map
 						Applies a per-tile blur to the light map before rendering
 						Smooths sharp light transitions
-						[c/FFFF00:Slight Performance Impact]
 						'''
 				}
 
@@ -69,8 +66,12 @@ Mods: {
 						'''
 						Controls the blurring function used to blur the light map
 						When enabled, uses improved blurring affected by light absorption
-						[c/FFFF00:Slight Performance Impact]
 						'''
+				}
+
+				SimulateNormalMaps: {
+					Label: Simulated Normal Maps
+					Tooltip: Toggles whether to simulate normal maps
 				}
 
 				LightMapRenderMode: {
@@ -81,18 +82,38 @@ Mods: {
 						Affects the smoothness of lighting
 						Bicubic upscaling is smoother than bilinear upscaling
 						Overbright rendering increases the maximum brightness of light
-						With overbright rendering, do not set waves quality to off except in camera mode
-						[c/FFFF00:Medium Performance Impact]
+						[c/FFFF00:When overbright is enabled, do not set waves quality to off except in camera mode]
 						'''
 				}
 
-				SimulateNormalMaps: {
-					Label: Simulated Normal Maps
-					Tooltip:
-						'''
-						Toggles whether to simulate normal maps
-						[c/FFFF00:Medium Performance Impact]
-						'''
+				OverbrightWaterfalls: {
+					Label: Overbright Waterfalls
+					Tooltip: Toggles whether to apply overbright lighting to waterfalls
+				}
+
+				OverbrightNPCsAndPlayer: {
+					Label: Overbright NPCs and Player
+					Tooltip: Toggles whether to apply overbright lighting to NPCs and the player
+				}
+
+				OverbrightProjectiles: {
+					Label: Overbright Projectiles
+					Tooltip: Toggles whether to apply overbright lighting to projectiles
+				}
+
+				OverbrightDustAndGore: {
+					Label: Overbright Dust and Gore
+					Tooltip: Toggles whether to apply overbright lighting to dust and gore
+				}
+
+				OverbrightItems: {
+					Label: Overbright Items
+					Tooltip: Toggles whether to apply overbright lighting to dropped items
+				}
+
+				OverbrightRain: {
+					Label: Overbright Rain
+					Tooltip: Toggles whether to apply overbright lighting to rain
 				}
 
 				# Ambient Occlusion
@@ -116,7 +137,6 @@ Mods: {
 						Non-solid tiles generate weaker ambient occlusion
 						Primarily affects furniture and torches
 						Not all non-solid tiles are affected
-						[c/FFFF00:Slight Performance Impact]
 						'''
 				}
 
@@ -127,7 +147,6 @@ Mods: {
 						Toggles whether tile entities generate ambient occlusion
 						Tile entities generate weaker ambient occlusion
 						Primarily affects moving, non-solid tiles (e.g., tiles affected by wind)
-						[c/FFFF00:Medium Performance Impact]
 						'''
 				}
 
@@ -153,7 +172,6 @@ Mods: {
 						When enabled, optimizes lighting using data from the previous lighting update
 						Makes lighting quicker in more intensly lit areas
 						May sometimes cause lighting quality to be slightly reduced
-						[c/FFFF00:Improves Performance]
 						'''
 				}
 
@@ -163,7 +181,6 @@ Mods: {
 						'''
 						Toggles whether to make lighting slightly brighter
 						When disabled, lighting along the axes is slightly darker than with vanilla lighting
-						[c/FFFF00:Slight Performance Impact]
 						'''
 				}
 
@@ -174,7 +191,6 @@ Mods: {
 						Controls the internal resolution of the fancy lighting engine
 						Does not affect the final resolution of the light map
 						Higher values increase the accuracy of shadows
-						[c/FFFF00:Medium Performance Impact]
 						'''
 				}
 
@@ -184,7 +200,6 @@ Mods: {
 						'''
 						Toggles whether to simulate a basic form of global illumination
 						When enabled, indirect lighting makes shadows brighter
-						[c/FFFF00:Large Performance Impact]
 						'''
 				}
 			}
@@ -207,7 +222,7 @@ Mods: {
 						'''
 						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
 						Enable if dark areas are too bright or washed out
-						[c/FFFF00:Slight Performance Impact]
+						[c/FFFF00:Does not work if waves quality is set to off]
 						'''
 				}
 
@@ -219,7 +234,6 @@ Mods: {
 						Higher values typically improve performance with diminishing returns
 						Values greater than the number of CPU hardware threads may reduce performance
 						The default value should be close to optimal
-						[c/FFFF00:Large Performance Impact]
 						'''
 				}
 
@@ -232,7 +246,6 @@ Mods: {
 						Toggles whether to use a tone mapper on the light map
 						Reduces the brightness of brightly lit tiles
 						The tone mapping curve is applied to the light color, not the final tile color
-						[c/FFFF00:Slight Performance Impact]
 						'''
 				}
 
@@ -343,6 +356,7 @@ Mods: {
 				HighPreset.Label: Medium
 				VeryHighPreset.Label: High
 				UltraPreset.Label: Ultra
+				ExtremePreset.Label: "[c/FFFF00:Extreme]"
 				Tooltip: ""
 			}
 

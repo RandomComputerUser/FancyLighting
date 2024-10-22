@@ -12,8 +12,8 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - The settings preset now only affects settings in the Quality Settings page
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
+- Added options to apply overbright rendering to more things
 - Improved dithering with overbright rendering and enhanced shaders and colors enabled
-- Enhanced shaders and colors now applies overbright rendering to more things
 - Tweaked ambient occlusion when gamma correction is disabled to better match how it looks when gamma correction is enabled
 - Increased the range of the ambient occlusion exponent option
 - Tweaked the default ambient occlusion settings

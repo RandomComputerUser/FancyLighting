@@ -46,8 +46,14 @@ public sealed class LightingConfig : ModConfig
         _useSmoothLighting = options.UseSmoothLighting;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
-        _lightMapRenderMode = options.LightMapRenderMode;
         _simulateNormalMaps = options.SimulateNormalMaps;
+        _lightMapRenderMode = options.LightMapRenderMode;
+        _overbrightWaterfalls = options.OverbrightWaterfalls;
+        _overbrightNPCsAndPlayer = options.OverbrightNPCsAndPlayer;
+        _overbrightProjectiles = options.OverbrightProjectiles;
+        _overbrightDustAndGore = options.OverbrightDustAndGore;
+        _overbrightItems = options.OverbrightItems;
+        _overbrightRain = options.OverbrightRain;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
@@ -153,6 +159,18 @@ public sealed class LightingConfig : ModConfig
     }
     private bool _useEnhancedBlurring;
 
+    [DefaultValue(DefaultOptions.SimulateNormalMaps)]
+    public bool SimulateNormalMaps
+    {
+        get => _simulateNormalMaps;
+        set
+        {
+            _simulateNormalMaps = value;
+            UpdatePreset();
+        }
+    }
+    private bool _simulateNormalMaps;
+
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
     [DrawTicks]
     public RenderMode LightMapRenderMode
@@ -166,17 +184,77 @@ public sealed class LightingConfig : ModConfig
     }
     private RenderMode _lightMapRenderMode;
 
-    [DefaultValue(DefaultOptions.SimulateNormalMaps)]
-    public bool SimulateNormalMaps
+    [DefaultValue(DefaultOptions.OverbrightWaterfalls)]
+    public bool OverbrightWaterfalls
     {
-        get => _simulateNormalMaps;
+        get => _overbrightWaterfalls;
         set
         {
-            _simulateNormalMaps = value;
+            _overbrightWaterfalls = value;
             UpdatePreset();
         }
     }
-    private bool _simulateNormalMaps;
+    private bool _overbrightWaterfalls;
+
+    [DefaultValue(DefaultOptions.OverbrightNPCsAndPlayer)]
+    public bool OverbrightNPCsAndPlayer
+    {
+        get => _overbrightNPCsAndPlayer;
+        set
+        {
+            _overbrightNPCsAndPlayer = value;
+            UpdatePreset();
+        }
+    }
+    private bool _overbrightNPCsAndPlayer;
+
+    [DefaultValue(DefaultOptions.OverbrightProjectiles)]
+    public bool OverbrightProjectiles
+    {
+        get => _overbrightProjectiles;
+        set
+        {
+            _overbrightProjectiles = value;
+            UpdatePreset();
+        }
+    }
+    private bool _overbrightProjectiles;
+
+    [DefaultValue(DefaultOptions.OverbrightDustAndGore)]
+    public bool OverbrightDustAndGore
+    {
+        get => _overbrightDustAndGore;
+        set
+        {
+            _overbrightDustAndGore = value;
+            UpdatePreset();
+        }
+    }
+    private bool _overbrightDustAndGore;
+
+    [DefaultValue(DefaultOptions.OverbrightItems)]
+    public bool OverbrightItems
+    {
+        get => _overbrightItems;
+        set
+        {
+            _overbrightItems = value;
+            UpdatePreset();
+        }
+    }
+    private bool _overbrightItems;
+
+    [DefaultValue(DefaultOptions.OverbrightRain)]
+    public bool OverbrightRain
+    {
+        get => _overbrightRain;
+        set
+        {
+            _overbrightRain = value;
+            UpdatePreset();
+        }
+    }
+    private bool _overbrightRain;
 
     // Ambient Occlusion
     [Header("AmbientOcclusion")]

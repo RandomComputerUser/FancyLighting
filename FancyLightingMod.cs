@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using FancyLighting.Config;
 using FancyLighting.LightingEngines;
@@ -319,14 +320,25 @@ public sealed class FancyLightingMod : Mod
 
     private void AddHooks()
     {
-        Terraria.Graphics.Effects.On_FilterManager.EndCapture +=
-            _FilterManager_EndCapture;
         Terraria.GameContent.Drawing.On_TileDrawing.ShouldTileShine +=
             _TileDrawing_ShouldTileShine;
+        Terraria.Graphics.Effects.On_FilterManager.EndCapture +=
+            _FilterManager_EndCapture;
         Terraria.GameContent.Drawing.On_TileDrawing.PostDrawTiles +=
             _TileDrawing_PostDrawTiles;
         Terraria.On_Main.DrawSurfaceBG += _Main_DrawSurfaceBG;
         Terraria.On_WaterfallManager.Draw += _WaterfallManager_Draw;
+        Terraria.On_Main.DrawNPCs += _Main_DrawNPCs;
+        Terraria.On_Main.DrawCachedNPCs += _Main_DrawCachedNPCs;
+        Terraria.On_Main.DrawPlayers_BehindNPCs += _Main_DrawPlayers_BehindNPCs;
+        Terraria.On_Main.DrawPlayers_AfterProjectiles +=
+            _Main_DrawPlayers_AfterProjectiles;
+        Terraria.On_Main.DrawProjectiles += _Main_DrawProjectiles;
+        Terraria.On_Main.DrawCachedProjs += _Main_DrawCachedProjs;
+        Terraria.On_Main.DrawDust += _Main_DrawDust;
+        Terraria.On_Main.DrawGore += _Main_DrawGore;
+        Terraria.On_Main.DrawItems += _Main_DrawItems;
+        Terraria.On_Main.DrawRain += _Main_DrawRain;
         Terraria.On_Main.RenderWater += _Main_RenderWater;
         Terraria.On_Main.DrawWaters += _Main_DrawWaters;
         Terraria.On_Main.RenderBackground += _Main_RenderBackground;
@@ -347,63 +359,41 @@ public sealed class FancyLightingMod : Mod
         Terraria.On_Main.DrawCapture += _Main_DrawCapture;
     }
 
-    // Post-processing
-    private void _FilterManager_EndCapture(
-        Terraria.Graphics.Effects.On_FilterManager.orig_EndCapture orig,
-        Terraria.Graphics.Effects.FilterManager self,
-        RenderTarget2D finalTexture,
-        RenderTarget2D screenTarget1,
-        RenderTarget2D screenTarget2,
-        Color clearColor
+    private void DrawScreenOverbright(
+        Action draw,
+        bool spriteBatchAlreadyBegan,
+        bool checkLightOnly
     )
     {
-        if (PreferencesConfig.Instance.UseSrgb)
-        {
-            _smoothLightingInstance.GammaToSrgb(screenTarget1, screenTarget2, clearColor);
-        }
-
-        orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
-    }
-
-    private bool _TileDrawing_ShouldTileShine(
-        Terraria.GameContent.Drawing.On_TileDrawing.orig_ShouldTileShine orig,
-        ushort type,
-        short frameX
-    ) => !_overrideLightColor && orig(type, frameX);
-
-    // Tile entities
-    private void _TileDrawing_PostDrawTiles(
-        Terraria.GameContent.Drawing.On_TileDrawing.orig_PostDrawTiles orig,
-        Terraria.GameContent.Drawing.TileDrawing self,
-        bool solidLayer,
-        bool forRenderTargets,
-        bool intoRenderTargets
-    )
-    {
-        if (
-            intoRenderTargets
-            || _ambientOcclusionInstance._drawingTileEntities
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.SmoothLightingEnabled()
-        )
-        {
-            orig(self, solidLayer, forRenderTargets, intoRenderTargets);
-            return;
-        }
-
         if (_inCameraMode)
         {
+            if (spriteBatchAlreadyBegan)
+            {
+                Main.spriteBatch.End();
+            }
+
             Main.graphics.GraphicsDevice.SetRenderTarget(
                 _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget)
             );
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            _TileDrawing_PostDrawTiles_inner(
-                orig,
-                self,
-                solidLayer,
-                forRenderTargets,
-                intoRenderTargets
-            );
+
+            if (spriteBatchAlreadyBegan)
+            {
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    Main.DefaultSamplerState,
+                    DepthStencilState.None,
+                    Main.Rasterizer,
+                    null,
+                    Main.Transform
+                );
+            }
+            draw();
+            if (spriteBatchAlreadyBegan)
+            {
+                Main.spriteBatch.End();
+            }
 
             _smoothLightingInstance.CalculateSmoothLighting(false, true);
             _smoothLightingInstance.DrawSmoothLightingCameraMode(
@@ -415,22 +405,35 @@ public sealed class FancyLightingMod : Mod
                 true
             );
 
+            if (spriteBatchAlreadyBegan)
+            {
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    Main.DefaultSamplerState,
+                    DepthStencilState.None,
+                    Main.Rasterizer,
+                    null,
+                    Main.Transform
+                );
+            }
+
             return;
         }
 
-        var target = PreferencesConfig.Instance.RenderOnlyLight
-            ? null
-            : MainRenderTarget.Get();
+        var target =
+            checkLightOnly && PreferencesConfig.Instance.RenderOnlyLight
+                ? null
+                : MainRenderTarget.Get();
         if (target is null)
         {
-            _TileDrawing_PostDrawTiles_inner(
-                orig,
-                self,
-                solidLayer,
-                forRenderTargets,
-                intoRenderTargets
-            );
+            draw();
             return;
+        }
+
+        if (spriteBatchAlreadyBegan)
+        {
+            Main.spriteBatch.End();
         }
 
         TextureUtil.MakeSize(ref _screenTarget1, target.Width, target.Height);
@@ -449,13 +452,23 @@ public sealed class FancyLightingMod : Mod
 
         Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget2);
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        _TileDrawing_PostDrawTiles_inner(
-            orig,
-            self,
-            solidLayer,
-            forRenderTargets,
-            intoRenderTargets
-        );
+        if (spriteBatchAlreadyBegan)
+        {
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone,
+                null,
+                Main.Transform
+            );
+        }
+        draw();
+        if (spriteBatchAlreadyBegan)
+        {
+            Main.spriteBatch.End();
+        }
 
         _smoothLightingInstance.CalculateSmoothLighting(false, false);
         _smoothLightingInstance.DrawSmoothLighting(_screenTarget2, false, true, target);
@@ -472,6 +485,77 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.Draw(_screenTarget1, Vector2.Zero, Color.White);
         Main.spriteBatch.Draw(_screenTarget2, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
+
+        if (spriteBatchAlreadyBegan)
+        {
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                Main.DefaultSamplerState,
+                DepthStencilState.None,
+                Main.Rasterizer,
+                null,
+                Main.Transform
+            );
+        }
+    }
+
+    private bool _TileDrawing_ShouldTileShine(
+        Terraria.GameContent.Drawing.On_TileDrawing.orig_ShouldTileShine orig,
+        ushort type,
+        short frameX
+    ) => !_overrideLightColor && orig(type, frameX);
+
+    // Post-processing
+    private void _FilterManager_EndCapture(
+        Terraria.Graphics.Effects.On_FilterManager.orig_EndCapture orig,
+        Terraria.Graphics.Effects.FilterManager self,
+        RenderTarget2D finalTexture,
+        RenderTarget2D screenTarget1,
+        RenderTarget2D screenTarget2,
+        Color clearColor
+    )
+    {
+        if (PreferencesConfig.Instance.UseSrgb)
+        {
+            _smoothLightingInstance.GammaToSrgb(screenTarget1, screenTarget2, clearColor);
+        }
+
+        orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+    }
+
+    // Tile entities
+    private void _TileDrawing_PostDrawTiles(
+        Terraria.GameContent.Drawing.On_TileDrawing.orig_PostDrawTiles orig,
+        Terraria.GameContent.Drawing.TileDrawing self,
+        bool solidLayer,
+        bool forRenderTargets,
+        bool intoRenderTargets
+    )
+    {
+        if (
+            intoRenderTargets
+            || _ambientOcclusionInstance._drawingTileEntities
+            || !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+        )
+        {
+            orig(self, solidLayer, forRenderTargets, intoRenderTargets);
+            return;
+        }
+
+        DrawScreenOverbright(
+            () =>
+                _TileDrawing_PostDrawTiles_inner(
+                    orig,
+                    self,
+                    solidLayer,
+                    forRenderTargets,
+                    intoRenderTargets
+                ),
+            false,
+            false
+        );
     }
 
     private void _TileDrawing_PostDrawTiles_inner(
@@ -580,7 +664,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.UseHiDefFeatures
+            || !LightingConfig.Instance.OverbrightWaterfalls
             || spriteBatch.GraphicsDevice != Main.graphics.GraphicsDevice
         )
         {
@@ -716,6 +800,197 @@ public sealed class FancyLightingMod : Mod
 
         orig(self, spriteBatch);
     }
+
+    // NPCs
+
+    private void _Main_DrawNPCs(
+        Terraria.On_Main.orig_DrawNPCs orig,
+        Terraria.Main self,
+        bool behindTiles
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
+        )
+        {
+            orig(self, behindTiles);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self, behindTiles), true, false);
+    }
+
+    private void _Main_DrawCachedNPCs(
+        Terraria.On_Main.orig_DrawCachedNPCs orig,
+        Terraria.Main self,
+        List<int> npcCache,
+        bool behindTiles
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
+        )
+        {
+            orig(self, npcCache, behindTiles);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self, npcCache, behindTiles), true, false);
+    }
+
+    // Players
+
+    private void _Main_DrawPlayers_BehindNPCs(
+        Terraria.On_Main.orig_DrawPlayers_BehindNPCs orig,
+        Terraria.Main self
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), false, false);
+    }
+
+    private void _Main_DrawPlayers_AfterProjectiles(
+        Terraria.On_Main.orig_DrawPlayers_AfterProjectiles orig,
+        Terraria.Main self
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), false, false);
+    }
+
+    // Projectiles
+    // Main.DrawSuperSpecialProjectiles seems to be for the First Fractal (an unobtainable item),
+    // so we don't override it
+
+    private void _Main_DrawProjectiles(
+        Terraria.On_Main.orig_DrawProjectiles orig,
+        Terraria.Main self
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightProjectiles
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), false, false);
+    }
+
+    private void _Main_DrawCachedProjs(
+        Terraria.On_Main.orig_DrawCachedProjs orig,
+        Terraria.Main self,
+        List<int> projCache,
+        bool startSpriteBatch
+    )
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightProjectiles
+        )
+        {
+            orig(self, projCache, startSpriteBatch);
+            return;
+        }
+
+        DrawScreenOverbright(
+            () => orig(self, projCache, startSpriteBatch),
+            !startSpriteBatch,
+            false
+        );
+    }
+
+    // Dust
+    private void _Main_DrawDust(Terraria.On_Main.orig_DrawDust orig, Terraria.Main self)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightDustAndGore
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), false, false);
+    }
+
+    // Gore
+    private void _Main_DrawGore(Terraria.On_Main.orig_DrawGore orig, Terraria.Main self)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightDustAndGore
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), true, false);
+    }
+
+    // Dropped Items
+    private void _Main_DrawItems(Terraria.On_Main.orig_DrawItems orig, Terraria.Main self)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightItems
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), true, false);
+    }
+
+    // Rain
+    private void _Main_DrawRain(Terraria.On_Main.orig_DrawRain orig, Terraria.Main self)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightRain
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), true, false);
+    }
+
+    // Non-moving objects (tiles, walls, etc)
 
     private void _Main_RenderWater(
         Terraria.On_Main.orig_RenderWater orig,

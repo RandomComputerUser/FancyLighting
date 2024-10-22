@@ -10,9 +10,18 @@ internal record PresetOptions
     public bool UseSmoothLighting { get; init; } = DefaultOptions.UseSmoothLighting;
     public bool UseLightMapBlurring { get; init; } = DefaultOptions.UseLightMapBlurring;
     public bool UseEnhancedBlurring { get; init; } = DefaultOptions.UseEnhancedBlurring;
+    public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
-    public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
+    public bool OverbrightWaterfalls { get; init; } = DefaultOptions.OverbrightWaterfalls;
+    public bool OverbrightNPCsAndPlayer { get; init; } =
+        DefaultOptions.OverbrightNPCsAndPlayer;
+    public bool OverbrightProjectiles { get; init; } =
+        DefaultOptions.OverbrightProjectiles;
+    public bool OverbrightDustAndGore { get; init; } =
+        DefaultOptions.OverbrightDustAndGore;
+    public bool OverbrightItems { get; init; } = DefaultOptions.OverbrightItems;
+    public bool OverbrightRain { get; init; } = DefaultOptions.OverbrightRain;
 
     public bool UseAmbientOcclusion { get; init; } = DefaultOptions.UseAmbientOcclusion;
     public bool DoNonSolidAmbientOcclusion { get; init; } =
@@ -40,8 +49,14 @@ internal record PresetOptions
         UseSmoothLighting = config.UseSmoothLighting;
         UseLightMapBlurring = config.UseLightMapBlurring;
         UseEnhancedBlurring = config.UseEnhancedBlurring;
-        LightMapRenderMode = config.LightMapRenderMode;
         SimulateNormalMaps = config.SimulateNormalMaps;
+        LightMapRenderMode = config.LightMapRenderMode;
+        OverbrightWaterfalls = config.OverbrightWaterfalls;
+        OverbrightNPCsAndPlayer = config.OverbrightNPCsAndPlayer;
+        OverbrightProjectiles = config.OverbrightProjectiles;
+        OverbrightDustAndGore = config.OverbrightDustAndGore;
+        OverbrightItems = config.OverbrightItems;
+        OverbrightRain = config.OverbrightRain;
 
         UseAmbientOcclusion = config.UseAmbientOcclusion;
         DoNonSolidAmbientOcclusion = config.DoNonSolidAmbientOcclusion;
@@ -61,8 +76,8 @@ internal record PresetOptions
 
             UseSmoothLighting = false,
             UseEnhancedBlurring = false,
-            LightMapRenderMode = RenderMode.Bilinear,
             SimulateNormalMaps = false,
+            LightMapRenderMode = RenderMode.Bilinear,
 
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
@@ -81,8 +96,8 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = false,
-            LightMapRenderMode = RenderMode.Bilinear,
             SimulateNormalMaps = false,
+            LightMapRenderMode = RenderMode.Bilinear,
 
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
@@ -103,8 +118,8 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
-            LightMapRenderMode = RenderMode.Bicubic,
             SimulateNormalMaps = false,
+            LightMapRenderMode = RenderMode.Bicubic,
 
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -123,8 +138,8 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
-            LightMapRenderMode = RenderMode.BicubicOverbright,
             SimulateNormalMaps = true,
+            LightMapRenderMode = RenderMode.BicubicOverbright,
 
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -143,8 +158,35 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
-            LightMapRenderMode = RenderMode.BicubicOverbright,
             SimulateNormalMaps = true,
+            LightMapRenderMode = RenderMode.BicubicOverbright,
+            OverbrightWaterfalls = true,
+
+            UseAmbientOcclusion = true,
+            DoNonSolidAmbientOcclusion = true,
+            DoTileEntityAmbientOcclusion = true,
+
+            UseFancyLightingEngine = true,
+            FancyLightingEngineMakeBrighter = true,
+            FancyLightingEngineMode = LightingEngineMode.Four,
+            SimulateGlobalIllumination = false,
+        };
+
+    public static PresetOptions ExtremePresetOptions =
+        new()
+        {
+            UseHiDefFeatures = true,
+
+            UseSmoothLighting = true,
+            UseEnhancedBlurring = true,
+            SimulateNormalMaps = true,
+            LightMapRenderMode = RenderMode.BicubicOverbright,
+            OverbrightWaterfalls = true,
+            OverbrightNPCsAndPlayer = true,
+            OverbrightProjectiles = true,
+            OverbrightDustAndGore = true,
+            OverbrightRain = true,
+            OverbrightItems = true,
 
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -165,6 +207,7 @@ internal record PresetOptions
             [HighPresetOptions] = Preset.HighPreset,
             [VeryHighPresetOptions] = Preset.VeryHighPreset,
             [UltraPresetOptions] = Preset.UltraPreset,
+            [ExtremePresetOptions] = Preset.ExtremePreset,
         };
 
     public static Dictionary<Preset, PresetOptions> PresetOptionsLookup =

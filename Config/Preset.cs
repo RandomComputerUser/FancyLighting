@@ -9,4 +9,5 @@ public enum Preset : int
     HighPreset = 50,
     VeryHighPreset = 55,
     UltraPreset = 60,
+    ExtremePreset = 70,
 }

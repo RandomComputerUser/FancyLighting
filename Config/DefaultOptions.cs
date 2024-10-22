@@ -19,10 +19,16 @@ public static class DefaultOptions
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = false;
     public const bool UseLightMapToneMapping = true;
-    public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
     public const bool SimulateNormalMaps = false;
     public const int NormalMapsStrength = 100;
     public const bool FineNormalMaps = false;
+    public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
+    public const bool OverbrightWaterfalls = false;
+    public const bool OverbrightNPCsAndPlayer = false;
+    public const bool OverbrightProjectiles = false;
+    public const bool OverbrightDustAndGore = false;
+    public const bool OverbrightItems = false;
+    public const bool OverbrightRain = false;
     public const bool RenderOnlyLight = false;
 
     public const bool UseAmbientOcclusion = true;
