@@ -1152,7 +1152,7 @@ public sealed class FancyLightingMod : Mod
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.tileBatch.Begin();
             Main.spriteBatch.Begin();
-            OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingBack;
+            OverrideLightColor = true;
             try
             {
                 orig(self);
@@ -1342,6 +1342,8 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    // Lighting engine
+
     private void _LightingEngine_ProcessBlur(
         Terraria.Graphics.Light.On_LightingEngine.orig_ProcessBlur orig,
         Terraria.Graphics.Light.LightingEngine self
@@ -1480,7 +1482,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         _smoothLightingInstance.CalculateSmoothLighting(true, true);
-        OverrideLightColor = LightingConfig.Instance.SmoothLightingEnabled();
+        OverrideLightColor = true;
 
         var wallTarget = _smoothLightingInstance.GetCameraModeRenderTarget(
             _cameraModeTarget
@@ -1563,7 +1565,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         _smoothLightingInstance.CalculateSmoothLighting(false, true);
-        OverrideLightColor = LightingConfig.Instance.SmoothLightingEnabled();
+        OverrideLightColor = true;
 
         Main.tileBatch.End();
         Main.spriteBatch.End();

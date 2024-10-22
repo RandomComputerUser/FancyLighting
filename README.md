@@ -25,4 +25,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Improved dithering with overbright rendering and enhanced shaders and colors enabled
 - Increased the max overbright brightness with enhanced colors and shaders enabled from 4x to 16x
 - Fixed graphical glitches with shimmer waterfalls
+- Fixed a camera mode bug that caused cave backgrounds to be rendered incorrectly
 - Upgraded to .NET 8
