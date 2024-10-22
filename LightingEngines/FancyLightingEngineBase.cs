@@ -18,12 +18,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     protected Rectangle _lightMapArea;
     private long _temporalData = 0;
 
-    protected const int MAX_LIGHT_RANGE = 64;
-    protected const int DISTANCE_TICKS = 256;
+    protected const int MaxLightRange = 64;
+    protected const int DistanceTicks = 256;
 
-    private const float MAX_DECAY_MULT = 0.95f;
-    private const float GI_MULT = 0.55f;
-    private const float LOW_LIGHT_LEVEL = 0.03f;
+    private const float MaxDecayMult = 0.95f;
+    private const float GiMult = 0.55f;
+    private const float LowLightLevel = 0.03f;
 
     protected float _initialBrightnessCutoff;
     protected float _logBrightnessCutoff;
@@ -129,12 +129,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void InitializeDecayArrays()
     {
-        _lightAirDecay = new float[DISTANCE_TICKS + 1];
-        _lightSolidDecay = new float[DISTANCE_TICKS + 1];
-        _lightWaterDecay = new float[DISTANCE_TICKS + 1];
-        _lightHoneyDecay = new float[DISTANCE_TICKS + 1];
-        _lightVinesDecay = new float[DISTANCE_TICKS + 1];
-        for (var exponent = 0; exponent <= DISTANCE_TICKS; ++exponent)
+        _lightAirDecay = new float[DistanceTicks + 1];
+        _lightSolidDecay = new float[DistanceTicks + 1];
+        _lightWaterDecay = new float[DistanceTicks + 1];
+        _lightHoneyDecay = new float[DistanceTicks + 1];
+        _lightVinesDecay = new float[DistanceTicks + 1];
+        for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
         {
             _lightAirDecay[exponent] = 1f;
             _lightSolidDecay[exponent] = 1f;
@@ -146,9 +146,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void ComputeCircles()
     {
-        _circles = new int[MAX_LIGHT_RANGE + 1][];
+        _circles = new int[MaxLightRange + 1][];
         _circles[0] = [0];
-        for (var radius = 1; radius <= MAX_LIGHT_RANGE; ++radius)
+        for (var radius = 1; radius <= MaxLightRange; ++radius)
         {
             _circles[radius] = new int[radius + 1];
             _circles[radius][0] = radius;
@@ -172,7 +172,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         double temporalMax = 0.125
     )
     {
-        _initialBrightnessCutoff = LOW_LIGHT_LEVEL;
+        _initialBrightnessCutoff = LowLightLevel;
 
         var cutoff =
             FancyLightingMod._inCameraMode ? cameraModeCutoff
@@ -204,7 +204,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             ? 1f
             : 0.975f;
         var lightAirDecayBaseline =
-            decayMult * Math.Min(lightMap.LightDecayThroughAir, MAX_DECAY_MULT);
+            decayMult * Math.Min(lightMap.LightDecayThroughAir, MaxDecayMult);
         var lightSolidDecayBaseline =
             decayMult
             * Math.Min(
@@ -212,7 +212,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     lightMap.LightDecayThroughSolid,
                     PreferencesConfig.Instance.FancyLightingEngineAbsorptionExponent()
                 ),
-                MAX_DECAY_MULT
+                MaxDecayMult
             );
         var lightWaterDecayBaseline =
             decayMult
@@ -226,7 +226,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                                 lightMap.LightDecayThroughWater.Z
                             )
                         ),
-                MAX_DECAY_MULT
+                MaxDecayMult
             );
         var lightHoneyDecayBaseline =
             decayMult
@@ -240,7 +240,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                                 lightMap.LightDecayThroughHoney.Z
                             )
                         ),
-                MAX_DECAY_MULT
+                MaxDecayMult
             );
 
         _lightLossExitingSolid =
@@ -256,7 +256,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             GammaConverter.GammaToLinear(ref _lightLossExitingSolid);
         }
 
-        const float THRESHOLD_MULT_EXPONENT = 0.41421354f; // sqrt(2) - 1
+        const float ThresholdMultExponent = 0.41421354f; // sqrt(2) - 1
 
         var logSlowestDecay = MathF.Log(
             Math.Max(
@@ -264,7 +264,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 Math.Max(lightWaterDecayBaseline, lightHoneyDecayBaseline)
             )
         );
-        _thresholdMult = MathF.Exp(THRESHOLD_MULT_EXPONENT * logSlowestDecay);
+        _thresholdMult = MathF.Exp(ThresholdMultExponent * logSlowestDecay);
         _reciprocalLogSlowestDecay = 1f / logSlowestDecay;
 
         UpdateDecay(_lightAirDecay, lightAirDecayBaseline);
@@ -280,16 +280,16 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     private static void UpdateDecay(float[] decay, float baseline)
     {
-        if (baseline == decay[DISTANCE_TICKS])
+        if (baseline == decay[DistanceTicks])
         {
             return;
         }
 
         var logBaseline = MathF.Log(baseline);
-        var exponentMult = 1f / DISTANCE_TICKS;
+        const float ExponentMult = 1f / DistanceTicks;
         for (var i = 0; i < decay.Length; ++i)
         {
-            decay[i] = MathF.Exp(exponentMult * i * logBaseline);
+            decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
         }
     }
 
@@ -471,10 +471,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             return;
         }
 
-        const int INDEX_INCREMENT = 32;
+        const int IndexIncrement = 32;
 
         var taskIndex = -1;
-        var lightIndex = -INDEX_INCREMENT;
+        var lightIndex = -IndexIncrement;
         for (var i = 0; i < taskCount; ++i)
         {
             _tasks[i] = Task.Factory.StartNew(() =>
@@ -488,7 +488,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
                 while (true)
                 {
-                    var i = Interlocked.Add(ref lightIndex, INDEX_INCREMENT);
+                    var i = Interlocked.Add(ref lightIndex, IndexIncrement);
                     if (i >= lightMapSize)
                     {
                         break;
@@ -498,7 +498,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         workingLightMap,
                         ref workingTemporalData,
                         i,
-                        Math.Min(lightMapSize, i + INDEX_INCREMENT)
+                        Math.Min(lightMapSize, i + IndexIncrement)
                     );
                 }
             });
@@ -506,16 +506,16 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         Task.WaitAll(_tasks);
 
-        const int CHUNK_SIZE = 64;
+        const int ChunkSize = 64;
 
         Parallel.For(
             0,
-            (lightMapSize - 1) / CHUNK_SIZE + 1,
+            (lightMapSize - 1) / ChunkSize + 1,
             new ParallelOptions { MaxDegreeOfParallelism = taskCount },
             (i) =>
             {
-                var begin = CHUNK_SIZE * i;
-                var end = Math.Min(lightMapSize, begin + CHUNK_SIZE);
+                var begin = ChunkSize * i;
+                var end = Math.Min(lightMapSize, begin + ChunkSize);
 
                 for (var j = 1; j < _workingLightMaps.Length; ++j)
                 {
@@ -594,7 +594,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         int height
     )
     {
-        var giMult = GI_MULT;
+        var giMult = GiMult;
         if (LightingConfig.Instance.DoGammaCorrection())
         {
             // Gamma correction darkens dark colors, so this helps compensate
@@ -672,7 +672,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         {
             ref var otherColorRef = ref colors[otherIndex];
             var otherColor = new Vec3(otherColorRef.X, otherColorRef.Y, otherColorRef.Z);
-            otherColor *= _lightMask[otherIndex][DISTANCE_TICKS];
+            otherColor *= _lightMask[otherIndex][DistanceTicks];
             return otherColor.X < threshold.X
                 || otherColor.Y < threshold.Y
                 || otherColor.Z < threshold.Z;
@@ -695,7 +695,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     ) * _reciprocalLogSlowestDecay
                 ) + 1,
             1,
-            MAX_LIGHT_RANGE
+            MaxLightRange
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -732,11 +732,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             var mask = lightMask[index];
             if (prevMask == solidDecay && mask != solidDecay)
             {
-                color *= lightLoss * prevMask[DISTANCE_TICKS];
+                color *= lightLoss * prevMask[DistanceTicks];
             }
             else
             {
-                color *= prevMask[DISTANCE_TICKS];
+                color *= prevMask[DistanceTicks];
             }
             prevMask = mask;
 
@@ -766,7 +766,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     ) * _reciprocalLogSlowestDecay
                 ) + 1,
             1,
-            MAX_LIGHT_RANGE
+            MaxLightRange
         );
 
         var approximateWorkDone =

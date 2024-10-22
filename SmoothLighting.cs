@@ -1218,13 +1218,13 @@ internal sealed class SmoothLighting
 
         var caughtException = 0;
 
-        const int OVERBRIGHT_WHITE = 4096;
-        const float OVERBRIGHT_MULT = OVERBRIGHT_WHITE / 65535f;
+        const int OverbrightWhite = 4096;
+        const float OverbrightMult = OverbrightWhite / 65535f;
 
         var brightness = Lighting.GlobalBrightness;
         var glowMult = brightness / 255f;
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
-            ? OVERBRIGHT_MULT
+            ? OverbrightMult
             : 1f;
 
         if (background)
@@ -1437,13 +1437,13 @@ internal sealed class SmoothLighting
 
         var caughtException = 0;
 
-        const int OVERBRIGHT_WHITE = 128;
-        const float OVERBRIGHT_MULT = OVERBRIGHT_WHITE / 255f;
+        const int OverbrightWhite = 128;
+        const float OverbrightMult = OverbrightWhite / 255f;
 
         var brightness = Lighting.GlobalBrightness;
         var glowMult = brightness / 255f;
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
-            ? OVERBRIGHT_MULT
+            ? OverbrightMult
             : 1f;
 
         if (background)

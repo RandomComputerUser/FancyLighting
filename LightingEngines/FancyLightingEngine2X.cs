@@ -39,31 +39,31 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
 
     private void ComputeLightSpread(out LightSpread[] values)
     {
-        values = new LightSpread[(MAX_LIGHT_RANGE + 1) * (MAX_LIGHT_RANGE + 1)];
-        var distances = new DistanceCache[MAX_LIGHT_RANGE + 1];
+        values = new LightSpread[(MaxLightRange + 1) * (MaxLightRange + 1)];
+        var distances = new DistanceCache[MaxLightRange + 1];
 
-        for (var row = 0; row <= MAX_LIGHT_RANGE; ++row)
+        for (var row = 0; row <= MaxLightRange; ++row)
         {
             var index = row;
             ref var value = ref values[index];
             value = CalculateTileLightSpread(row, 0, 0.0, 0.0);
             distances[row] = new(
                 row + 1.0,
-                row + value.DistanceToRight / (double)DISTANCE_TICKS
+                row + value.DistanceToRight / (double)DistanceTicks
             );
         }
 
-        for (var col = 1; col <= MAX_LIGHT_RANGE; ++col)
+        for (var col = 1; col <= MaxLightRange; ++col)
         {
-            var index = (MAX_LIGHT_RANGE + 1) * col;
+            var index = (MaxLightRange + 1) * col;
             ref var value = ref values[index];
             value = CalculateTileLightSpread(0, col, 0.0, 0.0);
             distances[0] = new(
-                col + value.DistanceToTop / (double)DISTANCE_TICKS,
+                col + value.DistanceToTop / (double)DistanceTicks,
                 col + 1.0
             );
 
-            for (var row = 1; row <= MAX_LIGHT_RANGE; ++row)
+            for (var row = 1; row <= MaxLightRange; ++row)
             {
                 ++index;
                 var distance = MathUtil.Hypot(col, row);
@@ -76,7 +76,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
                 );
 
                 distances[row] = new(
-                    value.DistanceToTop / (double)DISTANCE_TICKS
+                    value.DistanceToTop / (double)DistanceTicks
                         + (
                             (value.FromLeftX.X + value.FromLeftX.Y)
                             + (value.FromLeftY.X + value.FromLeftY.Y)
@@ -89,7 +89,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
                         )
                             / 2.0
                             * distances[row - 1].Top,
-                    value.DistanceToRight / (double)DISTANCE_TICKS
+                    value.DistanceToRight / (double)DistanceTicks
                         + (
                             (value.FromLeftX.Z + value.FromLeftX.W)
                             + (value.FromLeftY.Z + value.FromLeftY.W)
@@ -115,7 +115,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
     )
     {
         static int DoubleToIndex(double x) =>
-            Math.Clamp((int)Math.Round(DISTANCE_TICKS * x), 0, DISTANCE_TICKS);
+            Math.Clamp((int)Math.Round(DistanceTicks * x), 0, DistanceTicks);
 
         var distance = MathUtil.Hypot(col, row);
         var distanceToTop = MathUtil.Hypot(col, row + 1) - distance;
@@ -326,7 +326,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
             return;
         }
 
-        color *= _lightMask[index][DISTANCE_TICKS];
+        color *= _lightMask[index][DistanceTicks];
 
         CalculateLightSourceValues(
             colors,
@@ -490,11 +490,11 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
                 var mask = lightMask[i];
                 if (prevMask == solidDecay && mask != solidDecay)
                 {
-                    value *= lightLoss * prevMask[DISTANCE_TICKS];
+                    value *= lightLoss * prevMask[DistanceTicks];
                 }
                 else
                 {
-                    value *= prevMask[DISTANCE_TICKS];
+                    value *= prevMask[DistanceTicks];
                 }
                 prevMask = mask;
 
@@ -505,7 +505,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
         for (var x = 1; x <= horizontalDistance; ++x)
         {
             var i = index + horizontalChange * x;
-            var j = (MAX_LIGHT_RANGE + 1) * x;
+            var j = (MaxLightRange + 1) * x;
 
             var mask = lightMask[i];
 
@@ -523,7 +523,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
                 }
 
                 verticalLight = horizontalLight * mask[lightSpread[j].DistanceToTop];
-                horizontalLight *= mask[DISTANCE_TICKS];
+                horizontalLight *= mask[DistanceTicks];
             }
 
             var edge = Math.Min(verticalDistance, circle[x]);
