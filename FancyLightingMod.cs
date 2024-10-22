@@ -330,6 +330,7 @@ public sealed class FancyLightingMod : Mod
         Terraria.On_WaterfallManager.Draw += _WaterfallManager_Draw;
         Terraria.On_Main.DrawNPCs += _Main_DrawNPCs;
         Terraria.On_Main.DrawCachedNPCs += _Main_DrawCachedNPCs;
+        Terraria.On_Main.DrawWoF += _Main_DrawWoF;
         Terraria.On_Main.DrawPlayers_BehindNPCs += _Main_DrawPlayers_BehindNPCs;
         Terraria.On_Main.DrawPlayers_AfterProjectiles +=
             _Main_DrawPlayers_AfterProjectiles;
@@ -836,6 +837,27 @@ public sealed class FancyLightingMod : Mod
         }
 
         DrawScreenOverbright(() => orig(self, npcCache, behindTiles), true, false);
+    }
+
+    // Wall of Flesh
+    private void _Main_DrawWoF(Terraria.On_Main.orig_DrawWoF orig, Terraria.Main self)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
+            || (
+                Main.wofNPCIndex < 0
+                || !Main.npc[Main.wofNPCIndex].active
+                || Main.npc[Main.wofNPCIndex].life <= 0
+            ) // Don't waste time if the Wall of Flesh isn't visible
+        )
+        {
+            orig(self);
+            return;
+        }
+
+        DrawScreenOverbright(() => orig(self), true, false);
     }
 
     // Players
