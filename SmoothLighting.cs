@@ -283,6 +283,8 @@ internal sealed class SmoothLighting
         _drawTarget2?.Dispose();
         _colors?.Dispose();
         _colorsBackground?.Dispose();
+        _colorsHiRes?.Dispose();
+        _colorsBackgroundHiRes?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _cameraModeTarget3?.Dispose();
