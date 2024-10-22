@@ -356,7 +356,13 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     private static bool IsVine(int x, int y)
     {
         var tile = Main.tile[x, y];
-        return tile.HasTile && TileID.Sets.IsVine[tile.TileType];
+        if (!tile.HasTile)
+        {
+            return false;
+        }
+
+        var tileType = tile.TileType;
+        return TileID.Sets.IsVine[tileType] || tileType is TileID.Seaweed;
     }
 
     protected static void ConvertLightColorsToLinear(

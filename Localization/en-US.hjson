@@ -300,11 +300,6 @@ Mods: {
 
 				# Fancy Lighting Engine
 				
-				FancyLightingEngineVinesOpaque: {
-					Label: Vines Block Light
-					Tooltip: Toggles whether vines block light
-				}
-
 				FancyLightingEngineLightLoss: {
 					Label: Shadow Strength (%)
 					Tooltip:
@@ -323,6 +318,11 @@ Mods: {
 						Lower values allow light to spread farther into solid blocks
 						A value of 100% is equivalent to vanilla
 						'''
+				}
+
+				FancyLightingEngineVinesOpaque: {
+					Label: Vines and Seaweed Block Light
+					Tooltip: Toggles whether vines and seaweed block light
 				}
 
 				# Fancy Sky Colors

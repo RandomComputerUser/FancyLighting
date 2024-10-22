@@ -134,15 +134,6 @@ public sealed class PreferencesConfig : ModConfig
     private int _ambientLightProportion;
 
     // Fancy Lighting Engine
-    [Header("LightingEngine")]
-    [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]
-    public bool FancyLightingEngineVinesOpaque
-    {
-        get => _fancyLightingEngineVinesOpaque;
-        set { _fancyLightingEngineVinesOpaque = value; }
-    }
-    private bool _fancyLightingEngineVinesOpaque;
-
     [Range(0, 100)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightLoss)]
@@ -166,6 +157,15 @@ public sealed class PreferencesConfig : ModConfig
         set { _fancyLightingEngineLightAbsorption = value; }
     }
     private int _fancyLightingEngineLightAbsorption;
+
+    [Header("LightingEngine")]
+    [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]
+    public bool FancyLightingEngineVinesOpaque
+    {
+        get => _fancyLightingEngineVinesOpaque;
+        set { _fancyLightingEngineVinesOpaque = value; }
+    }
+    private bool _fancyLightingEngineVinesOpaque;
 
     // Sky Color
     [Header("SkyColor")]

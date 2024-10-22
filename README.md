@@ -15,7 +15,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
 - Added settings to apply overbright lighting to more things
-- Added a setting to toggle whether vines block light
+- Added a setting to toggle whether vines and seaweed block light
 - Tweaked ambient occlusion when gamma correction is disabled to better match how it looks when gamma correction is enabled
 - Increased the range of the ambient occlusion exponent setting
 - Tweaked the default ambient occlusion settings
