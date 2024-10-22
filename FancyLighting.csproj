@@ -12,13 +12,6 @@
     <Version>0.8.0</Version>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="effects\Srgb.fx" />
-    <None Remove="localization\en-US.hjson" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="tModLoader.CodeAssist" Version="0.1.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Localization\" />
   </ItemGroup>
 </Project>
