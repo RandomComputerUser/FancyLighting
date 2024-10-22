@@ -81,7 +81,7 @@ Mods: {
 						Controls how the light map is rendered
 						Affects the smoothness of lighting
 						Bicubic upscaling is smoother than bilinear upscaling
-						Overbright rendering increases the maximum brightness of light
+						Overbright rendering increases the maximum brightness of light beyond 100%
 						[c/FFFF00:When overbright is enabled, do not set waves quality to off except in camera mode]
 						'''
 				}
@@ -306,19 +306,20 @@ Mods: {
 				}
 
 				FancyLightingEngineLightLoss: {
-					Label: Light Loss Exiting Solid Blocks (%)
+					Label: Shadow Strength (%)
 					Tooltip:
 						'''
-						Controls how much light is lost exiting a solid block into the air
+						Controls how much light is lost exiting solid blocks
 						Higher values correspond to darker shadows
+						A value of 100% blocks all light from exiting solid blocks
 						'''
 				}
 
 				FancyLightingEngineLightAbsorption: {
-					Label: Light Absorption of Solid Blocks (%)
+					Label: Solid Block Light Absorption (%)
 					Tooltip:
 						'''
-						Controls how much light is absorbed inside solid blocks
+						Controls how much light is absorbed by solid blocks
 						Lower values allow light to spread farther into solid blocks
 						A value of 100% is equivalent to vanilla
 						'''
