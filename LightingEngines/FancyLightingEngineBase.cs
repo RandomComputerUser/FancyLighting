@@ -646,7 +646,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             }
         );
 
-        for (var i = 4; i-- > 0; )
+        for (var i = 6; i-- > 0; )
         {
             // down
             Parallel.For(
@@ -662,7 +662,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     for (var j = (height * i) + 1; j < endIndex; ++j)
                     {
                         var mask = lightMasks[j - 1];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (lightMasks[j] != solidDecay && mask == solidDecay)
                         {
                             continue;
                         }
@@ -686,7 +686,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     for (var j = (height * (i + 1)) - 1; --j >= endIndex; )
                     {
                         var mask = lightMasks[j + 1];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (lightMasks[j] != solidDecay && mask == solidDecay)
                         {
                             continue;
                         }
@@ -706,11 +706,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 },
                 (i) =>
                 {
-                    var endIndex = i + (width * height);
+                    var endIndex = i + length;
                     for (var j = i + height; j < endIndex; j += height)
                     {
                         var mask = lightMasks[j - height];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (lightMasks[j] != solidDecay && mask == solidDecay)
                         {
                             continue;
                         }
@@ -734,7 +734,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     for (var j = i + (width * (height - 1)); (j -= height) >= endIndex; )
                     {
                         var mask = lightMasks[j + height];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (lightMasks[j] != solidDecay && mask == solidDecay)
                         {
                             continue;
                         }
@@ -757,13 +757,20 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     var inc = height + 1;
                     var startIndex = i < height ? i : height * (i - height + 1);
                     var endIndex = Math.Min(
-                        width * height,
+                        length,
                         startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j < endIndex; j += inc)
                     {
                         var mask = lightMasks[j - inc];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (
+                            lightMasks[j] != solidDecay
+                            && (
+                                mask == solidDecay
+                                || lightMasks[j - 1] == solidDecay
+                                || lightMasks[j - height] == solidDecay
+                            )
+                        )
                         {
                             continue;
                         }
@@ -788,8 +795,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 {
                     var inc = -height - 1;
                     var startIndex =
-                        ((width * height) - 1)
-                        - (i < height ? i : height * (i - height + 1));
+                        (length - 1) - (i < height ? i : height * (i - height + 1));
                     var endIndex = Math.Max(
                         -1,
                         startIndex + (inc * (i < height ? height - i : height))
@@ -797,7 +803,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     for (var j = startIndex + inc; j > endIndex; j += inc)
                     {
                         var mask = lightMasks[j - inc];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (
+                            lightMasks[j] != solidDecay
+                            && (
+                                mask == solidDecay
+                                || lightMasks[j + 1] == solidDecay
+                                || lightMasks[j + height] == solidDecay
+                            )
+                        )
                         {
                             continue;
                         }
@@ -831,7 +844,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     for (var j = startIndex + inc; j > endIndex; j += inc)
                     {
                         var mask = lightMasks[j - inc];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (
+                            lightMasks[j] != solidDecay
+                            && (
+                                mask == solidDecay
+                                || lightMasks[j - 1] == solidDecay
+                                || lightMasks[j + height] == solidDecay
+                            )
+                        )
                         {
                             continue;
                         }
@@ -858,13 +878,20 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     var startIndex =
                         (height - 1) + (i < height ? -i : height * (i - height + 1));
                     var endIndex = Math.Min(
-                        width * height,
+                        length,
                         startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j < endIndex; j += inc)
                     {
                         var mask = lightMasks[j - inc];
-                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        if (
+                            lightMasks[j] != solidDecay
+                            && (
+                                mask == solidDecay
+                                || lightMasks[j + 1] == solidDecay
+                                || lightMasks[j - height] == solidDecay
+                            )
+                        )
                         {
                             continue;
                         }
