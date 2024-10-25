@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using FancyLighting.Config;
 using FancyLighting.Util;
 using Microsoft.Xna.Framework;
-using Terraria;
 using Terraria.Graphics.Light;
-using Terraria.ID;
 using Vec3 = System.Numerics.Vector3;
 
 namespace FancyLighting.LightingEngines;
@@ -349,7 +347,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     {
                         _lightMask[j] = lightMasks[j] switch
                         {
-                            LightMaskMode.Solid => IsVine(x, y)
+                            LightMaskMode.Solid => TileUtil.IsVine(x, y)
                                 ? _lightVinesDecay
                                 : _lightSolidDecay,
                             LightMaskMode.Water => _lightWaterDecay,
@@ -361,19 +359,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 }
             );
         }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsVine(int x, int y)
-    {
-        var tile = Main.tile[x, y];
-        if (!tile.HasTile)
-        {
-            return false;
-        }
-
-        var tileType = tile.TileType;
-        return TileID.Sets.IsVine[tileType] || tileType is TileID.Seaweed;
     }
 
     protected static void ConvertLightColorsToLinear(

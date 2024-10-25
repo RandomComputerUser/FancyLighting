@@ -578,190 +578,22 @@ internal sealed class SmoothLighting
             }
         }
 
+        var lightEngine = (LightingEngine)_modInstance._field_activeEngine.GetValue(null);
+        var lightMapTileArea = (Rectangle)
+            _modInstance
+                ._field_workingProcessedArea.GetValue(lightEngine)
+                .AssertNotNull();
+
         if (blurLightMap)
         {
-            if (LightingConfig.Instance.UseEnhancedBlurring)
-            {
-                Parallel.For(
-                    1,
-                    width - 1,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
-                    (x) =>
-                    {
-                        var i = height * x;
-                        for (var y = 1; y < height - 1; ++y)
-                        {
-                            ++i;
-
-                            try
-                            {
-                                var mask = lightMasks[i];
-
-                                var upperLeftMult =
-                                    lightMasks[i - height - 1] == mask ? 1f : 0f;
-                                var leftMult = lightMasks[i - height] == mask ? 2f : 0f;
-                                var lowerLeftMult =
-                                    lightMasks[i - height + 1] == mask ? 1f : 0f;
-                                var upperMult = lightMasks[i - 1] == mask ? 2f : 0f;
-                                var middleMult = mask is LightMaskMode.Solid ? 12f : 4f;
-                                var lowerMult = lightMasks[i + 1] == mask ? 2f : 0f;
-                                var upperRightMult =
-                                    lightMasks[i + height - 1] == mask ? 1f : 0f;
-                                var rightMult = lightMasks[i + height] == mask ? 2f : 0f;
-                                var lowerRightMult =
-                                    lightMasks[i + height + 1] == mask ? 1f : 0f;
-
-                                var mult =
-                                    1f
-                                    / (
-                                        (upperLeftMult + leftMult + lowerLeftMult)
-                                        + (upperMult + middleMult + lowerMult)
-                                        + (upperRightMult + rightMult + lowerRightMult)
-                                    );
-
-                                ref var light = ref _lights[i];
-
-                                ref var upperLeft = ref colors[i - height - 1];
-                                ref var left = ref colors[i - height];
-                                ref var lowerLeft = ref colors[i - height + 1];
-                                ref var upper = ref colors[i - 1];
-                                ref var middle = ref colors[i];
-                                ref var lower = ref colors[i + 1];
-                                ref var upperRight = ref colors[i + height - 1];
-                                ref var right = ref colors[i + height];
-                                ref var lowerRight = ref colors[i + height + 1];
-
-                                // Faster to do it separately for each component
-                                light.X =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.X)
-                                            + (leftMult * left.X)
-                                            + (lowerLeftMult * lowerLeft.X)
-                                        )
-                                        + (
-                                            (upperMult * upper.X)
-                                            + (middleMult * middle.X)
-                                            + (lowerMult * lower.X)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.X)
-                                            + (rightMult * right.X)
-                                            + (lowerRightMult * lowerRight.X)
-                                        )
-                                    ) * mult;
-
-                                light.Y =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Y)
-                                            + (leftMult * left.Y)
-                                            + (lowerLeftMult * lowerLeft.Y)
-                                        )
-                                        + (
-                                            (upperMult * upper.Y)
-                                            + (middleMult * middle.Y)
-                                            + (lowerMult * lower.Y)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Y)
-                                            + (rightMult * right.Y)
-                                            + (lowerRightMult * lowerRight.Y)
-                                        )
-                                    ) * mult;
-
-                                light.Z =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Z)
-                                            + (leftMult * left.Z)
-                                            + (lowerLeftMult * lowerLeft.Z)
-                                        )
-                                        + (
-                                            (upperMult * upper.Z)
-                                            + (middleMult * middle.Z)
-                                            + (lowerMult * lower.Z)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Z)
-                                            + (rightMult * right.Z)
-                                            + (lowerRightMult * lowerRight.Z)
-                                        )
-                                    ) * mult;
-                            }
-                            catch (IndexOutOfRangeException)
-                            {
-                                Interlocked.Exchange(ref caughtException, 1);
-                                break;
-                            }
-                        }
-                    }
-                );
-            }
-            else
-            {
-                Parallel.For(
-                    1,
-                    width - 1,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
-                    (x) =>
-                    {
-                        var i = height * x;
-                        for (var y = 1; y < height - 1; ++y)
-                        {
-                            ++i;
-
-                            try
-                            {
-                                ref var light = ref _lights[i];
-
-                                ref var upperLeft = ref colors[i - height - 1];
-                                ref var left = ref colors[i - height];
-                                ref var lowerLeft = ref colors[i - height + 1];
-                                ref var upper = ref colors[i - 1];
-                                ref var middle = ref colors[i];
-                                ref var lower = ref colors[i + 1];
-                                ref var upperRight = ref colors[i + height - 1];
-                                ref var right = ref colors[i + height];
-                                ref var lowerRight = ref colors[i + height + 1];
-
-                                // Faster to do it separately for each component
-                                light.X =
-                                    (
-                                        (upperLeft.X + (2f * left.X) + lowerLeft.X)
-                                        + (2f * (upper.X + (2f * middle.X) + lower.X))
-                                        + (upperRight.X + (2f * right.X) + lowerRight.X)
-                                    ) * (1f / 16f);
-
-                                light.Y =
-                                    (
-                                        (upperLeft.Y + (2f * left.Y) + lowerLeft.Y)
-                                        + (2f * (upper.Y + (2f * middle.Y) + lower.Y))
-                                        + (upperRight.Y + (2f * right.Y) + lowerRight.Y)
-                                    ) * (1f / 16f);
-
-                                light.Z =
-                                    (
-                                        (upperLeft.Z + (2f * left.Z) + lowerLeft.Z)
-                                        + (2f * (upper.Z + (2f * middle.Z) + lower.Z))
-                                        + (upperRight.Z + (2f * right.Z) + lowerRight.Z)
-                                    ) * (1f / 16f);
-                            }
-                            catch (IndexOutOfRangeException)
-                            {
-                                Interlocked.Exchange(ref caughtException, 1);
-                                break;
-                            }
-                        }
-                    }
-                );
-            }
+            BlurLightMap(
+                colors,
+                lightMasks,
+                width,
+                height,
+                lightMapTileArea,
+                ref caughtException
+            );
 
             if (caughtException == 1)
             {
@@ -921,12 +753,6 @@ internal sealed class SmoothLighting
             }
         }
 
-        var lightEngine = (LightingEngine)_modInstance._field_activeEngine.GetValue(null);
-        var lightMapTileArea = (Rectangle)
-            _modInstance
-                ._field_workingProcessedArea.GetValue(lightEngine)
-                .AssertNotNull();
-
         var low = 0.49f / 255f;
         if (doGammaCorrection)
         {
@@ -1069,6 +895,391 @@ internal sealed class SmoothLighting
         );
 
         _smoothLightingLightMapValid = true;
+    }
+
+    private void BlurLightMap(
+        Vector3[] colors,
+        LightMaskMode[] lightMasks,
+        int width,
+        int height,
+        Rectangle lightMapTileArea,
+        ref int caughtException
+    )
+    {
+        var caught = caughtException;
+
+        if (LightingConfig.Instance.UseEnhancedBlurring)
+        {
+            if (PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+            {
+                Parallel.For(
+                    1,
+                    width - 1,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x) =>
+                    {
+                        var i = height * x;
+                        for (var y = 1; y < height - 1; ++y)
+                        {
+                            ++i;
+
+                            try
+                            {
+                                var mask = lightMasks[i];
+
+                                var upperLeftMult =
+                                    lightMasks[i - height - 1] == mask ? 1f : 0f;
+                                var leftMult = lightMasks[i - height] == mask ? 2f : 0f;
+                                var lowerLeftMult =
+                                    lightMasks[i - height + 1] == mask ? 1f : 0f;
+                                var upperMult = lightMasks[i - 1] == mask ? 2f : 0f;
+                                var middleMult = mask is LightMaskMode.Solid ? 12f : 4f;
+                                var lowerMult = lightMasks[i + 1] == mask ? 2f : 0f;
+                                var upperRightMult =
+                                    lightMasks[i + height - 1] == mask ? 1f : 0f;
+                                var rightMult = lightMasks[i + height] == mask ? 2f : 0f;
+                                var lowerRightMult =
+                                    lightMasks[i + height + 1] == mask ? 1f : 0f;
+
+                                var mult =
+                                    1f
+                                    / (
+                                        (upperLeftMult + leftMult + lowerLeftMult)
+                                        + (upperMult + middleMult + lowerMult)
+                                        + (upperRightMult + rightMult + lowerRightMult)
+                                    );
+
+                                ref var light = ref _lights[i];
+
+                                ref var upperLeft = ref colors[i - height - 1];
+                                ref var left = ref colors[i - height];
+                                ref var lowerLeft = ref colors[i - height + 1];
+                                ref var upper = ref colors[i - 1];
+                                ref var middle = ref colors[i];
+                                ref var lower = ref colors[i + 1];
+                                ref var upperRight = ref colors[i + height - 1];
+                                ref var right = ref colors[i + height];
+                                ref var lowerRight = ref colors[i + height + 1];
+
+                                // Faster to do it separately for each component
+                                light.X =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.X)
+                                            + (leftMult * left.X)
+                                            + (lowerLeftMult * lowerLeft.X)
+                                        )
+                                        + (
+                                            (upperMult * upper.X)
+                                            + (middleMult * middle.X)
+                                            + (lowerMult * lower.X)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.X)
+                                            + (rightMult * right.X)
+                                            + (lowerRightMult * lowerRight.X)
+                                        )
+                                    ) * mult;
+
+                                light.Y =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.Y)
+                                            + (leftMult * left.Y)
+                                            + (lowerLeftMult * lowerLeft.Y)
+                                        )
+                                        + (
+                                            (upperMult * upper.Y)
+                                            + (middleMult * middle.Y)
+                                            + (lowerMult * lower.Y)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.Y)
+                                            + (rightMult * right.Y)
+                                            + (lowerRightMult * lowerRight.Y)
+                                        )
+                                    ) * mult;
+
+                                light.Z =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.Z)
+                                            + (leftMult * left.Z)
+                                            + (lowerLeftMult * lowerLeft.Z)
+                                        )
+                                        + (
+                                            (upperMult * upper.Z)
+                                            + (middleMult * middle.Z)
+                                            + (lowerMult * lower.Z)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.Z)
+                                            + (rightMult * right.Z)
+                                            + (lowerRightMult * lowerRight.Z)
+                                        )
+                                    ) * mult;
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caught, 1);
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
+            else
+            {
+                Parallel.For(
+                    1,
+                    width - 1,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x) =>
+                    {
+                        var tileX = x + lightMapTileArea.X;
+                        var tileY = lightMapTileArea.Y;
+                        var i = height * x;
+                        for (var y = 1; y < height - 1; ++y)
+                        {
+                            ++i;
+                            ++tileY;
+
+                            try
+                            {
+                                var mask = lightMasks[i];
+                                var isSolid = mask is LightMaskMode.Solid;
+                                var isVine = TileUtil.IsVine(tileX, tileY);
+
+                                var upperLeftMult =
+                                    lightMasks[i - height - 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX - 1, tileY - 1) == isVine
+                                    )
+                                        ? 1f
+                                        : 0f;
+                                var leftMult =
+                                    lightMasks[i - height] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX - 1, tileY) == isVine
+                                    )
+                                        ? 2f
+                                        : 0f;
+                                var lowerLeftMult =
+                                    lightMasks[i - height + 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX - 1, tileY + 1) == isVine
+                                    )
+                                        ? 1f
+                                        : 0f;
+                                var upperMult =
+                                    lightMasks[i - 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX, tileY - 1) == isVine
+                                    )
+                                        ? 2f
+                                        : 0f;
+                                var middleMult =
+                                    mask is LightMaskMode.Solid
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX, tileY) == isVine
+                                    )
+                                        ? 12f
+                                        : 4f;
+                                var lowerMult =
+                                    lightMasks[i + 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX, tileY + 1) == isVine
+                                    )
+                                        ? 2f
+                                        : 0f;
+                                var upperRightMult =
+                                    lightMasks[i + height - 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX + 1, tileY - 1) == isVine
+                                    )
+                                        ? 1f
+                                        : 0f;
+                                var rightMult =
+                                    lightMasks[i + height] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX + 1, tileY) == isVine
+                                    )
+                                        ? 2f
+                                        : 0f;
+                                var lowerRightMult =
+                                    lightMasks[i + height + 1] == mask
+                                    && (
+                                        !isSolid
+                                        || TileUtil.IsVine(tileX + 1, tileY + 1) == isVine
+                                    )
+                                        ? 1f
+                                        : 0f;
+
+                                var mult =
+                                    1f
+                                    / (
+                                        (upperLeftMult + leftMult + lowerLeftMult)
+                                        + (upperMult + middleMult + lowerMult)
+                                        + (upperRightMult + rightMult + lowerRightMult)
+                                    );
+
+                                ref var light = ref _lights[i];
+
+                                ref var upperLeft = ref colors[i - height - 1];
+                                ref var left = ref colors[i - height];
+                                ref var lowerLeft = ref colors[i - height + 1];
+                                ref var upper = ref colors[i - 1];
+                                ref var middle = ref colors[i];
+                                ref var lower = ref colors[i + 1];
+                                ref var upperRight = ref colors[i + height - 1];
+                                ref var right = ref colors[i + height];
+                                ref var lowerRight = ref colors[i + height + 1];
+
+                                // Faster to do it separately for each component
+                                light.X =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.X)
+                                            + (leftMult * left.X)
+                                            + (lowerLeftMult * lowerLeft.X)
+                                        )
+                                        + (
+                                            (upperMult * upper.X)
+                                            + (middleMult * middle.X)
+                                            + (lowerMult * lower.X)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.X)
+                                            + (rightMult * right.X)
+                                            + (lowerRightMult * lowerRight.X)
+                                        )
+                                    ) * mult;
+
+                                light.Y =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.Y)
+                                            + (leftMult * left.Y)
+                                            + (lowerLeftMult * lowerLeft.Y)
+                                        )
+                                        + (
+                                            (upperMult * upper.Y)
+                                            + (middleMult * middle.Y)
+                                            + (lowerMult * lower.Y)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.Y)
+                                            + (rightMult * right.Y)
+                                            + (lowerRightMult * lowerRight.Y)
+                                        )
+                                    ) * mult;
+
+                                light.Z =
+                                    (
+                                        (
+                                            (upperLeftMult * upperLeft.Z)
+                                            + (leftMult * left.Z)
+                                            + (lowerLeftMult * lowerLeft.Z)
+                                        )
+                                        + (
+                                            (upperMult * upper.Z)
+                                            + (middleMult * middle.Z)
+                                            + (lowerMult * lower.Z)
+                                        )
+                                        + (
+                                            (upperRightMult * upperRight.Z)
+                                            + (rightMult * right.Z)
+                                            + (lowerRightMult * lowerRight.Z)
+                                        )
+                                    ) * mult;
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caught, 1);
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+        else
+        {
+            Parallel.For(
+                1,
+                width - 1,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (x) =>
+                {
+                    var i = height * x;
+                    for (var y = 1; y < height - 1; ++y)
+                    {
+                        ++i;
+
+                        try
+                        {
+                            ref var light = ref _lights[i];
+
+                            ref var upperLeft = ref colors[i - height - 1];
+                            ref var left = ref colors[i - height];
+                            ref var lowerLeft = ref colors[i - height + 1];
+                            ref var upper = ref colors[i - 1];
+                            ref var middle = ref colors[i];
+                            ref var lower = ref colors[i + 1];
+                            ref var upperRight = ref colors[i + height - 1];
+                            ref var right = ref colors[i + height];
+                            ref var lowerRight = ref colors[i + height + 1];
+
+                            // Faster to do it separately for each component
+                            light.X =
+                                (
+                                    (upperLeft.X + (2f * left.X) + lowerLeft.X)
+                                    + (2f * (upper.X + (2f * middle.X) + lower.X))
+                                    + (upperRight.X + (2f * right.X) + lowerRight.X)
+                                ) * (1f / 16f);
+
+                            light.Y =
+                                (
+                                    (upperLeft.Y + (2f * left.Y) + lowerLeft.Y)
+                                    + (2f * (upper.Y + (2f * middle.Y) + lower.Y))
+                                    + (upperRight.Y + (2f * right.Y) + lowerRight.Y)
+                                ) * (1f / 16f);
+
+                            light.Z =
+                                (
+                                    (upperLeft.Z + (2f * left.Z) + lowerLeft.Z)
+                                    + (2f * (upper.Z + (2f * middle.Z) + lower.Z))
+                                    + (upperRight.Z + (2f * right.Z) + lowerRight.Z)
+                                ) * (1f / 16f);
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            Interlocked.Exchange(ref caught, 1);
+                            break;
+                        }
+                    }
+                }
+            );
+        }
+
+        caughtException = caught;
     }
 
     private void GetColorsPosition(bool cameraMode)
