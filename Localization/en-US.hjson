@@ -94,7 +94,6 @@ Mods: {
 						Controls how much light is lost exiting solid blocks
 						Higher values correspond to darker shadows
 						A value of 100% blocks all light from exiting solid blocks
-						When global illumination is enabled, this setting is ignored
 						'''
 				}
 

@@ -248,9 +248,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             MaxDecayMult
         );
 
-        _lightLossExitingSolid = LightingConfig.Instance.SimulateGlobalIllumination
-            ? 0f
-            : PreferencesConfig.Instance.FancyLightingEngineExitMultiplier();
+        _lightLossExitingSolid =
+            PreferencesConfig.Instance.FancyLightingEngineExitMultiplier();
+        if (LightingConfig.Instance.SimulateGlobalIllumination)
+        {
+            _lightLossExitingSolid *= _lightLossExitingSolid;
+        }
 
         if (LightingConfig.Instance.DoGammaCorrection())
         {
