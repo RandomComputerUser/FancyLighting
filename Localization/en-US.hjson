@@ -169,8 +169,7 @@ Mods: {
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
 						- Improves simulated normal maps
-						- Uses gamma-correct lighting when overbright rendering is enabled
-						- Increases background brightness when overbright rendering is enabled
+						- Increases background brightness when overbright lighting is enabled
 						'''
 				}
 
@@ -228,7 +227,7 @@ Mods: {
 						Controls how the light map is rendered
 						Affects the smoothness of lighting
 						Bicubic upscaling is smoother than bilinear upscaling
-						Overbright rendering increases the maximum brightness of light beyond 100%
+						Overbright lighting increases the maximum brightness of light beyond 100%
 						[c/FFFF00:When overbright is enabled, do not set waves quality to off except in camera mode]
 						'''
 				}
