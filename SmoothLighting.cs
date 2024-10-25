@@ -321,11 +321,11 @@ internal sealed class SmoothLighting
     {
         LightingConfig.Instance.UseSmoothLighting = false;
         Main.NewText(
-            "[Fancy Lighting] Caught an IndexOutOfRangeException while trying to run smooth lighting",
+            "[Fancy Lighting] Caught an IndexOutOfRangeException while trying to run smooth lighting.",
             Color.Orange
         );
         Main.NewText(
-            "[Fancy Lighting] Smooth lighting has been automatically disabled",
+            "[Fancy Lighting] Smooth lighting has been automatically disabled.",
             Color.Orange
         );
     }

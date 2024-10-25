@@ -13,6 +13,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Renamed some settings and presets
 - Tweaked some preset settings
 - Added a new Extreme preset
+- Added warnings when the correct video settings aren't being used
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
 - Improved global illumination and enabled it in the Ultra and Extreme presets

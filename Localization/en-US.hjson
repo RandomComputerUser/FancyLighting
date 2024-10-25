@@ -19,7 +19,6 @@ Mods: {
 						'''
 						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
 						Enable if dark areas are too bright or washed out
-						[c/FFFF00:Does not work if waves quality is set to off]
 						'''
 				}
 
@@ -156,7 +155,6 @@ Mods: {
 						'''
 						A preset for the quality settings may be chosen
 						[c/FFFF00:The extreme preset requires a relatively fast GPU to run smoothly]
-						[c/FFFF00:When set to high or above, do not set waves quality to off except in camera mode]
 						'''
 				}
 
@@ -168,6 +166,7 @@ Mods: {
 						When enabled, some visual effects are improved:
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
+						- Uses gamma-correct lighting when overbright lighting is enabled
 						- Improves simulated normal maps
 						- Increases background brightness when overbright lighting is enabled
 						'''
@@ -228,7 +227,6 @@ Mods: {
 						Affects the smoothness of lighting
 						Bicubic upscaling is smoother than bilinear upscaling
 						Overbright lighting increases the maximum brightness of light beyond 100%
-						[c/FFFF00:When overbright is enabled, do not set waves quality to off except in camera mode]
 						'''
 				}
 

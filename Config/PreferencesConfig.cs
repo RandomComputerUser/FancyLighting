@@ -12,8 +12,6 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal bool UseNormalMaps() => NormalMapsStrength != 0;
-
     internal float NormalMapsMultiplier() => NormalMapsStrength / 100f;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;

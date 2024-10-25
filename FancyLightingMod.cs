@@ -324,6 +324,8 @@ public sealed class FancyLightingMod : Mod
         {
             SetFancyLightingEngineInstance();
         }
+
+        SettingsWarnings.DoWarnings();
     }
 
     private void AddHooks()
