@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
@@ -22,7 +21,7 @@ public sealed class PreferencesConfig : ModConfig
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
 
     internal float FancyLightingEngineExitMultiplier() =>
-        1f - FancyLightingEngineLightLoss / 100f;
+        1f - (FancyLightingEngineLightLoss / 100f);
 
     internal float FancyLightingEngineAbsorptionExponent() =>
         FancyLightingEngineLightAbsorption / 100f;
@@ -53,6 +52,7 @@ public sealed class PreferencesConfig : ModConfig
                     : value;
         }
     }
+
     private int _threadCount;
 
     // Smooth Lighting, Normal Maps, Overbright

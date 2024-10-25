@@ -39,7 +39,7 @@ public sealed class LightingConfig : ModConfig
     public override void OnChanged() =>
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
 
-    internal void CopyFrom(PresetOptions options)
+    private void CopyFrom(PresetOptions options)
     {
         _useHiDefFeatures = options.UseHiDefFeatures;
 
@@ -107,6 +107,7 @@ public sealed class LightingConfig : ModConfig
             }
         }
     }
+
     private Preset _preset;
 
     [DefaultValue(DefaultOptions.UseHiDefFeatures)]
@@ -119,6 +120,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useHiDefFeatures;
 
     // Smooth Lighting, Normal Maps, Overbright
@@ -133,6 +135,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useSmoothLighting;
 
     [DefaultValue(DefaultOptions.UseLightMapBlurring)]
@@ -145,6 +148,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useLightMapBlurring;
 
     [DefaultValue(DefaultOptions.UseEnhancedBlurring)]
@@ -157,6 +161,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useEnhancedBlurring;
 
     [DefaultValue(DefaultOptions.UseLightMapToneMapping)]
@@ -169,6 +174,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useLightMapToneMapping;
 
     [DefaultValue(DefaultOptions.SimulateNormalMaps)]
@@ -181,6 +187,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _simulateNormalMaps;
 
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
@@ -194,6 +201,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private RenderMode _lightMapRenderMode;
 
     [DefaultValue(DefaultOptions.OverbrightWaterfalls)]
@@ -206,6 +214,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightWaterfalls;
 
     [DefaultValue(DefaultOptions.OverbrightNPCsAndPlayer)]
@@ -218,6 +227,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightNPCsAndPlayer;
 
     [DefaultValue(DefaultOptions.OverbrightProjectiles)]
@@ -230,6 +240,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightProjectiles;
 
     [DefaultValue(DefaultOptions.OverbrightDustAndGore)]
@@ -242,6 +253,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightDustAndGore;
 
     [DefaultValue(DefaultOptions.OverbrightItems)]
@@ -254,6 +266,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightItems;
 
     [DefaultValue(DefaultOptions.OverbrightRain)]
@@ -266,6 +279,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _overbrightRain;
 
     // Ambient Occlusion
@@ -280,6 +294,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useAmbientOcclusion;
 
     [DefaultValue(DefaultOptions.DoNonSolidAmbientOcclusion)]
@@ -292,6 +307,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _doNonSolidAmbientOcclusion;
 
     [DefaultValue(DefaultOptions.DoTileEntityAmbientOcclusion)]
@@ -304,6 +320,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _doTileEntityAmbientOcclusion;
 
     // Fancy Lighting Engine
@@ -318,6 +335,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useFancyLightingEngine;
 
     [DefaultValue(DefaultOptions.FancyLightingEngineUseTemporal)]
@@ -330,6 +348,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _fancyLightingEngineUseTemporal;
 
     [DefaultValue(DefaultOptions.FancyLightingEngineMode)]
@@ -343,6 +362,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private LightingEngineMode _fancyLightingEngineMode;
 
     [DefaultValue(DefaultOptions.SimulateGlobalIllumination)]
@@ -355,5 +375,6 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _simulateGlobalIllumination;
 }

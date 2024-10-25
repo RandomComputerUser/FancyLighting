@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Config;
 
-public enum SkyColorPreset : int
+public enum SkyColorPreset
 {
     Profile1 = 0,
     Profile2 = 1,

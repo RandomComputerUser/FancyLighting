@@ -21,14 +21,16 @@ public class SkyColorProfile : ISimpleColorProfile
     {
         if (index < 0)
         {
-            (var hour, var color) = _colors[index + _colors.Count];
+            var (hour, color) = _colors[index + _colors.Count];
             return (hour - 24.0, color);
         }
+
         if (index >= _colors.Count)
         {
-            (var hour, var color) = _colors[index - _colors.Count];
+            var (hour, color) = _colors[index - _colors.Count];
             return (hour + 24.0, color);
         }
+
         return _colors[index];
     }
 
@@ -96,10 +98,10 @@ public class SkyColorProfile : ISimpleColorProfile
                 continue;
             }
 
-            (var hour1, var color1) = HourColorAtIndex(i - 2);
-            (var hour2, var color2) = HourColorAtIndex(i - 1);
-            (var hour3, var color3) = HourColorAtIndex(i);
-            (var hour4, var color4) = HourColorAtIndex(i + 1);
+            var (hour1, color1) = HourColorAtIndex(i - 2);
+            var (hour2, color2) = HourColorAtIndex(i - 1);
+            var (hour3, color3) = HourColorAtIndex(i);
+            var (hour4, color4) = HourColorAtIndex(i + 1);
 
             switch (_interpolationMode)
             {
@@ -107,7 +109,7 @@ public class SkyColorProfile : ISimpleColorProfile
                     // Linear interpolation
 
                     var t = (float)((hour - hour2) / (hour3 - hour2));
-                    return (1 - t) * color2 + t * color3;
+                    return ((1 - t) * color2) + (t * color3);
                 case InterpolationMode.Cubic:
                 default:
                     // Cubic Hermite spline interpolation
@@ -136,8 +138,8 @@ public class SkyColorProfile : ISimpleColorProfile
 
                     var y_diff = y2 - y1;
 
-                    var a = 2 * y_diff - x2 * (m1 + m2);
-                    var b = x2_2 * m2 + 2 * x2_2 * m1 - 3 * x2 * y_diff;
+                    var a = (2 * y_diff) - (x2 * (m1 + m2));
+                    var b = (x2_2 * m2) + (2 * x2_2 * m1) - (3 * x2 * y_diff);
                     var c = m1;
                     var d = y1;
 
@@ -146,7 +148,7 @@ public class SkyColorProfile : ISimpleColorProfile
                     b /= den;
 
                     var x = (float)(hour - hour2);
-                    return Vector3.Min(d + x * (c + x * (b + x * a)), Vector3.One);
+                    return Vector3.Min(d + (x * (c + (x * (b + (x * a))))), Vector3.One);
             }
         }
 

@@ -10,33 +10,46 @@ internal record PresetOptions
     public bool UseSmoothLighting { get; init; } = DefaultOptions.UseSmoothLighting;
     public bool UseLightMapBlurring { get; init; } = DefaultOptions.UseLightMapBlurring;
     public bool UseEnhancedBlurring { get; init; } = DefaultOptions.UseEnhancedBlurring;
+
     public bool UseLightMapToneMapping { get; init; } =
         DefaultOptions.UseLightMapToneMapping;
+
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
+
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
+
     public bool OverbrightWaterfalls { get; init; } = DefaultOptions.OverbrightWaterfalls;
+
     public bool OverbrightNPCsAndPlayer { get; init; } =
         DefaultOptions.OverbrightNPCsAndPlayer;
+
     public bool OverbrightProjectiles { get; init; } =
         DefaultOptions.OverbrightProjectiles;
+
     public bool OverbrightDustAndGore { get; init; } =
         DefaultOptions.OverbrightDustAndGore;
+
     public bool OverbrightItems { get; init; } = DefaultOptions.OverbrightItems;
     public bool OverbrightRain { get; init; } = DefaultOptions.OverbrightRain;
 
     public bool UseAmbientOcclusion { get; init; } = DefaultOptions.UseAmbientOcclusion;
+
     public bool DoNonSolidAmbientOcclusion { get; init; } =
         DefaultOptions.DoNonSolidAmbientOcclusion;
+
     public bool DoTileEntityAmbientOcclusion { get; init; } =
         DefaultOptions.DoTileEntityAmbientOcclusion;
 
     public bool UseFancyLightingEngine { get; init; } =
         DefaultOptions.UseFancyLightingEngine;
+
     public bool FancyLightingEngineUseTemporal { get; init; } =
         DefaultOptions.FancyLightingEngineUseTemporal;
+
     public LightingEngineMode FancyLightingEngineMode { get; init; } =
         DefaultOptions.FancyLightingEngineMode;
+
     public bool SimulateGlobalIllumination { get; init; } =
         DefaultOptions.SimulateGlobalIllumination;
 
@@ -69,114 +82,98 @@ internal record PresetOptions
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
     }
 
-    public static PresetOptions VanillaPresetOptions =
+    public static readonly PresetOptions VanillaPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
-
             UseSmoothLighting = false,
             UseEnhancedBlurring = false,
             UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bilinear,
-
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
-
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.One,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions MinimalPresetOptions =
+    public static readonly PresetOptions MinimalPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
-
             UseSmoothLighting = true,
             UseEnhancedBlurring = false,
             UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bilinear,
-
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
-
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.One,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions LowPresetOptions = new();
+    public static readonly PresetOptions LowPresetOptions = new();
 
-    public static PresetOptions MediumPresetOptions =
+    public static readonly PresetOptions MediumPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
-
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bicubic,
-
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
-
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Two,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions HighPresetOptions =
+    public static readonly PresetOptions HighPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
-
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
-
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
-
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Two,
             SimulateGlobalIllumination = true,
         };
 
-    public static PresetOptions UltraPresetOptions =
+    public static readonly PresetOptions UltraPresetOptions =
         new()
         {
             UseHiDefFeatures = true,
-
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             OverbrightWaterfalls = true,
-
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
-
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
             SimulateGlobalIllumination = true,
         };
 
-    public static PresetOptions ExtremePresetOptions =
+    public static readonly PresetOptions ExtremePresetOptions =
         new()
         {
             UseHiDefFeatures = true,
-
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
@@ -188,17 +185,15 @@ internal record PresetOptions
             OverbrightDustAndGore = true,
             OverbrightRain = true,
             OverbrightItems = true,
-
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
-
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
             SimulateGlobalIllumination = true,
         };
 
-    public static Dictionary<PresetOptions, Preset> PresetLookup =
+    public static readonly Dictionary<PresetOptions, Preset> PresetLookup =
         new()
         {
             [VanillaPresetOptions] = Preset.VanillaPreset,
@@ -210,6 +205,6 @@ internal record PresetOptions
             [ExtremePresetOptions] = Preset.ExtremePreset,
         };
 
-    public static Dictionary<Preset, PresetOptions> PresetOptionsLookup =
+    public static readonly Dictionary<Preset, PresetOptions> PresetOptionsLookup =
         PresetLookup.ToDictionary(entry => entry.Value, entry => entry.Key);
 }

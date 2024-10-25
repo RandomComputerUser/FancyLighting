@@ -13,6 +13,7 @@ internal static class MathUtil
         {
             return y;
         }
+
         if (y == 0.0)
         {
             return x;
@@ -23,6 +24,6 @@ internal static class MathUtil
 
         var ratio = small / big;
 
-        return big * Math.Sqrt(1.0 + ratio * ratio);
+        return big * Math.Sqrt(1.0 + (ratio * ratio));
     }
 }

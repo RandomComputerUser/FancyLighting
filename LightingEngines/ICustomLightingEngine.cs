@@ -9,7 +9,7 @@ public interface ICustomLightingEngine
 
     public void SetLightMapArea(Rectangle value);
 
-    public abstract void SpreadLight(
+    public void SpreadLight(
         LightMap lightMap,
         Vector3[] colors,
         LightMaskMode[] lightMasks,

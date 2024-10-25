@@ -7,7 +7,9 @@ using FancyLighting.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using ReLogic.Content;
 using Terraria;
+using Terraria.GameContent.Drawing;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -31,7 +33,7 @@ internal sealed class SmoothLighting
     private RenderTarget2D _drawTarget1;
     private RenderTarget2D _drawTarget2;
 
-    internal Vector3[] _lights;
+    private Vector3[] _lights;
     private byte[] _hasLight;
     private Color[] _finalLights;
     private Rgba64[] _finalLightsHiDef;
@@ -82,7 +84,6 @@ internal sealed class SmoothLighting
     private Shader _overbrightMaxShader;
     private Shader _lightOnlyShader;
     private Shader _brightenBackgroundShader;
-    private Shader _gammaToSrgbShader;
 
     public SmoothLighting(FancyLightingMod mod)
     {
@@ -102,7 +103,7 @@ internal sealed class SmoothLighting
 
         _glowingTiles = new bool[ushort.MaxValue + 1];
         foreach (
-            var id in new ushort[]
+            var id in new[]
             {
                 TileID.Crystals, // Crystal Shards and Gelatin Crystal
                 TileID.AshGrass,
@@ -182,6 +183,13 @@ internal sealed class SmoothLighting
         _isDangersenseActive = false;
         _isSpelunkerActive = false;
         _isBiomeSightActive = false;
+
+        _ditherNoise = ModContent
+            .Request<Texture2D>(
+                "FancyLighting/Effects/DitherNoise",
+                AssetRequestMode.ImmediateLoad
+            )
+            .Value;
 
         _bicubicDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/Upscaling",
@@ -264,17 +272,6 @@ internal sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "BrightenBackground"
         );
-        _gammaToSrgbShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Srgb",
-            "GammaToSrgb"
-        );
-
-        _ditherNoise = ModContent
-            .Request<Texture2D>(
-                "FancyLighting/Effects/DitherNoise",
-                ReLogic.Content.AssetRequestMode.ImmediateLoad
-            )
-            .Value;
     }
 
     public void Unload()
@@ -308,7 +305,6 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenBackgroundShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
     }
 
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
@@ -339,12 +335,14 @@ internal sealed class SmoothLighting
             new Vector3(
                 (float)(
                     0.4
-                    - 0.4
+                    - (
+                        0.4
                         * Math.Cos(
                             (int)(0.08 * Main.timeForVisualEffects / 6.283) % 3 == 1
                                 ? 0.08 * Main.timeForVisualEffects
                                 : 0.0
                         )
+                    )
                 )
             )
         );
@@ -362,7 +360,7 @@ internal sealed class SmoothLighting
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool HasShimmer(Tile tile) =>
-        tile.LiquidAmount > 0 && tile.LiquidType is LiquidID.Shimmer;
+        tile is { LiquidAmount: > 0, LiquidType: LiquidID.Shimmer };
 
     private static bool ShouldTileShine(ushort type, short frameX)
     {
@@ -372,7 +370,7 @@ internal sealed class SmoothLighting
 
         // This code is adapted from vanilla
 
-        if (Main.shimmerAlpha > 0f && Main.tileSolid[type] || type == TileID.Stalactite)
+        if ((Main.shimmerAlpha > 0f && Main.tileSolid[type]) || type == TileID.Stalactite)
         {
             return true;
         }
@@ -390,6 +388,7 @@ internal sealed class SmoothLighting
                 {
                     return frameX < 178;
                 }
+
                 return false;
 
             case TileID.Containers2:
@@ -398,6 +397,7 @@ internal sealed class SmoothLighting
                 {
                     return frameX < 178;
                 }
+
                 return false;
         }
 
@@ -467,12 +467,12 @@ internal sealed class SmoothLighting
                 break;
 
             case TileID.Crimtane:
-                brightness = 0.3f + Main.mouseTextColor * (1f / 300f);
+                brightness = 0.3f + (Main.mouseTextColor * (1f / 300f));
                 color.X *= 1.3f * brightness;
                 return;
 
             case TileID.Chlorophyte:
-                brightness = 0.3f + Main.mouseTextColor * (1f / 300f);
+                brightness = 0.3f + (Main.mouseTextColor * (1f / 300f));
                 color.Y *= 1.5f * brightness;
                 color.Z *= 1.1f * brightness;
                 break;
@@ -496,6 +496,7 @@ internal sealed class SmoothLighting
                     color.Y *= 1.6f;
                     color.Z *= 1.6f;
                 }
+
                 break;
         }
 
@@ -503,8 +504,8 @@ internal sealed class SmoothLighting
         if (shimmer > 0f)
         {
             var tmp = 1f - shimmer;
-            color.X *= tmp + 1.2f * shimmer;
-            color.Z *= tmp + 1.6f * shimmer;
+            color.X *= tmp + (1.2f * shimmer);
+            color.Z *= tmp + (1.6f * shimmer);
         }
     }
 
@@ -637,57 +638,57 @@ internal sealed class SmoothLighting
                                 light.X =
                                     (
                                         (
-                                            upperLeftMult * upperLeft.X
-                                            + leftMult * left.X
-                                            + lowerLeftMult * lowerLeft.X
+                                            (upperLeftMult * upperLeft.X)
+                                            + (leftMult * left.X)
+                                            + (lowerLeftMult * lowerLeft.X)
                                         )
                                         + (
-                                            upperMult * upper.X
-                                            + middleMult * middle.X
-                                            + lowerMult * lower.X
+                                            (upperMult * upper.X)
+                                            + (middleMult * middle.X)
+                                            + (lowerMult * lower.X)
                                         )
                                         + (
-                                            upperRightMult * upperRight.X
-                                            + rightMult * right.X
-                                            + lowerRightMult * lowerRight.X
+                                            (upperRightMult * upperRight.X)
+                                            + (rightMult * right.X)
+                                            + (lowerRightMult * lowerRight.X)
                                         )
                                     ) * mult;
 
                                 light.Y =
                                     (
                                         (
-                                            upperLeftMult * upperLeft.Y
-                                            + leftMult * left.Y
-                                            + lowerLeftMult * lowerLeft.Y
+                                            (upperLeftMult * upperLeft.Y)
+                                            + (leftMult * left.Y)
+                                            + (lowerLeftMult * lowerLeft.Y)
                                         )
                                         + (
-                                            upperMult * upper.Y
-                                            + middleMult * middle.Y
-                                            + lowerMult * lower.Y
+                                            (upperMult * upper.Y)
+                                            + (middleMult * middle.Y)
+                                            + (lowerMult * lower.Y)
                                         )
                                         + (
-                                            upperRightMult * upperRight.Y
-                                            + rightMult * right.Y
-                                            + lowerRightMult * lowerRight.Y
+                                            (upperRightMult * upperRight.Y)
+                                            + (rightMult * right.Y)
+                                            + (lowerRightMult * lowerRight.Y)
                                         )
                                     ) * mult;
 
                                 light.Z =
                                     (
                                         (
-                                            upperLeftMult * upperLeft.Z
-                                            + leftMult * left.Z
-                                            + lowerLeftMult * lowerLeft.Z
+                                            (upperLeftMult * upperLeft.Z)
+                                            + (leftMult * left.Z)
+                                            + (lowerLeftMult * lowerLeft.Z)
                                         )
                                         + (
-                                            upperMult * upper.Z
-                                            + middleMult * middle.Z
-                                            + lowerMult * lower.Z
+                                            (upperMult * upper.Z)
+                                            + (middleMult * middle.Z)
+                                            + (lowerMult * lower.Z)
                                         )
                                         + (
-                                            upperRightMult * upperRight.Z
-                                            + rightMult * right.Z
-                                            + lowerRightMult * lowerRight.Z
+                                            (upperRightMult * upperRight.Z)
+                                            + (rightMult * right.Z)
+                                            + (lowerRightMult * lowerRight.Z)
                                         )
                                     ) * mult;
                             }
@@ -733,23 +734,23 @@ internal sealed class SmoothLighting
                                 // Faster to do it separately for each component
                                 light.X =
                                     (
-                                        (upperLeft.X + 2f * left.X + lowerLeft.X)
-                                        + 2f * (upper.X + 2f * middle.X + lower.X)
-                                        + (upperRight.X + 2f * right.X + lowerRight.X)
+                                        (upperLeft.X + (2f * left.X) + lowerLeft.X)
+                                        + (2f * (upper.X + (2f * middle.X) + lower.X))
+                                        + (upperRight.X + (2f * right.X) + lowerRight.X)
                                     ) * (1f / 16f);
 
                                 light.Y =
                                     (
-                                        (upperLeft.Y + 2f * left.Y + lowerLeft.Y)
-                                        + 2f * (upper.Y + 2f * middle.Y + lower.Y)
-                                        + (upperRight.Y + 2f * right.Y + lowerRight.Y)
+                                        (upperLeft.Y + (2f * left.Y) + lowerLeft.Y)
+                                        + (2f * (upper.Y + (2f * middle.Y) + lower.Y))
+                                        + (upperRight.Y + (2f * right.Y) + lowerRight.Y)
                                     ) * (1f / 16f);
 
                                 light.Z =
                                     (
-                                        (upperLeft.Z + 2f * left.Z + lowerLeft.Z)
-                                        + 2f * (upper.Z + 2f * middle.Z + lower.Z)
-                                        + (upperRight.Z + 2f * right.Z + lowerRight.Z)
+                                        (upperLeft.Z + (2f * left.Z) + lowerLeft.Z)
+                                        + (2f * (upper.Z + (2f * middle.Z) + lower.Z))
+                                        + (upperRight.Z + (2f * right.Z) + lowerRight.Z)
                                     ) * (1f / 16f);
                             }
                             catch (IndexOutOfRangeException)
@@ -920,9 +921,11 @@ internal sealed class SmoothLighting
             }
         }
 
-        var lightEngine = (LightingEngine)_modInstance.field_activeEngine.GetValue(null);
+        var lightEngine = (LightingEngine)_modInstance._field_activeEngine.GetValue(null);
         var lightMapTileArea = (Rectangle)
-            _modInstance.field_workingProcessedArea.GetValue(lightEngine);
+            _modInstance
+                ._field_workingProcessedArea.GetValue(lightEngine)
+                .AssertNotNull();
 
         var low = 0.49f / 255f;
         if (doGammaCorrection)
@@ -965,15 +968,15 @@ internal sealed class SmoothLighting
                                 || tile.IsWallFullbright
                                 || HasShimmer(tile) // Shimmer
                                 || _glowingTiles[tile.TileType] // Glowing Tiles
-                                || _isDangersenseActive // Dangersense Potion
-                                    && Terraria.GameContent.Drawing.TileDrawing.IsTileDangerous(
-                                        x,
-                                        y,
-                                        Main.LocalPlayer
-                                    )
-                                || _isSpelunkerActive && Main.IsTileSpelunkable(x, y) // Spelunker Potion
-                                || _isBiomeSightActive
-                                    && Main.IsTileBiomeSightable(x, y, ref dummyColor) // Biome Sight Potion
+                                || (
+                                    _isDangersenseActive // Dangersense Potion
+                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
+                                )
+                                || (_isSpelunkerActive && Main.IsTileSpelunkable(x, y)) // Spelunker Potion
+                                || (
+                                    _isBiomeSightActive
+                                    && Main.IsTileBiomeSightable(x, y, ref dummyColor)
+                                ) // Biome Sight Potion
                             )
                             {
                                 _hasLight[i++] = 2;
@@ -985,6 +988,7 @@ internal sealed class SmoothLighting
                         {
                             --_hasLight[i];
                         }
+
                         ++i;
                     }
                     catch (IndexOutOfRangeException)
@@ -1238,7 +1242,7 @@ internal sealed class SmoothLighting
                 },
                 (x1) =>
                 {
-                    var i = height * x1 + offset;
+                    var i = (height * x1) + offset;
                     var x = x1 + xmin;
                     for (var y = clampedYmin; y < clampedYmax; ++y)
                     {
@@ -1314,7 +1318,7 @@ internal sealed class SmoothLighting
                 },
                 (x1) =>
                 {
-                    var i = height * x1 + offset;
+                    var i = (height * x1) + offset;
                     var x = x1 + xmin;
                     for (var y = clampedYmin; y < clampedYmax; ++y)
                     {
@@ -1348,11 +1352,7 @@ internal sealed class SmoothLighting
                             // Dangersense Potion
                             else if (
                                 _isDangersenseActive
-                                && Terraria.GameContent.Drawing.TileDrawing.IsTileDangerous(
-                                    x,
-                                    y,
-                                    Main.LocalPlayer
-                                )
+                                && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
                             )
                             {
                                 lightColor.X = Math.Max(lightColor.X, 255f / 255f);
@@ -1457,7 +1457,7 @@ internal sealed class SmoothLighting
                 },
                 (x1) =>
                 {
-                    var i = height * x1 + offset;
+                    var i = (height * x1) + offset;
                     var x = x1 + xmin;
                     for (var y = clampedYmin; y < clampedYmax; ++y)
                     {
@@ -1527,7 +1527,7 @@ internal sealed class SmoothLighting
                 },
                 (x1) =>
                 {
-                    var i = height * x1 + offset;
+                    var i = (height * x1) + offset;
                     var x = x1 + xmin;
                     for (var y = clampedYmin; y < clampedYmax; ++y)
                     {
@@ -1561,11 +1561,7 @@ internal sealed class SmoothLighting
                             // Dangersense Potion
                             else if (
                                 _isDangersenseActive
-                                && Terraria.GameContent.Drawing.TileDrawing.IsTileDangerous(
-                                    x,
-                                    y,
-                                    Main.LocalPlayer
-                                )
+                                && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
                             )
                             {
                                 lightColor.X = Math.Max(lightColor.X, 255f / 255f);
@@ -1740,7 +1736,7 @@ internal sealed class SmoothLighting
         var lightMapTexture = background ? _colorsBackground : _colors;
 
         if (
-            LightingConfig.Instance.SimulateNormalMaps && !disableNormalMaps
+            (LightingConfig.Instance.SimulateNormalMaps && !disableNormalMaps)
             || LightingConfig.Instance.DrawOverbright()
         )
         {
@@ -1919,7 +1915,7 @@ internal sealed class SmoothLighting
                     );
                     _smoothLightingBackHiRes = !hiDef || doOverbright;
                     // If hiDef is true and doOverbright is false, whether normal maps are enabled
-                    // affects the result of the hi res light map
+                    // affects the result of the hi-res light map
                 }
 
                 lightMapTexture = _colorsBackgroundHiRes;
@@ -1945,6 +1941,7 @@ internal sealed class SmoothLighting
         {
             Main.graphics.GraphicsDevice.Clear(Color.White);
         }
+
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             doOneStepOnly ? FancyLightingMod.MultiplyBlend : BlendState.Opaque,
@@ -1963,8 +1960,8 @@ internal sealed class SmoothLighting
         if (flippedGravity)
         {
             angle *= -1f;
-            var top = 16f * _lightMapTileArea.Y - positionOffset.Y;
-            var bottom = top + 16f * _lightMapTileArea.Height;
+            var top = (16f * _lightMapTileArea.Y) - positionOffset.Y;
+            var bottom = top + (16f * _lightMapTileArea.Height);
             var targetMiddle = worldTarget.Height / 2f;
             lightMapPosition.Y -= bottom - targetMiddle - (targetMiddle - top);
             lightMapPosition += _lightMapPositionFlipped - _lightMapPosition;
@@ -1978,10 +1975,11 @@ internal sealed class SmoothLighting
             lightMapRectangle.Width *= 16;
             lightMapRectangle.Height *= 16;
         }
+
         var lightMapScale = doBicubicUpscaling ? 1f : 16f;
         Main.spriteBatch.Draw(
             lightMapTexture,
-            zoom * (lightMapPosition - target1.Size() / 2f) + target1.Size() / 2f,
+            (zoom * (lightMapPosition - (target1.Size() / 2f))) + (target1.Size() / 2f),
             lightMapRectangle,
             Color.White,
             angle,
@@ -2000,6 +1998,7 @@ internal sealed class SmoothLighting
             {
                 Main.graphics.GraphicsDevice.Clear(Color.White);
             }
+
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
                 doOverbright ? BlendState.Opaque : FancyLightingMod.MultiplyBlend,
@@ -2050,6 +2049,7 @@ internal sealed class SmoothLighting
             {
                 hiDefNormalMapStrength *= 2f;
             }
+
             if (fineNormalMaps)
             {
                 hiDefNormalMapStrength *= 1.4f;
@@ -2092,6 +2092,7 @@ internal sealed class SmoothLighting
                 Main.graphics.GraphicsDevice.Textures[5] = _ditherNoise;
                 Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointWrap;
             }
+
             if (doAmbientOcclusion)
             {
                 shader.SetParameter(
@@ -2104,6 +2105,7 @@ internal sealed class SmoothLighting
                 Main.graphics.GraphicsDevice.Textures[6] = ambientOcclusionTarget;
                 Main.graphics.GraphicsDevice.SamplerStates[6] = SamplerState.PointClamp;
             }
+
             shader.Apply();
 
             Main.spriteBatch.Draw(target2, Vector2.Zero, Color.White);
@@ -2119,42 +2121,6 @@ internal sealed class SmoothLighting
             Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
         }
 
-        Main.spriteBatch.End();
-    }
-
-    internal void GammaToSrgb(RenderTarget2D target, RenderTarget2D tmpTarget)
-    {
-        Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        _gammaToSrgbShader
-            .SetParameter(
-                "DitherCoordMult",
-                new Vector2(
-                    (float)target.Width / _ditherNoise.Width,
-                    (float)target.Height / _ditherNoise.Height
-                )
-            )
-            .Apply();
-        Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
-        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
     }
 }

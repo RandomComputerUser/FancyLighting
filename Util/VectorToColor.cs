@@ -12,19 +12,19 @@ public static class VectorToColor
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assign(ref Color color, float brightness, Vector3 rgb)
     {
-        color.R = (byte)(255f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f) + 0.5f);
-        color.G = (byte)(255f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f) + 0.5f);
-        color.B = (byte)(255f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f) + 0.5f);
+        color.R = (byte)((255f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
+        color.G = (byte)((255f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
+        color.B = (byte)((255f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
         color.A = byte.MaxValue;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assign(ref Rgba64 color, float brightness, Vector3 rgb)
     {
-        var R = (ulong)(65535f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f) + 0.5f);
-        var G = (ulong)(65535f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f) + 0.5f);
-        var B = (ulong)(65535f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f) + 0.5f);
+        var r = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
+        var g = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
+        var b = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
 
-        color.PackedValue = R | G << 16 | B << 32 | (ulong)ushort.MaxValue << 48;
+        color.PackedValue = r | (g << 16) | (b << 32) | ((ulong)ushort.MaxValue << 48);
     }
 }

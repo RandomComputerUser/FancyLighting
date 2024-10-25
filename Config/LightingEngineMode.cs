@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Config;
 
-public enum LightingEngineMode : int
+public enum LightingEngineMode
 {
     One = 1,
     Two = 2,

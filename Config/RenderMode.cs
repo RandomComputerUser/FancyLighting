@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Config;
 
-public enum RenderMode : int
+public enum RenderMode
 {
     Bilinear = 0,
     Bicubic = 1,

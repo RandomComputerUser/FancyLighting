@@ -13,8 +13,8 @@ public class SkyColors1 : ISimpleColorProfile
         _profile = new(InterpolationMode.Cubic);
 
         var noonTime = 12.0;
-        var sunriseTime = noonTime - (7 + 1.0 / 3.0);
-        var sunsetTime = noonTime + (7 + 1.0 / 3.0);
+        var sunriseTime = noonTime - (7 + (1.0 / 3.0));
+        var sunsetTime = noonTime + (7 + (1.0 / 3.0));
 
         var midnightColor = new Vector3(0.018f, 0.027f, 0.054f);
         var nightColor = new Vector3(0.020f, 0.030f, 0.060f);
@@ -38,43 +38,43 @@ public class SkyColors1 : ISimpleColorProfile
         (double hour, Vector3 color)[] colors =
         [
             (0.00, midnightColor),
-            (sunriseTime - 6 / 3.0, nightColor),
-            (sunriseTime - 5 / 3.0, twilightColor1),
-            (sunriseTime - 4 / 3.0, twilightColor2),
-            (sunriseTime - 3 / 3.0, twilightColor3),
-            (sunriseTime - 2 / 3.0, twilightColor4),
-            (sunriseTime - 1 / 3.0, twilightColor5),
+            (sunriseTime - (6 / 3.0), nightColor),
+            (sunriseTime - (5 / 3.0), twilightColor1),
+            (sunriseTime - (4 / 3.0), twilightColor2),
+            (sunriseTime - (3 / 3.0), twilightColor3),
+            (sunriseTime - (2 / 3.0), twilightColor4),
+            (sunriseTime - (1 / 3.0), twilightColor5),
             (sunriseTime, sunrisesetColor),
-            (sunriseTime + 1 / 3.0, goldenHourColor1),
-            (sunriseTime + 2 / 3.0, goldenHourColor2),
-            (sunriseTime + 3 / 3.0, goldenHourColor3),
-            (sunriseTime + 4 / 3.0, goldenHourColor4),
-            (sunriseTime + 5 / 3.0, goldenHourColor5),
-            (sunriseTime + 6 / 3.0, dayColor1),
-            (sunriseTime + 7 / 3.0, dayColor2),
-            (sunriseTime + 8 / 3.0, dayColor3),
-            (sunriseTime + 9 / 3.0, dayColor4),
+            (sunriseTime + (1 / 3.0), goldenHourColor1),
+            (sunriseTime + (2 / 3.0), goldenHourColor2),
+            (sunriseTime + (3 / 3.0), goldenHourColor3),
+            (sunriseTime + (4 / 3.0), goldenHourColor4),
+            (sunriseTime + (5 / 3.0), goldenHourColor5),
+            (sunriseTime + (6 / 3.0), dayColor1),
+            (sunriseTime + (7 / 3.0), dayColor2),
+            (sunriseTime + (8 / 3.0), dayColor3),
+            (sunriseTime + (9 / 3.0), dayColor4),
             (noonTime, noonColor),
-            (sunsetTime - 9 / 3.0, dayColor4),
-            (sunsetTime - 8 / 3.0, dayColor3),
-            (sunsetTime - 7 / 3.0, dayColor2),
-            (sunsetTime - 6 / 3.0, dayColor1),
-            (sunsetTime - 5 / 3.0, goldenHourColor5),
-            (sunsetTime - 4 / 3.0, goldenHourColor4),
-            (sunsetTime - 3 / 3.0, goldenHourColor3),
-            (sunsetTime - 2 / 3.0, goldenHourColor2),
-            (sunsetTime - 1 / 3.0, goldenHourColor1),
+            (sunsetTime - (9 / 3.0), dayColor4),
+            (sunsetTime - (8 / 3.0), dayColor3),
+            (sunsetTime - (7 / 3.0), dayColor2),
+            (sunsetTime - (6 / 3.0), dayColor1),
+            (sunsetTime - (5 / 3.0), goldenHourColor5),
+            (sunsetTime - (4 / 3.0), goldenHourColor4),
+            (sunsetTime - (3 / 3.0), goldenHourColor3),
+            (sunsetTime - (2 / 3.0), goldenHourColor2),
+            (sunsetTime - (1 / 3.0), goldenHourColor1),
             (sunsetTime, sunrisesetColor),
-            (sunsetTime + 1 / 3.0, twilightColor5),
-            (sunsetTime + 2 / 3.0, twilightColor4),
-            (sunsetTime + 3 / 3.0, twilightColor3),
-            (sunsetTime + 4 / 3.0, twilightColor2),
-            (sunsetTime + 5 / 3.0, twilightColor1),
-            (sunsetTime + 6 / 3.0, nightColor),
+            (sunsetTime + (1 / 3.0), twilightColor5),
+            (sunsetTime + (2 / 3.0), twilightColor4),
+            (sunsetTime + (3 / 3.0), twilightColor3),
+            (sunsetTime + (4 / 3.0), twilightColor2),
+            (sunsetTime + (5 / 3.0), twilightColor1),
+            (sunsetTime + (6 / 3.0), nightColor),
             (24.00, midnightColor),
         ];
 
-        foreach ((var hour, var color) in colors)
+        foreach (var (hour, color) in colors)
         {
             _profile.AddColor(hour, color);
         }

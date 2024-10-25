@@ -5,6 +5,7 @@ using FancyLighting.Profiles.SkyColor;
 using FancyLighting.Util;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.GameContent;
 
 namespace FancyLighting;
 
@@ -20,7 +21,7 @@ public static class SkyColors
     private static bool _dontStarveWorldTmp;
     private static bool _modifyNightColor = false;
 
-    internal static void Initialize() =>
+    private static void Initialize() =>
         Profiles = new()
         {
             [SkyColorPreset.Profile1] = new SkyColors1(),
@@ -32,12 +33,12 @@ public static class SkyColors
     {
         Initialize();
 
-        Terraria.On_Main.SetBackColor += _Main_SetBackColor;
-        Terraria.GameContent.On_DontStarveSeed.ModifyNightColor += _Main_ModifyNightColor;
+        On_Main.SetBackColor += _Main_SetBackColor;
+        On_DontStarveSeed.ModifyNightColor += _Main_ModifyNightColor;
     }
 
     private static void _Main_SetBackColor(
-        Terraria.On_Main.orig_SetBackColor orig,
+        On_Main.orig_SetBackColor orig,
         Main.InfoToSetBackColor info,
         out Color sunColor,
         out Color moonColor
@@ -72,7 +73,7 @@ public static class SkyColors
     }
 
     private static void _Main_ModifyNightColor(
-        Terraria.GameContent.On_DontStarveSeed.orig_ModifyNightColor orig,
+        On_DontStarveSeed.orig_ModifyNightColor orig,
         ref Color backColor,
         ref Color moonColor
     )
@@ -96,7 +97,7 @@ public static class SkyColors
         }
     }
 
-    public static void SetBaseSkyColor(ref Color bgColor)
+    private static void SetBaseSkyColor(ref Color bgColor)
     {
         var hour = Main.dayTime
             ? 4.5 + (Main.time / 3600.0)

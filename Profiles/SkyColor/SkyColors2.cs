@@ -41,7 +41,7 @@ public class SkyColors2 : ISimpleColorProfile
             (24.0, midnightColor),
         ];
 
-        foreach ((var hour, var color) in colors)
+        foreach (var (hour, color) in colors)
         {
             _profile.AddColor(hour, color);
         }

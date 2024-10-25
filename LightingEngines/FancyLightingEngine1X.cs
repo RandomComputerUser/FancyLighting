@@ -45,7 +45,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             value = CalculateTileLightSpread(row, 0, 0.0, 0.0);
             distances[row] = new(
                 row + 1.0,
-                row + value.DistanceToRight / (double)DistanceTicks
+                row + (value.DistanceToRight / (double)DistanceTicks)
             );
         }
 
@@ -55,7 +55,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             ref var value = ref values[index];
             value = CalculateTileLightSpread(0, col, 0.0, 0.0);
             distances[0] = new(
-                col + value.DistanceToTop / (double)DistanceTicks,
+                col + (value.DistanceToTop / (double)DistanceTicks),
                 col + 1.0
             );
 
@@ -72,12 +72,12 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                 );
 
                 distances[row] = new(
-                    value.DistanceToTop / (double)DistanceTicks
-                        + value.TopFromLeft * distances[row].Right
-                        + value.TopFromBottom * distances[row - 1].Top,
-                    value.DistanceToRight / (double)DistanceTicks
-                        + value.RightFromLeft * distances[row].Right
-                        + value.RightFromBottom * distances[row - 1].Top
+                    (value.DistanceToTop / (double)DistanceTicks)
+                        + (value.TopFromLeft * distances[row].Right)
+                        + (value.TopFromBottom * distances[row - 1].Top),
+                    (value.DistanceToRight / (double)DistanceTicks)
+                        + (value.RightFromLeft * distances[row].Right)
+                        + (value.RightFromBottom * distances[row - 1].Top)
                 );
             }
         }
@@ -150,9 +150,9 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
         CalculateSubTileLightSpread(in x, in y, ref lightFrom, ref area, row, col);
 
         distanceToTop -=
-            lightFrom[0] * leftDistanceError + lightFrom[2] * bottomDistanceError;
+            (lightFrom[0] * leftDistanceError) + (lightFrom[2] * bottomDistanceError);
         distanceToRight -=
-            lightFrom[1] * leftDistanceError + lightFrom[3] * bottomDistanceError;
+            (lightFrom[1] * leftDistanceError) + (lightFrom[3] * bottomDistanceError);
 
         return new(
             DoubleToIndex(distanceToTop),
@@ -265,14 +265,17 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
         {
             SpreadLightLine(lightMap, color, index, upDistance, -1);
         }
+
         if (doDown)
         {
             SpreadLightLine(lightMap, color, index, downDistance, 1);
         }
+
         if (doLeft)
         {
             SpreadLightLine(lightMap, color, index, leftDistance, -height);
         }
+
         if (doRight)
         {
             SpreadLightLine(lightMap, color, index, rightDistance, height);
@@ -303,6 +306,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                     -height
                 );
             }
+
             if (doUpperRight)
             {
                 ProcessQuadrant(
@@ -317,6 +321,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                     height
                 );
             }
+
             if (doLowerLeft)
             {
                 ProcessQuadrant(
@@ -331,6 +336,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                     -height
                 );
             }
+
             if (doLowerRight)
             {
                 ProcessQuadrant(
@@ -400,6 +406,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                 {
                     value *= prevMask[DistanceTicks];
                 }
+
                 prevMask = mask;
 
                 workingLights[y] = value * mask[lightSpread[y].DistanceToRight];
@@ -408,7 +415,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
         for (var x = 1; x <= horizontalDistance; ++x)
         {
-            var i = index + horizontalChange * x;
+            var i = index + (horizontalChange * x);
             var j = (MaxLightRange + 1) * x;
 
             var mask = lightMask[i];
@@ -444,11 +451,13 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                     {
                         verticalLight *= lightLoss;
                     }
+
                     if (lightMask[i - horizontalChange] == solidDecay)
                     {
                         horizontalLight *= lightLoss;
                     }
                 }
+
                 prevMask = mask;
 
                 ref var spread = ref lightSpread[++j];
@@ -456,20 +465,20 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
                 SetLight(
                     ref lightMap[i],
                     (
-                        spread.LightFromBottom * verticalLight
-                        + spread.LightFromLeft * horizontalLight
+                        (spread.LightFromBottom * verticalLight)
+                        + (spread.LightFromLeft * horizontalLight)
                     ) * color
                 );
 
                 horizontalLightRef =
                     (
-                        spread.RightFromBottom * verticalLight
-                        + spread.RightFromLeft * horizontalLight
+                        (spread.RightFromBottom * verticalLight)
+                        + (spread.RightFromLeft * horizontalLight)
                     ) * mask[spread.DistanceToRight];
                 verticalLight =
                     (
-                        spread.TopFromLeft * horizontalLight
-                        + spread.TopFromBottom * verticalLight
+                        (spread.TopFromLeft * horizontalLight)
+                        + (spread.TopFromBottom * verticalLight)
                     ) * mask[spread.DistanceToTop];
             }
         }

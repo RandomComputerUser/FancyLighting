@@ -90,11 +90,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
             double t;
             var x2 = rightX;
-            var y2 = y1 + (x2 - x1) * slope;
+            var y2 = y1 + ((x2 - x1) * slope);
             if (y2 > topY)
             {
                 y2 = topY;
-                x2 = x1 + (y2 - y1) / slope;
+                x2 = x1 + ((y2 - y1) / slope);
                 t = tMult * (x2 - leftX);
             }
             else
@@ -102,7 +102,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 t = tMult * ((topY - y2) + 1.0);
             }
 
-            area[i] = (topY - y1) * (x2 - leftX) - 0.5 * (y2 - y1) * (x2 - x1);
+            area[i] = ((topY - y1) * (x2 - leftX)) - (0.5 * (y2 - y1) * (x2 - x1));
 
             for (var j = 0; j < numSections; ++j)
             {
@@ -111,6 +111,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     lightFrom[index++] = 0.0;
                     continue;
                 }
+
                 if (j >= t)
                 {
                     lightFrom[index++] = 0.0;
@@ -164,8 +165,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             {
                 _circles[radius][x] =
                     x <= diagonal
-                        ? (int)Math.Ceiling(Math.Sqrt(radius * radius - x * x))
-                        : (int)Math.Floor(Math.Sqrt(radius * radius - (x - 1) * (x - 1)));
+                        ? (int)Math.Ceiling(Math.Sqrt((radius * radius) - (x * x)))
+                        : (int)
+                            Math.Floor(
+                                Math.Sqrt((radius * radius) - ((x - 1) * (x - 1)))
+                            );
             }
         }
     }
@@ -216,27 +220,31 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             MaxDecayMult
         );
         var lightWaterDecayBaseline = Math.Min(
-            0.625f * lightMap.LightDecayThroughWater.Length() / Vector3.One.Length()
-                + 0.375f
+            (0.625f * lightMap.LightDecayThroughWater.Length() / Vector3.One.Length())
+                + (
+                    0.375f
                     * Math.Max(
                         lightMap.LightDecayThroughWater.X,
                         Math.Max(
                             lightMap.LightDecayThroughWater.Y,
                             lightMap.LightDecayThroughWater.Z
                         )
-                    ),
+                    )
+                ),
             MaxDecayMult
         );
         var lightHoneyDecayBaseline = Math.Min(
-            0.625f * lightMap.LightDecayThroughHoney.Length() / Vector3.One.Length()
-                + 0.375f
+            (0.625f * lightMap.LightDecayThroughHoney.Length() / Vector3.One.Length())
+                + (
+                    0.375f
                     * Math.Max(
                         lightMap.LightDecayThroughHoney.X,
                         Math.Max(
                             lightMap.LightDecayThroughHoney.Y,
                             lightMap.LightDecayThroughHoney.Z
                         )
-                    ),
+                    )
+                ),
             MaxDecayMult
         );
 
@@ -510,7 +518,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         Parallel.For(
             0,
-            (lightMapSize - 1) / ChunkSize + 1,
+            ((lightMapSize - 1) / ChunkSize) + 1,
             new ParallelOptions { MaxDegreeOfParallelism = taskCount },
             (i) =>
             {
@@ -648,7 +656,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 (i) =>
                 {
                     var endIndex = height * (i + 1);
-                    for (var j = height * i + 1; j < endIndex; ++j)
+                    for (var j = (height * i) + 1; j < endIndex; ++j)
                     {
                         var mask = lightMasks[j - 1];
                         if (mask == solidDecay && lightMasks[j] != solidDecay)
@@ -672,7 +680,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 (i) =>
                 {
                     var endIndex = height * i;
-                    for (var j = height * (i + 1) - 1; --j >= endIndex; )
+                    for (var j = (height * (i + 1)) - 1; --j >= endIndex; )
                     {
                         var mask = lightMasks[j + 1];
                         if (mask == solidDecay && lightMasks[j] != solidDecay)
@@ -695,7 +703,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 },
                 (i) =>
                 {
-                    var endIndex = i + width * height;
+                    var endIndex = i + (width * height);
                     for (var j = i + height; j < endIndex; j += height)
                     {
                         var mask = lightMasks[j - height];
@@ -720,7 +728,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 (i) =>
                 {
                     var endIndex = i;
-                    for (var j = i + width * (height - 1); (j -= height) >= endIndex; )
+                    for (var j = i + (width * (height - 1)); (j -= height) >= endIndex; )
                     {
                         var mask = lightMasks[j + height];
                         if (mask == solidDecay && lightMasks[j] != solidDecay)
@@ -747,7 +755,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     var startIndex = i < height ? i : height * (i - height + 1);
                     var endIndex = Math.Min(
                         width * height,
-                        startIndex + inc * (i < height ? height - i : height)
+                        startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j < endIndex; j += inc)
                     {
@@ -777,11 +785,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 {
                     var inc = -height - 1;
                     var startIndex =
-                        (width * height - 1)
+                        ((width * height) - 1)
                         - (i < height ? i : height * (i - height + 1));
                     var endIndex = Math.Max(
                         -1,
-                        startIndex + inc * (i < height ? height - i : height)
+                        startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j > endIndex; j += inc)
                     {
@@ -815,7 +823,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         + (i < height ? i : -height * (i - height + 1));
                     var endIndex = Math.Max(
                         -1,
-                        startIndex + inc * (i < height ? height - i : height)
+                        startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j > endIndex; j += inc)
                     {
@@ -848,7 +856,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         (height - 1) + (i < height ? -i : height * (i - height + 1));
                     var endIndex = Math.Min(
                         width * height,
-                        startIndex + inc * (i < height ? height - i : height)
+                        startIndex + (inc * (i < height ? height - i : height))
                     );
                     for (var j = startIndex + inc; j < endIndex; j += inc)
                     {
@@ -912,7 +920,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         out bool doRight
     )
     {
-        (var x, var y) = Math.DivRem(index, height);
+        var (x, y) = Math.DivRem(index, height);
 
         upDistance = y;
         downDistance = height - 1 - y;
@@ -973,7 +981,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         SetLight(ref lightMap[index], color);
 
         // Would multiply by (distance + 1), but we already incremented index once
-        var endIndex = index + distance * indexChange;
+        var endIndex = index + (distance * indexChange);
         var prevMask = lightMask[index];
         while (true)
         {
@@ -992,6 +1000,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             {
                 color *= prevMask[DistanceTicks];
             }
+
             prevMask = mask;
 
             SetLight(ref lightMap[index], color);
@@ -1025,14 +1034,18 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         var approximateWorkDone =
             1
-            + ((doUp ? 1 : 0) + (doDown ? 1 : 0) + (doLeft ? 1 : 0) + (doRight ? 1 : 0))
-                * baseWork
             + (
-                (doUpperLeft ? 1 : 0)
-                + (doUpperRight ? 1 : 0)
-                + (doLowerLeft ? 1 : 0)
-                + (doLowerRight ? 1 : 0)
-            ) * (baseWork * baseWork);
+                ((doUp ? 1 : 0) + (doDown ? 1 : 0) + (doLeft ? 1 : 0) + (doRight ? 1 : 0))
+                * baseWork
+            )
+            + (
+                (
+                    (doUpperLeft ? 1 : 0)
+                    + (doUpperRight ? 1 : 0)
+                    + (doLowerLeft ? 1 : 0)
+                    + (doLowerRight ? 1 : 0)
+                ) * (baseWork * baseWork)
+            );
 
         return approximateWorkDone;
     }
