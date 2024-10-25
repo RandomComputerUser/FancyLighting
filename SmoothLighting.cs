@@ -2136,8 +2136,8 @@ internal sealed class SmoothLighting
             .SetParameter(
                 "DitherCoordMult",
                 new Vector2(
-                    target.Width / _ditherNoise.Width,
-                    target.Height / _ditherNoise.Height
+                    (float)target.Width / _ditherNoise.Width,
+                    (float)target.Height / _ditherNoise.Height
                 )
             )
             .Apply();
