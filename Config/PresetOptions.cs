@@ -10,6 +10,8 @@ internal record PresetOptions
     public bool UseSmoothLighting { get; init; } = DefaultOptions.UseSmoothLighting;
     public bool UseLightMapBlurring { get; init; } = DefaultOptions.UseLightMapBlurring;
     public bool UseEnhancedBlurring { get; init; } = DefaultOptions.UseEnhancedBlurring;
+    public bool UseLightMapToneMapping { get; init; } =
+        DefaultOptions.UseLightMapToneMapping;
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
@@ -33,8 +35,6 @@ internal record PresetOptions
         DefaultOptions.UseFancyLightingEngine;
     public bool FancyLightingEngineUseTemporal { get; init; } =
         DefaultOptions.FancyLightingEngineUseTemporal;
-    public bool FancyLightingEngineMakeBrighter { get; init; } =
-        DefaultOptions.FancyLightingEngineMakeBrighter;
     public LightingEngineMode FancyLightingEngineMode { get; init; } =
         DefaultOptions.FancyLightingEngineMode;
     public bool SimulateGlobalIllumination { get; init; } =
@@ -49,6 +49,7 @@ internal record PresetOptions
         UseSmoothLighting = config.UseSmoothLighting;
         UseLightMapBlurring = config.UseLightMapBlurring;
         UseEnhancedBlurring = config.UseEnhancedBlurring;
+        UseLightMapToneMapping = config.UseLightMapToneMapping;
         SimulateNormalMaps = config.SimulateNormalMaps;
         LightMapRenderMode = config.LightMapRenderMode;
         OverbrightWaterfalls = config.OverbrightWaterfalls;
@@ -64,7 +65,6 @@ internal record PresetOptions
 
         UseFancyLightingEngine = config.UseFancyLightingEngine;
         FancyLightingEngineUseTemporal = config.FancyLightingEngineUseTemporal;
-        FancyLightingEngineMakeBrighter = config.FancyLightingEngineMakeBrighter;
         FancyLightingEngineMode = config.FancyLightingEngineMode;
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
     }
@@ -76,6 +76,7 @@ internal record PresetOptions
 
             UseSmoothLighting = false,
             UseEnhancedBlurring = false,
+            UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bilinear,
 
@@ -84,18 +85,18 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = false,
 
             UseFancyLightingEngine = false,
-            FancyLightingEngineMakeBrighter = false,
             FancyLightingEngineMode = LightingEngineMode.One,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions LowPresetOptions =
+    public static PresetOptions MinimalPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = false,
+            UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bilinear,
 
@@ -104,20 +105,20 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = false,
 
             UseFancyLightingEngine = false,
-            FancyLightingEngineMakeBrighter = false,
             FancyLightingEngineMode = LightingEngineMode.One,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions MediumPresetOptions = new();
+    public static PresetOptions LowPresetOptions = new();
 
-    public static PresetOptions HighPresetOptions =
+    public static PresetOptions MediumPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
+            UseLightMapToneMapping = true,
             SimulateNormalMaps = false,
             LightMapRenderMode = RenderMode.Bicubic,
 
@@ -126,18 +127,18 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = true,
 
             UseFancyLightingEngine = true,
-            FancyLightingEngineMakeBrighter = true,
-            FancyLightingEngineMode = LightingEngineMode.One,
+            FancyLightingEngineMode = LightingEngineMode.Two,
             SimulateGlobalIllumination = false,
         };
 
-    public static PresetOptions VeryHighPresetOptions =
+    public static PresetOptions HighPresetOptions =
         new()
         {
             UseHiDefFeatures = false,
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
+            UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
 
@@ -146,9 +147,8 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = true,
 
             UseFancyLightingEngine = true,
-            FancyLightingEngineMakeBrighter = true,
             FancyLightingEngineMode = LightingEngineMode.Two,
-            SimulateGlobalIllumination = false,
+            SimulateGlobalIllumination = true,
         };
 
     public static PresetOptions UltraPresetOptions =
@@ -158,6 +158,7 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
+            UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             OverbrightWaterfalls = true,
@@ -167,7 +168,6 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = true,
 
             UseFancyLightingEngine = true,
-            FancyLightingEngineMakeBrighter = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
             SimulateGlobalIllumination = true,
         };
@@ -179,6 +179,7 @@ internal record PresetOptions
 
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
+            UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             OverbrightWaterfalls = true,
@@ -193,7 +194,6 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = true,
 
             UseFancyLightingEngine = true,
-            FancyLightingEngineMakeBrighter = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
             SimulateGlobalIllumination = true,
         };
@@ -202,10 +202,10 @@ internal record PresetOptions
         new()
         {
             [VanillaPresetOptions] = Preset.VanillaPreset,
+            [MinimalPresetOptions] = Preset.MinimalPreset,
             [LowPresetOptions] = Preset.LowPreset,
             [MediumPresetOptions] = Preset.MediumPreset,
             [HighPresetOptions] = Preset.HighPreset,
-            [VeryHighPresetOptions] = Preset.VeryHighPreset,
             [UltraPresetOptions] = Preset.UltraPreset,
             [ExtremePresetOptions] = Preset.ExtremePreset,
         };

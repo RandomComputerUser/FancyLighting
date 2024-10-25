@@ -36,13 +36,8 @@ public sealed class PreferencesConfig : ModConfig
     public override void OnChanged() =>
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
 
-    [DefaultValue(DefaultOptions.UseSrgbEotf)]
-    public bool UseSrgb
-    {
-        get => _useSrgb;
-        set { _useSrgb = value; }
-    }
-    private bool _useSrgb;
+    [DefaultValue(DefaultOptions.UseSrgb)]
+    public bool UseSrgb { get; set; }
 
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]
     [Increment(1)]
@@ -62,41 +57,18 @@ public sealed class PreferencesConfig : ModConfig
 
     // Smooth Lighting, Normal Maps, Overbright
     [Header("SmoothLighting")]
-    [DefaultValue(DefaultOptions.UseLightMapToneMapping)]
-    public bool UseLightMapToneMapping
-    {
-        get => _useLightMapToneMapping;
-        set { _useLightMapToneMapping = value; }
-    }
-    private bool _useLightMapToneMapping;
-
     [Range(25, 400)]
     [Increment(25)]
     [DefaultValue(DefaultOptions.NormalMapsStrength)]
     [Slider]
     [DrawTicks]
-    public int NormalMapsStrength
-    {
-        get => _normalMapsStrength;
-        set { _normalMapsStrength = value; }
-    }
-    private int _normalMapsStrength;
+    public int NormalMapsStrength { get; set; }
 
     [DefaultValue(DefaultOptions.FineNormalMaps)]
-    public bool FineNormalMaps
-    {
-        get => _useFineNormalMaps;
-        set { _useFineNormalMaps = value; }
-    }
-    private bool _useFineNormalMaps;
+    public bool FineNormalMaps { get; set; }
 
     [DefaultValue(DefaultOptions.RenderOnlyLight)]
-    public bool RenderOnlyLight
-    {
-        get => _renderOnlyLight;
-        set { _renderOnlyLight = value; }
-    }
-    private bool _renderOnlyLight;
+    public bool RenderOnlyLight { get; set; }
 
     // Ambient Occlusion
     [Header("AmbientOcclusion")]
@@ -105,36 +77,21 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.AmbientOcclusionRadius)]
     [Slider]
     [DrawTicks]
-    public int AmbientOcclusionRadius
-    {
-        get => _ambientOcclusionRadius;
-        set { _ambientOcclusionRadius = value; }
-    }
-    private int _ambientOcclusionRadius;
+    public int AmbientOcclusionRadius { get; set; }
 
     [Range(20, 400)]
     [Increment(20)]
     [DefaultValue(DefaultOptions.AmbientOcclusionIntensity)]
     [Slider]
     [DrawTicks]
-    public int AmbientOcclusionIntensity
-    {
-        get => _ambientOcclusionIntensity;
-        set { _ambientOcclusionIntensity = value; }
-    }
-    private int _ambientOcclusionIntensity;
+    public int AmbientOcclusionIntensity { get; set; }
 
     [Range(5, 100)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.AmbientLightProportion)]
     [Slider]
     [DrawTicks]
-    public int AmbientLightProportion
-    {
-        get => _ambientLightProportion;
-        set { _ambientLightProportion = value; }
-    }
-    private int _ambientLightProportion;
+    public int AmbientLightProportion { get; set; }
 
     // Fancy Lighting Engine
     [Range(0, 100)]
@@ -142,62 +99,32 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FancyLightingEngineLightLoss)]
     [Slider]
     [DrawTicks]
-    public int FancyLightingEngineLightLoss
-    {
-        get => _fancyLightingEngineLightLoss;
-        set { _fancyLightingEngineLightLoss = value; }
-    }
-    private int _fancyLightingEngineLightLoss;
+    public int FancyLightingEngineLightLoss { get; set; }
 
     [Range(50, 200)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightAbsorption)]
     [Slider]
     [DrawTicks]
-    public int FancyLightingEngineLightAbsorption
-    {
-        get => _fancyLightingEngineLightAbsorption;
-        set { _fancyLightingEngineLightAbsorption = value; }
-    }
-    private int _fancyLightingEngineLightAbsorption;
+    public int FancyLightingEngineLightAbsorption { get; set; }
 
     [Range(5, 95)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineGlobalIlluminationMult)]
     [Slider]
     [DrawTicks]
-    public int FancyLightingEngineIndirectBrightness
-    {
-        get => _fancyLightingEngineIndirectBrightness;
-        set { _fancyLightingEngineIndirectBrightness = value; }
-    }
-    private int _fancyLightingEngineIndirectBrightness;
+    public int FancyLightingEngineIndirectBrightness { get; set; }
 
     [Header("LightingEngine")]
     [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]
-    public bool FancyLightingEngineVinesOpaque
-    {
-        get => _fancyLightingEngineVinesOpaque;
-        set { _fancyLightingEngineVinesOpaque = value; }
-    }
-    private bool _fancyLightingEngineVinesOpaque;
+    public bool FancyLightingEngineVinesOpaque { get; set; }
 
     // Sky Color
     [Header("SkyColor")]
     [DefaultValue(DefaultOptions.UseCustomSkyColors)]
-    public bool UseCustomSkyColors
-    {
-        get => _useCustomSkyColors;
-        set { _useCustomSkyColors = value; }
-    }
-    private bool _useCustomSkyColors;
+    public bool UseCustomSkyColors { get; set; }
 
     [DefaultValue(DefaultOptions.CustomSkyPreset)]
     [DrawTicks]
-    public SkyColorPreset CustomSkyPreset
-    {
-        get => _customSkyPreset;
-        set { _customSkyPreset = value; }
-    }
-    private SkyColorPreset _customSkyPreset;
+    public SkyColorPreset CustomSkyPreset { get; set; }
 }

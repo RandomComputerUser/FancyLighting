@@ -207,48 +207,38 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void UpdateDecays(LightMap lightMap)
     {
-        var decayMult = LightingConfig.Instance.FancyLightingEngineMakeBrighter
-            ? 1f
-            : 0.975f;
-        var lightAirDecayBaseline =
-            decayMult * Math.Min(lightMap.LightDecayThroughAir, MaxDecayMult);
-        var lightSolidDecayBaseline =
-            decayMult
-            * Math.Min(
-                MathF.Pow(
-                    lightMap.LightDecayThroughSolid,
-                    PreferencesConfig.Instance.FancyLightingEngineAbsorptionExponent()
-                ),
-                MaxDecayMult
-            );
-        var lightWaterDecayBaseline =
-            decayMult
-            * Math.Min(
-                0.625f * lightMap.LightDecayThroughWater.Length() / Vector3.One.Length()
-                    + 0.375f
-                        * Math.Max(
-                            lightMap.LightDecayThroughWater.X,
-                            Math.Max(
-                                lightMap.LightDecayThroughWater.Y,
-                                lightMap.LightDecayThroughWater.Z
-                            )
-                        ),
-                MaxDecayMult
-            );
-        var lightHoneyDecayBaseline =
-            decayMult
-            * Math.Min(
-                0.625f * lightMap.LightDecayThroughHoney.Length() / Vector3.One.Length()
-                    + 0.375f
-                        * Math.Max(
-                            lightMap.LightDecayThroughHoney.X,
-                            Math.Max(
-                                lightMap.LightDecayThroughHoney.Y,
-                                lightMap.LightDecayThroughHoney.Z
-                            )
-                        ),
-                MaxDecayMult
-            );
+        var lightAirDecayBaseline = Math.Min(lightMap.LightDecayThroughAir, MaxDecayMult);
+        var lightSolidDecayBaseline = Math.Min(
+            MathF.Pow(
+                lightMap.LightDecayThroughSolid,
+                PreferencesConfig.Instance.FancyLightingEngineAbsorptionExponent()
+            ),
+            MaxDecayMult
+        );
+        var lightWaterDecayBaseline = Math.Min(
+            0.625f * lightMap.LightDecayThroughWater.Length() / Vector3.One.Length()
+                + 0.375f
+                    * Math.Max(
+                        lightMap.LightDecayThroughWater.X,
+                        Math.Max(
+                            lightMap.LightDecayThroughWater.Y,
+                            lightMap.LightDecayThroughWater.Z
+                        )
+                    ),
+            MaxDecayMult
+        );
+        var lightHoneyDecayBaseline = Math.Min(
+            0.625f * lightMap.LightDecayThroughHoney.Length() / Vector3.One.Length()
+                + 0.375f
+                    * Math.Max(
+                        lightMap.LightDecayThroughHoney.X,
+                        Math.Max(
+                            lightMap.LightDecayThroughHoney.Y,
+                            lightMap.LightDecayThroughHoney.Z
+                        )
+                    ),
+            MaxDecayMult
+        );
 
         _lightLossExitingSolid = LightingConfig.Instance.SimulateGlobalIllumination
             ? 0f

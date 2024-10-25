@@ -46,6 +46,7 @@ public sealed class LightingConfig : ModConfig
         _useSmoothLighting = options.UseSmoothLighting;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
+        _useLightMapToneMapping = options.UseLightMapToneMapping;
         _simulateNormalMaps = options.SimulateNormalMaps;
         _lightMapRenderMode = options.LightMapRenderMode;
         _overbrightWaterfalls = options.OverbrightWaterfalls;
@@ -61,7 +62,6 @@ public sealed class LightingConfig : ModConfig
 
         _useFancyLightingEngine = options.UseFancyLightingEngine;
         _fancyLightingEngineUseTemporal = options.FancyLightingEngineUseTemporal;
-        _fancyLightingEngineMakeBrighter = options.FancyLightingEngineMakeBrighter;
         _fancyLightingEngineMode = options.FancyLightingEngineMode;
         _simulateGlobalIllumination = options.SimulateGlobalIllumination;
     }
@@ -158,6 +158,18 @@ public sealed class LightingConfig : ModConfig
         }
     }
     private bool _useEnhancedBlurring;
+
+    [DefaultValue(DefaultOptions.UseLightMapToneMapping)]
+    public bool UseLightMapToneMapping
+    {
+        get => _useLightMapToneMapping;
+        set
+        {
+            _useLightMapToneMapping = value;
+            UpdatePreset();
+        }
+    }
+    private bool _useLightMapToneMapping;
 
     [DefaultValue(DefaultOptions.SimulateNormalMaps)]
     public bool SimulateNormalMaps
@@ -319,18 +331,6 @@ public sealed class LightingConfig : ModConfig
         }
     }
     private bool _fancyLightingEngineUseTemporal;
-
-    [DefaultValue(DefaultOptions.FancyLightingEngineMakeBrighter)]
-    public bool FancyLightingEngineMakeBrighter
-    {
-        get => _fancyLightingEngineMakeBrighter;
-        set
-        {
-            _fancyLightingEngineMakeBrighter = value;
-            UpdatePreset();
-        }
-    }
-    private bool _fancyLightingEngineMakeBrighter;
 
     [DefaultValue(DefaultOptions.FancyLightingEngineMode)]
     [DrawTicks]

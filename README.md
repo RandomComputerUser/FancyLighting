@@ -11,6 +11,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Split settings into two pages
 - The settings preset now only affects settings in the Quality Settings page
 - Renamed some settings and presets
+- Tweaked some preset settings
 - Added a new Extreme preset
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
@@ -27,6 +28,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Improved dithering with overbright lighting and enhanced shaders and colors enabled
 - Increased the max overbright brightness with enhanced colors and shaders enabled from 4x to 16x
 - Optimized overbright lighting
+- Removed the Brighter Lighting setting, which is now effectively always enabled
 - Fixed graphical glitches with shimmer waterfalls
 - Fixed a camera mode bug that caused cave backgrounds to be rendered incorrectly
 - Upgraded to .NET 8

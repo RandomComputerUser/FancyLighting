@@ -1,6 +1,144 @@
 Mods: {
 	FancyLighting: {
 		Configs: {
+			PreferencesConfig: {
+				DisplayName: Preferences
+
+				Headers: {
+					SmoothLighting: Smooth Lighting
+					AmbientOcclusion: Ambient Occlusion
+					LightingEngine: Fancy Lighting Engine
+					SkyColor: Fancy Sky Colors
+				}
+
+				# General
+				
+				UseSrgb: {
+					Label: Use sRGB Transfer Function
+					Tooltip:
+						'''
+						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
+						Enable if dark areas are too bright or washed out
+						[c/FFFF00:Does not work if waves quality is set to off]
+						'''
+				}
+
+				ThreadCount: {
+					Label: Thread Count
+					Tooltip:
+						'''
+						Controls how many threads smooth lighting and the fancy lighting engine use
+						Higher values typically improve performance with diminishing returns
+						Values greater than the number of CPU hardware threads may reduce performance
+						The default value should be close to optimal
+						'''
+				}
+
+				# Smooth Lighting
+				
+				NormalMapsStrength: {
+					Label: Normal Maps Strength
+					Tooltip: Controls the strength of simulated normal maps
+				}
+
+				FineNormalMaps: {
+					Label: Fine Normal Maps
+					Tooltip:
+						'''
+						Toggles between coarse and fine simulated normal maps
+						Coarse normal maps have 2x2 resolution, and fine 1x1
+						Recommended to enable when using HD textures
+						'''
+				}
+
+				RenderOnlyLight: {
+					Label: (Debug) Render Only Light
+					Tooltip: When enabled, tile, wall, and background textures are not rendered
+				}
+
+				# Ambient Occlusion
+				
+				AmbientOcclusionRadius: {
+					Label: Ambient Occlusion Radius
+					Tooltip:
+						'''
+						Controls the radius of blur used in ambient occlusion
+						Higher values correspond to larger ambient occlusion shadows
+						'''
+				}
+
+				AmbientOcclusionIntensity: {
+					Label: Ambient Occlusion Exponent (%)
+					Tooltip:
+						'''
+						Controls how strongly light is affected by ambient occlusion
+						Higher values correspond to darker, larger ambient occlusion shadows
+						'''
+				}
+
+				AmbientLightProportion: {
+					Label: Ambient Light Proportion (%)
+					Tooltip:
+						'''
+						Controls the proportion of light affected by ambient occlusion
+						Higher values correspond to darker ambient occlusion shadows
+						'''
+				}
+
+				# Fancy Lighting Engine
+				
+				FancyLightingEngineLightLoss: {
+					Label: Shadow Strength (%)
+					Tooltip:
+						'''
+						Controls how much light is lost exiting solid blocks
+						Higher values correspond to darker shadows
+						A value of 100% blocks all light from exiting solid blocks
+						When global illumination is enabled, this setting is ignored
+						'''
+				}
+
+				FancyLightingEngineLightAbsorption: {
+					Label: Solid Block Light Absorption (%)
+					Tooltip:
+						'''
+						Controls how much light is absorbed by solid blocks
+						Lower values allow light to spread farther into solid blocks
+						A value of 100% is equivalent to vanilla
+						'''
+				}
+
+				FancyLightingEngineIndirectBrightness: {
+					Label: Indirect Lighting Brightness (%)
+					Tooltip:
+						'''
+						Controls how bright indirect lighting is compared to direct lighting
+						Indirect lighting is spread only when global illumination is enabled
+						'''
+				}
+
+				FancyLightingEngineVinesOpaque: {
+					Label: Vines and Seaweed Block Light
+					Tooltip: Toggles whether vines and seaweed block light
+				}
+
+				# Fancy Sky Colors
+				
+				UseCustomSkyColors: {
+					Label: Fancy Sky Colors
+					Tooltip:
+						'''
+						Toggles whether to use modified sky colors
+						If disabled, vanilla sky colors are used
+						'''
+				}
+
+				CustomSkyPreset: {
+					Label: Sky Color Profile
+					Tooltip: Selects which set of sky colors is used
+				}
+			}
+
 			LightingConfig: {
 				DisplayName: Quality Settings
 
@@ -66,6 +204,16 @@ Mods: {
 						'''
 						Controls the blurring function used to blur the light map
 						When enabled, uses improved blurring affected by light absorption
+						'''
+				}
+
+				UseLightMapToneMapping: {
+					Label: Light Map Tone Mapping
+					Tooltip:
+						'''
+						Toggles whether to use tone mapping on the light map
+						Reduces the brightness of brightly lit tiles
+						The tone mapping curve is applied to the light color, not the final pixel color
 						'''
 				}
 
@@ -175,15 +323,6 @@ Mods: {
 						'''
 				}
 
-				FancyLightingEngineMakeBrighter: {
-					Label: Brighter Lighting
-					Tooltip:
-						'''
-						Toggles whether to make lighting slightly brighter
-						When disabled, lighting along the axes is slightly darker than with vanilla lighting
-						'''
-				}
-
 				FancyLightingEngineMode: {
 					Label: Lighting Engine Resolution
 					Tooltip:
@@ -204,154 +343,6 @@ Mods: {
 				}
 			}
 
-			PreferencesConfig: {
-				DisplayName: Preferences
-
-				Headers: {
-					SmoothLighting: Smooth Lighting
-					AmbientOcclusion: Ambient Occlusion
-					LightingEngine: Fancy Lighting Engine
-					SkyColor: Fancy Sky Colors
-				}
-
-				# General
-				
-				UseSrgb: {
-					Label: Use sRGB Transfer Function
-					Tooltip:
-						'''
-						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
-						Enable if dark areas are too bright or washed out
-						[c/FFFF00:Does not work if waves quality is set to off]
-						'''
-				}
-
-				ThreadCount: {
-					Label: Thread Count
-					Tooltip:
-						'''
-						Controls how many threads smooth lighting and the fancy lighting engine use
-						Higher values typically improve performance with diminishing returns
-						Values greater than the number of CPU hardware threads may reduce performance
-						The default value should be close to optimal
-						'''
-				}
-
-				# Smooth Lighting
-				
-				UseLightMapToneMapping: {
-					Label: Light Map Tone Mapping
-					Tooltip:
-						'''
-						Toggles whether to use a tone mapper on the light map
-						Reduces the brightness of brightly lit tiles
-						The tone mapping curve is applied to the light color, not the final tile color
-						'''
-				}
-
-				NormalMapsStrength: {
-					Label: Normal Maps Strength
-					Tooltip: Controls the strength of simulated normal maps
-				}
-
-				FineNormalMaps: {
-					Label: Fine Normal Maps
-					Tooltip:
-						'''
-						Toggles between coarse and fine simulated normal maps
-						Coarse normal maps have 2x2 resolution, and fine 1x1
-						Recommended to enable when using HD textures
-						'''
-				}
-
-				RenderOnlyLight: {
-					Label: (Debug) Render Only Light
-					Tooltip: When enabled, tile, wall, and background textures are not rendered
-				}
-
-				# Ambient Occlusion
-				
-				AmbientOcclusionRadius: {
-					Label: Ambient Occlusion Radius
-					Tooltip:
-						'''
-						Controls the radius of blur used in ambient occlusion
-						Higher values correspond to larger ambient occlusion shadows
-						'''
-				}
-
-				AmbientOcclusionIntensity: {
-					Label: Ambient Occlusion Exponent (%)
-					Tooltip:
-						'''
-						Controls how strongly light is affected by ambient occlusion
-						Higher values correspond to darker, larger ambient occlusion shadows
-						'''
-				}
-
-				AmbientLightProportion: {
-					Label: Ambient Light Proportion (%)
-					Tooltip:
-						'''
-						Controls the proportion of light affected by ambient occlusion
-						Higher values correspond to darker ambient occlusion shadows
-						'''
-				}
-
-				# Fancy Lighting Engine
-				
-				FancyLightingEngineLightLoss: {
-					Label: Shadow Strength (%)
-					Tooltip:
-						'''
-						Controls how much light is lost exiting solid blocks
-						Higher values correspond to darker shadows
-						A value of 100% blocks all light from exiting solid blocks
-						When global illumination is enabled, this setting is ignored
-						'''
-				}
-
-				FancyLightingEngineLightAbsorption: {
-					Label: Solid Block Light Absorption (%)
-					Tooltip:
-						'''
-						Controls how much light is absorbed by solid blocks
-						Lower values allow light to spread farther into solid blocks
-						A value of 100% is equivalent to vanilla
-						'''
-				}
-
-				FancyLightingEngineIndirectBrightness: {
-					Label: Indirect Lighting Brightness (%)
-					Tooltip:
-						'''
-						Controls how bright indirect lighting is compared to direct lighting
-						Indirect lighting is spread only when global illumination is enabled
-						'''
-				}
-
-				FancyLightingEngineVinesOpaque: {
-					Label: Vines and Seaweed Block Light
-					Tooltip: Toggles whether vines and seaweed block light
-				}
-
-				# Fancy Sky Colors
-				
-				UseCustomSkyColors: {
-					Label: Fancy Sky Colors
-					Tooltip:
-						'''
-						Toggles whether to use modified sky colors
-						If disabled, vanilla sky colors are used
-						'''
-				}
-
-				CustomSkyPreset: {
-					Label: Sky Color Profile
-					Tooltip: Selects which set of sky colors is used
-				}
-			}
-
 			LightingEngineMode: {
 				Tooltip: ""
 				One.Label: 1x
@@ -362,10 +353,10 @@ Mods: {
 			Preset: {
 				CustomPreset.Label: Custom
 				VanillaPreset.Label: Vanilla
-				LowPreset.Label: Minimal
-				MediumPreset.Label: Low
-				HighPreset.Label: Medium
-				VeryHighPreset.Label: High
+				MinimalPreset.Label: Minimal
+				LowPreset.Label: Low
+				MediumPreset.Label: Medium
+				HighPreset.Label: High
 				UltraPreset.Label: Ultra
 				ExtremePreset.Label: "[c/FFFF00:Extreme]"
 				Tooltip: ""

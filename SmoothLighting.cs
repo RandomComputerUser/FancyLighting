@@ -317,7 +317,7 @@ internal sealed class SmoothLighting
         _brightenBackgroundShader
             .SetParameter(
                 "BackgroundBrightnessMult",
-                PreferencesConfig.Instance.UseLightMapToneMapping ? 1.05f : 1.1f
+                LightingConfig.Instance.UseLightMapToneMapping ? 1.05f : 1.1f
             )
             .Apply();
 
@@ -541,7 +541,7 @@ internal sealed class SmoothLighting
         var caughtException = 0;
         var doGammaCorrection = LightingConfig.Instance.DoGammaCorrection();
         var blurLightMap = LightingConfig.Instance.UseLightMapBlurring;
-        var doToneMap = PreferencesConfig.Instance.UseLightMapToneMapping;
+        var doToneMap = LightingConfig.Instance.UseLightMapToneMapping;
 
         if (doGammaCorrection && !LightingConfig.Instance.FancyLightingEngineEnabled())
         {
@@ -820,7 +820,7 @@ internal sealed class SmoothLighting
                         {
                             try
                             {
-                                ToneMapper.ToneMap(ref lights[i++]);
+                                ToneMapping.ToneMap(ref lights[i++]);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -850,7 +850,7 @@ internal sealed class SmoothLighting
                                 ref var lightColor = ref lights[i++];
 
                                 GammaConverter.GammaToLinear(ref lightColor);
-                                ToneMapper.ToneMap(ref lightColor);
+                                ToneMapping.ToneMap(ref lightColor);
                                 GammaConverter.LinearToGamma(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
