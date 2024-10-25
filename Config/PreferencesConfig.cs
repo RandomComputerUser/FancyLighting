@@ -27,6 +27,9 @@ public sealed class PreferencesConfig : ModConfig
     internal float FancyLightingEngineAbsorptionExponent() =>
         FancyLightingEngineLightAbsorption / 100f;
 
+    internal float FancyLightingEngineGlobalIlluminationMultiplier() =>
+        FancyLightingEngineIndirectBrightness / 100f;
+
     internal bool CustomSkyColorsEnabled() =>
         UseCustomSkyColors && Lighting.UsingNewLighting;
 
@@ -157,6 +160,18 @@ public sealed class PreferencesConfig : ModConfig
         set { _fancyLightingEngineLightAbsorption = value; }
     }
     private int _fancyLightingEngineLightAbsorption;
+
+    [Range(5, 95)]
+    [Increment(5)]
+    [DefaultValue(DefaultOptions.FancyLightingEngineGlobalIlluminationMult)]
+    [Slider]
+    [DrawTicks]
+    public int FancyLightingEngineIndirectBrightness
+    {
+        get => _fancyLightingEngineIndirectBrightness;
+        set { _fancyLightingEngineIndirectBrightness = value; }
+    }
+    private int _fancyLightingEngineIndirectBrightness;
 
     [Header("LightingEngine")]
     [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]

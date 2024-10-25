@@ -169,7 +169,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMakeBrighter = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
-            SimulateGlobalIllumination = false,
+            SimulateGlobalIllumination = true,
         };
 
     public static PresetOptions ExtremePresetOptions =
@@ -195,7 +195,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMakeBrighter = true,
             FancyLightingEngineMode = LightingEngineMode.Four,
-            SimulateGlobalIllumination = false,
+            SimulateGlobalIllumination = true,
         };
 
     public static Dictionary<PresetOptions, Preset> PresetLookup =

@@ -22,7 +22,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     protected const int DistanceTicks = 256;
 
     private const float MaxDecayMult = 0.95f;
-    private const float GiMult = 0.55f;
     private const float LowLightLevel = 0.03f;
 
     protected float _initialBrightnessCutoff;
@@ -129,11 +128,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void InitializeDecayArrays()
     {
-        _lightAirDecay = new float[DistanceTicks + 1];
-        _lightSolidDecay = new float[DistanceTicks + 1];
-        _lightWaterDecay = new float[DistanceTicks + 1];
-        _lightHoneyDecay = new float[DistanceTicks + 1];
-        _lightVinesDecay = new float[DistanceTicks + 1];
+        _lightAirDecay = new float[DistanceTicks + 2];
+        _lightSolidDecay = new float[DistanceTicks + 2];
+        _lightWaterDecay = new float[DistanceTicks + 2];
+        _lightHoneyDecay = new float[DistanceTicks + 2];
+        _lightVinesDecay = new float[DistanceTicks + 2];
         for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
         {
             _lightAirDecay[exponent] = 1f;
@@ -142,6 +141,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightHoneyDecay[exponent] = 1f;
             _lightVinesDecay[exponent] = 1f;
         }
+
+        // Last element is for diagonal decay (used in GI)
+        _lightAirDecay[^1] =
+            _lightSolidDecay[^1] =
+            _lightWaterDecay[^1] =
+            _lightHoneyDecay[^1] =
+            _lightVinesDecay[^1] =
+                MathF.Sqrt(2f);
     }
 
     protected void ComputeCircles()
@@ -243,8 +250,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 MaxDecayMult
             );
 
-        _lightLossExitingSolid =
-            PreferencesConfig.Instance.FancyLightingEngineExitMultiplier();
+        _lightLossExitingSolid = LightingConfig.Instance.SimulateGlobalIllumination
+            ? 0f
+            : PreferencesConfig.Instance.FancyLightingEngineExitMultiplier();
 
         if (LightingConfig.Instance.DoGammaCorrection())
         {
@@ -291,6 +299,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         {
             decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
         }
+
+        decay[^1] = MathF.Exp(1.5f * logBaseline);
     }
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
@@ -584,23 +594,293 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         }
     }
 
-    protected static void GetLightsForGlobalIllumination(
+    protected void SimulateGlobalIllumination(
         Vector3[] source,
         Vector3[] destination,
-        Vector3[] lightSources,
-        bool[] skipGI,
-        LightMaskMode[] lightMasks,
         int width,
         int height
     )
     {
-        var giMult = GiMult;
+        var length = width * height;
+
+        var giMult =
+            PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
         if (LightingConfig.Instance.DoGammaCorrection())
         {
-            // Gamma correction darkens dark colors, so this helps compensate
-            giMult *= 1.1f;
-
             GammaConverter.GammaToLinear(ref giMult);
+        }
+
+        ArrayUtil.MakeAtLeastSize(ref _workingLightMaps[0], length);
+        var lights = _workingLightMaps[0];
+        CopyVec3Array(source, lights, 0, length);
+
+        var lightMasks = _lightMask;
+        var solidDecay = _lightSolidDecay;
+
+        Parallel.For(
+            0,
+            width,
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+            },
+            (i) =>
+            {
+                var endIndex = height * (i + 1);
+                for (var j = height * i; j < endIndex; ++j)
+                {
+                    ref var giLight = ref lights[j];
+
+                    if (lightMasks[j] == solidDecay || lightMasks[j] == solidDecay)
+                    {
+                        giLight = Vec3.Zero;
+                        continue;
+                    }
+
+                    ref var light = ref source[j];
+                    giLight.X = giMult * light.X;
+                    giLight.Y = giMult * light.Y;
+                    giLight.Z = giMult * light.Z;
+                }
+            }
+        );
+
+        for (var i = 4; i-- > 0; )
+        {
+            // down
+            Parallel.For(
+                0,
+                width,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = height * (i + 1);
+                    for (var j = height * i + 1; j < endIndex; ++j)
+                    {
+                        var mask = lightMasks[j - 1];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(value, lights[j - 1] * mask[DistanceTicks]);
+                    }
+                }
+            );
+            // up
+            Parallel.For(
+                0,
+                width,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = height * i;
+                    for (var j = height * (i + 1) - 1; --j >= endIndex; )
+                    {
+                        var mask = lightMasks[j + 1];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(value, lights[j + 1] * mask[DistanceTicks]);
+                    }
+                }
+            );
+            // right
+            Parallel.For(
+                0,
+                height,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = i + width * height;
+                    for (var j = i + height; j < endIndex; j += height)
+                    {
+                        var mask = lightMasks[j - height];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(value, lights[j - height] * mask[DistanceTicks]);
+                    }
+                }
+            );
+            // left
+            Parallel.For(
+                0,
+                height,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var endIndex = i;
+                    for (var j = i + width * (height - 1); (j -= height) >= endIndex; )
+                    {
+                        var mask = lightMasks[j + height];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(value, lights[j + height] * mask[DistanceTicks]);
+                    }
+                }
+            );
+            // down right
+            Parallel.For(
+                0,
+                height + width - 1,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var inc = height + 1;
+                    var startIndex = i < height ? i : height * (i - height + 1);
+                    var endIndex = Math.Min(
+                        width * height,
+                        startIndex + inc * (i < height ? height - i : height)
+                    );
+                    for (var j = startIndex + inc; j < endIndex; j += inc)
+                    {
+                        var mask = lightMasks[j - inc];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(
+                            value,
+                            lights[j - inc] * mask[DistanceTicks + 1]
+                        );
+                    }
+                }
+            );
+            // up left
+            Parallel.For(
+                0,
+                height + width - 1,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var inc = -height - 1;
+                    var startIndex =
+                        (width * height - 1)
+                        - (i < height ? i : height * (i - height + 1));
+                    var endIndex = Math.Max(
+                        -1,
+                        startIndex + inc * (i < height ? height - i : height)
+                    );
+                    for (var j = startIndex + inc; j > endIndex; j += inc)
+                    {
+                        var mask = lightMasks[j - inc];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(
+                            value,
+                            lights[j - inc] * mask[DistanceTicks + 1]
+                        );
+                    }
+                }
+            );
+            // down left
+            Parallel.For(
+                0,
+                height + width - 1,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var inc = -height + 1;
+                    var startIndex =
+                        ((width - 1) * height)
+                        + (i < height ? i : -height * (i - height + 1));
+                    var endIndex = Math.Max(
+                        -1,
+                        startIndex + inc * (i < height ? height - i : height)
+                    );
+                    for (var j = startIndex + inc; j > endIndex; j += inc)
+                    {
+                        var mask = lightMasks[j - inc];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(
+                            value,
+                            lights[j - inc] * mask[DistanceTicks + 1]
+                        );
+                    }
+                }
+            );
+            // up right
+            Parallel.For(
+                0,
+                height + width - 1,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (i) =>
+                {
+                    var inc = height - 1;
+                    var startIndex =
+                        (height - 1) + (i < height ? -i : height * (i - height + 1));
+                    var endIndex = Math.Min(
+                        width * height,
+                        startIndex + inc * (i < height ? height - i : height)
+                    );
+                    for (var j = startIndex + inc; j < endIndex; j += inc)
+                    {
+                        var mask = lightMasks[j - inc];
+                        if (mask == solidDecay && lightMasks[j] != solidDecay)
+                        {
+                            continue;
+                        }
+
+                        ref var value = ref lights[j];
+                        value = Vec3.Max(
+                            value,
+                            lights[j - inc] * mask[DistanceTicks + 1]
+                        );
+                    }
+                }
+            );
+        }
+
+        if (source != destination)
+        {
+            Array.Copy(source, destination, length);
         }
 
         Parallel.For(
@@ -615,27 +895,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 var endIndex = height * (i + 1);
                 for (var j = height * i; j < endIndex; ++j)
                 {
-                    ref var giLight = ref destination[j];
-
-                    if (lightMasks[j] is LightMaskMode.Solid)
-                    {
-                        giLight.X = 0f;
-                        giLight.Y = 0f;
-                        giLight.Z = 0f;
-                        skipGI[j] = true;
-                        continue;
-                    }
-
-                    var origLight = lightSources[j];
-                    ref var light = ref source[j];
-                    giLight.X = giMult * light.X;
-                    giLight.Y = giMult * light.Y;
-                    giLight.Z = giMult * light.Z;
-
-                    skipGI[j] =
-                        giLight.X <= origLight.X
-                        && giLight.Y <= origLight.Y
-                        && giLight.Z <= origLight.Z;
+                    ref var value = ref destination[j];
+                    var max = Vec3.Max(new Vec3(value.X, value.Y, value.Z), lights[j]);
+                    value.X = max.X;
+                    value.Y = max.Y;
+                    value.Z = max.Z;
                 }
             }
         );

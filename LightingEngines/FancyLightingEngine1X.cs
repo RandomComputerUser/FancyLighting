@@ -24,9 +24,6 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
     private readonly LightSpread[] _lightSpread;
 
-    private Vector3[] _tmp;
-    private bool[] _skipGI;
-
     private bool _countTemporal;
 
     public FancyLightingEngine1X()
@@ -187,19 +184,15 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
         var length = width * height;
 
-        ArrayUtil.MakeAtLeastSize(ref _tmp, length);
         ArrayUtil.MakeAtLeastSize(ref _lightMask, length);
 
-        Array.Copy(colors, _tmp, length);
         UpdateLightMasks(lightMasks, width, height);
         InitializeTaskVariables(length);
-
-        var doGI = LightingConfig.Instance.SimulateGlobalIllumination;
 
         _countTemporal = LightingConfig.Instance.FancyLightingEngineUseTemporal;
         RunLightingPass(
             colors,
-            doGI ? _tmp : colors,
+            colors,
             length,
             _countTemporal,
             (Vec3[] lightMap, ref int temporalData, int begin, int end) =>
@@ -213,44 +206,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
         if (LightingConfig.Instance.SimulateGlobalIllumination)
         {
-            ArrayUtil.MakeAtLeastSize(ref _skipGI, length);
-
-            GetLightsForGlobalIllumination(
-                _tmp,
-                colors,
-                colors,
-                _skipGI,
-                lightMasks,
-                width,
-                height
-            );
-
-            _countTemporal = false;
-            RunLightingPass(
-                _tmp,
-                colors,
-                length,
-                false,
-                (Vec3[] lightMap, ref int temporalData, int begin, int end) =>
-                {
-                    for (var i = begin; i < end; ++i)
-                    {
-                        if (_skipGI[i])
-                        {
-                            continue;
-                        }
-
-                        ProcessLight(
-                            lightMap,
-                            colors,
-                            ref temporalData,
-                            i,
-                            width,
-                            height
-                        );
-                    }
-                }
-            );
+            SimulateGlobalIllumination(colors, colors, width, height);
         }
     }
 
