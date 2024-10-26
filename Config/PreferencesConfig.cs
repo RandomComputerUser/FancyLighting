@@ -36,8 +36,11 @@ public sealed class PreferencesConfig : ModConfig
     internal bool CustomSkyColorsEnabled() =>
         UseCustomSkyColors && Lighting.UsingNewLighting;
 
-    public override void OnChanged() =>
+    public override void OnChanged()
+    {
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+        ModContent.GetInstance<FancyLightingModSystem>()?.OnConfigChange();
+    }
 
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]
     [Increment(1)]

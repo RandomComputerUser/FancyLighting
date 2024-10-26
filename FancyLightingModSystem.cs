@@ -7,6 +7,11 @@ internal sealed class FancyLightingModSystem : ModSystem
 {
     private bool _doWarning = false;
 
+    internal void OnConfigChange()
+    {
+        _doWarning = true;
+    }
+
     public override void OnWorldLoad()
     {
         _doWarning = true;

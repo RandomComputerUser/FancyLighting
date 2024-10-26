@@ -36,8 +36,11 @@ public sealed class LightingConfig : ModConfig
     internal bool DoGammaCorrection() =>
         HiDefFeaturesEnabled() && SmoothLightingEnabled() && DrawOverbright();
 
-    public override void OnChanged() =>
+    public override void OnChanged()
+    {
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+        ModContent.GetInstance<FancyLightingModSystem>()?.OnConfigChange();
+    }
 
     private void CopyFrom(PresetOptions options)
     {
