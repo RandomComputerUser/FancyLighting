@@ -20,8 +20,6 @@ public sealed class PreferencesConfig : ModConfig
 
     internal float NormalMapsMultiplier() => NormalMapsStrength / 100f;
 
-    internal bool UseGlowMasks() => SupportGlowMasks && !RenderOnlyLight;
-
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
@@ -84,9 +82,6 @@ public sealed class PreferencesConfig : ModConfig
 
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
-
-    [DefaultValue(DefaultOptions.SupportGlowMasks)]
-    public bool SupportGlowMasks { get; set; }
 
     [DefaultValue(DefaultOptions.RenderOnlyLight)]
     public bool RenderOnlyLight { get; set; }

@@ -768,7 +768,7 @@ internal sealed class SmoothLighting
         }
 
         var ymax = lightMapTileArea.Y + lightMapTileArea.Height;
-        if (PreferencesConfig.Instance.UseGlowMasks())
+        if (LightingConfig.Instance.SupportGlowMasks)
         {
             Parallel.For(
                 lightMapTileArea.X,
@@ -1536,7 +1536,7 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks;
 
         if (background)
         {
@@ -1915,7 +1915,7 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks;
 
         if (background)
         {

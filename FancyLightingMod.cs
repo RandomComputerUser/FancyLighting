@@ -1083,7 +1083,9 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.waterTarget;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks =
+            LightingConfig.Instance.SupportGlowMasks
+            && !PreferencesConfig.Instance.RenderOnlyLight;
 
         _smoothLightingInstance.CalculateSmoothLighting(false);
 
@@ -1318,7 +1320,9 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tileTarget;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks =
+            LightingConfig.Instance.SupportGlowMasks
+            && !PreferencesConfig.Instance.RenderOnlyLight;
 
         _smoothLightingInstance.CalculateSmoothLighting(false);
 
@@ -1404,7 +1408,9 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tile2Target;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks =
+            LightingConfig.Instance.SupportGlowMasks
+            && !PreferencesConfig.Instance.RenderOnlyLight;
 
         _smoothLightingInstance.CalculateSmoothLighting(false);
 
@@ -1506,7 +1512,9 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.wallTarget;
-        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
+        var useGlowMasks =
+            LightingConfig.Instance.SupportGlowMasks
+            && !PreferencesConfig.Instance.RenderOnlyLight;
 
         _smoothLightingInstance.CalculateSmoothLighting(false);
 

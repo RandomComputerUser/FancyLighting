@@ -51,6 +51,7 @@ public sealed class LightingConfig : ModConfig
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _useLightMapToneMapping = options.UseLightMapToneMapping;
         _simulateNormalMaps = options.SimulateNormalMaps;
+        _supportGlowMasks = options.SupportGlowMasks;
         _lightMapRenderMode = options.LightMapRenderMode;
         _overbrightWaterfalls = options.OverbrightWaterfalls;
         _overbrightNPCsAndPlayer = options.OverbrightNPCsAndPlayer;
@@ -192,6 +193,18 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _simulateNormalMaps;
+
+    [DefaultValue(DefaultOptions.SupportGlowMasks)]
+    public bool SupportGlowMasks
+    {
+        get => _supportGlowMasks;
+        set
+        {
+            _supportGlowMasks = value;
+            UpdatePreset();
+        }
+    }
+    private bool _supportGlowMasks;
 
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
     [DrawTicks]

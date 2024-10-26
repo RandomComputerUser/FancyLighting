@@ -363,7 +363,7 @@ float4 Max(float2 coords : TEXCOORD0) : COLOR0
     float4 bright = max(primary, secondary);
     
     return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, primary.rgb)),
+        lerp(primary.rgb, bright.rgb, step(2.0 / 255, secondary.rgb)),
         bright.a
     );
 }

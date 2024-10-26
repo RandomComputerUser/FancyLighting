@@ -60,16 +60,6 @@ Mods: {
 						'''
 				}
 
-				SupportGlowMasks: {
-					Label: Glow Mask Support
-					Tooltip:
-						'''
-						Whether to support glow masks
-						May cause side effects due to drawing tiles twice
-						When not enabled, vanilla glow effects are done by lighting the entire tile
-						'''
-				}
-
 				RenderOnlyLight: {
 					Label: (Debug) Render Only Light
 					Tooltip: When enabled, tile, wall, and background textures are not rendered
@@ -237,6 +227,16 @@ Mods: {
 				SimulateNormalMaps: {
 					Label: Simulated Normal Maps
 					Tooltip: Toggles whether to simulate normal maps
+				}
+
+				SupportGlowMasks: {
+					Label: Glow Mask Support
+					Tooltip:
+						'''
+						Toggles whether to support glow masks
+						May cause side effects due to drawing tiles twice
+						When not enabled, vanilla glow effects are done by lighting the entire tile
+						'''
 				}
 
 				LightMapRenderMode: {

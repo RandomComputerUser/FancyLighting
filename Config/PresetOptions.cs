@@ -16,6 +16,8 @@ internal record PresetOptions
 
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
 
+    public bool SupportGlowMasks { get; init; } = DefaultOptions.SupportGlowMasks;
+
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
 
@@ -64,6 +66,7 @@ internal record PresetOptions
         UseEnhancedBlurring = config.UseEnhancedBlurring;
         UseLightMapToneMapping = config.UseLightMapToneMapping;
         SimulateNormalMaps = config.SimulateNormalMaps;
+        SupportGlowMasks = config.SupportGlowMasks;
         LightMapRenderMode = config.LightMapRenderMode;
         OverbrightWaterfalls = config.OverbrightWaterfalls;
         OverbrightNPCsAndPlayer = config.OverbrightNPCsAndPlayer;
