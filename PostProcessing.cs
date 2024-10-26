@@ -76,10 +76,10 @@ internal sealed class PostProcessing
             .SetParameter(
                 "DitherCoordMult",
                 new Vector2(
-                    (float)target.Width / _ditherNoise.Width,
-                    (float)target.Height / _ditherNoise.Height
+                    (float)-target.Width / _ditherNoise.Width,
+                    (float)-target.Height / _ditherNoise.Height
                 )
-            )
+            ) // Multiply by -1 so that it's different from the dithering in bicubic filtering
             .SetParameter("Gamma", gamma)
             .Apply();
 

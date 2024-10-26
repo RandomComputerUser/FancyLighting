@@ -21,9 +21,8 @@ float3 LinearToSrgb(float3 color)
 // Also dark colors in sRGB are mapped linearly so there is no difference for dark colors
 float3 DitherNoise(float2 coords)
 {
-    // Offset coords so that it's different from the dithering done by bicubic filtering
     return (
-        tex2D(DitherSampler, coords * DitherCoordMult + 0.5).rgb - 128 / 255.0
+        tex2D(DitherSampler, coords * DitherCoordMult).rgb - 128 / 255.0
     ) * (0.5 / 128);
 }
 
@@ -36,7 +35,7 @@ float3 Dither(float3 color, float2 coords)
     float3 hiLinear = GammaToLinear(hi);
 
     float3 t = (GammaToLinear(color) - loLinear) / (hiLinear - loLinear);
-    float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords + 0.5).r;
+    float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords).r;
     float3 selector = step(t, rand);
 
     return lerp(hi, lo, selector);
