@@ -1124,22 +1124,14 @@ public sealed class FancyLightingMod : Mod
             Main.spriteBatch.End();
         }
 
-        OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingFore;
-        try
-        {
-            orig(self);
-        }
-        finally
-        {
-            OverrideLightColor = false;
-        }
+        orig(self);
 
         if (Main.drawToScreen)
         {
             return;
         }
 
-        _smoothLightingInstance.DrawSmoothLighting(tileTarget, false);
+        _smoothLightingInstance.DrawSmoothLighting(tileTarget, false, true);
 
         if (!useGlowMasks)
         {
@@ -1177,7 +1169,27 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        orig(self, isBackground);
+        if (_inCameraMode || !LightingConfig.Instance.SmoothLightingEnabled())
+        {
+            orig(self, isBackground);
+            return;
+        }
+
+        OverrideLightColor =
+            !UseBlackLights
+            && (
+                isBackground
+                    ? _smoothLightingInstance.DrawSmoothLightingBack
+                    : _smoothLightingInstance.DrawSmoothLightingFore
+            );
+        try
+        {
+            orig(self, isBackground);
+        }
+        finally
+        {
+            OverrideLightColor = false;
+        }
     }
 
     // Cave backgrounds
