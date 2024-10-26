@@ -1,4 +1,5 @@
-﻿using FancyLighting.Util;
+﻿using FancyLighting.Config;
+using FancyLighting.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
@@ -11,6 +12,8 @@ internal sealed class PostProcessing
 {
     private readonly Texture2D _ditherNoise;
 
+    private Shader _customGammaToGammaShader;
+    private Shader _customGammaToSrgbShader;
     private Shader _gammaToSrgbShader;
 
     public PostProcessing()
@@ -22,6 +25,14 @@ internal sealed class PostProcessing
             )
             .Value;
 
+        _customGammaToGammaShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "CustomGammaToGamma"
+        );
+        _customGammaToSrgbShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "CustomGammaToSrgb"
+        );
         _gammaToSrgbShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToSrgb"
@@ -31,10 +42,12 @@ internal sealed class PostProcessing
     public void Unload()
     {
         _ditherNoise?.Dispose();
+        EffectLoader.UnloadEffect(ref _customGammaToGammaShader);
+        EffectLoader.UnloadEffect(ref _customGammaToSrgbShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
     }
 
-    internal void GammaToSrgb(RenderTarget2D target, RenderTarget2D tmpTarget)
+    internal void ApplyingPostProcessing(RenderTarget2D target, RenderTarget2D tmpTarget)
     {
         Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
         Main.spriteBatch.Begin(
@@ -44,7 +57,22 @@ internal sealed class PostProcessing
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _gammaToSrgbShader
+
+        var useSrgb = PreferencesConfig.Instance.UseSrgb;
+        var useCustomGamma = PreferencesConfig.Instance.UseCustomGamma();
+        var gamma = PreferencesConfig.Instance.GammaExponent();
+        if (!useSrgb)
+        {
+            gamma /= 2.2f;
+        }
+
+        var shader = useSrgb
+            ? useCustomGamma
+                ? _customGammaToSrgbShader
+                : _gammaToSrgbShader
+            : _customGammaToGammaShader;
+
+        shader
             .SetParameter(
                 "DitherCoordMult",
                 new Vector2(
@@ -52,7 +80,9 @@ internal sealed class PostProcessing
                     (float)target.Height / _ditherNoise.Height
                 )
             )
+            .SetParameter("Gamma", gamma)
             .Apply();
+
         Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
         Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
         Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);

@@ -39,7 +39,7 @@ float3 OverbrightLightAtHiDef(float2 coords)
     return (65535.0 / 4096) * color;
 }
 
-// Input color should be in gamma space
+// Input color should be in 2.2 gamma
 float3 Dither(float3 color, float2 coords)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
@@ -53,7 +53,6 @@ float3 Dither(float3 color, float2 coords)
 
     return lerp(hi, lo, selector);
 }
-
 
 float3 AmbientOcclusion(float2 coords)
 {

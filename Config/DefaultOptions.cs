@@ -10,13 +10,16 @@ public static class DefaultOptions
     public const bool UseHiDefFeatures = false;
 
     // General Preferences
-    public const bool UseSrgb = false;
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
     public const int MinThreadCount = 1;
     public const int MaxThreadCount = 32;
     public const int MaxDefaultThreadCount = 16;
     public static int RuntimeDefaultThreadCount =>
         Math.Clamp(Environment.ProcessorCount, MinThreadCount, MaxDefaultThreadCount);
+
+    // Tone Mapping Preferences
+    public const int Gamma = 220;
+    public const bool UseSrgb = false;
 
     // Smooth Lighting
     public const bool UseSmoothLighting = true;

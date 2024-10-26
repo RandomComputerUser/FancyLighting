@@ -5,6 +5,7 @@ Mods: {
 				DisplayName: Preferences
 
 				Headers: {
+					ToneMapping: Tone Mapping
 					SmoothLighting: Smooth Lighting
 					AmbientOcclusion: Ambient Occlusion
 					LightingEngine: Fancy Lighting Engine
@@ -13,15 +14,6 @@ Mods: {
 
 				# General
 				
-				UseSrgb: {
-					Label: Use sRGB Transfer Function
-					Tooltip:
-						'''
-						Toggles whether to use the sRGB transfer function instead of 2.2 gamma
-						Enable if dark areas are too bright or washed out
-						'''
-				}
-
 				ThreadCount: {
 					Label: Thread Count
 					Tooltip:
@@ -30,6 +22,24 @@ Mods: {
 						Higher values typically improve performance with diminishing returns
 						Values greater than the number of CPU hardware threads may reduce performance
 						The default value should be close to optimal
+						'''
+				}
+
+				Gamma: {
+					Label: Gamma (%)
+					Tooltip:
+						'''
+						Changes the gamma used by lighting and textures
+						A value of 220% corresponds to a gamma of 2.2
+						'''
+				}
+
+				UseSrgb: {
+					Label: sRGB Output
+					Tooltip:
+						'''
+						Toggles whether to use the sRGB output instead of 2.2 gamma
+						Enable if dark areas are too bright or washed out
 						'''
 				}
 

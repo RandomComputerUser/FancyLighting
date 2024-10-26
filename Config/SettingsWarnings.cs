@@ -32,7 +32,7 @@ internal static class SettingsWarnings
             if (Main.WaveQuality is not (1 or 2 or 3))
             {
                 if (
-                    PreferencesConfig.Instance.UseSrgb
+                    PreferencesConfig.Instance.DoPostProcessing()
                     || (
                         LightingConfig.Instance.UseSmoothLighting
                         && LightingConfig.Instance.DrawOverbright()

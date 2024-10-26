@@ -12,6 +12,12 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
+    internal float GammaExponent() => Gamma / 100f;
+
+    internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
+
+    internal bool DoPostProcessing() => UseCustomGamma() || UseSrgb;
+
     internal float NormalMapsMultiplier() => NormalMapsStrength / 100f;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
@@ -33,9 +39,6 @@ public sealed class PreferencesConfig : ModConfig
     public override void OnChanged() =>
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
 
-    [DefaultValue(DefaultOptions.UseSrgb)]
-    public bool UseSrgb { get; set; }
-
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.ThreadCount)]
@@ -52,6 +55,18 @@ public sealed class PreferencesConfig : ModConfig
     }
 
     private int _threadCount;
+
+    // Tone Mapping
+    [Header("ToneMapping")]
+    [Range(160, 280)]
+    [Increment(10)]
+    [DefaultValue(DefaultOptions.Gamma)]
+    [Slider]
+    [DrawTicks]
+    public int Gamma { get; set; }
+
+    [DefaultValue(DefaultOptions.UseSrgb)]
+    public bool UseSrgb { get; set; }
 
     // Smooth Lighting, Normal Maps, Overbright
     [Header("SmoothLighting")]

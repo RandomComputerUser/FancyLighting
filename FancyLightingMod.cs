@@ -520,9 +520,9 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
-        if (PreferencesConfig.Instance.UseSrgb)
+        if (PreferencesConfig.Instance.DoPostProcessing())
         {
-            _postProcessingInstance.GammaToSrgb(screenTarget1, screenTarget2);
+            _postProcessingInstance.ApplyingPostProcessing(screenTarget1, screenTarget2);
         }
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
