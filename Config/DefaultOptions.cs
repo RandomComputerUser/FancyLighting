@@ -38,6 +38,7 @@ public static class DefaultOptions
     // Smooth Lighting Preferences
     public const int NormalMapsStrength = 100;
     public const bool FineNormalMaps = false;
+    public const bool SupportGlowMasks = true;
     public const bool RenderOnlyLight = false;
 
     // Ambient Occlusion

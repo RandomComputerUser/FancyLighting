@@ -40,6 +40,7 @@ internal sealed class SmoothLighting
 
     internal Vector3[] _whiteLights;
     internal Vector3[] _tmpLights;
+    internal Vector3[] _blackLights;
 
     private readonly bool[] _glowingTiles;
     private readonly Color[] _glowingTileColors;
@@ -84,6 +85,7 @@ internal sealed class SmoothLighting
     private Shader _overbrightMaxShader;
     private Shader _lightOnlyShader;
     private Shader _brightenBackgroundShader;
+    private Shader _maxShader;
 
     public SmoothLighting(FancyLightingMod mod)
     {
@@ -272,6 +274,10 @@ internal sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "BrightenBackground"
         );
+        _maxShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "Max"
+        );
     }
 
     public void Unload()
@@ -305,6 +311,7 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenBackgroundShader);
+        EffectLoader.UnloadEffect(ref _maxShader);
     }
 
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
@@ -527,6 +534,7 @@ internal sealed class SmoothLighting
 
         ArrayUtil.MakeAtLeastSize(ref _lights, length);
         ArrayUtil.MakeAtLeastSize(ref _whiteLights, length);
+        ArrayUtil.MakeAtLeastSize(ref _blackLights, length);
         ArrayUtil.MakeAtLeastSize(ref _hasLight, length);
 
         if (width == 0 || height == 0)
@@ -760,71 +768,151 @@ internal sealed class SmoothLighting
         }
 
         var ymax = lightMapTileArea.Y + lightMapTileArea.Height;
-        Parallel.For(
-            lightMapTileArea.X,
-            lightMapTileArea.X + lightMapTileArea.Width,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
-            (x) =>
-            {
-                var dummyColor = new Color();
-
-                var isXInTilemap = x >= 0 && x < Main.tile.Width;
-                var tilemapHeight = Main.tile.Height;
-                var i = height * (x - lightMapTileArea.X);
-                for (var y = lightMapTileArea.Y; y < ymax; ++y)
+        if (PreferencesConfig.Instance.UseGlowMasks())
+        {
+            Parallel.For(
+                lightMapTileArea.X,
+                lightMapTileArea.X + lightMapTileArea.Width,
+                new ParallelOptions
                 {
-                    try
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (x) =>
+                {
+                    var dummyColor = new Color();
+
+                    var isXInTilemap = x >= 0 && x < Main.tile.Width;
+                    var tilemapHeight = Main.tile.Height;
+                    var i = height * (x - lightMapTileArea.X);
+                    for (var y = lightMapTileArea.Y; y < ymax; ++y)
                     {
-                        ref var color = ref _lights[i];
-                        if (color.X > low || color.Y > low || color.Z > low)
+                        try
                         {
-                            _hasLight[i++] = 2;
-                            continue;
-                        }
-
-                        if (isXInTilemap && y >= 0 && y < tilemapHeight)
-                        {
-                            var tile = Main.tile[x, y];
-
-                            if (
-                                tile.IsTileFullbright // Illuminant Paint
-                                || tile.IsWallFullbright
-                                || HasShimmer(tile) // Shimmer
-                                || _glowingTiles[tile.TileType] // Glowing Tiles
-                                || (
-                                    _isDangersenseActive // Dangersense Potion
-                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
-                                )
-                                || (_isSpelunkerActive && Main.IsTileSpelunkable(x, y)) // Spelunker Potion
-                                || (
-                                    _isBiomeSightActive
-                                    && Main.IsTileBiomeSightable(x, y, ref dummyColor)
-                                ) // Biome Sight Potion
-                            )
+                            ref var color = ref _lights[i];
+                            if (color.X > low || color.Y > low || color.Z > low)
                             {
                                 _hasLight[i++] = 2;
                                 continue;
                             }
-                        }
 
-                        if (_hasLight[i] != 0)
+                            if (isXInTilemap && y >= 0 && y < tilemapHeight)
+                            {
+                                var tile = Main.tile[x, y];
+
+                                if (
+                                    HasShimmer(tile) // Shimmer
+                                    || (
+                                        _isDangersenseActive // Dangersense Potion
+                                        && TileDrawing.IsTileDangerous(
+                                            x,
+                                            y,
+                                            Main.LocalPlayer
+                                        )
+                                    )
+                                    || (
+                                        _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                    ) // Spelunker Potion
+                                    || (
+                                        _isBiomeSightActive
+                                        && Main.IsTileBiomeSightable(x, y, ref dummyColor)
+                                    ) // Biome Sight Potion
+                                )
+                                {
+                                    _hasLight[i++] = 2;
+                                    continue;
+                                }
+                            }
+
+                            if (_hasLight[i] != 0)
+                            {
+                                --_hasLight[i];
+                            }
+
+                            ++i;
+                        }
+                        catch (IndexOutOfRangeException)
                         {
-                            --_hasLight[i];
+                            Interlocked.Exchange(ref caughtException, 1);
+                            break;
                         }
-
-                        ++i;
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        Interlocked.Exchange(ref caughtException, 1);
-                        break;
                     }
                 }
-            }
-        );
+            );
+        }
+        else
+        {
+            Parallel.For(
+                lightMapTileArea.X,
+                lightMapTileArea.X + lightMapTileArea.Width,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                },
+                (x) =>
+                {
+                    var dummyColor = new Color();
+
+                    var isXInTilemap = x >= 0 && x < Main.tile.Width;
+                    var tilemapHeight = Main.tile.Height;
+                    var i = height * (x - lightMapTileArea.X);
+                    for (var y = lightMapTileArea.Y; y < ymax; ++y)
+                    {
+                        try
+                        {
+                            ref var color = ref _lights[i];
+                            if (color.X > low || color.Y > low || color.Z > low)
+                            {
+                                _hasLight[i++] = 2;
+                                continue;
+                            }
+
+                            if (isXInTilemap && y >= 0 && y < tilemapHeight)
+                            {
+                                var tile = Main.tile[x, y];
+
+                                if (
+                                    tile.IsTileFullbright // Illuminant Paint
+                                    || tile.IsWallFullbright
+                                    || HasShimmer(tile) // Shimmer
+                                    || _glowingTiles[tile.TileType] // Glowing Tiles
+                                    || (
+                                        _isDangersenseActive // Dangersense Potion
+                                        && TileDrawing.IsTileDangerous(
+                                            x,
+                                            y,
+                                            Main.LocalPlayer
+                                        )
+                                    )
+                                    || (
+                                        _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                    ) // Spelunker Potion
+                                    || (
+                                        _isBiomeSightActive
+                                        && Main.IsTileBiomeSightable(x, y, ref dummyColor)
+                                    ) // Biome Sight Potion
+                                )
+                                {
+                                    _hasLight[i++] = 2;
+                                    continue;
+                                }
+                            }
+
+                            if (_hasLight[i] != 0)
+                            {
+                                --_hasLight[i];
+                            }
+
+                            ++i;
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            Interlocked.Exchange(ref caughtException, 1);
+                            break;
+                        }
+                    }
+                }
+            );
+        }
 
         if (caughtException == 1)
         {
@@ -847,6 +935,7 @@ internal sealed class SmoothLighting
                     try
                     {
                         ref var whiteLight = ref _whiteLights[++i];
+                        ref var blackLight = ref _blackLights[i];
 
                         if (
                             _hasLight[i] != 0
@@ -863,12 +952,18 @@ internal sealed class SmoothLighting
                             whiteLight.X = 1f;
                             whiteLight.Y = 1f;
                             whiteLight.Z = 1f;
+                            blackLight.X = 1f / 255;
+                            blackLight.Y = 1f / 255;
+                            blackLight.Z = 1f / 255;
                         }
                         else
                         {
                             whiteLight.X = 0f;
                             whiteLight.Y = 0f;
                             whiteLight.Z = 0f;
+                            blackLight.X = 0f;
+                            blackLight.Y = 0f;
+                            blackLight.Z = 0f;
                         }
                     }
                     catch (IndexOutOfRangeException)
@@ -1441,55 +1536,108 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
+        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
 
         if (background)
         {
-            Parallel.For(
-                clampedStart,
-                clampedEnd,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
-                (x1) =>
-                {
-                    var i = (height * x1) + offset;
-                    var x = x1 + xmin;
-                    for (var y = clampedYmin; y < clampedYmax; ++y)
+            if (useGlowMasks)
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
                     {
-                        try
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
                         {
-                            Vector3.Multiply(
-                                ref _lights[i],
-                                brightness,
-                                out var lightColor
-                            );
-
-                            var tile = Main.tile[x, y];
-
-                            // Illuminant Paint and Shimmer
-                            if (tile.IsWallFullbright || HasShimmer(tile))
+                            try
                             {
-                                lightColor.X = Math.Max(lightColor.X, brightness);
-                                lightColor.Y = Math.Max(lightColor.Y, brightness);
-                                lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+
+                                var tile = Main.tile[x, y];
+
+                                // Shimmer
+                                if (HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+
+                                VectorToColor.Assign(
+                                    ref _finalLightsHiDef[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
                             }
 
-                            VectorToColor.Assign(
-                                ref _finalLightsHiDef[i],
-                                multFromOverbright,
-                                lightColor
-                            );
+                            ++i;
                         }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Interlocked.Exchange(ref caughtException, 1);
-                        }
-
-                        ++i;
                     }
-                }
-            );
+                );
+            }
+            else
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
+                        {
+                            try
+                            {
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+
+                                var tile = Main.tile[x, y];
+
+                                // Illuminant Paint and Shimmer
+                                if (tile.IsWallFullbright || HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+
+                                VectorToColor.Assign(
+                                    ref _finalLightsHiDef[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
+
+                            ++i;
+                        }
+                    }
+                );
+            }
 
             if (caughtException == 1)
             {
@@ -1511,108 +1659,219 @@ internal sealed class SmoothLighting
         }
         else
         {
-            _glowingTileColors[TileID.MartianConduitPlating] =
-                MartianConduitPlatingGlowColor();
-
-            _glowingTileColors[TileID.RainbowMoss] =
-                _glowingTileColors[TileID.RainbowMossBrick] =
-                _glowingTileColors[TileID.RainbowMossBlock] =
-                _glowingTileColors[TileID.RainbowBrick] =
-                    RainbowGlowColor();
-
-            Parallel.For(
-                clampedStart,
-                clampedEnd,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
-                (x1) =>
-                {
-                    var i = (height * x1) + offset;
-                    var x = x1 + xmin;
-                    for (var y = clampedYmin; y < clampedYmax; ++y)
+            if (useGlowMasks)
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
                     {
-                        try
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
                         {
-                            Vector3.Multiply(
-                                ref _lights[i],
-                                brightness,
-                                out var lightColor
-                            );
-                            var tile = Main.tile[x, y];
-
-                            var biomeSightColor = new Color();
-
-                            // Illuminant Paint and Shimmer
-                            if (tile.IsTileFullbright || HasShimmer(tile))
+                            try
                             {
-                                lightColor.X = Math.Max(lightColor.X, brightness);
-                                lightColor.Y = Math.Max(lightColor.Y, brightness);
-                                lightColor.Z = Math.Max(lightColor.Z, brightness);
-                            }
-                            // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
-                            else if (_glowingTiles[tile.TileType])
-                            {
-                                ref var glow = ref _glowingTileColors[tile.TileType];
-
-                                lightColor.X = Math.Max(lightColor.X, glowMult * glow.R);
-                                lightColor.Y = Math.Max(lightColor.Y, glowMult * glow.G);
-                                lightColor.Z = Math.Max(lightColor.Z, glowMult * glow.B);
-                            }
-                            // Dangersense Potion
-                            else if (
-                                _isDangersenseActive
-                                && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
-                            )
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 255f / 255f);
-                                lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
-                                lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
-                            }
-                            // Spelunker Potion
-                            else if (_isSpelunkerActive && Main.IsTileSpelunkable(x, y))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 200f / 255f);
-                                lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
-                            }
-                            // Biome Sight Potion
-                            else if (
-                                _isBiomeSightActive
-                                && Main.IsTileBiomeSightable(x, y, ref biomeSightColor)
-                            )
-                            {
-                                lightColor.X = Math.Max(
-                                    lightColor.X,
-                                    (1f / 255f) * biomeSightColor.R
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
                                 );
-                                lightColor.Y = Math.Max(
-                                    lightColor.Y,
-                                    (1f / 255f) * biomeSightColor.G
-                                );
-                                lightColor.Z = Math.Max(
-                                    lightColor.Z,
-                                    (1f / 255f) * biomeSightColor.B
+                                var tile = Main.tile[x, y];
+
+                                var biomeSightColor = new Color();
+
+                                // Shimmer
+                                if (HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+                                // Dangersense Potion
+                                else if (
+                                    _isDangersenseActive
+                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 255f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
+                                    lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
+                                }
+                                // Spelunker Potion
+                                else if (
+                                    _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 200f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
+                                }
+                                // Biome Sight Potion
+                                else if (
+                                    _isBiomeSightActive
+                                    && Main.IsTileBiomeSightable(
+                                        x,
+                                        y,
+                                        ref biomeSightColor
+                                    )
+                                )
+                                {
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        (1f / 255f) * biomeSightColor.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        (1f / 255f) * biomeSightColor.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        (1f / 255f) * biomeSightColor.B
+                                    );
+                                }
+
+                                TileShine(ref lightColor, tile);
+
+                                VectorToColor.Assign(
+                                    ref _finalLightsHiDef[i],
+                                    multFromOverbright,
+                                    lightColor
                                 );
                             }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
 
-                            TileShine(ref lightColor, tile);
-
-                            VectorToColor.Assign(
-                                ref _finalLightsHiDef[i],
-                                multFromOverbright,
-                                lightColor
-                            );
+                            ++i;
                         }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Interlocked.Exchange(ref caughtException, 1);
-                        }
-
-                        ++i;
                     }
-                }
-            );
+                );
+            }
+            else
+            {
+                _glowingTileColors[TileID.MartianConduitPlating] =
+                    MartianConduitPlatingGlowColor();
+
+                _glowingTileColors[TileID.RainbowMoss] =
+                    _glowingTileColors[TileID.RainbowMossBrick] =
+                    _glowingTileColors[TileID.RainbowMossBlock] =
+                    _glowingTileColors[TileID.RainbowBrick] =
+                        RainbowGlowColor();
+
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
+                        {
+                            try
+                            {
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+                                var tile = Main.tile[x, y];
+
+                                var biomeSightColor = new Color();
+
+                                // Illuminant Paint and Shimmer
+                                if (tile.IsTileFullbright || HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+                                // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
+                                else if (_glowingTiles[tile.TileType])
+                                {
+                                    ref var glow = ref _glowingTileColors[tile.TileType];
+
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        glowMult * glow.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        glowMult * glow.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        glowMult * glow.B
+                                    );
+                                }
+                                // Dangersense Potion
+                                else if (
+                                    _isDangersenseActive
+                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 255f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
+                                    lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
+                                }
+                                // Spelunker Potion
+                                else if (
+                                    _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 200f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
+                                }
+                                // Biome Sight Potion
+                                else if (
+                                    _isBiomeSightActive
+                                    && Main.IsTileBiomeSightable(
+                                        x,
+                                        y,
+                                        ref biomeSightColor
+                                    )
+                                )
+                                {
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        (1f / 255f) * biomeSightColor.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        (1f / 255f) * biomeSightColor.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        (1f / 255f) * biomeSightColor.B
+                                    );
+                                }
+
+                                TileShine(ref lightColor, tile);
+
+                                VectorToColor.Assign(
+                                    ref _finalLightsHiDef[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
+
+                            ++i;
+                        }
+                    }
+                );
+            }
 
             if (caughtException == 1)
             {
@@ -1656,55 +1915,108 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
+        var useGlowMasks = PreferencesConfig.Instance.UseGlowMasks();
 
         if (background)
         {
-            Parallel.For(
-                clampedStart,
-                clampedEnd,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
-                (x1) =>
-                {
-                    var i = (height * x1) + offset;
-                    var x = x1 + xmin;
-                    for (var y = clampedYmin; y < clampedYmax; ++y)
+            if (useGlowMasks)
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
                     {
-                        try
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
                         {
-                            Vector3.Multiply(
-                                ref _lights[i],
-                                brightness,
-                                out var lightColor
-                            );
-
-                            var tile = Main.tile[x, y];
-
-                            // Illuminant Paint and Shimmer
-                            if (tile.IsWallFullbright || HasShimmer(tile))
+                            try
                             {
-                                lightColor.X = Math.Max(lightColor.X, brightness);
-                                lightColor.Y = Math.Max(lightColor.Y, brightness);
-                                lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+
+                                var tile = Main.tile[x, y];
+
+                                // Shimmer
+                                if (HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+
+                                VectorToColor.Assign(
+                                    ref _finalLights[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
                             }
 
-                            VectorToColor.Assign(
-                                ref _finalLights[i],
-                                multFromOverbright,
-                                lightColor
-                            );
+                            ++i;
                         }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Interlocked.Exchange(ref caughtException, 1);
-                        }
-
-                        ++i;
                     }
-                }
-            );
+                );
+            }
+            else
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
+                        {
+                            try
+                            {
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+
+                                var tile = Main.tile[x, y];
+
+                                // Illuminant Paint and Shimmer
+                                if (tile.IsWallFullbright || HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+
+                                VectorToColor.Assign(
+                                    ref _finalLights[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
+
+                            ++i;
+                        }
+                    }
+                );
+            }
 
             if (caughtException == 1)
             {
@@ -1720,108 +2032,219 @@ internal sealed class SmoothLighting
         }
         else
         {
-            _glowingTileColors[TileID.MartianConduitPlating] =
-                MartianConduitPlatingGlowColor();
-
-            _glowingTileColors[TileID.RainbowMoss] =
-                _glowingTileColors[TileID.RainbowMossBrick] =
-                _glowingTileColors[TileID.RainbowMossBlock] =
-                _glowingTileColors[TileID.RainbowBrick] =
-                    RainbowGlowColor();
-
-            Parallel.For(
-                clampedStart,
-                clampedEnd,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
-                (x1) =>
-                {
-                    var i = (height * x1) + offset;
-                    var x = x1 + xmin;
-                    for (var y = clampedYmin; y < clampedYmax; ++y)
+            if (useGlowMasks)
+            {
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
                     {
-                        try
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
                         {
-                            Vector3.Multiply(
-                                ref _lights[i],
-                                brightness,
-                                out var lightColor
-                            );
-                            var tile = Main.tile[x, y];
-
-                            var biomeSightColor = new Color();
-
-                            // Illuminant Paint and Shimmer
-                            if (tile.IsTileFullbright || HasShimmer(tile))
+                            try
                             {
-                                lightColor.X = Math.Max(lightColor.X, brightness);
-                                lightColor.Y = Math.Max(lightColor.Y, brightness);
-                                lightColor.Z = Math.Max(lightColor.Z, brightness);
-                            }
-                            // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
-                            else if (_glowingTiles[tile.TileType])
-                            {
-                                ref var glow = ref _glowingTileColors[tile.TileType];
-
-                                lightColor.X = Math.Max(lightColor.X, glowMult * glow.R);
-                                lightColor.Y = Math.Max(lightColor.Y, glowMult * glow.G);
-                                lightColor.Z = Math.Max(lightColor.Z, glowMult * glow.B);
-                            }
-                            // Dangersense Potion
-                            else if (
-                                _isDangersenseActive
-                                && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
-                            )
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 255f / 255f);
-                                lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
-                                lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
-                            }
-                            // Spelunker Potion
-                            else if (_isSpelunkerActive && Main.IsTileSpelunkable(x, y))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 200f / 255f);
-                                lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
-                            }
-                            // Biome Sight Potion
-                            else if (
-                                _isBiomeSightActive
-                                && Main.IsTileBiomeSightable(x, y, ref biomeSightColor)
-                            )
-                            {
-                                lightColor.X = Math.Max(
-                                    lightColor.X,
-                                    (1f / 255f) * biomeSightColor.R
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
                                 );
-                                lightColor.Y = Math.Max(
-                                    lightColor.Y,
-                                    (1f / 255f) * biomeSightColor.G
-                                );
-                                lightColor.Z = Math.Max(
-                                    lightColor.Z,
-                                    (1f / 255f) * biomeSightColor.B
+                                var tile = Main.tile[x, y];
+
+                                var biomeSightColor = new Color();
+
+                                // Shimmer
+                                if (HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+                                // Dangersense Potion
+                                else if (
+                                    _isDangersenseActive
+                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 255f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
+                                    lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
+                                }
+                                // Spelunker Potion
+                                else if (
+                                    _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 200f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
+                                }
+                                // Biome Sight Potion
+                                else if (
+                                    _isBiomeSightActive
+                                    && Main.IsTileBiomeSightable(
+                                        x,
+                                        y,
+                                        ref biomeSightColor
+                                    )
+                                )
+                                {
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        (1f / 255f) * biomeSightColor.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        (1f / 255f) * biomeSightColor.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        (1f / 255f) * biomeSightColor.B
+                                    );
+                                }
+
+                                TileShine(ref lightColor, tile);
+
+                                VectorToColor.Assign(
+                                    ref _finalLights[i],
+                                    multFromOverbright,
+                                    lightColor
                                 );
                             }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
 
-                            TileShine(ref lightColor, tile);
-
-                            VectorToColor.Assign(
-                                ref _finalLights[i],
-                                multFromOverbright,
-                                lightColor
-                            );
+                            ++i;
                         }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Interlocked.Exchange(ref caughtException, 1);
-                        }
-
-                        ++i;
                     }
-                }
-            );
+                );
+            }
+            else
+            {
+                _glowingTileColors[TileID.MartianConduitPlating] =
+                    MartianConduitPlatingGlowColor();
+
+                _glowingTileColors[TileID.RainbowMoss] =
+                    _glowingTileColors[TileID.RainbowMossBrick] =
+                    _glowingTileColors[TileID.RainbowMossBlock] =
+                    _glowingTileColors[TileID.RainbowBrick] =
+                        RainbowGlowColor();
+
+                Parallel.For(
+                    clampedStart,
+                    clampedEnd,
+                    new ParallelOptions
+                    {
+                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
+                    },
+                    (x1) =>
+                    {
+                        var i = (height * x1) + offset;
+                        var x = x1 + xmin;
+                        for (var y = clampedYmin; y < clampedYmax; ++y)
+                        {
+                            try
+                            {
+                                Vector3.Multiply(
+                                    ref _lights[i],
+                                    brightness,
+                                    out var lightColor
+                                );
+                                var tile = Main.tile[x, y];
+
+                                var biomeSightColor = new Color();
+
+                                // Illuminant Paint and Shimmer
+                                if (tile.IsTileFullbright || HasShimmer(tile))
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, brightness);
+                                    lightColor.Y = Math.Max(lightColor.Y, brightness);
+                                    lightColor.Z = Math.Max(lightColor.Z, brightness);
+                                }
+                                // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
+                                else if (_glowingTiles[tile.TileType])
+                                {
+                                    ref var glow = ref _glowingTileColors[tile.TileType];
+
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        glowMult * glow.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        glowMult * glow.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        glowMult * glow.B
+                                    );
+                                }
+                                // Dangersense Potion
+                                else if (
+                                    _isDangersenseActive
+                                    && TileDrawing.IsTileDangerous(x, y, Main.LocalPlayer)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 255f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 50f / 255f);
+                                    lightColor.Z = Math.Max(lightColor.Z, 50f / 255f);
+                                }
+                                // Spelunker Potion
+                                else if (
+                                    _isSpelunkerActive && Main.IsTileSpelunkable(x, y)
+                                )
+                                {
+                                    lightColor.X = Math.Max(lightColor.X, 200f / 255f);
+                                    lightColor.Y = Math.Max(lightColor.Y, 170f / 255f);
+                                }
+                                // Biome Sight Potion
+                                else if (
+                                    _isBiomeSightActive
+                                    && Main.IsTileBiomeSightable(
+                                        x,
+                                        y,
+                                        ref biomeSightColor
+                                    )
+                                )
+                                {
+                                    lightColor.X = Math.Max(
+                                        lightColor.X,
+                                        (1f / 255f) * biomeSightColor.R
+                                    );
+                                    lightColor.Y = Math.Max(
+                                        lightColor.Y,
+                                        (1f / 255f) * biomeSightColor.G
+                                    );
+                                    lightColor.Z = Math.Max(
+                                        lightColor.Z,
+                                        (1f / 255f) * biomeSightColor.B
+                                    );
+                                }
+
+                                TileShine(ref lightColor, tile);
+
+                                VectorToColor.Assign(
+                                    ref _finalLights[i],
+                                    multFromOverbright,
+                                    lightColor
+                                );
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                Interlocked.Exchange(ref caughtException, 1);
+                            }
+
+                            ++i;
+                        }
+                    }
+                );
+            }
 
             if (caughtException == 1)
             {
@@ -1910,7 +2333,7 @@ internal sealed class SmoothLighting
         RenderTarget2D target,
         bool background,
         bool disableNormalMaps = false,
-        RenderTarget2D tempTarget = null,
+        RenderTarget2D tmpTarget = null,
         RenderTarget2D ambientOcclusionTarget = null
     )
     {
@@ -1929,18 +2352,18 @@ internal sealed class SmoothLighting
             return;
         }
 
-        var doScaling = tempTarget is not null;
+        var doScaling = tmpTarget is not null;
         Vector2 offset;
-        if (tempTarget is null)
+        if (tmpTarget is null)
         {
             TextureUtil.MakeSize(ref _drawTarget1, target.Width, target.Height);
-            tempTarget = _drawTarget1;
+            tmpTarget = _drawTarget1;
             offset = new Vector2(Main.offScreenRange);
         }
         else
         {
             offset =
-                (tempTarget.Size() - new Vector2(Main.screenWidth, Main.screenHeight))
+                (tmpTarget.Size() - new Vector2(Main.screenWidth, Main.screenHeight))
                 / 2f;
         }
 
@@ -1953,14 +2376,14 @@ internal sealed class SmoothLighting
         {
             TextureUtil.MakeAtLeastSize(
                 ref _drawTarget2,
-                tempTarget.Width,
-                tempTarget.Height
+                tmpTarget.Width,
+                tmpTarget.Height
             );
         }
 
         ApplySmoothLighting(
             lightMapTexture,
-            tempTarget,
+            tmpTarget,
             _drawTarget2,
             _lightMapPosition,
             Main.screenPosition - offset,
@@ -1982,7 +2405,7 @@ internal sealed class SmoothLighting
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        Main.spriteBatch.Draw(tempTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
@@ -2332,6 +2755,27 @@ internal sealed class SmoothLighting
             Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
         }
 
+        Main.spriteBatch.End();
+    }
+
+    internal void DrawMax(Texture2D primary, Texture2D secondary)
+    {
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _maxShader.Apply();
+        Main.graphics.GraphicsDevice.Textures[4] = primary;
+        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+        Main.spriteBatch.Draw(
+            secondary,
+            Vector2.Zero,
+            new Rectangle(0, 0, primary.Width, primary.Height),
+            Color.White
+        );
         Main.spriteBatch.End();
     }
 }

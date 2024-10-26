@@ -356,6 +356,18 @@ float4 BrightenBackground(float4 color : COLOR0, float2 coords : TEXCOORD0) : CO
     return color * tex2D(TextureSampler, coords);
 }
 
+float4 Max(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 primary = tex2D(WorldSampler, coords);
+    float4 secondary = tex2D(TextureSampler, coords);
+    float4 bright = max(primary, secondary);
+    
+    return float4(
+        lerp(primary.rgb, bright.rgb, step(2.0 / 255, primary.rgb)),
+        bright.a
+    );
+}
+
 technique Technique1
 {
     pass Normals
@@ -486,5 +498,10 @@ technique Technique1
     pass BrightenBackground
     {
         PixelShader = compile ps_3_0 BrightenBackground();
+    }
+    
+    pass Max
+    {
+        PixelShader = compile ps_2_0 Max();
     }
 }

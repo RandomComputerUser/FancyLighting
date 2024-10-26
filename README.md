@@ -17,6 +17,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Gamma correction now uses 2.2 gamma instead of sRGB
 - There is now a separate option to use the sRGB transfer function
 - Added a setting to control the gamma used by lighting and textures
+- Added support for glow masks
 - Improved global illumination and enabled it in the Ultra and Extreme presets
 - Added a setting to control the brightness of indirect lighting from global illumination
 - Added settings to apply overbright lighting to more things
