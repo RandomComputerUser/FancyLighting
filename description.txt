@@ -10,8 +10,6 @@ Features:
 - Gamma correction
 - sRGB output mode
 
-On Linux, it is recommended to run tModLoader with Proton Experimental.
-
 For the best performance, lower the resolution to either 1920x1080 or 1920x1200 depending on the aspect ratio of your display. Resolutions higher than 1920x1200 may result in significantly lower frame rates. The frame rate can be checked by pressing F10.
 
 Some tiles are tinted when being drawn. For example, pearlstone is tinted pink so that its in-game appearance is more pink than its texture. Smooth lighting supports all vanilla tinted tiles. Modded tinted tiles are not supported.
