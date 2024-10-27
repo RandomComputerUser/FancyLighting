@@ -2427,7 +2427,8 @@ internal sealed class SmoothLighting
         bool skipFinalPass = false,
         bool disableNormalMaps = false,
         bool tileEntities = false,
-        RenderTarget2D ambientOcclusionTarget = null
+        RenderTarget2D ambientOcclusionTarget = null,
+        Texture2D glow = null
     )
     {
         var lightMapTexture = background ? _colorsBackground : _colors;
@@ -2443,42 +2444,23 @@ internal sealed class SmoothLighting
             16 * lightMapTexture.Width
         );
 
-        if (LightingConfig.Instance.SmoothLightingEnabled())
-        {
-            ApplySmoothLighting(
-                lightMapTexture,
-                _cameraModeTarget2,
-                _cameraModeTarget3,
-                _lightMapPosition,
-                16f
-                    * new Vector2(
-                        FancyLightingMod._cameraModeArea.X,
-                        FancyLightingMod._cameraModeArea.Y
-                    ),
-                Vector2.One,
-                target,
-                background,
-                disableNormalMaps,
-                tileEntities,
-                ambientOcclusionTarget
-            );
-        }
-        else
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget2);
-
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-
-            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-
-            Main.spriteBatch.End();
-        }
+        ApplySmoothLighting(
+            lightMapTexture,
+            _cameraModeTarget2,
+            _cameraModeTarget3,
+            _lightMapPosition,
+            16f
+                * new Vector2(
+                    FancyLightingMod._cameraModeArea.X,
+                    FancyLightingMod._cameraModeArea.Y
+                ),
+            Vector2.One,
+            target,
+            background,
+            disableNormalMaps,
+            tileEntities,
+            ambientOcclusionTarget
+        );
 
         if (skipFinalPass)
         {
@@ -2499,14 +2481,32 @@ internal sealed class SmoothLighting
         Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
         Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
+            SpriteSortMode.Immediate,
             BlendState.AlphaBlend,
             SamplerState.PointClamp,
             DepthStencilState.None,
             RasterizerState.CullNone
         );
         Main.spriteBatch.Draw(_cameraModeTarget1, Vector2.Zero, Color.White);
-        Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
+        if (glow is null)
+        {
+            Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
+        }
+        else
+        {
+            _maxShader
+                .SetParameter(
+                    "WorldCoordMult",
+                    new Vector2(
+                        (float)_cameraModeTarget2.Width / glow.Width,
+                        (float)_cameraModeTarget2.Height / glow.Height
+                    )
+                )
+                .Apply();
+            Main.graphics.GraphicsDevice.Textures[4] = glow;
+            Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+            Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
+        }
         Main.spriteBatch.End();
     }
 
@@ -2758,7 +2758,8 @@ internal sealed class SmoothLighting
         Main.spriteBatch.End();
     }
 
-    internal void DrawMax(Texture2D primary, Texture2D secondary)
+    // lighted must be the same exact size as
+    internal void DrawGlow(Texture2D lighted, Texture2D glow)
     {
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -2767,15 +2768,18 @@ internal sealed class SmoothLighting
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _maxShader.Apply();
-        Main.graphics.GraphicsDevice.Textures[4] = primary;
+        _maxShader
+            .SetParameter(
+                "WorldCoordMult",
+                new Vector2(
+                    (float)lighted.Width / glow.Width,
+                    (float)lighted.Height / glow.Height
+                )
+            )
+            .Apply();
+        Main.graphics.GraphicsDevice.Textures[4] = glow;
         Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
-        Main.spriteBatch.Draw(
-            secondary,
-            Vector2.Zero,
-            new Rectangle(0, 0, primary.Width, primary.Height),
-            Color.White
-        );
+        Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
     }
 }

@@ -358,8 +358,8 @@ float4 BrightenBackground(float4 color : COLOR0, float2 coords : TEXCOORD0) : CO
 
 float4 Max(float2 coords : TEXCOORD0) : COLOR0
 {
-    float4 primary = tex2D(WorldSampler, coords);
-    float4 secondary = tex2D(TextureSampler, coords);
+    float4 primary = tex2D(TextureSampler, coords);
+    float4 secondary = tex2D(WorldSampler, WorldCoordMult * coords);
     float4 bright = max(primary, secondary);
     
     return float4(

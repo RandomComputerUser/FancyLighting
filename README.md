@@ -33,5 +33,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Optimized overbright lighting
 - Removed the Brighter Lighting setting, which is now effectively always enabled
 - Fixed graphical glitches with shimmer waterfalls
-- Fixed a camera mode bug that caused cave backgrounds to be rendered incorrectly
+- Fixed camera mode not working correctly with smooth lighting disabled and ambient occlusion enabled
+- Fixed camera mode not rendering cave backgrounds correctly
+- Reduced the possibility of camera mode crashing due to there being too many tile entities
 - Upgraded to .NET 8

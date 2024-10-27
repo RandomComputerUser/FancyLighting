@@ -26,6 +26,7 @@ internal sealed class AmbientOcclusion
     private Shader _hemisphereBlurShader;
     private Shader _blurShader;
     private Shader _finalBlurShader;
+    private Shader _maxShader;
 
     public AmbientOcclusion()
     {
@@ -49,6 +50,10 @@ internal sealed class AmbientOcclusion
             "FancyLighting/Effects/AmbientOcclusion",
             "FinalBlur"
         );
+        _maxShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "Max"
+        );
 
         _drawingTileEntities = false;
     }
@@ -66,6 +71,7 @@ internal sealed class AmbientOcclusion
         EffectLoader.UnloadEffect(ref _hemisphereBlurShader);
         EffectLoader.UnloadEffect(ref _blurShader);
         EffectLoader.UnloadEffect(ref _finalBlurShader);
+        EffectLoader.UnloadEffect(ref _maxShader);
     }
 
     private void InitSurfaces()
@@ -132,7 +138,8 @@ internal sealed class AmbientOcclusion
         RenderTarget2D screenTarget,
         RenderTarget2D wallTarget,
         CaptureBiome biome,
-        bool doDraw = true
+        bool doDraw = true,
+        Texture2D glow = null
     )
     {
         TextureUtil.MakeSize(
@@ -151,27 +158,7 @@ internal sealed class AmbientOcclusion
             screenTarget.Height
         );
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget1);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        Main.instance.TilesRenderer.PreDrawTiles(true, false, false);
-        Main.tileBatch.Begin();
-        Main.spriteBatch.Begin();
-        if (biome is null)
-        {
-            Main.instance.TilesRenderer.Draw(true, false, false);
-        }
-        else
-        {
-            Main.instance.TilesRenderer.Draw(
-                true,
-                false,
-                false,
-                Main.bloodMoon ? 9 : biome.WaterStyle
-            );
-        }
-
-        Main.tileBatch.End();
-        Main.spriteBatch.End();
+        Main.instance.TilesRenderer.SpecificHacksForCapture();
 
         var extraLayer =
             LightingConfig.Instance.DoNonSolidAmbientOcclusion
@@ -184,7 +171,8 @@ internal sealed class AmbientOcclusion
         }
         if (LightingConfig.Instance.DoNonSolidAmbientOcclusion)
         {
-            Main.instance.TilesRenderer.PreDrawTiles(false, false, false);
+            // Set intoRenderTargets true to reset special tile counts
+            Main.instance.TilesRenderer.PreDrawTiles(false, false, true);
             Main.tileBatch.Begin();
             Main.spriteBatch.Begin();
             if (biome is null)
@@ -204,6 +192,27 @@ internal sealed class AmbientOcclusion
             Main.spriteBatch.End();
         }
 
+        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget1);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        Main.instance.TilesRenderer.PreDrawTiles(true, false, false);
+        Main.tileBatch.Begin();
+        Main.spriteBatch.Begin();
+        if (biome is null)
+        {
+            Main.instance.TilesRenderer.Draw(true, false, false);
+        }
+        else
+        {
+            Main.instance.TilesRenderer.Draw(
+                true,
+                false,
+                false,
+                Main.bloodMoon ? 9 : biome.WaterStyle
+            );
+        }
+        Main.tileBatch.End();
+        Main.spriteBatch.End();
+
         ApplyAmbientOcclusionInner(
             wallTarget,
             _cameraModeTarget1,
@@ -215,6 +224,8 @@ internal sealed class AmbientOcclusion
             doDraw,
             out var useTarget2
         );
+
+        var walls = useTarget2 ? _cameraModeTarget3 : _cameraModeTarget2;
 
         if (doDraw)
         {
@@ -232,24 +243,39 @@ internal sealed class AmbientOcclusion
             Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
+                SpriteSortMode.Immediate,
                 BlendState.AlphaBlend,
                 SamplerState.PointClamp,
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
             Main.spriteBatch.Draw(_cameraModeTarget1, Vector2.Zero, Color.White);
-            Main.spriteBatch.Draw(
-                useTarget2 ? _cameraModeTarget3 : _cameraModeTarget2,
-                Vector2.Zero,
-                Color.White
-            );
+            if (glow is null)
+            {
+                Main.spriteBatch.Draw(walls, Vector2.Zero, Color.White);
+            }
+            else
+            {
+                _maxShader
+                    .SetParameter(
+                        "WorldCoordMult",
+                        new Vector2(
+                            (float)walls.Width / glow.Width,
+                            (float)walls.Height / glow.Height
+                        )
+                    )
+                    .Apply();
+                Main.graphics.GraphicsDevice.Textures[4] = glow;
+                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+                Main.spriteBatch.Draw(walls, Vector2.Zero, Color.White);
+            }
             Main.spriteBatch.End();
         }
 
-        return doDraw ? null
-            : useTarget2 ? _cameraModeTarget3
-            : _cameraModeTarget2;
+        // Reset special tile counts
+        Main.instance.TilesRenderer.PreDrawTiles(false, false, true);
+
+        return doDraw ? null : walls;
     }
 
     private void ApplyAmbientOcclusionInner(

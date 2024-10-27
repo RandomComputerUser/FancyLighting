@@ -43,10 +43,6 @@ internal static class SettingsWarnings
                         "[Fancy Lighting] Some currently enabled settings require Waves Quality in the video settings to not be set to Off.",
                         Color.Yellow
                     );
-                    Main.NewText(
-                        "[Fancy Lighting] In camera mode, Waves Quality should be set to Off to avoid camera mode bugs.",
-                        Color.Yellow
-                    );
                     didWarning = true;
                 }
             }
