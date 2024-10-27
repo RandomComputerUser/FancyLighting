@@ -39,7 +39,7 @@ Mods: {
 					Tooltip:
 						'''
 						Toggles whether to use the sRGB output instead of 2.2 gamma
-						Enable if dark areas are too bright or washed out
+						Enable if dark colors are desaturated and too bright
 						'''
 				}
 
@@ -55,7 +55,8 @@ Mods: {
 					Tooltip:
 						'''
 						Toggles between coarse and fine simulated normal maps
-						Coarse normal maps have 2x2 resolution, and fine 1x1
+						Coarse normal maps are simulated at half resolution, matching the vanilla textures
+						Fine normal maps are simulated at full resolution
 						Recommended to enable when using HD textures
 						'''
 				}
@@ -72,7 +73,7 @@ Mods: {
 					Tooltip:
 						'''
 						Controls the radius of blur used in ambient occlusion
-						Higher values correspond to larger ambient occlusion shadows
+						Higher values result in larger ambient occlusion shadows
 						'''
 				}
 
@@ -81,7 +82,7 @@ Mods: {
 					Tooltip:
 						'''
 						Controls how strongly light is affected by ambient occlusion
-						Higher values correspond to darker, larger ambient occlusion shadows
+						Higher values result in larger, darker ambient occlusion shadows
 						'''
 				}
 
@@ -90,7 +91,7 @@ Mods: {
 					Tooltip:
 						'''
 						Controls the proportion of light affected by ambient occlusion
-						Higher values correspond to darker ambient occlusion shadows
+						Higher values result in darker ambient occlusion shadows
 						'''
 				}
 
@@ -101,7 +102,7 @@ Mods: {
 					Tooltip:
 						'''
 						Controls how much light is lost exiting solid blocks
-						Higher values correspond to darker shadows
+						Higher values result in darker shadows
 						A value of 100% blocks all light from exiting solid blocks
 						'''
 				}
@@ -136,8 +137,8 @@ Mods: {
 					Label: Fancy Sky Colors
 					Tooltip:
 						'''
-						Toggles whether to use modified sky colors
-						If disabled, vanilla sky colors are used
+						Toggles whether to use new sky colors
+						When disabled, vanilla sky colors are used
 						'''
 				}
 
@@ -172,7 +173,7 @@ Mods: {
 					Label: Enhanced Shaders and Colors
 					Tooltip:
 						'''
-						Toggles whether to use enhanced shaders and colors allowed by the FNA HiDef profile
+						Toggles whether to use enhanced shaders and colors allowed by the FNA HiDef graphics profile
 						When enabled, some visual effects are improved:
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
@@ -189,9 +190,8 @@ Mods: {
 					Tooltip:
 						'''
 						Toggles whether to use smooth lighting
-						If disabled, vanilla lighting visuals are used
+						When disabled, vanilla lighting visuals are used
 						Rendering performance is affected primarily by the GPU
-						Requires lighting to be set to color
 						'''
 				}
 
@@ -234,8 +234,8 @@ Mods: {
 					Tooltip:
 						'''
 						Toggles whether to support glow masks
+						When disabled, vanilla glow effects are done by lighting the entire tile
 						May cause side effects due to drawing tiles twice
-						When not enabled, vanilla glow effects are done by lighting the entire tile
 						'''
 				}
 
@@ -287,9 +287,8 @@ Mods: {
 					Tooltip:
 						'''
 						Toggles whether to use ambient occlusion
-						If enabled, tiles produce shadows in front of walls
+						When enabled, tiles produce shadows in front of walls
 						Rendering performance is affected primarily by the GPU
-						Requires lighting to be set to color
 						'''
 				}
 
@@ -297,10 +296,9 @@ Mods: {
 					Label: Ambient Occlusion from Non-Solid Tiles
 					Tooltip:
 						'''
-						Toggles whether non-solid blocks generate ambient occlusion
+						Toggles whether non-solid tiles generate ambient occlusion
 						Non-solid tiles generate weaker ambient occlusion
 						Primarily affects furniture and torches
-						Not all non-solid tiles are affected
 						'''
 				}
 
@@ -310,7 +308,7 @@ Mods: {
 						'''
 						Toggles whether tile entities generate ambient occlusion
 						Tile entities generate weaker ambient occlusion
-						Primarily affects moving, non-solid tiles (e.g., tiles affected by wind)
+						Primarily affects tiles affected by wind
 						'''
 				}
 
@@ -320,11 +318,10 @@ Mods: {
 					Label: Fancy Lighting Engine
 					Tooltip:
 						'''
-						Toggles whether to use a modified lighting engine
+						Toggles whether to use a new lighting engine
 						When enabled, light is spread more accurately with noticeable shadows
 						Performance is affected by the number of light sources in the scene
 						Lighting performance is affected primarily by the CPU; the GPU is not used
-						Requires lighting to be set to color
 						'''
 				}
 
@@ -334,7 +331,7 @@ Mods: {
 						'''
 						Toggles whether to use temporal optimization with the fancy lighting engine
 						When enabled, optimizes lighting using data from the previous lighting update
-						Makes lighting quicker in more intensly lit areas
+						Makes lighting quicker in more intensely lit areas
 						May sometimes cause lighting quality to be slightly reduced
 						'''
 				}
