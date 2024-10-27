@@ -36,4 +36,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Fixed camera mode not working correctly with smooth lighting disabled and ambient occlusion enabled
 - Fixed camera mode not rendering cave backgrounds correctly
 - Reduced the possibility of camera mode crashing due to there being too many tile entities
+- Added compatibility with the Pixelated Backgrounds mod (thanks to [Centri3](https://github.com/Centri3))
 - Upgraded to .NET 8

@@ -698,11 +698,15 @@ public sealed class FancyLightingMod : Mod
         }
 
         SamplerState samplerState;
-        if (ModLoader.TryGetMod("PixelatedBackgrounds", out Mod _))
+        if (ModLoader.TryGetMod("PixelatedBackgrounds", out var _))
         {
             samplerState = SamplerState.PointClamp;
-        } else {
-            samplerState = _inCameraMode ? SamplerState.AnisotropicClamp : SamplerState.LinearClamp;
+        }
+        else
+        {
+            samplerState = _inCameraMode
+                ? SamplerState.AnisotropicClamp
+                : SamplerState.LinearClamp;
         }
 
         Main.spriteBatch.End();
