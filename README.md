@@ -7,7 +7,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### Latest Version
 
-**v0.8.0 (2024-??-??)**
+**v0.8.0 (2024-10-27)**
 - Split settings into two pages
 - The settings preset now only affects settings in the Quality Settings page
 - Renamed some settings and presets
