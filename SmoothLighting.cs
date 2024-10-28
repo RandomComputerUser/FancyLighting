@@ -1186,14 +1186,7 @@ internal sealed class SmoothLighting
                                     )
                                         ? 2f
                                         : 0f;
-                                var middleMult =
-                                    mask is LightMaskMode.Solid
-                                    && (
-                                        !isSolid
-                                        || TileUtil.IsVine(tileX, tileY) == isVine
-                                    )
-                                        ? 12f
-                                        : 4f;
+                                var middleMult = isSolid && !isVine ? 12f : 4f;
                                 var lowerMult =
                                     lightMasks[i + 1] == mask
                                     && (

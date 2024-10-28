@@ -7,6 +7,9 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### Latest Version
 
+**v0.8.1.1 (2024-10-28)**
+- Tweak enhanced light blurring in vines
+
 **v0.8.1 (2024-10-27)**
 - Added a new mode for enhanced glow mask support
 - Fixed a bug that caused stars in the Aether to flicker when moving with smooth lighting enabled
