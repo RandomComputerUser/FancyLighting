@@ -26,7 +26,8 @@ internal sealed class AmbientOcclusion
     private Shader _hemisphereBlurShader;
     private Shader _blurShader;
     private Shader _finalBlurShader;
-    private Shader _maxShader;
+    private Shader _glowMaskShader;
+    private Shader _enhancedGlowMaskShader;
 
     public AmbientOcclusion()
     {
@@ -50,9 +51,13 @@ internal sealed class AmbientOcclusion
             "FancyLighting/Effects/AmbientOcclusion",
             "FinalBlur"
         );
-        _maxShader = EffectLoader.LoadEffect(
+        _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "Max"
+            "GlowMask"
+        );
+        _enhancedGlowMaskShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "EnhancedGlowMask"
         );
 
         _drawingTileEntities = false;
@@ -71,7 +76,8 @@ internal sealed class AmbientOcclusion
         EffectLoader.UnloadEffect(ref _hemisphereBlurShader);
         EffectLoader.UnloadEffect(ref _blurShader);
         EffectLoader.UnloadEffect(ref _finalBlurShader);
-        EffectLoader.UnloadEffect(ref _maxShader);
+        EffectLoader.UnloadEffect(ref _glowMaskShader);
+        EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
 
     private void InitSurfaces()
@@ -139,7 +145,8 @@ internal sealed class AmbientOcclusion
         RenderTarget2D wallTarget,
         CaptureBiome biome,
         bool doDraw = true,
-        Texture2D glow = null
+        Texture2D glow = null,
+        Texture2D lightedGlow = null
     )
     {
         TextureUtil.MakeSize(
@@ -256,15 +263,41 @@ internal sealed class AmbientOcclusion
             }
             else
             {
-                _maxShader
-                    .SetParameter(
-                        "WorldCoordMult",
-                        new Vector2(
-                            (float)walls.Width / glow.Width,
-                            (float)walls.Height / glow.Height
+                if (lightedGlow is null)
+                {
+                    _glowMaskShader
+                        .SetParameter(
+                            "GlowCoordMult",
+                            new Vector2(
+                                (float)walls.Width / glow.Width,
+                                (float)walls.Height / glow.Height
+                            )
                         )
-                    )
-                    .Apply();
+                        .Apply();
+                }
+                else
+                {
+                    _enhancedGlowMaskShader
+                        .SetParameter(
+                            "GlowCoordMult",
+                            new Vector2(
+                                (float)walls.Width / glow.Width,
+                                (float)walls.Height / glow.Height
+                            )
+                        )
+                        .SetParameter(
+                            "LightedGlowCoordMult",
+                            new Vector2(
+                                (float)walls.Width / lightedGlow.Width,
+                                (float)walls.Height / lightedGlow.Height
+                            )
+                        )
+                        .Apply();
+                    Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
+                    Main.graphics.GraphicsDevice.SamplerStates[5] =
+                        SamplerState.PointClamp;
+                }
+
                 Main.graphics.GraphicsDevice.Textures[4] = glow;
                 Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
                 Main.spriteBatch.Draw(walls, Vector2.Zero, Color.White);

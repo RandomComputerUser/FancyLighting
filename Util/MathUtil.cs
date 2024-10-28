@@ -26,4 +26,6 @@ internal static class MathUtil
 
         return big * Math.Sqrt(1.0 + (ratio * ratio));
     }
+
+    public static float Lerp(float x, float y, float t) => ((1 - t) * x) + (t * y);
 }

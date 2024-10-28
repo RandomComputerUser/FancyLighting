@@ -20,6 +20,10 @@ public sealed class LightingConfig : ModConfig
     internal bool SmoothLightingEnabled() =>
         UseSmoothLighting && Lighting.UsingNewLighting;
 
+    internal bool SupportGlowMasks() => GlowMaskSupport is not GlowMaskMode.None;
+
+    internal bool EnhancedGlowMasks() => GlowMaskSupport is GlowMaskMode.Enhanced;
+
     internal bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
     internal bool DrawOverbright() => LightMapRenderMode is RenderMode.BicubicOverbright;
@@ -51,7 +55,7 @@ public sealed class LightingConfig : ModConfig
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _useLightMapToneMapping = options.UseLightMapToneMapping;
         _simulateNormalMaps = options.SimulateNormalMaps;
-        _supportGlowMasks = options.SupportGlowMasks;
+        _glowMaskSupport = options.GlowMaskSupport;
         _lightMapRenderMode = options.LightMapRenderMode;
         _overbrightWaterfalls = options.OverbrightWaterfalls;
         _overbrightNPCsAndPlayer = options.OverbrightNPCsAndPlayer;
@@ -194,17 +198,18 @@ public sealed class LightingConfig : ModConfig
 
     private bool _simulateNormalMaps;
 
-    [DefaultValue(DefaultOptions.SupportGlowMasks)]
-    public bool SupportGlowMasks
+    [DefaultValue(DefaultOptions.GlowMaskSupport)]
+    [DrawTicks]
+    public GlowMaskMode GlowMaskSupport
     {
-        get => _supportGlowMasks;
+        get => _glowMaskSupport;
         set
         {
-            _supportGlowMasks = value;
+            _glowMaskSupport = value;
             UpdatePreset();
         }
     }
-    private bool _supportGlowMasks;
+    private GlowMaskMode _glowMaskSupport;
 
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
     [DrawTicks]

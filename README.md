@@ -7,6 +7,13 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### Latest Version
 
+**v0.8.1 (2024-10-27)**
+- Added a new mode for enhanced glow mask support
+- Fixed a bug that caused stars in the Aether to flicker when moving with smooth lighting enabled
+- Fixed a bug that caused too few stars in the Aether to be drawn with enhanced shaders and colors enabled
+- Fixed a camera mode bug that could render the background at an incorrect scale with enhanced shaders and colors enabled
+- Tweaked the mod icon
+
 **v0.8.0 (2024-10-27)**
 - Split settings into two pages
 - The settings preset now only affects settings in the Quality Settings page
@@ -29,7 +36,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Increased the range of the normal maps strength setting
 - Increased the range of the solid block light absorption setting
 - Improved dithering with overbright lighting and enhanced shaders and colors enabled
-- Increased the max overbright brightness with enhanced colors and shaders enabled from 4x to 16x
+- Increased the max overbright brightness with enhanced shaders and colors enabled from 4x to 16x
 - Optimized overbright lighting
 - Removed the Brighter Lighting setting, which is now effectively always enabled
 - Fixed graphical glitches with shimmer waterfalls

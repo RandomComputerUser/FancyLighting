@@ -229,13 +229,13 @@ Mods: {
 					Tooltip: Toggles whether to simulate normal maps
 				}
 
-				SupportGlowMasks: {
-					Label: Glow Mask Support
+				GlowMaskSupport: {
+					Label: Glow Mask Mode
 					Tooltip:
 						'''
-						Toggles whether to support glow masks
-						When disabled, vanilla glow effects are done by lighting the entire tile
-						May cause side effects due to drawing tiles twice
+						Controls how glow masks are rendered
+						When set to none, vanilla glow masks are simulated by lighting the entire tile
+						Glow masks may cause side effects due to drawing tiles multiple times
 						'''
 				}
 
@@ -356,6 +356,13 @@ Mods: {
 				}
 			}
 
+			GlowMaskMode: {
+				Tooltip: ""
+				None.Label: None
+				Basic.Label: Basic
+				Enhanced.Label: Enhanced
+			}
+
 			LightingEngineMode: {
 				Tooltip: ""
 				One.Label: 1x
@@ -364,6 +371,7 @@ Mods: {
 			}
 
 			Preset: {
+				Tooltip: ""
 				CustomPreset.Label: Custom
 				VanillaPreset.Label: Vanilla
 				MinimalPreset.Label: Minimal
@@ -372,7 +380,6 @@ Mods: {
 				HighPreset.Label: High
 				UltraPreset.Label: Ultra
 				ExtremePreset.Label: "[c/FFFF00:Extreme]"
-				Tooltip: ""
 			}
 
 			RenderMode: {

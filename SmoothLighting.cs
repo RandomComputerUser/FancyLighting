@@ -85,7 +85,8 @@ internal sealed class SmoothLighting
     private Shader _overbrightMaxShader;
     private Shader _lightOnlyShader;
     private Shader _brightenBackgroundShader;
-    private Shader _maxShader;
+    private Shader _glowMaskShader;
+    private Shader _enhancedGlowMaskShader;
 
     public SmoothLighting(FancyLightingMod mod)
     {
@@ -274,9 +275,13 @@ internal sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "BrightenBackground"
         );
-        _maxShader = EffectLoader.LoadEffect(
+        _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "Max"
+            "GlowMask"
+        );
+        _enhancedGlowMaskShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "EnhancedGlowMask"
         );
     }
 
@@ -311,7 +316,8 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenBackgroundShader);
-        EffectLoader.UnloadEffect(ref _maxShader);
+        EffectLoader.UnloadEffect(ref _glowMaskShader);
+        EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
 
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
@@ -762,13 +768,10 @@ internal sealed class SmoothLighting
         }
 
         var low = 0.49f / 255f;
-        if (doGammaCorrection)
-        {
-            GammaConverter.GammaToLinear(ref low);
-        }
+        const int HasLightAmount = 1;
 
         var ymax = lightMapTileArea.Y + lightMapTileArea.Height;
-        if (LightingConfig.Instance.SupportGlowMasks)
+        if (LightingConfig.Instance.SupportGlowMasks())
         {
             Parallel.For(
                 lightMapTileArea.X,
@@ -791,7 +794,7 @@ internal sealed class SmoothLighting
                             ref var color = ref _lights[i];
                             if (color.X > low || color.Y > low || color.Z > low)
                             {
-                                _hasLight[i++] = 2;
+                                _hasLight[i++] = HasLightAmount;
                                 continue;
                             }
 
@@ -818,7 +821,7 @@ internal sealed class SmoothLighting
                                     ) // Biome Sight Potion
                                 )
                                 {
-                                    _hasLight[i++] = 2;
+                                    _hasLight[i++] = HasLightAmount;
                                     continue;
                                 }
                             }
@@ -862,7 +865,7 @@ internal sealed class SmoothLighting
                             ref var color = ref _lights[i];
                             if (color.X > low || color.Y > low || color.Z > low)
                             {
-                                _hasLight[i++] = 2;
+                                _hasLight[i++] = HasLightAmount;
                                 continue;
                             }
 
@@ -892,7 +895,7 @@ internal sealed class SmoothLighting
                                     ) // Biome Sight Potion
                                 )
                                 {
-                                    _hasLight[i++] = 2;
+                                    _hasLight[i++] = HasLightAmount;
                                     continue;
                                 }
                             }
@@ -1536,7 +1539,7 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
-        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks;
+        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks();
 
         if (background)
         {
@@ -1915,7 +1918,7 @@ internal sealed class SmoothLighting
         var multFromOverbright = LightingConfig.Instance.DrawOverbright()
             ? OverbrightMult
             : 1f;
-        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks;
+        var useGlowMasks = LightingConfig.Instance.SupportGlowMasks();
 
         if (background)
         {
@@ -2428,7 +2431,8 @@ internal sealed class SmoothLighting
         bool disableNormalMaps = false,
         bool tileEntities = false,
         RenderTarget2D ambientOcclusionTarget = null,
-        Texture2D glow = null
+        Texture2D glow = null,
+        Texture2D lightedGlow = null
     )
     {
         var lightMapTexture = background ? _colorsBackground : _colors;
@@ -2494,15 +2498,40 @@ internal sealed class SmoothLighting
         }
         else
         {
-            _maxShader
-                .SetParameter(
-                    "WorldCoordMult",
-                    new Vector2(
-                        (float)_cameraModeTarget2.Width / glow.Width,
-                        (float)_cameraModeTarget2.Height / glow.Height
+            if (lightedGlow is null)
+            {
+                _glowMaskShader
+                    .SetParameter(
+                        "GlowCoordMult",
+                        new Vector2(
+                            (float)_cameraModeTarget2.Width / glow.Width,
+                            (float)_cameraModeTarget2.Height / glow.Height
+                        )
                     )
-                )
-                .Apply();
+                    .Apply();
+            }
+            else
+            {
+                _enhancedGlowMaskShader
+                    .SetParameter(
+                        "GlowCoordMult",
+                        new Vector2(
+                            (float)_cameraModeTarget2.Width / glow.Width,
+                            (float)_cameraModeTarget2.Height / glow.Height
+                        )
+                    )
+                    .SetParameter(
+                        "LightedGlowCoordMult",
+                        new Vector2(
+                            (float)_cameraModeTarget2.Width / lightedGlow.Width,
+                            (float)_cameraModeTarget2.Height / lightedGlow.Height
+                        )
+                    )
+                    .Apply();
+                Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
+                Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+            }
+
             Main.graphics.GraphicsDevice.Textures[4] = glow;
             Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
             Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
@@ -2758,8 +2787,11 @@ internal sealed class SmoothLighting
         Main.spriteBatch.End();
     }
 
-    // lighted must be the same exact size as
-    internal void DrawGlow(Texture2D lighted, Texture2D glow)
+    internal void DrawGlow(
+        Texture2D lighted,
+        Texture2D glow,
+        Texture2D lightedGlow = null
+    )
     {
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -2768,15 +2800,41 @@ internal sealed class SmoothLighting
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _maxShader
-            .SetParameter(
-                "WorldCoordMult",
-                new Vector2(
-                    (float)lighted.Width / glow.Width,
-                    (float)lighted.Height / glow.Height
+
+        if (lightedGlow is null)
+        {
+            _glowMaskShader
+                .SetParameter(
+                    "GlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / glow.Width,
+                        (float)lighted.Height / glow.Height
+                    )
                 )
-            )
-            .Apply();
+                .Apply();
+        }
+        else
+        {
+            _enhancedGlowMaskShader
+                .SetParameter(
+                    "GlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / glow.Width,
+                        (float)lighted.Height / glow.Height
+                    )
+                )
+                .SetParameter(
+                    "LightedGlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / lightedGlow.Width,
+                        (float)lighted.Height / lightedGlow.Height
+                    )
+                )
+                .Apply();
+            Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
+            Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+        }
+
         Main.graphics.GraphicsDevice.Textures[4] = glow;
         Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
         Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);

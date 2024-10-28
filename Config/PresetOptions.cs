@@ -16,7 +16,7 @@ internal record PresetOptions
 
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
 
-    public bool SupportGlowMasks { get; init; } = DefaultOptions.SupportGlowMasks;
+    public GlowMaskMode GlowMaskSupport { get; init; } = DefaultOptions.GlowMaskSupport;
 
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
@@ -66,7 +66,7 @@ internal record PresetOptions
         UseEnhancedBlurring = config.UseEnhancedBlurring;
         UseLightMapToneMapping = config.UseLightMapToneMapping;
         SimulateNormalMaps = config.SimulateNormalMaps;
-        SupportGlowMasks = config.SupportGlowMasks;
+        GlowMaskSupport = config.GlowMaskSupport;
         LightMapRenderMode = config.LightMapRenderMode;
         OverbrightWaterfalls = config.OverbrightWaterfalls;
         OverbrightNPCsAndPlayer = config.OverbrightNPCsAndPlayer;
@@ -93,6 +93,7 @@ internal record PresetOptions
             UseEnhancedBlurring = false,
             UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
+            GlowMaskSupport = GlowMaskMode.Basic,
             LightMapRenderMode = RenderMode.Bilinear,
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
@@ -110,6 +111,7 @@ internal record PresetOptions
             UseEnhancedBlurring = false,
             UseLightMapToneMapping = false,
             SimulateNormalMaps = false,
+            GlowMaskSupport = GlowMaskMode.Basic,
             LightMapRenderMode = RenderMode.Bilinear,
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
@@ -129,6 +131,7 @@ internal record PresetOptions
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = false,
+            GlowMaskSupport = GlowMaskMode.Basic,
             LightMapRenderMode = RenderMode.Bicubic,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -146,6 +149,7 @@ internal record PresetOptions
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
+            GlowMaskSupport = GlowMaskMode.Basic,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -163,6 +167,7 @@ internal record PresetOptions
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
+            GlowMaskSupport = GlowMaskMode.Enhanced,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             OverbrightWaterfalls = true,
             UseAmbientOcclusion = true,
@@ -181,6 +186,7 @@ internal record PresetOptions
             UseEnhancedBlurring = true,
             UseLightMapToneMapping = true,
             SimulateNormalMaps = true,
+            GlowMaskSupport = GlowMaskMode.Enhanced,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             OverbrightWaterfalls = true,
             OverbrightNPCsAndPlayer = true,

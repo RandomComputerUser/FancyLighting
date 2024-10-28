@@ -5,6 +5,9 @@ sampler WorldSampler : register(s4);
 sampler DitherSampler : register(s5);
 sampler AmbientOcclusionSampler : register(s6);
 
+sampler GlowSampler : register(s4);
+sampler LightedGlowSampler : register(s5);
+
 float2 NormalMapResolution;
 float2 NormalMapRadius;
 float HiDefNormalMapStrength;
@@ -12,6 +15,8 @@ float2 WorldCoordMult;
 float2 DitherCoordMult;
 float2 AmbientOcclusionCoordMult;
 float BackgroundBrightnessMult;
+float2 GlowCoordMult;
+float2 LightedGlowCoordMult;
 
 // Gamma correction only applies when both overbright and HiDef are enabled
 
@@ -356,14 +361,27 @@ float4 BrightenBackground(float4 color : COLOR0, float2 coords : TEXCOORD0) : CO
     return color * tex2D(TextureSampler, coords);
 }
 
-float4 Max(float2 coords : TEXCOORD0) : COLOR0
+float4 GlowMask(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 primary = tex2D(TextureSampler, coords);
-    float4 secondary = tex2D(WorldSampler, WorldCoordMult * coords);
-    float4 bright = max(primary, secondary);
+    float4 glow = tex2D(GlowSampler, GlowCoordMult * coords);
+    float4 bright = max(primary, glow);
     
     return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, secondary.rgb)),
+        lerp(primary.rgb, bright.rgb, step(2.0 / 255, glow.rgb)),
+        bright.a
+    );
+}
+
+float4 EnhancedGlowMask(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 primary = tex2D(TextureSampler, coords);
+    float4 selector = tex2D(GlowSampler, GlowCoordMult * coords);
+    float4 glow = tex2D(LightedGlowSampler, LightedGlowCoordMult * coords);
+    float4 bright = max(primary, glow);
+    
+    return float4(
+        lerp(primary.rgb, bright.rgb, step(2.0 / 255, selector.rgb)),
         bright.a
     );
 }
@@ -500,8 +518,13 @@ technique Technique1
         PixelShader = compile ps_3_0 BrightenBackground();
     }
     
-    pass Max
+    pass GlowMask
     {
-        PixelShader = compile ps_2_0 Max();
+        PixelShader = compile ps_2_0 GlowMask();
+    }
+    
+    pass EnhancedGlowMask
+    {
+        PixelShader = compile ps_2_0 EnhancedGlowMask();
     }
 }

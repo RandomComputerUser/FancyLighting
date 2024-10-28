@@ -27,7 +27,7 @@ public static class DefaultOptions
     public const bool UseEnhancedBlurring = false;
     public const bool UseLightMapToneMapping = false;
     public const bool SimulateNormalMaps = false;
-    public const bool SupportGlowMasks = true;
+    public const GlowMaskMode GlowMaskSupport = GlowMaskMode.Basic;
     public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
     public const bool OverbrightWaterfalls = false;
     public const bool OverbrightNPCsAndPlayer = false;
