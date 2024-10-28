@@ -3,7 +3,7 @@ author = RandomComputerUser
 version = 0.8.1.1
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
-buildIgnore = Effects/*.config, Effects/BlurKernelGenerator/*, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, README.md
+buildIgnore = Effects/*.config, Effects/BlurKernelGenerator/*, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user
 
 hideCode = false
 hideResources = false

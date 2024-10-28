@@ -8,7 +8,8 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ### Latest Version
 
 **v0.8.1.1 (2024-10-28)**
-- Tweak enhanced light blurring in vines
+- Tweaked enhanced light blurring in vines
+- Removed an unnecessary file from the build
 
 **v0.8.1 (2024-10-27)**
 - Added a new mode for enhanced glow mask support
