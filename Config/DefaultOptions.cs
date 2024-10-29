@@ -37,7 +37,7 @@ public static class DefaultOptions
     public const bool OverbrightRain = false;
 
     // Smooth Lighting Preferences
-    public const int NormalMapsStrength = 100;
+    public const int NormalMapsStrength = 150;
     public const bool FineNormalMaps = false;
     public const bool RenderOnlyLight = false;
 

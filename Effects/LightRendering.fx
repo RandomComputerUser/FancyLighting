@@ -10,7 +10,6 @@ sampler LightedGlowSampler : register(s5);
 
 float2 NormalMapResolution;
 float2 NormalMapRadius;
-float HiDefNormalMapStrength;
 float2 WorldCoordMult;
 float2 DitherCoordMult;
 float2 AmbientOcclusionCoordMult;
@@ -87,7 +86,7 @@ float2 Gradient(
 
 // Intentionally use gamma values for simulating normal maps
 
-float2 NormalsGradientBase(float2 coords, float2 worldTexCoords)
+float2 NormalsGradientBase(float2 worldTexCoords)
 {
     float4 left = tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0));
     float4 right = tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0));
@@ -106,12 +105,12 @@ float2 NormalsGradientBase(float2 coords, float2 worldTexCoords)
     return Gradient(horizontalColorDiff, verticalColorDiff, left.a, right.a, up.a, down.a);
 }
 
-float2 NormalsGradient(float2 coords, float2 worldTexCoords)
+float2 NormalsGradient(float2 worldTexCoords)
 {
-    float2 gradient = NormalsGradientBase(coords, worldTexCoords);
+    float2 gradient = NormalsGradientBase(worldTexCoords);
 
     float3 color = tex2D(WorldSampler, worldTexCoords).rgb;
-    float multiplier = 25.0 - dot(color, 25.0 / 3.2);
+    float multiplier = 25.0 - dot(color, 25.0 / 3.0);
 
     gradient = sign(gradient) * (1.0 - rsqrt(abs(multiplier * gradient) + 1.0));
 
@@ -120,41 +119,17 @@ float2 NormalsGradient(float2 coords, float2 worldTexCoords)
 
 float3 NormalsColorHiDef(float2 coords, float2 worldTexCoords)
 {
-    float2 gradient = NormalsGradientBase(coords, worldTexCoords);
-    gradient *= NormalMapRadius;
-
-    float3 originalColor = tex2D(LightSampler, coords);
-    float3 colorDiff = tex2D(LightSampler, coords + gradient).rgb - originalColor;
-
-    colorDiff = sign(colorDiff) * 0.6 * (1.0 - rsqrt(abs(HiDefNormalMapStrength * colorDiff) + 1.0));
-
-    float3 color = tex2D(WorldSampler, worldTexCoords).rgb;
-    float multiplier = 1 - dot(color, 1.0 / 3.2);
-    colorDiff *= multiplier * sqrt(originalColor);
-
-    return originalColor + colorDiff;
+    return tex2D(LightSampler, coords + NormalsGradient(worldTexCoords));
 }
 
 float3 NormalsColorOverbrightHiDef(float2 coords, float2 worldTexCoords)
 {
-    float2 gradient = NormalsGradientBase(coords, worldTexCoords);
-    gradient *= NormalMapRadius;
-
-    float3 originalColor = GammaToLinear(OverbrightLightAtHiDef(coords));
-    float3 colorDiff = GammaToLinear(OverbrightLightAtHiDef(coords + gradient)) - originalColor;
-
-    colorDiff = sign(colorDiff) * 0.6 * (1.0 - rsqrt(abs(HiDefNormalMapStrength * colorDiff) + 1.0));
-
-    float3 color = tex2D(WorldSampler, worldTexCoords).rgb;
-    float multiplier = 1 - dot(color, 1.0 / 3.2);
-    colorDiff *= multiplier * sqrt(originalColor);
-
-    return LinearToGamma(originalColor + colorDiff);
+    return OverbrightLightAtHiDef(coords + NormalsGradient(worldTexCoords));
 }
 
 float4 Normals(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(tex2D(LightSampler, coords + gradient).rgb, 1);
 }
@@ -168,7 +143,7 @@ float4 NormalsHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbright(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(OverbrightLightAt(coords + gradient), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords);
@@ -184,7 +159,7 @@ float4 NormalsOverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(OverbrightLightAt(coords + gradient) * AmbientOcclusion(coords), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords);
@@ -206,7 +181,7 @@ float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR
 
 float4 NormalsOverbrightLightOnly(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(OverbrightLightAt(coords + gradient), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords).a;
@@ -222,7 +197,7 @@ float4 NormalsOverbrightLightOnlyHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightLightOnlyOpaque(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(OverbrightLightAt(coords + gradient), 1);
 }
@@ -236,7 +211,7 @@ float4 NormalsOverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(coords, WorldCoordMult * coords);
+    float2 gradient = NormalsGradient(WorldCoordMult * coords);
 
     return float4(
         OverbrightLightAt(coords + gradient)

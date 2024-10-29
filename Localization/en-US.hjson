@@ -178,7 +178,6 @@ Mods: {
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
 						- Uses gamma-correct lighting when overbright lighting is enabled
-						- Improves simulated normal maps
 						- Increases background brightness when overbright lighting is enabled
 						'''
 				}

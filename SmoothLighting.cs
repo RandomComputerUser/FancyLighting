@@ -2687,29 +2687,15 @@ internal sealed class SmoothLighting
                             ? _overbrightAmbientOcclusionShader
                             : _overbrightShader;
 
-            var normalMapRadius = hiDef ? 32f : 24f;
-            if (!hiDef)
-            {
-                normalMapRadius *=
-                    0.6f * MathF.Sqrt(PreferencesConfig.Instance.NormalMapsMultiplier());
-                if (fineNormalMaps)
-                {
-                    normalMapRadius *= 1.4f;
-                }
-            }
-
-            var normalMapResolution = fineNormalMaps ? 1f : 2f;
-            var hiDefNormalMapStrength = background ? 26f : 34f;
-            hiDefNormalMapStrength *= PreferencesConfig.Instance.NormalMapsMultiplier();
-            if (doGamma)
-            {
-                hiDefNormalMapStrength *= 2f;
-            }
-
+            var normalMapRadius = background ? 12f : 15f;
+            normalMapRadius *= MathF.Sqrt(
+                PreferencesConfig.Instance.NormalMapsMultiplier()
+            );
             if (fineNormalMaps)
             {
-                hiDefNormalMapStrength *= 1.4f;
+                normalMapRadius *= 1.5f;
             }
+            var normalMapResolution = fineNormalMaps ? 1f : 2f;
 
             shader
                 .SetParameter(
@@ -2732,8 +2718,7 @@ internal sealed class SmoothLighting
                         (float)target2.Width / worldTarget.Width,
                         (float)target2.Height / worldTarget.Height
                     )
-                )
-                .SetParameter("HiDefNormalMapStrength", hiDefNormalMapStrength);
+                );
             Main.graphics.GraphicsDevice.Textures[4] = worldTarget;
             Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
             if (doDitheringSecond)
