@@ -18,7 +18,7 @@ public sealed class PreferencesConfig : ModConfig
 
     internal bool DoPostProcessing() => UseCustomGamma() || UseSrgb;
 
-    internal float NormalMapsMultiplier() => NormalMapsStrength / 100f;
+    internal float NormalMapsMultiplier() => 0.5f * NormalMapsIntensity;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
@@ -73,12 +73,12 @@ public sealed class PreferencesConfig : ModConfig
 
     // Smooth Lighting, Normal Maps, Overbright
     [Header("SmoothLighting")]
-    [Range(25, 400)]
-    [Increment(25)]
-    [DefaultValue(DefaultOptions.NormalMapsStrength)]
+    [Range(1, 10)]
+    [Increment(1)]
+    [DefaultValue(DefaultOptions.NormalMapsIntensity)]
     [Slider]
     [DrawTicks]
-    public int NormalMapsStrength { get; set; }
+    public int NormalMapsIntensity { get; set; }
 
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
@@ -110,6 +110,7 @@ public sealed class PreferencesConfig : ModConfig
     public int AmbientLightProportion { get; set; }
 
     // Fancy Lighting Engine
+    [Header("LightingEngine")]
     [Range(0, 100)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightLoss)]
@@ -131,7 +132,6 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int FancyLightingEngineIndirectBrightness { get; set; }
 
-    [Header("LightingEngine")]
     [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]
     public bool FancyLightingEngineVinesOpaque { get; set; }
 

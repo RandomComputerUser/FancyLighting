@@ -86,26 +86,26 @@ technique Technique1
 {
     pass AlphaToRed
     {
-        PixelShader = compile ps_2_0 AlphaToRed();
+        PixelShader = compile ps_3_0 AlphaToRed();
     }
 
     pass AlphaToLightRed
     {
-        PixelShader = compile ps_2_0 AlphaToLightRed();
+        PixelShader = compile ps_3_0 AlphaToLightRed();
     }
 
     pass HemisphereBlur
     {
-        PixelShader = compile ps_2_0 HemisphereBlur();
+        PixelShader = compile ps_3_0 HemisphereBlur();
     }
 
     pass Blur
     {
-        PixelShader = compile ps_2_0 Blur();
+        PixelShader = compile ps_3_0 Blur();
     }
 
     pass FinalBlur
     {
-        PixelShader = compile ps_2_0 FinalBlur();
+        PixelShader = compile ps_3_0 FinalBlur();
     }
 }

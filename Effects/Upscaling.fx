@@ -78,7 +78,7 @@ technique Technique1
 {
     pass BicubicDither
     {
-        PixelShader = compile ps_2_0 BicubicDither();
+        PixelShader = compile ps_3_0 BicubicDither();
     }
 
     pass BicubicNoDitherHiDef
@@ -88,6 +88,6 @@ technique Technique1
 
     pass NoFilter
     {
-        PixelShader = compile ps_2_0 NoFilter();
+        PixelShader = compile ps_3_0 NoFilter();
     }
 }

@@ -1790,7 +1790,7 @@ internal sealed class SmoothLighting
                                     lightColor.Y = Math.Max(lightColor.Y, brightness);
                                     lightColor.Z = Math.Max(lightColor.Z, brightness);
                                 }
-                                // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
+                                // Glowing tiles
                                 else if (_glowingTiles[tile.TileType])
                                 {
                                     ref var glow = ref _glowingTileColors[tile.TileType];
@@ -2163,7 +2163,7 @@ internal sealed class SmoothLighting
                                     lightColor.Y = Math.Max(lightColor.Y, brightness);
                                     lightColor.Z = Math.Max(lightColor.Z, brightness);
                                 }
-                                // Crystal Shards, Gelatin Crystal, Glowing Moss, Meteorite Brick, and Martian Conduit Plating
+                                // Glowing tiles
                                 else if (_glowingTiles[tile.TileType])
                                 {
                                     ref var glow = ref _glowingTileColors[tile.TileType];
@@ -2687,17 +2687,22 @@ internal sealed class SmoothLighting
                             ? _overbrightAmbientOcclusionShader
                             : _overbrightShader;
 
-            var normalMapRadius = background ? 12f : 15f;
-            normalMapRadius *= MathF.Sqrt(
-                PreferencesConfig.Instance.NormalMapsMultiplier()
-            );
+            var normalMapResolution = fineNormalMaps ? 1f : 2f;
+            var normalMapRadius = 12.5f;
+            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
             if (fineNormalMaps)
             {
-                normalMapRadius *= 1.5f;
+                normalMapMult *= 2f;
             }
-            var normalMapResolution = fineNormalMaps ? 1f : 2f;
+            var normalMapStrength = 1f / (1f + normalMapMult);
+            var overbrightMult = doOverbright
+                ? hiDef
+                    ? 65535f / 4096
+                    : 255f / 128
+                : 1f;
 
             shader
+                .SetParameter("OverbrightMult", overbrightMult)
                 .SetParameter(
                     "NormalMapResolution",
                     new Vector2(
@@ -2712,6 +2717,7 @@ internal sealed class SmoothLighting
                         normalMapRadius / target2.Height
                     )
                 )
+                .SetParameter("NormalMapStrength", normalMapStrength)
                 .SetParameter(
                     "WorldCoordMult",
                     new Vector2(

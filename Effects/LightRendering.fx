@@ -8,8 +8,10 @@ sampler AmbientOcclusionSampler : register(s6);
 sampler GlowSampler : register(s4);
 sampler LightedGlowSampler : register(s5);
 
+float OverbrightMult;
 float2 NormalMapResolution;
 float2 NormalMapRadius;
+float NormalMapStrength;
 float2 WorldCoordMult;
 float2 DitherCoordMult;
 float2 AmbientOcclusionCoordMult;
@@ -29,6 +31,11 @@ float3 GammaToLinear(float3 color)
 float3 LinearToGamma(float3 color)
 {
     return pow(color, 1 / 2.2);
+}
+
+float Luminance(float3 color)
+{
+    return dot(GammaToLinear(color), float3(0.2126, 0.7152, 0.0722));
 }
 
 float3 OverbrightLightAt(float2 coords)
@@ -64,21 +71,19 @@ float3 AmbientOcclusion(float2 coords)
 }
 
 float2 Gradient(
-    float3 horizontalColorDiff,
-    float3 verticalColorDiff,
+    float horizontalColorDiff,
+    float verticalColorDiff,
     float leftAlpha,
     float rightAlpha,
     float upAlpha,
     float downAlpha
 )
 {
-    float horizontal = dot(horizontalColorDiff, 1);
-    float vertical = dot(verticalColorDiff, 1);
-    float2 gradient = float2(horizontal, vertical);
+    float2 gradient = float2(horizontalColorDiff, verticalColorDiff);
 
     gradient *= float2(
-        (leftAlpha * rightAlpha) * (1 / (2.0 * 3)),
-        (upAlpha * downAlpha) * (1 / (2.0 * 3))
+        (leftAlpha * rightAlpha) * 0.5,
+        (upAlpha * downAlpha) * 0.5
     );
 
     return gradient;
@@ -86,72 +91,110 @@ float2 Gradient(
 
 // Intentionally use gamma values for simulating normal maps
 
-float2 NormalsGradientBase(float2 worldTexCoords)
+float2 NormalsSurfaceGradient(float2 worldTexCoords)
 {
     float4 left = tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0));
     float4 right = tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0));
     float4 up = tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y));
     float4 down = tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y));
-    float3 positiveDiagonal
-        = tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb // up left
-        - tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb; // down right
-    float3 negativeDiagonal
-        = tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb // down left
-        - tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb; // up right
+    float leftLuminance = Luminance(left.rgb);
+    float rightLuminance = Luminance(right.rgb);
+    float upLuminance = Luminance(up.rgb);
+    float downLuminance = Luminance(down.rgb);
+    float positiveDiagonal
+        = Luminance(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb) // up left
+        - Luminance(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb); // down right
+    float negativeDiagonal
+        = Luminance(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb) // down left
+        - Luminance(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb); // up right
 
-    float3 horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (left.rgb - right.rgb);
-    float3 verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (up.rgb - down.rgb);
+    float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuminance - rightLuminance);
+    float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuminance - downLuminance);
 
-    return Gradient(horizontalColorDiff, verticalColorDiff, left.a, right.a, up.a, down.a);
+    float luminance = Luminance(tex2D(WorldSampler, worldTexCoords).rgb);
+    float maxLuminance = max(
+        luminance,
+        max(max(leftLuminance, rightLuminance), max(upLuminance, downLuminance))
+    );
+    float mult = 1 - maxLuminance;
+    return mult * Gradient(
+        horizontalColorDiff, verticalColorDiff, left.a, right.a, up.a, down.a
+    );
 }
 
-float2 NormalsGradient(float2 worldTexCoords)
+float2 NormalsLightGradient(float2 coords)
 {
-    float2 gradient = NormalsGradientBase(worldTexCoords);
-
-    float3 color = tex2D(WorldSampler, worldTexCoords).rgb;
-    float multiplier = 25.0 - dot(color, 25.0 / 3.0);
-
-    gradient = sign(gradient) * (1.0 - rsqrt(abs(multiplier * gradient) + 1.0));
-
-    return gradient * NormalMapRadius;
+    float3 left = OverbrightMult * tex2D(LightSampler, coords - float2(NormalMapRadius.x, 0)).rgb;
+    float3 right = OverbrightMult * tex2D(LightSampler, coords + float2(NormalMapRadius.x, 0)).rgb;
+    float3 up = OverbrightMult * tex2D(LightSampler, coords - float2(0, NormalMapRadius.y)).rgb;
+    float3 down = OverbrightMult * tex2D(LightSampler, coords + float2(0, NormalMapRadius.y)).rgb;
+    float horizontalDiff = Luminance(right) - Luminance(left);
+    float verticalDiff = Luminance(down) - Luminance(up);
+    return float2(horizontalDiff, verticalDiff);
 }
 
-float3 NormalsColorHiDef(float2 coords, float2 worldTexCoords)
+float NormalsMultiplier(float2 coords, float2 worldTexCoords)
 {
-    return tex2D(LightSampler, coords + NormalsGradient(worldTexCoords));
+    float2 lightGradient = NormalsLightGradient(coords);
+    float lightGradientLength = length(lightGradient);
+    
+    if (lightGradientLength == 0)
+    {
+        return 1.0;
+    }
+    
+    lightGradient /= lightGradientLength;
+    
+    float2 surfaceGradient = NormalsSurfaceGradient(worldTexCoords);
+    float surfaceGradientLength = length(surfaceGradient);
+    surfaceGradient = surfaceGradientLength == 0 ? 0 : surfaceGradient / surfaceGradientLength;
+    
+    float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
+    return lerp(
+        1.0,
+        lightMult,
+        pow(surfaceGradientLength, NormalMapStrength)
+            * pow(1 - 1.0 / (16.0 * lightGradientLength + 1), 2)
+    );
 }
 
-float3 NormalsColorOverbrightHiDef(float2 coords, float2 worldTexCoords)
+float3 NormalsColor(float2 coords)
 {
-    return OverbrightLightAtHiDef(coords + NormalsGradient(worldTexCoords));
+    float2 worldTexCoords = WorldCoordMult * coords;
+    return NormalsMultiplier(coords, worldTexCoords) * tex2D(LightSampler, coords);
+}
+
+float3 NormalsColorOverbright(float2 coords)
+{
+    float2 worldTexCoords = WorldCoordMult * coords;
+    return NormalsMultiplier(coords, worldTexCoords) * OverbrightLightAt(coords);
+}
+
+float3 NormalsColorOverbrightHiDef(float2 coords)
+{
+    float2 worldTexCoords = WorldCoordMult * coords;
+    return NormalsMultiplier(coords, worldTexCoords) * OverbrightLightAtHiDef(coords);
 }
 
 float4 Normals(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
-    return float4(tex2D(LightSampler, coords + gradient).rgb, 1);
+    return float4(NormalsColor(coords), 1);
 }
 
 float4 NormalsHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 color = NormalsColorHiDef(coords, WorldCoordMult * coords);
-
-    return float4(Dither(color, coords), 1);
+    return float4(Dither(NormalsColor(coords), coords), 1);
 }
 
 float4 NormalsOverbright(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
-    return float4(OverbrightLightAt(coords + gradient), 1)
+    return float4(NormalsColorOverbright(coords), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords);
 }
 
 float4 NormalsOverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 lightColor = NormalsColorOverbrightHiDef(coords, WorldCoordMult * coords);
+    float3 lightColor = NormalsColorOverbrightHiDef(coords);
     float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
 
     return float4(Dither(lightColor * texColor.rgb, coords), texColor.a);
@@ -159,15 +202,13 @@ float4 NormalsOverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
-    return float4(OverbrightLightAt(coords + gradient) * AmbientOcclusion(coords), 1)
+    return float4(NormalsColorOverbright(coords) * AmbientOcclusion(coords), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords);
 }
 
 float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 lightColor = NormalsColorOverbrightHiDef(coords, WorldCoordMult * coords);
+    float3 lightColor = NormalsColorOverbrightHiDef(coords);
     float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
 
     return float4(
@@ -181,40 +222,32 @@ float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR
 
 float4 NormalsOverbrightLightOnly(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
-    return float4(OverbrightLightAt(coords + gradient), 1)
+    return float4(NormalsColorOverbright(coords), 1)
         * tex2D(WorldSampler, WorldCoordMult * coords).a;
 }
 
 float4 NormalsOverbrightLightOnlyHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 lightColor = NormalsColorOverbrightHiDef(coords, WorldCoordMult * coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords).a;
+    float3 lightColor = NormalsColorOverbrightHiDef(coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
 
     return float4(Dither(lightColor * texColor.a, coords), texColor.a);
 }
 
 float4 NormalsOverbrightLightOnlyOpaque(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
-    return float4(OverbrightLightAt(coords + gradient), 1);
+    return float4(NormalsColorOverbright(coords), 1);
 }
 
 float4 NormalsOverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 color = NormalsColorOverbrightHiDef(coords, WorldCoordMult * coords);
-
-    return float4(Dither(color, coords), 1);
+    return float4(Dither(NormalsColorOverbrightHiDef(coords), coords), 1);
 }
 
 float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 gradient = NormalsGradient(WorldCoordMult * coords);
-
     return float4(
-        OverbrightLightAt(coords + gradient)
+        NormalsColorOverbright(coords)
             * lerp(1, AmbientOcclusion(coords), tex2D(WorldSampler, WorldCoordMult * coords).a),
         1
     );
@@ -222,7 +255,7 @@ float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion(float2 coords : TEXCOORD
 
 float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 color = NormalsColorOverbrightHiDef(coords, WorldCoordMult * coords);
+    float3 color = NormalsColorOverbrightHiDef(coords);
 
     return float4(
         Dither(
@@ -365,7 +398,7 @@ technique Technique1
 {
     pass Normals
     {
-        PixelShader = compile ps_2_0 Normals();
+        PixelShader = compile ps_3_0 Normals();
     }
 
     pass NormalsHiDef
@@ -375,7 +408,7 @@ technique Technique1
 
     pass NormalsOverbright
     {
-        PixelShader = compile ps_2_0 NormalsOverbright();
+        PixelShader = compile ps_3_0 NormalsOverbright();
     }
 
     pass NormalsOverbrightHiDef
@@ -385,7 +418,7 @@ technique Technique1
 
     pass NormalsOverbrightAmbientOcclusion
     {
-        PixelShader = compile ps_2_0 NormalsOverbrightAmbientOcclusion();
+        PixelShader = compile ps_3_0 NormalsOverbrightAmbientOcclusion();
     }
 
     pass NormalsOverbrightAmbientOcclusionHiDef
@@ -395,7 +428,7 @@ technique Technique1
 
     pass NormalsOverbrightLightOnly
     {
-        PixelShader = compile ps_2_0 NormalsOverbrightLightOnly();
+        PixelShader = compile ps_3_0 NormalsOverbrightLightOnly();
     }
 
     pass NormalsOverbrightLightOnlyHiDef
@@ -405,7 +438,7 @@ technique Technique1
 
     pass NormalsOverbrightLightOnlyOpaque
     {
-        PixelShader = compile ps_2_0 NormalsOverbrightLightOnlyOpaque();
+        PixelShader = compile ps_3_0 NormalsOverbrightLightOnlyOpaque();
     }
 
     pass NormalsOverbrightLightOnlyOpaqueHiDef
@@ -415,7 +448,7 @@ technique Technique1
 
     pass NormalsOverbrightLightOnlyOpaqueAmbientOcclusion
     {
-        PixelShader = compile ps_2_0 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion();
+        PixelShader = compile ps_3_0 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion();
     }
 
     pass NormalsOverbrightLightOnlyOpaqueAmbientOcclusionHiDef
@@ -425,7 +458,7 @@ technique Technique1
 
     pass Overbright
     {
-        PixelShader = compile ps_2_0 Overbright();
+        PixelShader = compile ps_3_0 Overbright();
     }
 
     pass OverbrightHiDef
@@ -435,7 +468,7 @@ technique Technique1
 
     pass OverbrightAmbientOcclusion
     {
-        PixelShader = compile ps_2_0 OverbrightAmbientOcclusion();
+        PixelShader = compile ps_3_0 OverbrightAmbientOcclusion();
     }
 
     pass OverbrightAmbientOcclusionHiDef
@@ -445,7 +478,7 @@ technique Technique1
 
     pass OverbrightLightOnly
     {
-        PixelShader = compile ps_2_0 OverbrightLightOnly();
+        PixelShader = compile ps_3_0 OverbrightLightOnly();
     }
 
     pass OverbrightLightOnlyHiDef
@@ -455,7 +488,7 @@ technique Technique1
 
     pass OverbrightLightOnlyOpaque
     {
-        PixelShader = compile ps_2_0 OverbrightLightOnlyOpaque();
+        PixelShader = compile ps_3_0 OverbrightLightOnlyOpaque();
     }
 
     pass OverbrightLightOnlyOpaqueHiDef
@@ -465,7 +498,7 @@ technique Technique1
 
     pass OverbrightLightOnlyOpaqueAmbientOcclusion
     {
-        PixelShader = compile ps_2_0 OverbrightLightOnlyOpaqueAmbientOcclusion();
+        PixelShader = compile ps_3_0 OverbrightLightOnlyOpaqueAmbientOcclusion();
     }
 
     pass OverbrightLightOnlyOpaqueAmbientOcclusionHiDef
@@ -475,7 +508,7 @@ technique Technique1
 
     pass OverbrightMax
     {
-        PixelShader = compile ps_2_0 OverbrightMax();
+        PixelShader = compile ps_3_0 OverbrightMax();
     }
 
     pass OverbrightMaxHiDef
@@ -495,11 +528,11 @@ technique Technique1
     
     pass GlowMask
     {
-        PixelShader = compile ps_2_0 GlowMask();
+        PixelShader = compile ps_3_0 GlowMask();
     }
     
     pass EnhancedGlowMask
     {
-        PixelShader = compile ps_2_0 EnhancedGlowMask();
+        PixelShader = compile ps_3_0 EnhancedGlowMask();
     }
 }

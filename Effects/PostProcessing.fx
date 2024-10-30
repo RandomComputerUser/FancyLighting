@@ -76,16 +76,16 @@ technique Technique1
 {   
     pass CustomGammaToGamma
     {
-        PixelShader = compile ps_2_0 CustomGammaToGamma();
+        PixelShader = compile ps_3_0 CustomGammaToGamma();
     }
     
     pass CustomGammaToSrgb
     {
-        PixelShader = compile ps_2_0 CustomGammaToSrgb();
+        PixelShader = compile ps_3_0 CustomGammaToSrgb();
     }
     
     pass GammaToSrgb
     {
-        PixelShader = compile ps_2_0 GammaToSrgb();
+        PixelShader = compile ps_3_0 GammaToSrgb();
     }
 }

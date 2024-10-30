@@ -7,6 +7,12 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### Latest Version
 
+**v0.8.3 (2024-10-29)**
+- Improved simulated normal maps
+- Changed the normal maps strength scale
+- Fixed the layout of the preferences page
+- Pixel Shader 3.0 is now used for all shaders
+
 **v0.8.2 (2024-10-28)**
 - Tweaked simulated normal maps
 - Enhanced shaders and colors no longer uses special normal maps rendering, as it was causing visual issues

@@ -45,7 +45,7 @@ Mods: {
 
 				# Smooth Lighting
 				
-				NormalMapsStrength: {
+				NormalMapsIntensity: {
 					Label: Normal Maps Strength
 					Tooltip: Controls the strength of simulated normal maps
 				}
@@ -173,7 +173,7 @@ Mods: {
 					Label: Enhanced Shaders and Colors
 					Tooltip:
 						'''
-						Toggles whether to use enhanced shaders and colors allowed by the FNA HiDef graphics profile
+						Toggles whether to use enhanced shaders and colors
 						When enabled, some visual effects are improved:
 						- Increases the precision of colors used in lighting
 						- Increases the maximum overbright light brightness
