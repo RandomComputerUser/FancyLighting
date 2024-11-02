@@ -2,7 +2,7 @@ sampler ScreenSampler : register(s0);
 sampler DitherSampler : register(s4);
 
 float2 DitherCoordMult;
-float Gamma;
+float GammaRatio;
 
 float3 GammaToLinear(float3 color)
 {
@@ -17,7 +17,7 @@ float3 LinearToSrgb(float3 color)
     return lerp(highPart, lowPart, selector);
 }
 
-// Dithering isn't gamma-correct but the difference is too small to matter (around 10^-5)
+// Dithering in sRGB isn't technically correct but the difference is too small to matter (around 10^-5)
 // Also dark colors in sRGB are mapped linearly so there is no difference for dark colors
 float3 DitherNoise(float2 coords)
 {
@@ -26,7 +26,7 @@ float3 DitherNoise(float2 coords)
     ) * (0.5 / 128);
 }
 
-// Input color should be in 2.2 gamma
+// Input color should be in gamma 2.2
 float3 Dither(float3 color, float2 coords)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
@@ -41,23 +41,13 @@ float3 Dither(float3 color, float2 coords)
     return lerp(hi, lo, selector);
 }
 
-float4 CustomGammaToGamma(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGamma(float2 coords : TEXCOORD0) : COLOR0
 {
     return float4(
         Dither(
-            pow(tex2D(ScreenSampler, coords).rgb, Gamma),
+            pow(tex2D(ScreenSampler, coords).rgb, GammaRatio),
             coords
         ),
-        1
-    );
-}
-
-float4 CustomGammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
-{
-    return float4(
-        LinearToSrgb(
-            pow(tex2D(ScreenSampler, coords).rgb, Gamma)
-        ) + DitherNoise(coords),
         1
     );
 }
@@ -66,7 +56,7 @@ float4 GammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
 {
     return float4(
         LinearToSrgb(
-            GammaToLinear(tex2D(ScreenSampler, coords).rgb)
+            pow(tex2D(ScreenSampler, coords).rgb, GammaRatio)
         ) + DitherNoise(coords),
         1
     );
@@ -74,14 +64,9 @@ float4 GammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
 
 technique Technique1
 {   
-    pass CustomGammaToGamma
+    pass GammaToGamma
     {
-        PixelShader = compile ps_3_0 CustomGammaToGamma();
-    }
-    
-    pass CustomGammaToSrgb
-    {
-        PixelShader = compile ps_3_0 CustomGammaToSrgb();
+        PixelShader = compile ps_3_0 GammaToGamma();
     }
     
     pass GammaToSrgb

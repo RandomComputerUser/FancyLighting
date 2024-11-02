@@ -2553,10 +2553,9 @@ internal sealed class SmoothLighting
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = PreferencesConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var doDitheringSecond = (simulateNormalMaps || doOverbright) && hiDef;
-        var doGamma = LightingConfig.Instance.DoGammaCorrection();
-        var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
         var doOneStepOnly = !(simulateNormalMaps || doOverbright);
+        var doDitheringSecond = !doOneStepOnly && hiDef;
+        var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
 
         if (doBicubicUpscaling)
         {
@@ -2573,7 +2572,6 @@ internal sealed class SmoothLighting
                     // If hiDef is true and doOverbright is false, whether normal maps are enabled
                     // affects the result of the hi-res light map
                 }
-
                 lightMapTexture = _colorsBackgroundHiRes;
             }
             else
@@ -2687,13 +2685,10 @@ internal sealed class SmoothLighting
                             ? _overbrightAmbientOcclusionShader
                             : _overbrightShader;
 
+            var gamma = PreferencesConfig.Instance.GammaExponent();
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var normalMapRadius = 12.5f;
-            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
-            if (fineNormalMaps)
-            {
-                normalMapMult *= 2f;
-            }
+            var normalMapMult = 1.25f * PreferencesConfig.Instance.NormalMapsMultiplier();
             var normalMapStrength = 1f / (1f + normalMapMult);
             var overbrightMult = doOverbright
                 ? hiDef
@@ -2702,6 +2697,8 @@ internal sealed class SmoothLighting
                 : 1f;
 
             shader
+                .SetParameter("Gamma", gamma)
+                .SetParameter("ReciprocalGamma", 1f / gamma)
                 .SetParameter("OverbrightMult", overbrightMult)
                 .SetParameter(
                     "NormalMapResolution",

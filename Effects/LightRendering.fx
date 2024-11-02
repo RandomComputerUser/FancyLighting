@@ -8,6 +8,9 @@ sampler AmbientOcclusionSampler : register(s6);
 sampler GlowSampler : register(s4);
 sampler LightedGlowSampler : register(s5);
 
+float Gamma;
+float ReciprocalGamma;
+
 float OverbrightMult;
 float2 NormalMapResolution;
 float2 NormalMapRadius;
@@ -25,17 +28,17 @@ float2 LightedGlowCoordMult;
 
 float3 GammaToLinear(float3 color)
 {
-    return pow(color, 2.2);
+    return pow(color, Gamma);
 }
 
 float3 LinearToGamma(float3 color)
 {
-    return pow(color, 1 / 2.2);
+    return pow(color, ReciprocalGamma);
 }
 
-float Luminance(float3 color)
+float Luma(float3 color)
 {
-    return dot(GammaToLinear(color), float3(0.2126, 0.7152, 0.0722));
+    return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
 float3 OverbrightLightAt(float2 coords)
@@ -50,7 +53,7 @@ float3 OverbrightLightAtHiDef(float2 coords)
     return (65535.0 / 4096) * color;
 }
 
-// Input color should be in 2.2 gamma
+// Input color should be in gamma space
 float3 Dither(float3 color, float2 coords)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
@@ -97,26 +100,26 @@ float2 NormalsSurfaceGradient(float2 worldTexCoords)
     float4 right = tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0));
     float4 up = tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y));
     float4 down = tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y));
-    float leftLuminance = Luminance(left.rgb);
-    float rightLuminance = Luminance(right.rgb);
-    float upLuminance = Luminance(up.rgb);
-    float downLuminance = Luminance(down.rgb);
+    float leftLuma = Luma(left.rgb);
+    float rightLuma = Luma(right.rgb);
+    float upLuma = Luma(up.rgb);
+    float downLuma = Luma(down.rgb);
     float positiveDiagonal
-        = Luminance(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb) // up left
-        - Luminance(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb); // down right
+        = Luma(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb) // up left
+        - Luma(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb); // down right
     float negativeDiagonal
-        = Luminance(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb) // down left
-        - Luminance(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb); // up right
+        = Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb) // down left
+        - Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb); // up right
 
-    float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuminance - rightLuminance);
-    float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuminance - downLuminance);
+    float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
+    float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
-    float luminance = Luminance(tex2D(WorldSampler, worldTexCoords).rgb);
-    float maxLuminance = max(
-        luminance,
-        max(max(leftLuminance, rightLuminance), max(upLuminance, downLuminance))
+    float luma = Luma(tex2D(WorldSampler, worldTexCoords).rgb);
+    float maxLuma = max(
+        luma,
+        max(max(leftLuma, rightLuma), max(upLuma, downLuma))
     );
-    float mult = 1 - maxLuminance;
+    float mult = 1 - maxLuma;
     return mult * Gradient(
         horizontalColorDiff, verticalColorDiff, left.a, right.a, up.a, down.a
     );
@@ -128,8 +131,8 @@ float2 NormalsLightGradient(float2 coords)
     float3 right = OverbrightMult * tex2D(LightSampler, coords + float2(NormalMapRadius.x, 0)).rgb;
     float3 up = OverbrightMult * tex2D(LightSampler, coords - float2(0, NormalMapRadius.y)).rgb;
     float3 down = OverbrightMult * tex2D(LightSampler, coords + float2(0, NormalMapRadius.y)).rgb;
-    float horizontalDiff = Luminance(right) - Luminance(left);
-    float verticalDiff = Luminance(down) - Luminance(up);
+    float horizontalDiff = Luma(right) - Luma(left);
+    float verticalDiff = Luma(down) - Luma(up);
     return float2(horizontalDiff, verticalDiff);
 }
 

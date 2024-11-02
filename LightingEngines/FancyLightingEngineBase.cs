@@ -173,28 +173,32 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     }
 
     protected void UpdateBrightnessCutoff(
-        float baseCutoff = 0.04f,
-        float cameraModeCutoff = 0.02f,
-        double temporalDataDivisor = 55555.5,
-        double temporalMult = 0.02,
+        double temporalMult = 1.0,
         double temporalMin = 0.02,
         double temporalMax = 0.125
     )
     {
+        const float BaseCutoff = 0.04f;
+        const float CameraModeCutoff = 0.02f;
+        const double TemporalDataDivisor = 55555.5;
+        const double BaseTemporalMult = 0.02;
+
+        temporalMult *= BaseTemporalMult;
+
         _initialBrightnessCutoff = LowLightLevel;
 
         var cutoff =
-            FancyLightingMod._inCameraMode ? cameraModeCutoff
+            FancyLightingMod._inCameraMode ? CameraModeCutoff
             : LightingConfig.Instance.FancyLightingEngineUseTemporal
                 ? (float)
                     Math.Clamp(
-                        Math.Sqrt(_temporalData / temporalDataDivisor) * temporalMult,
+                        Math.Sqrt(_temporalData / TemporalDataDivisor) * temporalMult,
                         temporalMin,
                         temporalMax
                     )
-            : baseCutoff;
+            : BaseCutoff;
 
-        var basicWorkCutoff = baseCutoff;
+        var basicWorkCutoff = BaseCutoff;
 
         if (LightingConfig.Instance.DoGammaCorrection())
         {
@@ -955,10 +959,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 || otherColor.Z < threshold.Z;
         }
 
-        doUp = upDistance > 0 ? LessThanThreshold(index - 1) : false;
-        doDown = downDistance > 0 ? LessThanThreshold(index + 1) : false;
-        doLeft = leftDistance > 0 ? LessThanThreshold(index - height) : false;
-        doRight = rightDistance > 0 ? LessThanThreshold(index + height) : false;
+        doUp = upDistance > 0 && LessThanThreshold(index - 1);
+        doDown = downDistance > 0 && LessThanThreshold(index + 1);
+        doLeft = leftDistance > 0 && LessThanThreshold(index - height);
+        doRight = rightDistance > 0 && LessThanThreshold(index + height);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

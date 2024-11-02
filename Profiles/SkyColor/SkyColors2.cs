@@ -4,7 +4,7 @@ namespace FancyLighting.Profiles.SkyColor;
 
 public class SkyColors2 : ISimpleColorProfile
 {
-    private SkyColorProfile _profile;
+    private readonly SkyColorProfile _profile;
 
     public SkyColors2()
     {

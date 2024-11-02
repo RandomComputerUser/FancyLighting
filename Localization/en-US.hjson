@@ -38,7 +38,7 @@ Mods: {
 					Label: sRGB Output
 					Tooltip:
 						'''
-						Toggles whether to use the sRGB output instead of 2.2 gamma
+						Toggles whether to use the sRGB output instead of gamma 2.2
 						Enable if dark colors are desaturated and too bright
 						'''
 				}

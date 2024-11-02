@@ -7,6 +7,12 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### Latest Version
 
+**v0.8.4 (2024-11-01)**
+- Tweaked and slightly optimized simulated normal maps
+- Improved how the gamma setting works
+- Tweaked the range and increment of some sliders in the settings
+- Rerendered the mod icon
+
 **v0.8.3 (2024-10-29)**
 - Improved simulated normal maps
 - Changed the normal maps strength scale

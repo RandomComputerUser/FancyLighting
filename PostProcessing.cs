@@ -12,8 +12,7 @@ internal sealed class PostProcessing
 {
     private readonly Texture2D _ditherNoise;
 
-    private Shader _customGammaToGammaShader;
-    private Shader _customGammaToSrgbShader;
+    private Shader _gammaToGammaShader;
     private Shader _gammaToSrgbShader;
 
     public PostProcessing()
@@ -25,13 +24,9 @@ internal sealed class PostProcessing
             )
             .Value;
 
-        _customGammaToGammaShader = EffectLoader.LoadEffect(
+        _gammaToGammaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "CustomGammaToGamma"
-        );
-        _customGammaToSrgbShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "CustomGammaToSrgb"
+            "GammaToGamma"
         );
         _gammaToSrgbShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
@@ -42,8 +37,7 @@ internal sealed class PostProcessing
     public void Unload()
     {
         _ditherNoise?.Dispose();
-        EffectLoader.UnloadEffect(ref _customGammaToGammaShader);
-        EffectLoader.UnloadEffect(ref _customGammaToSrgbShader);
+        EffectLoader.UnloadEffect(ref _gammaToGammaShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
     }
 
@@ -59,19 +53,13 @@ internal sealed class PostProcessing
         );
 
         var useSrgb = PreferencesConfig.Instance.UseSrgb;
-        var useCustomGamma = PreferencesConfig.Instance.UseCustomGamma();
-        var gamma = PreferencesConfig.Instance.GammaExponent();
+        var gammaRatio = PreferencesConfig.Instance.GammaExponent();
         if (!useSrgb)
         {
-            gamma /= 2.2f;
+            gammaRatio /= 2.2f;
         }
 
-        var shader = useSrgb
-            ? useCustomGamma
-                ? _customGammaToSrgbShader
-                : _gammaToSrgbShader
-            : _customGammaToGammaShader;
-
+        var shader = useSrgb ? _gammaToSrgbShader : _gammaToGammaShader;
         shader
             .SetParameter(
                 "DitherCoordMult",
@@ -80,7 +68,7 @@ internal sealed class PostProcessing
                     (float)-target.Height / _ditherNoise.Height
                 )
             ) // Multiply by -1 so that it's different from the dithering in bicubic filtering
-            .SetParameter("Gamma", gamma)
+            .SetParameter("GammaRatio", gammaRatio)
             .Apply();
 
         Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;

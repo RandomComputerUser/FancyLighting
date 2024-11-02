@@ -455,7 +455,7 @@ internal sealed class AmbientOcclusion
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
         if (LightingConfig.Instance.DoGammaCorrection())
         {
-            power *= 2.2f;
+            power *= PreferencesConfig.Instance.GammaExponent();
         }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
         if (!LightingConfig.Instance.DoGammaCorrection())

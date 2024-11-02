@@ -6,8 +6,11 @@ namespace FancyLighting.Util;
 
 internal static class GammaConverter
 {
+    internal static float _gamma;
+    internal static float _reciprocalGamma;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void GammaToLinear(ref float x) => x = MathF.Pow(x, 2.2f);
+    public static void GammaToLinear(ref float x) => x = MathF.Pow(x, _gamma);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void GammaToLinear(ref Vector3 color)
@@ -18,7 +21,7 @@ internal static class GammaConverter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float LinearToGamma(ref float x) => x = MathF.Pow(x, 1f / 2.2f);
+    public static float LinearToGamma(ref float x) => x = MathF.Pow(x, _reciprocalGamma);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LinearToGamma(ref Vector3 color)
