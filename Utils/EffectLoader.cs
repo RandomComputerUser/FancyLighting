@@ -1,15 +1,16 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 using Terraria.ModLoader;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 internal static class EffectLoader
 {
     public static Shader LoadEffect(string filePath, string passName, bool hiDef = false)
     {
         var effect = ModContent
-            .Request<Effect>(filePath, ReLogic.Content.AssetRequestMode.ImmediateLoad)
+            .Request<Effect>(filePath, AssetRequestMode.ImmediateLoad)
             .Value;
 
         string hiDefPassName;

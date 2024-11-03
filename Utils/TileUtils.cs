@@ -2,9 +2,9 @@
 using Terraria;
 using Terraria.ID;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
-internal static class TileUtil
+internal static class TileUtils
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsVine(int x, int y)

@@ -1,0 +1,394 @@
+PreferencesConfig: {
+	DisplayName: Preferences
+
+	Headers: {
+		ToneMapping: Tone Mapping
+		SmoothLighting: Smooth Lighting
+		AmbientOcclusion: Ambient Occlusion
+		LightingEngine: Fancy Lighting Engine
+		SkyColor: Fancy Sky Colors
+	}
+
+	# General
+	
+	ThreadCount: {
+		Label: Thread Count
+		Tooltip:
+			'''
+			Controls how many threads smooth lighting and the fancy lighting engine use
+			Higher values typically improve performance with diminishing returns
+			Values greater than the number of CPU hardware threads may reduce performance
+			The default value should be close to optimal
+			'''
+	}
+
+	Gamma: {
+		Label: Gamma (%)
+		Tooltip:
+			'''
+			Changes the gamma used by lighting and textures
+			A value of 220% corresponds to a gamma of 2.2
+			'''
+	}
+
+	UseSrgb: {
+		Label: sRGB Output
+		Tooltip:
+			'''
+			Toggles whether to use the sRGB output instead of gamma 2.2
+			Enable if dark colors are desaturated and too bright
+			'''
+	}
+
+	# Smooth Lighting
+	
+	NormalMapsIntensity: {
+		Label: Normal Maps Strength
+		Tooltip: Controls the strength of simulated normal maps
+	}
+
+	FineNormalMaps: {
+		Label: Fine Normal Maps
+		Tooltip:
+			'''
+			Toggles between coarse and fine simulated normal maps
+			Coarse normal maps are simulated at half resolution, matching the vanilla textures
+			Fine normal maps are simulated at full resolution
+			Recommended to enable when using HD textures
+			'''
+	}
+
+	RenderOnlyLight: {
+		Label: (Debug) Render Only Light
+		Tooltip: When enabled, tile, wall, and background textures are not rendered
+	}
+
+	# Ambient Occlusion
+	
+	AmbientOcclusionRadius: {
+		Label: Ambient Occlusion Radius
+		Tooltip:
+			'''
+			Controls the radius of blur used in ambient occlusion
+			Higher values result in larger ambient occlusion shadows
+			'''
+	}
+
+	AmbientOcclusionIntensity: {
+		Label: Ambient Occlusion Exponent (%)
+		Tooltip:
+			'''
+			Controls how strongly light is affected by ambient occlusion
+			Higher values result in larger, darker ambient occlusion shadows
+			'''
+	}
+
+	AmbientLightProportion: {
+		Label: Ambient Light Proportion (%)
+		Tooltip:
+			'''
+			Controls the proportion of light affected by ambient occlusion
+			Higher values result in darker ambient occlusion shadows
+			'''
+	}
+
+	# Fancy Lighting Engine
+	
+	FancyLightingEngineLightLoss: {
+		Label: Shadow Strength (%)
+		Tooltip:
+			'''
+			Controls how much light is lost exiting solid blocks
+			Higher values result in darker shadows
+			A value of 100% blocks all light from exiting solid blocks
+			'''
+	}
+
+	FancyLightingEngineLightAbsorption: {
+		Label: Solid Block Light Absorption (%)
+		Tooltip:
+			'''
+			Controls how much light is absorbed by solid blocks
+			Lower values allow light to spread farther into solid blocks
+			A value of 100% is equivalent to vanilla
+			'''
+	}
+
+	FancyLightingEngineIndirectBrightness: {
+		Label: Indirect Lighting Brightness (%)
+		Tooltip:
+			'''
+			Controls how bright indirect lighting is compared to direct lighting
+			Indirect lighting is spread only when global illumination is enabled
+			'''
+	}
+
+	FancyLightingEngineVinesOpaque: {
+		Label: Vines and Seaweed Block Light
+		Tooltip: Toggles whether vines and seaweed block light
+	}
+
+	# Fancy Sky Colors
+	
+	UseCustomSkyColors: {
+		Label: Fancy Sky Colors
+		Tooltip:
+			'''
+			Toggles whether to use new sky colors
+			When disabled, vanilla sky colors are used
+			'''
+	}
+
+	CustomSkyPreset: {
+		Label: Sky Color Profile
+		Tooltip: Selects which set of sky colors is used
+	}
+}
+
+LightingConfig: {
+	DisplayName: Quality Settings
+
+	Headers: {
+		SmoothLighting: Smooth Lighting
+		AmbientOcclusion: Ambient Occlusion
+		LightingEngine: Fancy Lighting Engine
+		SkyColor: Sky Color
+	}
+
+	# General
+	
+	QualityPreset: {
+		Label: Quality Preset
+		Tooltip:
+			'''
+			A preset for the quality settings may be chosen
+			[c/FFFF00:The extreme preset requires a relatively fast GPU to run smoothly]
+			'''
+	}
+
+	UseHiDefFeatures: {
+		Label: Enhanced Shaders and Colors
+		Tooltip:
+			'''
+			Toggles whether to use enhanced shaders and colors
+			When enabled, some visual effects are improved:
+			- Increases the precision of colors used in lighting
+			- Increases the maximum overbright light brightness
+			- Uses gamma-correct lighting when overbright lighting is enabled
+			- Increases background brightness when overbright lighting is enabled
+			'''
+	}
+
+	# Smooth Lighting
+	
+	UseSmoothLighting: {
+		Label: Smooth Lighting
+		Tooltip:
+			'''
+			Toggles whether to use smooth lighting
+			When disabled, vanilla lighting visuals are used
+			Rendering performance is affected primarily by the GPU
+			'''
+	}
+
+	UseLightMapBlurring: {
+		Label: Light Map Blurring
+		Tooltip:
+			'''
+			Toggles whether to blur the light map
+			Applies a per-tile blur to the light map before rendering
+			Smooths sharp light transitions
+			'''
+	}
+
+	UseEnhancedBlurring: {
+		Label: Enhanced Light Map Blurring
+		Tooltip:
+			'''
+			Controls the blurring function used to blur the light map
+			When enabled, uses improved blurring affected by light absorption
+			'''
+	}
+
+	UseLightMapToneMapping: {
+		Label: Light Map Tone Mapping
+		Tooltip:
+			'''
+			Toggles whether to use tone mapping on the light map
+			Reduces the brightness of brightly lit tiles
+			The tone mapping curve is applied to the light color, not the final pixel color
+			'''
+	}
+
+	SimulateNormalMaps: {
+		Label: Simulated Normal Maps
+		Tooltip: Toggles whether to simulate normal maps
+	}
+
+	GlowMaskSupport: {
+		Label: Glow Mask Mode
+		Tooltip:
+			'''
+			Controls how glow masks are rendered
+			When set to none, vanilla glow masks are simulated by lighting the entire tile
+			Glow masks may cause side effects due to drawing tiles multiple times
+			'''
+	}
+
+	LightMapRenderMode: {
+		Label: Light Map Render Mode
+		Tooltip:
+			'''
+			Controls how the light map is rendered
+			Affects the smoothness of lighting
+			Bicubic upscaling is smoother than bilinear upscaling
+			Overbright lighting increases the maximum brightness of light beyond 100%
+			'''
+	}
+
+	OverbrightWaterfalls: {
+		Label: Overbright Waterfalls
+		Tooltip: Toggles whether to apply overbright lighting to waterfalls
+	}
+
+	OverbrightNPCsAndPlayer: {
+		Label: Overbright NPCs and Player
+		Tooltip: Toggles whether to apply overbright lighting to NPCs and the player
+	}
+
+	OverbrightProjectiles: {
+		Label: Overbright Projectiles
+		Tooltip: Toggles whether to apply overbright lighting to projectiles
+	}
+
+	OverbrightDustAndGore: {
+		Label: Overbright Dust and Gore
+		Tooltip: Toggles whether to apply overbright lighting to dust and gore
+	}
+
+	OverbrightItems: {
+		Label: Overbright Items
+		Tooltip: Toggles whether to apply overbright lighting to dropped items
+	}
+
+	OverbrightRain: {
+		Label: Overbright Rain
+		Tooltip: Toggles whether to apply overbright lighting to rain
+	}
+
+	# Ambient Occlusion
+	
+	UseAmbientOcclusion: {
+		Label: Ambient Occlusion
+		Tooltip:
+			'''
+			Toggles whether to use ambient occlusion
+			When enabled, tiles produce shadows in front of walls
+			Rendering performance is affected primarily by the GPU
+			'''
+	}
+
+	DoNonSolidAmbientOcclusion: {
+		Label: Ambient Occlusion from Non-Solid Tiles
+		Tooltip:
+			'''
+			Toggles whether non-solid tiles generate ambient occlusion
+			Non-solid tiles generate weaker ambient occlusion
+			Primarily affects furniture and torches
+			'''
+	}
+
+	DoTileEntityAmbientOcclusion: {
+		Label: Ambient Occlusion from Tile Entities
+		Tooltip:
+			'''
+			Toggles whether tile entities generate ambient occlusion
+			Tile entities generate weaker ambient occlusion
+			Primarily affects tiles affected by wind
+			'''
+	}
+
+	# Fancy Lighting Engine
+	
+	UseFancyLightingEngine: {
+		Label: Fancy Lighting Engine
+		Tooltip:
+			'''
+			Toggles whether to use a new lighting engine
+			When enabled, light is spread more accurately with noticeable shadows
+			Performance is affected by the number of light sources in the scene
+			Lighting performance is affected primarily by the CPU; the GPU is not used
+			'''
+	}
+
+	FancyLightingEngineUseTemporal: {
+		Label: Temporal Optimization
+		Tooltip:
+			'''
+			Toggles whether to use temporal optimization with the fancy lighting engine
+			When enabled, optimizes lighting using data from the previous lighting update
+			Makes lighting quicker in more intensely lit areas
+			May sometimes cause lighting quality to be slightly reduced
+			'''
+	}
+
+	FancyLightingEngineMode: {
+		Label: Lighting Engine Resolution
+		Tooltip:
+			'''
+			Controls the internal resolution of the fancy lighting engine
+			Does not affect the final resolution of the light map
+			Higher values increase the accuracy of shadows
+			'''
+	}
+
+	SimulateGlobalIllumination: {
+		Label: Global Illumination
+		Tooltip:
+			'''
+			Toggles whether to simulate a basic form of global illumination
+			When enabled, indirect lighting makes shadows brighter
+			'''
+	}
+}
+
+GlowMaskMode: {
+	Tooltip: ""
+	None.Label: None
+	Basic.Label: Basic
+	Enhanced.Label: Enhanced
+}
+
+LightingEngineMode: {
+	Tooltip: ""
+	One.Label: 1x
+	Two.Label: 2x
+	Four.Label: 4x
+}
+
+Preset: {
+	Tooltip: ""
+	CustomPreset.Label: Custom
+	VanillaPreset.Label: Vanilla
+	MinimalPreset.Label: Minimal
+	LowPreset.Label: Low
+	MediumPreset.Label: Medium
+	HighPreset.Label: High
+	UltraPreset.Label: Ultra
+	ExtremePreset.Label: "[c/FFFF00:Extreme]"
+}
+
+RenderMode: {
+	Tooltip: ""
+	Bilinear.Label: Bilinear Upscaling
+	Bicubic.Label: Bicubic Upscaling
+	BicubicOverbright.Label: Bicubic with Overbright
+}
+
+SkyColorPreset: {
+	Tooltip: ""
+	Profile1.Label: Profile 1
+	Profile2.Label: Profile 2
+	Profile3.Label: Profile 3
+	Profile4.Label: Profile 4
+}

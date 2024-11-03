@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
-internal static class MathUtil
+internal static class MathUtils
 {
     public static double Hypot(double x, double y)
     {

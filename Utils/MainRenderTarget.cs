@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 internal static class MainRenderTarget
 {

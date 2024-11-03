@@ -3,9 +3,9 @@ using FancyLighting.Config;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
-internal static class TextureUtil
+internal static class TextureUtils
 {
     public static SurfaceFormat TextureSurfaceFormat =>
         LightingConfig.Instance.HiDefFeaturesEnabled()

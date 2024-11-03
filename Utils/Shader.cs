@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 internal class Shader
 {

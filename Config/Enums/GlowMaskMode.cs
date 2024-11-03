@@ -1,4 +1,4 @@
-﻿namespace FancyLighting.Config;
+﻿namespace FancyLighting.Config.Enums;
 
 public enum GlowMaskMode
 {

@@ -71,7 +71,6 @@ public class SkyColors1 : ISimpleColorProfile
             (sunsetTime + (4 / 3.0), twilightColor2),
             (sunsetTime + (5 / 3.0), twilightColor1),
             (sunsetTime + (6 / 3.0), nightColor),
-            (24.00, midnightColor),
         ];
 
         foreach (var (hour, color) in colors)

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
-using FancyLighting.Util;
+using FancyLighting.Config.Enums;
+using FancyLighting.Utils;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
@@ -19,7 +20,10 @@ public sealed class PreferencesConfig : ModConfig
 
     internal bool DoPostProcessing() => UseCustomGamma() || UseSrgb;
 
-    internal float NormalMapsMultiplier() => 0.5f * NormalMapsIntensity;
+    internal float NormalMapsMultiplier() =>
+        NormalMapsIntensity <= 5
+            ? 0.5f * NormalMapsIntensity
+            : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
@@ -77,7 +81,7 @@ public sealed class PreferencesConfig : ModConfig
 
     // Smooth Lighting, Normal Maps, Overbright
     [Header("SmoothLighting")]
-    [Range(1, 8)]
+    [Range(1, 12)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.NormalMapsIntensity)]
     [Slider]

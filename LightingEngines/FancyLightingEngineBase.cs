@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FancyLighting.Config;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
@@ -351,7 +351,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     {
                         _lightMask[j] = lightMasks[j] switch
                         {
-                            LightMaskMode.Solid => TileUtil.IsVine(x, y)
+                            LightMaskMode.Solid => TileUtils.IsVine(x, y)
                                 ? _lightVinesDecay
                                 : _lightSolidDecay,
                             LightMaskMode.Water => _lightWaterDecay,
@@ -433,7 +433,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         {
             for (var i = 0; i < taskCount; ++i)
             {
-                ArrayUtil.MakeAtLeastSize(ref _workingLightMaps[i], lightMapSize);
+                ArrayUtils.MakeAtLeastSize(ref _workingLightMaps[i], lightMapSize);
             }
         }
     }
@@ -600,7 +600,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             GammaConverter.GammaToLinear(ref giMult);
         }
 
-        ArrayUtil.MakeAtLeastSize(ref _workingLightMaps[0], length);
+        ArrayUtils.MakeAtLeastSize(ref _workingLightMaps[0], length);
         var lights = _workingLightMaps[0];
         CopyVec3Array(source, lights, 0, length);
 

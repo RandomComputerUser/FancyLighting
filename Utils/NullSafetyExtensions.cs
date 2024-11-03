@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 #nullable enable
 internal static class NullSafetyExtensions

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 public static class VectorToColor
 {

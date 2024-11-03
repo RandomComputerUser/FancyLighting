@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 
-namespace FancyLighting.Util;
+namespace FancyLighting.Utils;
 
 internal static class GammaConverter
 {

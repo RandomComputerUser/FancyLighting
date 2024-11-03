@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using FancyLighting.Config;
+using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -506,8 +507,8 @@ public sealed class FancyLightingMod : Mod
             Main.spriteBatch.End();
         }
 
-        TextureUtil.MakeSize(ref _screenTarget1, target.Width, target.Height);
-        TextureUtil.MakeSize(ref _screenTarget2, target.Width, target.Height);
+        TextureUtils.MakeSize(ref _screenTarget1, target.Width, target.Height);
+        TextureUtils.MakeSize(ref _screenTarget2, target.Width, target.Height);
 
         Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget1);
         Main.spriteBatch.Begin(
@@ -779,8 +780,8 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtil.MakeSize(ref _screenTarget1, target.Width, target.Height);
-        TextureUtil.MakeSize(ref _screenTarget2, target.Width, target.Height);
+        TextureUtils.MakeSize(ref _screenTarget1, target.Width, target.Height);
+        TextureUtils.MakeSize(ref _screenTarget2, target.Width, target.Height);
 
         spriteBatch.GraphicsDevice.SetRenderTarget(_screenTarget1);
         spriteBatch.Begin(
@@ -1098,12 +1099,12 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
                 tileTarget.Height
             );
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
                 tileTarget.Height
@@ -1132,7 +1133,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeAtLeastSize(
+                TextureUtils.MakeAtLeastSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
                     tileTarget.Height
@@ -1383,12 +1384,12 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
                 tileTarget.Height
             );
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
                 tileTarget.Height
@@ -1417,7 +1418,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeAtLeastSize(
+                TextureUtils.MakeAtLeastSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
                     tileTarget.Height
@@ -1498,12 +1499,12 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
                 tileTarget.Height
             );
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
                 tileTarget.Height
@@ -1532,7 +1533,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeAtLeastSize(
+                TextureUtils.MakeAtLeastSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
                     tileTarget.Height
@@ -1629,12 +1630,12 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
                 tileTarget.Height
             );
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
                 tileTarget.Height
@@ -1663,7 +1664,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeAtLeastSize(
+                TextureUtils.MakeAtLeastSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
                     tileTarget.Height
@@ -1845,7 +1846,7 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeSize(
+            TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height
@@ -1867,7 +1868,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeSize(
+                TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height
@@ -1965,7 +1966,7 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeSize(
+            TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height
@@ -1989,7 +1990,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeSize(
+                TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height
@@ -2101,7 +2102,7 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtil.MakeSize(
+            TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height
@@ -2131,7 +2132,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtil.MakeSize(
+                TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height

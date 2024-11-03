@@ -1,4 +1,5 @@
 ﻿using System;
+using FancyLighting.Config.Enums;
 
 namespace FancyLighting.Config;
 
@@ -60,10 +61,10 @@ public static class DefaultOptions
     // Fancy Lighting Engine Preferences
     public const int FancyLightingEngineLightLoss = 50;
     public const int FancyLightingEngineLightAbsorption = 100;
-    public const int FancyLightingEngineGlobalIlluminationMult = 40;
+    public const int FancyLightingEngineGlobalIlluminationMult = 50;
     public const bool FancyLightingEngineVinesOpaque = false;
 
     // Fancy Sky Colors
     public const bool UseCustomSkyColors = true;
-    public const SkyColorPreset CustomSkyPreset = SkyColorPreset.Profile1;
+    public const SkyColorPreset CustomSkyPreset = SkyColorPreset.Profile4;
 }

@@ -26,6 +26,11 @@ float2 LightedGlowCoordMult;
 
 #define MIN_PREMULTIPLIER (0.5 / 255)
 
+float Square(float x)
+{
+    return x * x;
+}
+
 float3 GammaToLinear(float3 color)
 {
     return pow(color, Gamma);
@@ -157,7 +162,7 @@ float NormalsMultiplier(float2 coords, float2 worldTexCoords)
         1.0,
         lightMult,
         pow(surfaceGradientLength, NormalMapStrength)
-            * pow(1 - 1.0 / (16.0 * lightGradientLength + 1), 2)
+            * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
     );
 }
 

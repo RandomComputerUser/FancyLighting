@@ -1,6 +1,6 @@
 ﻿using System;
 using FancyLighting.Config;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -82,12 +82,12 @@ internal sealed class AmbientOcclusion
 
     private void InitSurfaces()
     {
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _drawTarget1,
             Main.instance.tileTarget.Width,
             Main.instance.tileTarget.Height
         );
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _drawTarget2,
             Main.instance.tileTarget.Width,
             Main.instance.tileTarget.Height
@@ -149,17 +149,17 @@ internal sealed class AmbientOcclusion
         Texture2D lightedGlow = null
     )
     {
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _cameraModeTarget1,
             screenTarget.Width,
             screenTarget.Height
         );
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _cameraModeTarget2,
             screenTarget.Width,
             screenTarget.Height
         );
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _cameraModeTarget3,
             screenTarget.Width,
             screenTarget.Height
@@ -386,7 +386,7 @@ internal sealed class AmbientOcclusion
         {
             if (drawTileEntities)
             {
-                TextureUtil.MakeSize(
+                TextureUtils.MakeSize(
                     ref _tileEntityTarget,
                     Main.instance.tileTarget.Width,
                     Main.instance.tileTarget.Height

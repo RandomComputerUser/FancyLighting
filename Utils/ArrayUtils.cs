@@ -1,6 +1,6 @@
-﻿namespace FancyLighting.Util;
+﻿namespace FancyLighting.Utils;
 
-internal static class ArrayUtil
+internal static class ArrayUtils
 {
     public static void MakeAtLeastSize<T>(ref T[] array, int length)
     {

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FancyLighting.Config;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
@@ -538,10 +538,10 @@ internal sealed class SmoothLighting
 
         var length = width * height;
 
-        ArrayUtil.MakeAtLeastSize(ref _lights, length);
-        ArrayUtil.MakeAtLeastSize(ref _whiteLights, length);
-        ArrayUtil.MakeAtLeastSize(ref _blackLights, length);
-        ArrayUtil.MakeAtLeastSize(ref _hasLight, length);
+        ArrayUtils.MakeAtLeastSize(ref _lights, length);
+        ArrayUtils.MakeAtLeastSize(ref _whiteLights, length);
+        ArrayUtils.MakeAtLeastSize(ref _blackLights, length);
+        ArrayUtils.MakeAtLeastSize(ref _hasLight, length);
 
         if (width == 0 || height == 0)
         {
@@ -1152,13 +1152,14 @@ internal sealed class SmoothLighting
                             {
                                 var mask = lightMasks[i];
                                 var isSolid = mask is LightMaskMode.Solid;
-                                var isVine = TileUtil.IsVine(tileX, tileY);
+                                var isVine = TileUtils.IsVine(tileX, tileY);
 
                                 var upperLeftMult =
                                     lightMasks[i - height - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX - 1, tileY - 1) == isVine
+                                        || TileUtils.IsVine(tileX - 1, tileY - 1)
+                                            == isVine
                                     )
                                         ? 1f
                                         : 0f;
@@ -1166,7 +1167,7 @@ internal sealed class SmoothLighting
                                     lightMasks[i - height] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX - 1, tileY) == isVine
+                                        || TileUtils.IsVine(tileX - 1, tileY) == isVine
                                     )
                                         ? 2f
                                         : 0f;
@@ -1174,7 +1175,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i - height + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX - 1, tileY + 1) == isVine
+                                        || TileUtils.IsVine(tileX - 1, tileY + 1)
+                                            == isVine
                                     )
                                         ? 1f
                                         : 0f;
@@ -1182,7 +1184,7 @@ internal sealed class SmoothLighting
                                     lightMasks[i - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX, tileY - 1) == isVine
+                                        || TileUtils.IsVine(tileX, tileY - 1) == isVine
                                     )
                                         ? 2f
                                         : 0f;
@@ -1191,7 +1193,7 @@ internal sealed class SmoothLighting
                                     lightMasks[i + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX, tileY + 1) == isVine
+                                        || TileUtils.IsVine(tileX, tileY + 1) == isVine
                                     )
                                         ? 2f
                                         : 0f;
@@ -1199,7 +1201,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX + 1, tileY - 1) == isVine
+                                        || TileUtils.IsVine(tileX + 1, tileY - 1)
+                                            == isVine
                                     )
                                         ? 1f
                                         : 0f;
@@ -1207,7 +1210,7 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX + 1, tileY) == isVine
+                                        || TileUtils.IsVine(tileX + 1, tileY) == isVine
                                     )
                                         ? 2f
                                         : 0f;
@@ -1215,7 +1218,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtil.IsVine(tileX + 1, tileY + 1) == isVine
+                                        || TileUtils.IsVine(tileX + 1, tileY + 1)
+                                            == isVine
                                     )
                                         ? 1f
                                         : 0f;
@@ -1519,7 +1523,7 @@ internal sealed class SmoothLighting
     {
         var length = width * height;
 
-        ArrayUtil.MakeAtLeastSize(ref _finalLightsHiDef, length);
+        ArrayUtils.MakeAtLeastSize(ref _finalLightsHiDef, length);
         _finalLights = null; // Save some memory
 
         var caughtException = 0;
@@ -1641,7 +1645,7 @@ internal sealed class SmoothLighting
                 return;
             }
 
-            TextureUtil.MakeAtLeastSize(ref _colorsBackground, height, width);
+            TextureUtils.MakeAtLeastSize(ref _colorsBackground, height, width);
 
             _colorsBackground.SetData(
                 0,
@@ -1875,7 +1879,7 @@ internal sealed class SmoothLighting
                 return;
             }
 
-            TextureUtil.MakeAtLeastSize(ref _colors, height, width);
+            TextureUtils.MakeAtLeastSize(ref _colors, height, width);
 
             _colors.SetData(0, _lightMapRenderArea, _finalLightsHiDef, 0, length);
 
@@ -1898,7 +1902,7 @@ internal sealed class SmoothLighting
     {
         var length = width * height;
 
-        ArrayUtil.MakeAtLeastSize(ref _finalLights, length);
+        ArrayUtils.MakeAtLeastSize(ref _finalLights, length);
         _finalLightsHiDef = null; // Save some memory
 
         var caughtException = 0;
@@ -2020,7 +2024,7 @@ internal sealed class SmoothLighting
                 return;
             }
 
-            TextureUtil.MakeAtLeastSize(ref _colorsBackground, height, width);
+            TextureUtils.MakeAtLeastSize(ref _colorsBackground, height, width);
 
             _colorsBackground.SetData(0, _lightMapRenderArea, _finalLights, 0, length);
 
@@ -2248,7 +2252,7 @@ internal sealed class SmoothLighting
                 return;
             }
 
-            TextureUtil.MakeAtLeastSize(ref _colors, height, width);
+            TextureUtils.MakeAtLeastSize(ref _colors, height, width);
 
             _colors.SetData(0, _lightMapRenderArea, _finalLights, 0, length);
 
@@ -2262,7 +2266,7 @@ internal sealed class SmoothLighting
         bool simulateNormalMaps
     )
     {
-        TextureUtil.MakeAtLeastSize(
+        TextureUtils.MakeAtLeastSize(
             ref hiResLights,
             16 * lights.Width,
             16 * lights.Height
@@ -2352,7 +2356,7 @@ internal sealed class SmoothLighting
         Vector2 offset;
         if (tmpTarget is null)
         {
-            TextureUtil.MakeSize(ref _drawTarget1, target.Width, target.Height);
+            TextureUtils.MakeSize(ref _drawTarget1, target.Width, target.Height);
             tmpTarget = _drawTarget1;
             offset = new Vector2(Main.offScreenRange);
         }
@@ -2370,7 +2374,7 @@ internal sealed class SmoothLighting
             || LightingConfig.Instance.DrawOverbright()
         )
         {
-            TextureUtil.MakeAtLeastSize(
+            TextureUtils.MakeAtLeastSize(
                 ref _drawTarget2,
                 tmpTarget.Width,
                 tmpTarget.Height
@@ -2408,7 +2412,7 @@ internal sealed class SmoothLighting
 
     internal RenderTarget2D GetCameraModeRenderTarget(RenderTarget2D screenTarget)
     {
-        TextureUtil.MakeSize(
+        TextureUtils.MakeSize(
             ref _cameraModeTarget1,
             screenTarget.Width,
             screenTarget.Height
@@ -2430,12 +2434,12 @@ internal sealed class SmoothLighting
     {
         var lightMapTexture = background ? _colorsBackground : _colors;
 
-        TextureUtil.MakeAtLeastSize(
+        TextureUtils.MakeAtLeastSize(
             ref _cameraModeTarget2,
             16 * lightMapTexture.Height,
             16 * lightMapTexture.Width
         );
-        TextureUtil.MakeAtLeastSize(
+        TextureUtils.MakeAtLeastSize(
             ref _cameraModeTarget3,
             16 * lightMapTexture.Height,
             16 * lightMapTexture.Width
@@ -2688,7 +2692,7 @@ internal sealed class SmoothLighting
             var gamma = PreferencesConfig.Instance.GammaExponent();
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var normalMapRadius = 12.5f;
-            var normalMapMult = 1.25f * PreferencesConfig.Instance.NormalMapsMultiplier();
+            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
             var normalMapStrength = 1f / (1f + normalMapMult);
             var overbrightMult = doOverbright
                 ? hiDef

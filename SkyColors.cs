@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using FancyLighting.Config;
+using FancyLighting.Config.Enums;
 using FancyLighting.Profiles;
 using FancyLighting.Profiles.SkyColor;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.GameContent;
@@ -27,6 +28,7 @@ public static class SkyColors
             [SkyColorPreset.Profile1] = new SkyColors1(),
             [SkyColorPreset.Profile2] = new SkyColors2(),
             [SkyColorPreset.Profile3] = new SkyColors3(),
+            [SkyColorPreset.Profile4] = new SkyColors4(),
         };
 
     internal static void AddSkyColorsHooks()

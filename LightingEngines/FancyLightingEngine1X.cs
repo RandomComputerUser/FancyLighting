@@ -1,6 +1,6 @@
 ﻿using System;
 using FancyLighting.Config;
-using FancyLighting.Util;
+using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
@@ -62,7 +62,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             for (var row = 1; row <= MaxLightRange; ++row)
             {
                 ++index;
-                var distance = MathUtil.Hypot(col, row);
+                var distance = MathUtils.Hypot(col, row);
                 value = ref values[index];
                 value = CalculateTileLightSpread(
                     row,
@@ -93,9 +93,9 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
         static int DoubleToIndex(double x) =>
             Math.Clamp((int)Math.Round(DistanceTicks * x), 0, DistanceTicks);
 
-        var distance = MathUtil.Hypot(col, row);
-        var distanceToTop = MathUtil.Hypot(col, row + 1) - distance;
-        var distanceToRight = MathUtil.Hypot(col + 1, row) - distance;
+        var distance = MathUtils.Hypot(col, row);
+        var distanceToTop = MathUtils.Hypot(col, row + 1) - distance;
+        var distanceToRight = MathUtils.Hypot(col + 1, row) - distance;
 
         if (row == 0 && col == 0)
         {
@@ -184,7 +184,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
         var length = width * height;
 
-        ArrayUtil.MakeAtLeastSize(ref _lightMask, length);
+        ArrayUtils.MakeAtLeastSize(ref _lightMask, length);
 
         UpdateLightMasks(lightMasks, width, height);
         InitializeTaskVariables(length);

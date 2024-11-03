@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace FancyLighting.Profiles.SkyColor;
@@ -47,7 +48,13 @@ public class SkyColorProfile : ISimpleColorProfile
         var slope1 = 2 * (y2 - y1) / (float)(x2 - x1);
         var slope2 = 2 * (y3 - y2) / (float)(x3 - x2);
 
-        static float derivative(float baseSlope, float slope1, float slope2)
+        return new(
+            Derivative(baseSlope.X, slope1.X, slope2.X),
+            Derivative(baseSlope.Y, slope1.Y, slope2.Y),
+            Derivative(baseSlope.Z, slope1.Z, slope2.Z)
+        );
+
+        static float Derivative(float baseSlope, float slope1, float slope2)
         {
             var minSlope = 0f;
             var maxSlope = 0f;
@@ -56,99 +63,81 @@ public class SkyColorProfile : ISimpleColorProfile
             {
                 if (slope2 > 0f)
                 {
-                    maxSlope = MathHelper.Min(slope1, slope2);
+                    maxSlope = MathF.Min(slope1, slope2);
                 }
-                else
+                else if (slope2 < 0f)
                 {
                     minSlope = slope2;
                     maxSlope = slope1;
                 }
             }
-            else
+            else if (slope1 < 0f)
             {
                 if (slope2 > 0f)
                 {
                     minSlope = slope1;
                     maxSlope = slope2;
                 }
-                else
+                else if (slope2 < 0f)
                 {
-                    minSlope = MathHelper.Max(slope1, slope2);
+                    minSlope = MathF.Max(slope1, slope2);
                 }
             }
 
             return MathHelper.Clamp(baseSlope, minSlope, maxSlope);
         }
-
-        return new(
-            derivative(baseSlope.X, slope1.X, slope2.X),
-            derivative(baseSlope.Y, slope1.Y, slope2.Y),
-            derivative(baseSlope.Z, slope1.Z, slope2.Z)
-        );
     }
 
     public virtual Vector3 GetColor(double hour)
     {
         hour %= 24.0;
 
-        for (var i = 1; i < _colors.Count; ++i)
+        for (var i = 1; i <= _colors.Count; ++i)
         {
-            if (hour > _colors[i].hour)
+            if (hour > HourColorAtIndex(i).hour)
             {
                 continue;
             }
 
-            var (hour1, color1) = HourColorAtIndex(i - 2);
-            var (hour2, color2) = HourColorAtIndex(i - 1);
-            var (hour3, color3) = HourColorAtIndex(i);
-            var (hour4, color4) = HourColorAtIndex(i + 1);
+            var (hour0, color0) = HourColorAtIndex(i - 2);
+            var (hour1, color1) = HourColorAtIndex(i - 1);
+            var (hour2, color2) = HourColorAtIndex(i);
+            var (hour3, color3) = HourColorAtIndex(i + 1);
+
+            var diff = (float)(hour2 - hour1);
+            var t = (float)(hour - hour1) / diff;
 
             switch (_interpolationMode)
             {
                 case InterpolationMode.Linear:
+                {
                     // Linear interpolation
 
-                    var t = (float)((hour - hour2) / (hour3 - hour2));
-                    return ((1 - t) * color2) + (t * color3);
+                    return Vector3.Lerp(color1, color2, t);
+                }
+
                 case InterpolationMode.Cubic:
                 default:
+                {
                     // Cubic Hermite spline interpolation
 
-                    var y1 = color2;
-                    var m1 = ChooseDerivative(
-                        hour1,
-                        hour2,
-                        hour3,
-                        color1,
-                        color2,
-                        color3
-                    );
+                    var m1 =
+                        ChooseDerivative(hour0, hour1, hour2, color0, color1, color2)
+                        * diff;
+                    var m2 =
+                        ChooseDerivative(hour1, hour2, hour3, color1, color2, color3)
+                        * diff;
 
-                    var x2 = (float)(hour3 - hour2);
-                    var x2_2 = x2 * x2;
-                    var y2 = color3;
-                    var m2 = ChooseDerivative(
-                        hour2,
-                        hour3,
-                        hour4,
-                        color2,
-                        color3,
-                        color4
-                    );
+                    var t2 = t * t;
+                    var t3 = t2 * t;
 
-                    var y_diff = y2 - y1;
-
-                    var a = (2 * y_diff) - (x2 * (m1 + m2));
-                    var b = (x2_2 * m2) + (2 * x2_2 * m1) - (3 * x2 * y_diff);
-                    var c = m1;
-                    var d = y1;
-
-                    var den = -x2_2 * x2;
-                    a /= den;
-                    b /= den;
-
-                    var x = (float)(hour - hour2);
-                    return Vector3.Min(d + (x * (c + (x * (b + (x * a))))), Vector3.One);
+                    var color =
+                        (((2 * t3) - (3 * t2) + 1) * color1)
+                        + ((t3 - (2 * t2) + t) * m1)
+                        + (((-2 * t3) + (3 * t2)) * color2)
+                        + ((t3 - t2) * m2);
+                    return Vector3.Min(color, Vector3.One);
+                }
             }
         }
 

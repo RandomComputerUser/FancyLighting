@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using FancyLighting.Config.Enums;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Terraria;
