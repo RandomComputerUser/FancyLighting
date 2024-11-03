@@ -25,6 +25,7 @@ public sealed class FancyLightingMod : Mod
     private static bool _useBlack;
     internal static bool _inCameraMode;
     private static bool _disableLightColorOverride;
+    private static bool _preventDust;
 
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
@@ -176,6 +177,7 @@ public sealed class FancyLightingMod : Mod
         _useBlack = false;
         _inCameraMode = false;
         _disableLightColorOverride = false;
+        _preventDust = false;
 
         MultiplyBlend = new()
         {
@@ -398,6 +400,7 @@ public sealed class FancyLightingMod : Mod
 
     private void AddHooks()
     {
+        On_Dust.NewDust += _Dust_NewDust;
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_TileDrawing.PostDrawTiles += _TileDrawing_PostDrawTiles;
@@ -571,6 +574,22 @@ public sealed class FancyLightingMod : Mod
             );
         }
     }
+
+    private int _Dust_NewDust(
+        On_Dust.orig_NewDust orig,
+        Vector2 Position,
+        int Width,
+        int Height,
+        int Type,
+        float SpeedX,
+        float SpeedY,
+        int Alpha,
+        Color newColor,
+        float Scale
+    ) =>
+        _preventDust
+            ? Main.dust.Length - 1 // no dust
+            : orig(Position, Width, Height, Type, SpeedX, SpeedY, Alpha, newColor, Scale);
 
     private bool _TileDrawing_ShouldTileShine(
         On_TileDrawing.orig_ShouldTileShine orig,
@@ -1111,12 +1130,14 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             try
             {
                 orig(self);
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -1162,7 +1183,15 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        orig(self);
+        _preventDust = enhancedGlowMasks;
+        try
+        {
+            orig(self);
+        }
+        finally
+        {
+            _preventDust = false;
+        }
 
         if (Main.drawToScreen)
         {
@@ -1396,12 +1425,14 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             try
             {
                 orig(self);
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -1440,12 +1471,14 @@ public sealed class FancyLightingMod : Mod
         }
 
         OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingFore;
+        _preventDust = enhancedGlowMasks;
         try
         {
             orig(self);
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
 
@@ -1511,12 +1544,14 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             try
             {
                 orig(self);
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -1555,12 +1590,14 @@ public sealed class FancyLightingMod : Mod
         }
 
         OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingFore;
+        _preventDust = enhancedGlowMasks;
         try
         {
             orig(self);
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
 
@@ -1642,12 +1679,14 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             try
             {
                 orig(self);
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -1687,12 +1726,14 @@ public sealed class FancyLightingMod : Mod
 
         _smoothLightingInstance.CalculateSmoothLighting(true);
         OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingBack;
+        _preventDust = enhancedGlowMasks;
         try
         {
             orig(self);
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
 
@@ -1853,6 +1894,7 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             Main.spriteBatch.End();
             Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
@@ -1863,6 +1905,7 @@ public sealed class FancyLightingMod : Mod
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -1883,6 +1926,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(
             _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget)
@@ -1895,6 +1939,7 @@ public sealed class FancyLightingMod : Mod
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
         Main.spriteBatch.End();
@@ -1973,6 +2018,7 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             Main.tileBatch.End();
             Main.spriteBatch.End();
             Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
@@ -1985,6 +2031,7 @@ public sealed class FancyLightingMod : Mod
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -2007,6 +2054,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
         Main.tileBatch.End();
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(wallTarget);
@@ -2019,6 +2067,7 @@ public sealed class FancyLightingMod : Mod
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
         Main.tileBatch.End();
@@ -2109,6 +2158,7 @@ public sealed class FancyLightingMod : Mod
             );
 
             UseBlackLights = true;
+            _preventDust = true;
             Main.tileBatch.End();
             Main.spriteBatch.End();
             Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
@@ -2127,6 +2177,7 @@ public sealed class FancyLightingMod : Mod
             }
             finally
             {
+                _preventDust = false;
                 UseBlackLights = false;
             }
 
@@ -2155,6 +2206,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
         Main.tileBatch.End();
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(
@@ -2175,6 +2227,7 @@ public sealed class FancyLightingMod : Mod
         }
         finally
         {
+            _preventDust = false;
             OverrideLightColor = false;
         }
         Main.tileBatch.End();

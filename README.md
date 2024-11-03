@@ -7,9 +7,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.8.5 (2024-11-02)**
-- Added a new sky color profile, which is now the default
-- Tweaked simulated normal maps
-- Significantly increased the maximum normal maps strength
-- Increased the default indirect lighting brightness
-- Fixed some bugs with fancy sky colors
+**v0.8.5.1 (2024-11-03)**
+- Glow mask support no longer spawns extra dust
