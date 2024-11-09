@@ -140,8 +140,8 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int FancyLightingEngineIndirectBrightness { get; set; }
 
-    [DefaultValue(DefaultOptions.FancyLightingEngineVinesOpaque)]
-    public bool FancyLightingEngineVinesOpaque { get; set; }
+    [DefaultValue(DefaultOptions.FancyLightingEngineNonSolidOpaque)]
+    public bool FancyLightingEngineNonSolidOpaque { get; set; }
 
     // Sky Color
     [Header("SkyColor")]

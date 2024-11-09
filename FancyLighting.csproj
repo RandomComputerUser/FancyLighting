@@ -8,8 +8,8 @@
     <LangVersion>latest</LangVersion>
     <Title>Fancy Lighting</Title>
     <Authors>RandomComputerUser</Authors>
-    <AssemblyVersion>0.8.5.1</AssemblyVersion>
-    <Version>0.8.5.1</Version>
+    <AssemblyVersion>0.8.6</AssemblyVersion>
+    <Version>0.8.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="tModLoader.CodeAssist" Version="0.1.*" />

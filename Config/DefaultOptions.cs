@@ -62,7 +62,7 @@ public static class DefaultOptions
     public const int FancyLightingEngineLightLoss = 50;
     public const int FancyLightingEngineLightAbsorption = 100;
     public const int FancyLightingEngineGlobalIlluminationMult = 50;
-    public const bool FancyLightingEngineVinesOpaque = false;
+    public const bool FancyLightingEngineNonSolidOpaque = false;
 
     // Fancy Sky Colors
     public const bool UseCustomSkyColors = true;

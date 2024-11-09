@@ -1008,7 +1008,7 @@ internal sealed class SmoothLighting
 
         if (LightingConfig.Instance.UseEnhancedBlurring)
         {
-            if (PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+            if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
             {
                 Parallel.For(
                     1,
@@ -1152,14 +1152,14 @@ internal sealed class SmoothLighting
                             {
                                 var mask = lightMasks[i];
                                 var isSolid = mask is LightMaskMode.Solid;
-                                var isVine = TileUtils.IsVine(tileX, tileY);
+                                var isNonSolid = TileUtils.IsNonSolid(tileX, tileY);
 
                                 var upperLeftMult =
                                     lightMasks[i - height - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX - 1, tileY - 1)
-                                            == isVine
+                                        || TileUtils.IsNonSolid(tileX - 1, tileY - 1)
+                                            == isNonSolid
                                     )
                                         ? 1f
                                         : 0f;
@@ -1167,7 +1167,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i - height] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX - 1, tileY) == isVine
+                                        || TileUtils.IsNonSolid(tileX - 1, tileY)
+                                            == isNonSolid
                                     )
                                         ? 2f
                                         : 0f;
@@ -1175,8 +1176,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i - height + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX - 1, tileY + 1)
-                                            == isVine
+                                        || TileUtils.IsNonSolid(tileX - 1, tileY + 1)
+                                            == isNonSolid
                                     )
                                         ? 1f
                                         : 0f;
@@ -1184,16 +1185,18 @@ internal sealed class SmoothLighting
                                     lightMasks[i - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX, tileY - 1) == isVine
+                                        || TileUtils.IsNonSolid(tileX, tileY - 1)
+                                            == isNonSolid
                                     )
                                         ? 2f
                                         : 0f;
-                                var middleMult = isSolid && !isVine ? 12f : 4f;
+                                var middleMult = isSolid && !isNonSolid ? 12f : 4f;
                                 var lowerMult =
                                     lightMasks[i + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX, tileY + 1) == isVine
+                                        || TileUtils.IsNonSolid(tileX, tileY + 1)
+                                            == isNonSolid
                                     )
                                         ? 2f
                                         : 0f;
@@ -1201,8 +1204,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height - 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX + 1, tileY - 1)
-                                            == isVine
+                                        || TileUtils.IsNonSolid(tileX + 1, tileY - 1)
+                                            == isNonSolid
                                     )
                                         ? 1f
                                         : 0f;
@@ -1210,7 +1213,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX + 1, tileY) == isVine
+                                        || TileUtils.IsNonSolid(tileX + 1, tileY)
+                                            == isNonSolid
                                     )
                                         ? 2f
                                         : 0f;
@@ -1218,8 +1222,8 @@ internal sealed class SmoothLighting
                                     lightMasks[i + height + 1] == mask
                                     && (
                                         !isSolid
-                                        || TileUtils.IsVine(tileX + 1, tileY + 1)
-                                            == isVine
+                                        || TileUtils.IsNonSolid(tileX + 1, tileY + 1)
+                                            == isNonSolid
                                     )
                                         ? 1f
                                         : 0f;

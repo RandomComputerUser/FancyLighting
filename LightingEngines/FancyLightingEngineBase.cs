@@ -34,7 +34,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     protected float[] _lightSolidDecay;
     private float[] _lightWaterDecay;
     private float[] _lightHoneyDecay;
-    private float[] _lightVinesDecay;
+    private float[] _lightNonSolidDecay;
 
     protected float[][] _lightMask;
 
@@ -131,14 +131,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         _lightSolidDecay = new float[DistanceTicks + 2];
         _lightWaterDecay = new float[DistanceTicks + 2];
         _lightHoneyDecay = new float[DistanceTicks + 2];
-        _lightVinesDecay = new float[DistanceTicks + 2];
+        _lightNonSolidDecay = new float[DistanceTicks + 2];
         for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
         {
             _lightAirDecay[exponent] = 1f;
             _lightSolidDecay[exponent] = 1f;
             _lightWaterDecay[exponent] = 1f;
             _lightHoneyDecay[exponent] = 1f;
-            _lightVinesDecay[exponent] = 1f;
+            _lightNonSolidDecay[exponent] = 1f;
         }
 
         // Last element is for diagonal decay (used in GI)
@@ -146,7 +146,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightSolidDecay[^1] =
             _lightWaterDecay[^1] =
             _lightHoneyDecay[^1] =
-            _lightVinesDecay[^1] =
+            _lightNonSolidDecay[^1] =
                 MathF.Sqrt(2f);
     }
 
@@ -283,9 +283,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         UpdateDecay(_lightWaterDecay, lightWaterDecayBaseline);
         UpdateDecay(_lightHoneyDecay, lightHoneyDecayBaseline);
 
-        if (!PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+        if (!PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
         {
-            Array.Copy(_lightSolidDecay, _lightVinesDecay, _lightSolidDecay.Length);
+            Array.Copy(_lightSolidDecay, _lightNonSolidDecay, _lightSolidDecay.Length);
         }
     }
 
@@ -308,7 +308,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
     {
-        if (PreferencesConfig.Instance.FancyLightingEngineVinesOpaque)
+        if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
         {
             Parallel.For(
                 0,
@@ -351,8 +351,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     {
                         _lightMask[j] = lightMasks[j] switch
                         {
-                            LightMaskMode.Solid => TileUtils.IsVine(x, y)
-                                ? _lightVinesDecay
+                            LightMaskMode.Solid => TileUtils.IsNonSolid(x, y)
+                                ? _lightNonSolidDecay
                                 : _lightSolidDecay,
                             LightMaskMode.Water => _lightWaterDecay,
                             LightMaskMode.Honey => _lightHoneyDecay,

@@ -26,7 +26,8 @@ PreferencesConfig: {
 		Label: Gamma (%)
 		Tooltip:
 			'''
-			Changes the gamma used by lighting and textures
+			Controls the gamma used by light and texture colors
+			Higher values increase the contrast between bright and dark areas
 			A value of 220% corresponds to a gamma of 2.2
 			'''
 	}
@@ -35,7 +36,7 @@ PreferencesConfig: {
 		Label: sRGB Output
 		Tooltip:
 			'''
-			Toggles whether to use the sRGB output instead of gamma 2.2
+			Toggles whether to output colors in sRGB instead of gamma 2.2
 			Enable if dark colors are desaturated and too bright
 			'''
 	}
@@ -52,15 +53,15 @@ PreferencesConfig: {
 		Tooltip:
 			'''
 			Toggles between coarse and fine simulated normal maps
-			Coarse normal maps are simulated at half resolution, matching the vanilla textures
+			Coarse normal maps are simulated at half resolution, matching vanilla textures
 			Fine normal maps are simulated at full resolution
 			Recommended to enable when using HD textures
 			'''
 	}
 
 	RenderOnlyLight: {
-		Label: (Debug) Render Only Light
-		Tooltip: When enabled, tile, wall, and background textures are not rendered
+		Label: (Debug) Show Light Colors
+		Tooltip: When enabled, renders light colors directly without tile, wall, and background textures
 	}
 
 	# Ambient Occlusion
@@ -123,9 +124,13 @@ PreferencesConfig: {
 			'''
 	}
 
-	FancyLightingEngineVinesOpaque: {
-		Label: Vines and Seaweed Block Light
-		Tooltip: Toggles whether vines and seaweed block light
+	FancyLightingEngineNonSolidOpaque: {
+		Label: Shadows from Non-Solid Tiles
+		Tooltip:
+			'''
+			Toggles whether light is lost exiting non-solid tiles
+			Primarily affects vines
+			'''
 	}
 
 	# Fancy Sky Colors
@@ -252,8 +257,8 @@ LightingConfig: {
 	}
 
 	OverbrightNPCsAndPlayer: {
-		Label: Overbright NPCs and Player
-		Tooltip: Toggles whether to apply overbright lighting to NPCs and the player
+		Label: Overbright NPCs and Players
+		Tooltip: Toggles whether to apply overbright lighting to NPCs and players
 	}
 
 	OverbrightProjectiles: {
@@ -333,12 +338,11 @@ LightingConfig: {
 	}
 
 	FancyLightingEngineMode: {
-		Label: Lighting Engine Resolution
+		Label: Shadow Precision
 		Tooltip:
 			'''
 			Controls the internal resolution of the fancy lighting engine
 			Does not affect the final resolution of the light map
-			Higher values increase the accuracy of shadows
 			'''
 	}
 
@@ -361,9 +365,9 @@ GlowMaskMode: {
 
 LightingEngineMode: {
 	Tooltip: ""
-	One.Label: 1x
-	Two.Label: 2x
-	Four.Label: 4x
+	One.Label: Low
+	Two.Label: Medium
+	Four.Label: High
 }
 
 Preset: {

@@ -7,5 +7,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.8.5.1 (2024-11-03)**
-- Glow mask support no longer spawns extra dust
+**v0.8.6 (2024-11-08)**
+- Made ambient occlusion weaker on translucent walls when overbright lighting is enabled
+- The setting to toggle whether vines and seaweed block light now affects all non-solid tiles
+- Changed the names and tooltips of some settings
