@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
@@ -436,6 +437,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawCapture += _Main_DrawCapture;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void DrawScreenOverbright(
         Action draw,
         bool spriteBatchAlreadyBegan,

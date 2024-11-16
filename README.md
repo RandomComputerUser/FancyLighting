@@ -8,3 +8,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.0 (2024-11-??)**
+- Reduced the number of memory allocations

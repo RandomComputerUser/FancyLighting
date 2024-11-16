@@ -563,10 +563,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -656,10 +653,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     0,
                     width,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x) =>
                     {
                         var i = height * x;
@@ -683,10 +677,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     0,
                     width,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x) =>
                     {
                         var i = height * x;
@@ -725,10 +716,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -776,10 +764,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 lightMapTileArea.X,
                 lightMapTileArea.X + lightMapTileArea.Width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (x) =>
                 {
                     var dummyColor = new Color();
@@ -847,10 +832,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 lightMapTileArea.X,
                 lightMapTileArea.X + lightMapTileArea.Width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (x) =>
                 {
                     var dummyColor = new Color();
@@ -926,10 +908,7 @@ internal sealed class SmoothLighting
         Parallel.For(
             1,
             width - 1,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
+            FancyLightingModSystem._parallelOptions,
             (x) =>
             {
                 var i = height * x;
@@ -1013,10 +992,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     1,
                     width - 1,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x) =>
                     {
                         var i = height * x;
@@ -1134,10 +1110,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     1,
                     width - 1,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x) =>
                     {
                         var tileX = x + lightMapTileArea.X;
@@ -1321,10 +1294,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 1,
                 width - 1,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -1549,10 +1519,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -1598,10 +1565,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -1668,10 +1632,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -1770,10 +1731,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -1928,10 +1886,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -1977,10 +1932,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -2041,10 +1993,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;
@@ -2143,10 +2092,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     clampedStart,
                     clampedEnd,
-                    new ParallelOptions
-                    {
-                        MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                    },
+                    FancyLightingModSystem._parallelOptions,
                     (x1) =>
                     {
                         var i = (height * x1) + offset;

@@ -313,10 +313,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = height * (i + 1);
@@ -338,10 +335,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = height * (i + 1);
@@ -373,10 +367,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Parallel.For(
             0,
             width,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
+            FancyLightingModSystem._parallelOptions,
             (x) =>
             {
                 var i = height * x;
@@ -610,10 +601,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Parallel.For(
             0,
             width,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
+            FancyLightingModSystem._parallelOptions,
             (i) =>
             {
                 var endIndex = height * (i + 1);
@@ -641,10 +629,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = height * (i + 1);
@@ -665,10 +650,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 width,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = height * i;
@@ -689,10 +671,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = i + length;
@@ -713,10 +692,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var endIndex = i;
@@ -737,10 +713,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height + width - 1,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var inc = height + 1;
@@ -776,10 +749,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height + width - 1,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var inc = -height - 1;
@@ -816,10 +786,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height + width - 1,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var inc = -height + 1;
@@ -857,10 +824,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             Parallel.For(
                 0,
                 height + width - 1,
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-                },
+                FancyLightingModSystem._parallelOptions,
                 (i) =>
                 {
                     var inc = height - 1;
@@ -903,10 +867,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Parallel.For(
             0,
             width,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = PreferencesConfig.Instance.ThreadCount,
-            },
+            FancyLightingModSystem._parallelOptions,
             (i) =>
             {
                 var endIndex = height * (i + 1);
