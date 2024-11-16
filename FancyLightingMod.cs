@@ -38,7 +38,6 @@ public sealed class FancyLightingMod : Mod
     internal FieldInfo _field_workingProcessedArea;
     private FieldInfo _field_colors;
     private FieldInfo _field_mask;
-    private FieldInfo _field_transformMatrix;
 
     private delegate void TileDrawingMethod(TileDrawing self);
 
@@ -209,9 +208,6 @@ public sealed class FancyLightingMod : Mod
             .AssertNotNull();
         _field_mask = typeof(LightMap)
             .GetField("_mask", BindingFlags.NonPublic | BindingFlags.Instance)
-            .AssertNotNull();
-        _field_transformMatrix = typeof(SpriteBatch)
-            .GetField("transformMatrix", BindingFlags.NonPublic | BindingFlags.Instance)
             .AssertNotNull();
 
         _method_DrawMultiTileVines = (TileDrawingMethod)
@@ -500,15 +496,20 @@ public sealed class FancyLightingMod : Mod
         var target =
             checkLightOnly && PreferencesConfig.Instance.RenderOnlyLight
                 ? null
-                : MainRenderTarget.Get();
+                : MainGraphics.GetRenderTarget();
         if (target is null)
         {
             draw();
             return;
         }
 
+        var samplerState = Main.DefaultSamplerState;
+        var transform = Matrix.Identity;
+
         if (spriteBatchAlreadyBegan)
         {
+            samplerState = MainGraphics.GetSamplerState();
+            transform = MainGraphics.GetTransformMatrix();
             Main.spriteBatch.End();
         }
 
@@ -533,11 +534,11 @@ public sealed class FancyLightingMod : Mod
             Main.spriteBatch.Begin(
                 SpriteSortMode.Deferred,
                 BlendState.AlphaBlend,
-                SamplerState.PointClamp,
+                samplerState,
                 DepthStencilState.None,
                 Main.Rasterizer,
                 null,
-                Main.Transform
+                transform
             );
         }
 
@@ -568,11 +569,11 @@ public sealed class FancyLightingMod : Mod
             Main.spriteBatch.Begin(
                 SpriteSortMode.Deferred,
                 BlendState.AlphaBlend,
-                Main.DefaultSamplerState,
+                samplerState,
                 DepthStencilState.None,
                 Main.Rasterizer,
                 null,
-                Main.Transform
+                transform
             );
         }
     }
@@ -708,19 +709,12 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var transform = (Matrix)
-            _field_transformMatrix.GetValue(Main.spriteBatch).AssertNotNull();
+        var samplerState = MainGraphics.GetSamplerState();
+        var transform = MainGraphics.GetTransformMatrix();
 
-        SamplerState samplerState;
         if (ModLoader.TryGetMod("PixelatedBackgrounds", out var _))
         {
             samplerState = SamplerState.PointClamp;
-        }
-        else
-        {
-            samplerState = _inCameraMode
-                ? SamplerState.AnisotropicClamp
-                : SamplerState.LinearClamp;
         }
 
         Main.spriteBatch.End();
@@ -794,7 +788,7 @@ public sealed class FancyLightingMod : Mod
 
         var target = PreferencesConfig.Instance.RenderOnlyLight
             ? null
-            : MainRenderTarget.Get();
+            : MainGraphics.GetRenderTarget();
         if (target is null)
         {
             _WaterfallManager_Draw_inner(orig, self, spriteBatch);
@@ -2257,7 +2251,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (LightingConfig.Instance.ModifyCameraModeRendering())
         {
-            _cameraModeTarget = MainRenderTarget.Get();
+            _cameraModeTarget = MainGraphics.GetRenderTarget();
             _inCameraMode = _cameraModeTarget is not null;
         }
         else
