@@ -200,7 +200,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         var basicWorkCutoff = BaseCutoff;
 
-        if (LightingConfig.Instance.DoGammaCorrection())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             GammaConverter.GammaToLinear(ref _initialBrightnessCutoff);
             GammaConverter.GammaToLinear(ref cutoff);
@@ -257,7 +257,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightLossExitingSolid *= _lightLossExitingSolid;
         }
 
-        if (LightingConfig.Instance.DoGammaCorrection())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             GammaConverter.GammaToLinear(ref lightAirDecayBaseline);
             GammaConverter.GammaToLinear(ref lightSolidDecayBaseline);
@@ -586,7 +586,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         var giMult =
             PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
-        if (LightingConfig.Instance.DoGammaCorrection())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             GammaConverter.GammaToLinear(ref giMult);
         }

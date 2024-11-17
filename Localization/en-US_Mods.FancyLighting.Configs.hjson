@@ -164,24 +164,7 @@ LightingConfig: {
 	
 	QualityPreset: {
 		Label: Quality Preset
-		Tooltip:
-			'''
-			A preset for the quality settings may be chosen
-			[c/FFFF00:The extreme preset requires a relatively fast GPU to run smoothly]
-			'''
-	}
-
-	UseHiDefFeatures: {
-		Label: Enhanced Shaders and Colors
-		Tooltip:
-			'''
-			Toggles whether to use enhanced shaders and colors
-			When enabled, some visual effects are improved:
-			- Increases the precision of colors used in lighting
-			- Increases the maximum overbright light brightness
-			- Uses gamma-correct lighting when overbright lighting is enabled
-			- Increases background brightness when overbright lighting is enabled
-			'''
+		Tooltip: A preset for the quality settings may be chosen
 	}
 
 	# Smooth Lighting
@@ -215,70 +198,28 @@ LightingConfig: {
 			'''
 	}
 
-	UseLightMapToneMapping: {
-		Label: Light Map Tone Mapping
-		Tooltip:
-			'''
-			Toggles whether to use tone mapping on the light map
-			Reduces the brightness of brightly lit tiles
-			The tone mapping curve is applied to the light color, not the final pixel color
-			'''
-	}
-
 	SimulateNormalMaps: {
 		Label: Simulated Normal Maps
 		Tooltip: Toggles whether to simulate normal maps
 	}
 
-	GlowMaskSupport: {
-		Label: Glow Mask Mode
+	UseEnhancedGlowMaskSupport: {
+		Label: Enhanced Glow Effect Support
 		Tooltip:
 			'''
-			Controls how glow masks are rendered
-			When set to none, vanilla glow masks are simulated by lighting the entire tile
-			Glow masks may cause side effects due to drawing tiles multiple times
+			Controls how glow effects are rendered
+			Glow effect brightness may be inaccurate when enhanced glow support is disabled
 			'''
 	}
 
 	LightMapRenderMode: {
-		Label: Light Map Render Mode
+		Label: Render Mode
 		Tooltip:
 			'''
-			Controls how the light map is rendered
-			Affects the smoothness of lighting
-			Bicubic upscaling is smoother than bilinear upscaling
-			Overbright lighting increases the maximum brightness of light beyond 100%
+			Controls how light is rendered
+			HDR rendering allows light brightness to surpass 100%
+			When using HDR rendering, the result will be tone mapped to SDR
 			'''
-	}
-
-	OverbrightWaterfalls: {
-		Label: Overbright Waterfalls
-		Tooltip: Toggles whether to apply overbright lighting to waterfalls
-	}
-
-	OverbrightNPCsAndPlayer: {
-		Label: Overbright NPCs and Players
-		Tooltip: Toggles whether to apply overbright lighting to NPCs and players
-	}
-
-	OverbrightProjectiles: {
-		Label: Overbright Projectiles
-		Tooltip: Toggles whether to apply overbright lighting to projectiles
-	}
-
-	OverbrightDustAndGore: {
-		Label: Overbright Dust and Gore
-		Tooltip: Toggles whether to apply overbright lighting to dust and gore
-	}
-
-	OverbrightItems: {
-		Label: Overbright Items
-		Tooltip: Toggles whether to apply overbright lighting to dropped items
-	}
-
-	OverbrightRain: {
-		Label: Overbright Rain
-		Tooltip: Toggles whether to apply overbright lighting to rain
 	}
 
 	# Ambient Occlusion
@@ -356,13 +297,6 @@ LightingConfig: {
 	}
 }
 
-GlowMaskMode: {
-	Tooltip: ""
-	None.Label: None
-	Basic.Label: Basic
-	Enhanced.Label: Enhanced
-}
-
 LightingEngineMode: {
 	Tooltip: ""
 	One.Label: Low
@@ -379,14 +313,15 @@ Preset: {
 	MediumPreset.Label: Medium
 	HighPreset.Label: High
 	UltraPreset.Label: Ultra
-	ExtremePreset.Label: "[c/FFFF00:Extreme]"
 }
 
 RenderMode: {
 	Tooltip: ""
 	Bilinear.Label: Bilinear Upscaling
 	Bicubic.Label: Bicubic Upscaling
-	BicubicOverbright.Label: Bicubic with Overbright
+	BicubicOverbright.Label: Basic HDR Rendering
+	EnhancedHdr.Label: Enhanced HDR Rendering
+	EnhancedHdrBloom.Label: Enhanced HDR with Bloom
 }
 
 SkyColorPreset: {

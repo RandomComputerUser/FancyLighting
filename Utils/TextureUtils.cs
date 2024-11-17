@@ -9,7 +9,7 @@ internal static class TextureUtils
 {
     public static SurfaceFormat TextureSurfaceFormat =>
         LightingConfig.Instance.HiDefFeaturesEnabled()
-            ? SurfaceFormat.Rgba64
+            ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
 
     public static void MakeSize(ref RenderTarget2D target, int width, int height)
@@ -80,5 +80,36 @@ internal static class TextureUtils
                 TextureSurfaceFormat
             );
         }
+    }
+
+    public static void EnsureFormat(ref RenderTarget2D target)
+    {
+        if (target is null || target.GraphicsDevice != Main.graphics.GraphicsDevice)
+        {
+            return;
+        }
+
+        if (target.Format == TextureSurfaceFormat)
+        {
+            return;
+        }
+
+        var width = target.Width;
+        var height = target.Height;
+        var mipMap = target.LevelCount > 1;
+        var depthStencilFormat = target.DepthStencilFormat;
+        var multisampleCount = target.MultiSampleCount;
+        var renderTargetUsage = target.RenderTargetUsage;
+        target.Dispose();
+        target = new RenderTarget2D(
+            Main.graphics.GraphicsDevice,
+            width,
+            height,
+            mipMap,
+            TextureSurfaceFormat,
+            depthStencilFormat,
+            multisampleCount,
+            renderTargetUsage
+        );
     }
 }

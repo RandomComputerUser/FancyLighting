@@ -4,10 +4,9 @@ Features:
 - Smooth lighting
 - Ambient occlusion
 - Accurate shadows
-- New sky colors
-- Overbright lighting
+- Fancy sky colors
+- HDR rendering (tone mapped to SDR)
 - Simulated normal maps
-- Gamma correction
 - sRGB output mode
 
 For the best performance, lower the resolution to either 1920x1080 or 1920x1200 depending on the aspect ratio of your display. Resolutions higher than 1920x1200 may result in significantly lower frame rates. The frame rate can be checked by pressing F10.

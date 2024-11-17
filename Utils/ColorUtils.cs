@@ -1,10 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 
 namespace FancyLighting.Utils;
 
-public static class VectorToColor
+public static class ColorUtils
 {
     // Provide better conversions from Vector3 to Color than XNA
     // XNA uses (byte)(x * 255f) for each component
@@ -19,12 +20,15 @@ public static class VectorToColor
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Assign(ref Rgba64 color, float brightness, Vector3 rgb)
+    public static void Assign(ref HalfVector4 color, Vector3 rgb)
     {
-        var r = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
-        var g = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
-        var b = (ulong)((65535f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
-
-        color.PackedValue = r | (g << 16) | (b << 32) | ((ulong)ushort.MaxValue << 48);
+        color = new HalfVector4(rgb.X, rgb.Y, rgb.Z, 1f);
     }
+
+    // Input must be in gamma space;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Luminance(Vector3 color) =>
+        (0.2126f * MathF.Pow(color.X, 2.2f))
+        + (0.7152f * MathF.Pow(color.Y, 2.2f))
+        + (0.0722f * MathF.Pow(color.Z, 2.2f));
 }

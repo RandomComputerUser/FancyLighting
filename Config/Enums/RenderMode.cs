@@ -5,4 +5,6 @@ public enum RenderMode
     Bilinear = 0,
     Bicubic = 1,
     BicubicOverbright = 2,
+    EnhancedHdr = 3,
+    EnhancedHdrBloom = 4,
 }

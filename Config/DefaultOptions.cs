@@ -7,9 +7,6 @@ public static class DefaultOptions
 {
     public const Preset QualityPreset = Preset.LowPreset;
 
-    // General
-    public const bool UseHiDefFeatures = false;
-
     // General Preferences
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
     public const int MinThreadCount = 1;
@@ -26,16 +23,9 @@ public static class DefaultOptions
     public const bool UseSmoothLighting = true;
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = false;
-    public const bool UseLightMapToneMapping = false;
     public const bool SimulateNormalMaps = false;
-    public const GlowMaskMode GlowMaskSupport = GlowMaskMode.Basic;
+    public const bool UseEnhancedGlowMaskSupport = false;
     public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
-    public const bool OverbrightWaterfalls = false;
-    public const bool OverbrightNPCsAndPlayer = false;
-    public const bool OverbrightProjectiles = false;
-    public const bool OverbrightDustAndGore = false;
-    public const bool OverbrightItems = false;
-    public const bool OverbrightRain = false;
 
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 5;

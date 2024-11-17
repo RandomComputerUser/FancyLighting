@@ -453,12 +453,12 @@ internal sealed class AmbientOcclusion
         }
 
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
-        if (LightingConfig.Instance.DoGammaCorrection())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             power *= PreferencesConfig.Instance.GammaExponent();
         }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
-        if (!LightingConfig.Instance.DoGammaCorrection())
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             mult = MathF.Pow(mult, 1.35f); // Crude approximation to try to make it look similar
         }

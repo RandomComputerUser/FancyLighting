@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
@@ -52,7 +50,7 @@ public sealed class FancyLightingMod : Mod
     private TileDrawingMethod _method_DrawVines;
     private TileDrawingMethod _method_DrawReverseVines;
 
-    private static RenderTarget2D _cameraModeTarget;
+    internal static RenderTarget2D _cameraModeTarget;
     private static RenderTarget2D _cameraModeTmpTarget1;
     private static RenderTarget2D _cameraModeTmpTarget2;
     internal static Rectangle _cameraModeArea;
@@ -63,6 +61,9 @@ public sealed class FancyLightingMod : Mod
     private static RenderTarget2D _tmpTarget1;
     private static RenderTarget2D _tmpTarget2;
     private static RenderTarget2D _tmpTarget3;
+
+    private static RenderTarget2D _backgroundTarget;
+    private static RenderTarget2D _cameraModeBackgroundTarget;
 
     private bool OverrideLightColor
     {
@@ -339,6 +340,8 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTarget = null;
             _cameraModeTmpTarget1?.Dispose();
             _cameraModeTmpTarget2?.Dispose();
+            _backgroundTarget?.Dispose();
+            _cameraModeBackgroundTarget?.Dispose();
             _smoothLightingInstance?.Unload();
             _ambientOcclusionInstance?.Unload();
             _fancyLightingEngineInstance?.Unload();
@@ -386,8 +389,8 @@ public sealed class FancyLightingMod : Mod
 
     internal void OnConfigChange()
     {
-        _smoothLightingInstance?.CalculateSmoothLighting(false, false, true);
-        _smoothLightingInstance?.CalculateSmoothLighting(true, false, true);
+        _smoothLightingInstance?.CalculateSmoothLighting(false, true);
+        _smoothLightingInstance?.CalculateSmoothLighting(false, true);
 
         if (_fancyLightingEngineInstance is not null)
         {
@@ -400,20 +403,10 @@ public sealed class FancyLightingMod : Mod
         On_Dust.NewDust += _Dust_NewDust;
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
+        On_Main.DrawBG += _Main_DrawBG;
+        On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
+        On_Main.DrawSunAndMoon += _Main_DrawSunAndMoon;
         On_TileDrawing.PostDrawTiles += _TileDrawing_PostDrawTiles;
-        On_Main.DrawSurfaceBG += _Main_DrawSurfaceBG;
-        On_WaterfallManager.Draw += _WaterfallManager_Draw;
-        On_Main.DrawNPCs += _Main_DrawNPCs;
-        On_Main.DrawCachedNPCs += _Main_DrawCachedNPCs;
-        On_Main.DrawWoF += _Main_DrawWoF;
-        On_Main.DrawPlayers_BehindNPCs += _Main_DrawPlayers_BehindNPCs;
-        On_Main.DrawPlayers_AfterProjectiles += _Main_DrawPlayers_AfterProjectiles;
-        On_Main.DrawProjectiles += _Main_DrawProjectiles;
-        On_Main.DrawCachedProjs += _Main_DrawCachedProjs;
-        On_Main.DrawDust += _Main_DrawDust;
-        On_Main.DrawGore += _Main_DrawGore;
-        On_Main.DrawItems += _Main_DrawItems;
-        On_Main.DrawRain += _Main_DrawRain;
         On_Main.RenderWater += _Main_RenderWater;
         On_Main.DrawWaters += _Main_DrawWaters;
         On_Main.RenderBackground += _Main_RenderBackground;
@@ -424,6 +417,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.RenderWalls += _Main_RenderWalls;
         On_LightingEngine.ProcessBlur += _LightingEngine_ProcessBlur;
         On_LightMap.Blur += _LightMap_Blur;
+        On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
         // Camera mode hooks added below
         // For some reason the order in which these are added matters to ensure that camera mode works
         // Maybe DrawCapture needs to be added last
@@ -431,151 +425,6 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawWalls += _Main_DrawWalls;
         On_Main.DrawTiles += _Main_DrawTiles;
         On_Main.DrawCapture += _Main_DrawCapture;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawScreenOverbright(
-        Action draw,
-        bool spriteBatchAlreadyBegan,
-        bool checkLightOnly
-    )
-    {
-        if (_inCameraMode)
-        {
-            if (spriteBatchAlreadyBegan)
-            {
-                Main.spriteBatch.End();
-            }
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(
-                _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget)
-            );
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-
-            if (spriteBatchAlreadyBegan)
-            {
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    Main.DefaultSamplerState,
-                    DepthStencilState.None,
-                    Main.Rasterizer
-                );
-            }
-
-            draw();
-            if (spriteBatchAlreadyBegan)
-            {
-                Main.spriteBatch.End();
-            }
-
-            _smoothLightingInstance.CalculateSmoothLighting(false, true);
-            _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                _cameraModeTarget,
-                _smoothLightingInstance._cameraModeTarget1,
-                false,
-                false,
-                true,
-                true
-            );
-
-            if (spriteBatchAlreadyBegan)
-            {
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    Main.DefaultSamplerState,
-                    DepthStencilState.None,
-                    Main.Rasterizer
-                );
-            }
-
-            return;
-        }
-
-        var target =
-            checkLightOnly && PreferencesConfig.Instance.RenderOnlyLight
-                ? null
-                : MainGraphics.GetRenderTarget();
-        if (target is null)
-        {
-            draw();
-            return;
-        }
-
-        var samplerState = Main.DefaultSamplerState;
-        var transform = Matrix.Identity;
-
-        if (spriteBatchAlreadyBegan)
-        {
-            samplerState = MainGraphics.GetSamplerState();
-            transform = MainGraphics.GetTransformMatrix();
-            Main.spriteBatch.End();
-        }
-
-        TextureUtils.MakeSize(ref _screenTarget1, target.Width, target.Height);
-        TextureUtils.MakeSize(ref _screenTarget2, target.Width, target.Height);
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget1);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget2);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        if (spriteBatchAlreadyBegan)
-        {
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                samplerState,
-                DepthStencilState.None,
-                Main.Rasterizer,
-                null,
-                transform
-            );
-        }
-
-        draw();
-        if (spriteBatchAlreadyBegan)
-        {
-            Main.spriteBatch.End();
-        }
-
-        _smoothLightingInstance.CalculateSmoothLighting(false, false);
-        _smoothLightingInstance.DrawSmoothLighting(_screenTarget2, false, true, target);
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_screenTarget1, Vector2.Zero, Color.White);
-        Main.spriteBatch.Draw(_screenTarget2, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        if (spriteBatchAlreadyBegan)
-        {
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                samplerState,
-                DepthStencilState.None,
-                Main.Rasterizer,
-                null,
-                transform
-            );
-        }
     }
 
     private int _Dust_NewDust(
@@ -610,12 +459,130 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
-        if (PreferencesConfig.Instance.DoPostProcessing())
-        {
-            _postProcessingInstance.ApplyingPostProcessing(screenTarget1, screenTarget2);
-        }
+        _postProcessingInstance.ApplyPostProcessing(
+            screenTarget1,
+            screenTarget2,
+            _inCameraMode ? _cameraModeBackgroundTarget : _backgroundTarget,
+            _smoothLightingInstance
+        );
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+    }
+
+    // Separate background layer (so we don't apply overbright to it)
+
+    private void _Main_DrawBG(On_Main.orig_DrawBG orig, Main self)
+    {
+        orig(self);
+
+        if (!LightingConfig.Instance.DrawOverbright())
+        {
+            return;
+        }
+
+        var samplerState = MainGraphics.GetSamplerState();
+        var transform = MainGraphics.GetTransformMatrix();
+        Main.spriteBatch.End();
+
+        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+        TextureUtils.MakeSize(ref _backgroundTarget, target.Width, target.Height);
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            Main.Rasterizer,
+            null,
+            transform
+        );
+    }
+
+    private void _Main_DrawUnderworldBackground(
+        On_Main.orig_DrawUnderworldBackground orig,
+        Main self,
+        bool flat
+    )
+    {
+        orig(self, flat);
+
+        if (!_inCameraMode || !LightingConfig.Instance.DrawOverbright())
+        {
+            return;
+        }
+
+        Main.spriteBatch.End();
+
+        TextureUtils.MakeSize(
+            ref _cameraModeBackgroundTarget,
+            _cameraModeTarget.Width,
+            _cameraModeTarget.Height
+        );
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
+        Main.spriteBatch.Begin();
+    }
+
+    private void _Main_DrawSunAndMoon(
+        On_Main.orig_DrawSunAndMoon orig,
+        Main self,
+        Main.SceneArea sceneArea,
+        Color moonColor,
+        Color sunColor,
+        float tempMushroomInfluence
+    )
+    {
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
+        {
+            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+            return;
+        }
+
+        var samplerState = MainGraphics.GetSamplerState();
+        var transform = MainGraphics.GetTransformMatrix();
+        Main.spriteBatch.End();
+
+        var sunMoonBrightness = Main.dayTime ? 2f : 1.5f;
+        sunMoonBrightness /= PostProcessing.HiDefSurfaceBrightness;
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            _inCameraMode ? RasterizerState.CullNone : Main.Rasterizer,
+            null,
+            transform
+        );
+        _smoothLightingInstance.ApplyBrightenShader(sunMoonBrightness);
+        orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
     }
 
     // Tile entities
@@ -638,18 +605,124 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        DrawScreenOverbright(
-            () =>
-                _TileDrawing_PostDrawTiles_inner(
-                    orig,
-                    self,
-                    solidLayer,
-                    forRenderTargets,
-                    intoRenderTargets
-                ),
-            false,
-            false
+        if (
+            !LightingConfig.Instance.HiDefFeaturesEnabled()
+            || PreferencesConfig.Instance.RenderOnlyLight
+        )
+        {
+            _TileDrawing_PostDrawTiles_inner(
+                orig,
+                self,
+                solidLayer,
+                forRenderTargets,
+                intoRenderTargets
+            );
+            return;
+        }
+
+        if (_inCameraMode)
+        {
+            TextureUtils.MakeAtLeastSize(
+                ref _cameraModeTmpTarget1,
+                _cameraModeTarget.Width,
+                _cameraModeTarget.Height
+            );
+            TextureUtils.MakeAtLeastSize(
+                ref _cameraModeTmpTarget2,
+                _cameraModeTarget.Width,
+                _cameraModeTarget.Height
+            );
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget2);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            _TileDrawing_PostDrawTiles_inner(
+                orig,
+                self,
+                solidLayer,
+                forRenderTargets,
+                intoRenderTargets
+            );
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Immediate,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(_cameraModeTmpTarget1, Vector2.Zero, Color.White);
+            _smoothLightingInstance.ApplyBrightenTranslucentGlowShader();
+            Main.spriteBatch.Draw(_cameraModeTmpTarget2, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            return;
+        }
+
+        var target = MainGraphics.GetRenderTarget();
+        if (target is null)
+        {
+            _TileDrawing_PostDrawTiles_inner(
+                orig,
+                self,
+                solidLayer,
+                forRenderTargets,
+                intoRenderTargets
+            );
+            return;
+        }
+
+        TextureUtils.MakeAtLeastSize(ref _screenTarget1, target.Width, target.Height);
+        TextureUtils.MakeAtLeastSize(ref _screenTarget2, target.Width, target.Height);
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget1);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
         );
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_screenTarget2);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        _TileDrawing_PostDrawTiles_inner(
+            orig,
+            self,
+            solidLayer,
+            forRenderTargets,
+            intoRenderTargets
+        );
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(_screenTarget1, Vector2.Zero, Color.White);
+        _smoothLightingInstance.ApplyBrightenTranslucentGlowShader();
+        Main.spriteBatch.Draw(_screenTarget2, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
     }
 
     private void _TileDrawing_PostDrawTiles_inner(
@@ -696,392 +769,6 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
     }
 
-    private void _Main_DrawSurfaceBG(On_Main.orig_DrawSurfaceBG orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.UseHiDefFeatures
-            || PreferencesConfig.Instance.RenderOnlyLight
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        var samplerState = MainGraphics.GetSamplerState();
-        var transform = MainGraphics.GetTransformMatrix();
-
-        if (ModLoader.TryGetMod("PixelatedBackgrounds", out var _))
-        {
-            samplerState = SamplerState.PointClamp;
-        }
-
-        Main.spriteBatch.End();
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.Default,
-            RasterizerState.CullNone,
-            null,
-            transform
-        );
-
-        _smoothLightingInstance.ApplyBrightenBackgroundShader();
-        orig(self);
-    }
-
-    // Waterfalls
-    private void _WaterfallManager_Draw(
-        On_WaterfallManager.orig_Draw orig,
-        WaterfallManager self,
-        SpriteBatch spriteBatch
-    )
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightWaterfalls
-            || spriteBatch.GraphicsDevice != Main.graphics.GraphicsDevice
-        )
-        {
-            orig(self, spriteBatch);
-            return;
-        }
-
-        Main.tileBatch.End();
-        spriteBatch.End();
-
-        if (_inCameraMode)
-        {
-            spriteBatch.GraphicsDevice.SetRenderTarget(
-                _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget)
-            );
-            spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-
-            _WaterfallManager_Draw_inner(orig, self, spriteBatch);
-            Main.tileBatch.End(); // Needed to draw shimmer waterfalls
-            spriteBatch.End();
-
-            _smoothLightingInstance.CalculateSmoothLighting(false, true);
-            _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                _cameraModeTarget,
-                _smoothLightingInstance._cameraModeTarget1,
-                false,
-                false,
-                true,
-                true
-            );
-
-            spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                Main.DefaultSamplerState,
-                DepthStencilState.None,
-                Main.Rasterizer
-            );
-
-            Main.tileBatch.Begin(Main.Rasterizer, Main.Transform);
-            return;
-        }
-
-        var target = PreferencesConfig.Instance.RenderOnlyLight
-            ? null
-            : MainGraphics.GetRenderTarget();
-        if (target is null)
-        {
-            _WaterfallManager_Draw_inner(orig, self, spriteBatch);
-            return;
-        }
-
-        TextureUtils.MakeSize(ref _screenTarget1, target.Width, target.Height);
-        TextureUtils.MakeSize(ref _screenTarget2, target.Width, target.Height);
-
-        spriteBatch.GraphicsDevice.SetRenderTarget(_screenTarget1);
-        spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        spriteBatch.End();
-
-        spriteBatch.GraphicsDevice.SetRenderTarget(_screenTarget2);
-        spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-        _WaterfallManager_Draw_inner(orig, self, spriteBatch);
-        Main.tileBatch.End(); // Needed to draw shimmer waterfalls
-        spriteBatch.End();
-
-        _smoothLightingInstance.CalculateSmoothLighting(false, false);
-        _smoothLightingInstance.DrawSmoothLighting(_screenTarget2, false, true, target);
-
-        spriteBatch.GraphicsDevice.SetRenderTarget(target);
-        spriteBatch.GraphicsDevice.Clear(Color.Transparent);
-        spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        spriteBatch.Draw(_screenTarget1, Vector2.Zero, Color.White);
-        spriteBatch.Draw(_screenTarget2, Vector2.Zero, Color.White);
-        spriteBatch.End();
-        spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            Main.DefaultSamplerState,
-            DepthStencilState.None,
-            Main.Rasterizer,
-            null,
-            Main.Transform
-        );
-        Main.tileBatch.Begin(Main.Rasterizer, Main.Transform);
-    }
-
-    private void _WaterfallManager_Draw_inner(
-        On_WaterfallManager.orig_Draw orig,
-        WaterfallManager self,
-        SpriteBatch spriteBatch
-    )
-    {
-        if (_inCameraMode)
-        {
-            spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                Main.DefaultSamplerState,
-                DepthStencilState.None,
-                Main.Rasterizer
-            );
-        }
-        else
-        {
-            spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                Main.DefaultSamplerState,
-                DepthStencilState.None,
-                Main.Rasterizer,
-                null,
-                Main.Transform
-            );
-        }
-
-        // Applying the light-only shader would require using SpriteSortMode.Immediate
-        // This causes glitches, so we unfortunately can't do it
-
-        Main.tileBatch.Begin(Main.Rasterizer, Main.Transform);
-
-        orig(self, spriteBatch);
-    }
-
-    // NPCs
-
-    private void _Main_DrawNPCs(On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
-        )
-        {
-            orig(self, behindTiles);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self, behindTiles), true, false);
-    }
-
-    private void _Main_DrawCachedNPCs(
-        On_Main.orig_DrawCachedNPCs orig,
-        Main self,
-        List<int> npcCache,
-        bool behindTiles
-    )
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
-        )
-        {
-            orig(self, npcCache, behindTiles);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self, npcCache, behindTiles), true, false);
-    }
-
-    // Wall of Flesh
-    private void _Main_DrawWoF(On_Main.orig_DrawWoF orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
-            || (
-                Main.wofNPCIndex < 0
-                || !Main.npc[Main.wofNPCIndex].active
-                || Main.npc[Main.wofNPCIndex].life <= 0
-            ) // Don't waste time if the Wall of Flesh isn't visible
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), true, false);
-    }
-
-    // Players
-
-    private void _Main_DrawPlayers_BehindNPCs(
-        On_Main.orig_DrawPlayers_BehindNPCs orig,
-        Main self
-    )
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), false, false);
-    }
-
-    private void _Main_DrawPlayers_AfterProjectiles(
-        On_Main.orig_DrawPlayers_AfterProjectiles orig,
-        Main self
-    )
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightNPCsAndPlayer
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), false, false);
-    }
-
-    // Projectiles
-    // Main.DrawSuperSpecialProjectiles seems to be for the First Fractal (an unobtainable item),
-    // so we don't override it
-
-    private void _Main_DrawProjectiles(On_Main.orig_DrawProjectiles orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightProjectiles
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), false, false);
-    }
-
-    private void _Main_DrawCachedProjs(
-        On_Main.orig_DrawCachedProjs orig,
-        Main self,
-        List<int> projCache,
-        bool startSpriteBatch
-    )
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightProjectiles
-        )
-        {
-            orig(self, projCache, startSpriteBatch);
-            return;
-        }
-
-        DrawScreenOverbright(
-            () => orig(self, projCache, startSpriteBatch),
-            !startSpriteBatch,
-            false
-        );
-    }
-
-    // Dust
-    private void _Main_DrawDust(On_Main.orig_DrawDust orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightDustAndGore
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), false, false);
-    }
-
-    // Gore
-    private void _Main_DrawGore(On_Main.orig_DrawGore orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightDustAndGore
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), true, false);
-    }
-
-    // Dropped Items
-    private void _Main_DrawItems(On_Main.orig_DrawItems orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightItems
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), true, false);
-    }
-
-    // Rain
-    private void _Main_DrawRain(On_Main.orig_DrawRain orig, Main self)
-    {
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !LightingConfig.Instance.OverbrightRain
-        )
-        {
-            orig(self);
-            return;
-        }
-
-        DrawScreenOverbright(() => orig(self), true, false);
-    }
-
     // Non-moving objects (tiles, walls, etc.)
 
     private void _Main_RenderWater(On_Main.orig_RenderWater orig, Main self)
@@ -1105,12 +792,10 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.waterTarget;
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(false);
+        _smoothLightingInstance.CalculateSmoothLighting();
 
         if (useGlowMasks)
         {
@@ -1127,12 +812,14 @@ public sealed class FancyLightingMod : Mod
 
             UseBlackLights = true;
             _preventDust = true;
+            _disableLightColorOverride = true;
             try
             {
                 orig(self);
             }
             finally
             {
+                _disableLightColorOverride = false;
                 _preventDust = false;
                 UseBlackLights = false;
             }
@@ -1247,9 +934,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        OverrideLightColor = isBackground
-            ? _smoothLightingInstance.DrawSmoothLightingBack
-            : _smoothLightingInstance.DrawSmoothLightingFore;
+        OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         try
         {
             orig(self, isBackground);
@@ -1279,7 +964,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting(true);
+        _smoothLightingInstance.CalculateSmoothLighting();
         orig(self);
 
         if (Main.drawToScreen)
@@ -1318,7 +1003,7 @@ public sealed class FancyLightingMod : Mod
 
         if (_inCameraMode)
         {
-            _smoothLightingInstance.CalculateSmoothLighting(true, true);
+            _smoothLightingInstance.CalculateSmoothLighting(true);
 
             Main.tileBatch.End();
             Main.spriteBatch.End();
@@ -1354,7 +1039,7 @@ public sealed class FancyLightingMod : Mod
         }
         else
         {
-            OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingBack;
+            OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
             try
             {
                 orig(self);
@@ -1400,12 +1085,10 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tileTarget;
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(false);
+        _smoothLightingInstance.CalculateSmoothLighting();
 
         if (useGlowMasks)
         {
@@ -1466,7 +1149,7 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingFore;
+        OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         _preventDust = enhancedGlowMasks;
         try
         {
@@ -1519,12 +1202,10 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tile2Target;
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(false);
+        _smoothLightingInstance.CalculateSmoothLighting();
 
         if (useGlowMasks)
         {
@@ -1585,7 +1266,7 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingFore;
+        OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         _preventDust = enhancedGlowMasks;
         try
         {
@@ -1654,12 +1335,10 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.wallTarget;
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(false);
+        _smoothLightingInstance.CalculateSmoothLighting();
 
         if (useGlowMasks)
         {
@@ -1720,8 +1399,8 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting(true);
-        OverrideLightColor = _smoothLightingInstance.DrawSmoothLightingBack;
+        _smoothLightingInstance.CalculateSmoothLighting();
+        OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         _preventDust = enhancedGlowMasks;
         try
         {
@@ -1849,6 +1528,25 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    private static void _TileLightScanner_ApplySurfaceLight(
+        On_TileLightScanner.orig_ApplySurfaceLight orig,
+        TileLightScanner self,
+        Tile tile,
+        int x,
+        int y,
+        ref Vector3 lightColor
+    )
+    {
+        orig(self, tile, x, y, ref lightColor);
+
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
+        {
+            return;
+        }
+
+        lightColor *= PostProcessing.HiDefSurfaceBrightness;
+    }
+
     // Camera mode hooks below
 
     private void _Main_DrawLiquid(
@@ -1874,12 +1572,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(bg, true);
+        _smoothLightingInstance.CalculateSmoothLighting(true);
 
         if (useGlowMasks)
         {
@@ -1998,12 +1694,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(true, true);
+        _smoothLightingInstance.CalculateSmoothLighting(true);
 
         if (useGlowMasks)
         {
@@ -2138,12 +1832,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var useGlowMasks =
-            LightingConfig.Instance.SupportGlowMasks()
-            && !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.EnhancedGlowMasks();
+        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
-        _smoothLightingInstance.CalculateSmoothLighting(false, true);
+        _smoothLightingInstance.CalculateSmoothLighting(true);
 
         if (useGlowMasks)
         {
@@ -2263,6 +1955,7 @@ public sealed class FancyLightingMod : Mod
         {
             _cameraModeArea = area;
             _cameraModeBiome = settings.Biome;
+            FancyLightingModSystem.EnsureRenderTargets();
         }
 
         try

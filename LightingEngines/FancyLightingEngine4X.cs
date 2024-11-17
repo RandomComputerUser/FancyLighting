@@ -319,7 +319,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         UpdateBrightnessCutoff();
         UpdateDecays(lightMap);
 
-        if (LightingConfig.Instance.DoGammaCorrection())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             ConvertLightColorsToLinear(colors, width, height);
         }

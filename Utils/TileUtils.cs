@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Terraria;
+using Terraria.ID;
 
 namespace FancyLighting.Utils;
 
@@ -17,4 +18,8 @@ internal static class TileUtils
         var tileType = tile.TileType;
         return !Main.tileSolid[tileType];
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasShimmer(Tile tile) =>
+        tile is { LiquidAmount: > 0, LiquidType: LiquidID.Shimmer };
 }

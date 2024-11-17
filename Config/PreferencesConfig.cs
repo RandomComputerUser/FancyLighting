@@ -18,8 +18,6 @@ public sealed class PreferencesConfig : ModConfig
 
     internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 
-    internal bool DoPostProcessing() => UseCustomGamma() || UseSrgb;
-
     internal float NormalMapsMultiplier() =>
         NormalMapsIntensity <= 5
             ? 0.5f * NormalMapsIntensity

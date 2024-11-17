@@ -21,25 +21,32 @@ public sealed class LightingConfig : ModConfig
     internal bool SmoothLightingEnabled() =>
         UseSmoothLighting && Lighting.UsingNewLighting;
 
-    internal bool SupportGlowMasks() => GlowMaskSupport is not GlowMaskMode.None;
-
-    internal bool EnhancedGlowMasks() => GlowMaskSupport is GlowMaskMode.Enhanced;
-
-    internal bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
-
-    internal bool DrawOverbright() => LightMapRenderMode is RenderMode.BicubicOverbright;
-
     internal bool AmbientOcclusionEnabled() =>
         UseAmbientOcclusion && Lighting.UsingNewLighting;
 
     internal bool FancyLightingEngineEnabled() =>
         UseFancyLightingEngine && Lighting.UsingNewLighting;
 
-    internal bool HiDefFeaturesEnabled() =>
-        UseHiDefFeatures && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef;
+    internal bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
-    internal bool DoGammaCorrection() =>
-        HiDefFeaturesEnabled() && SmoothLightingEnabled() && DrawOverbright();
+    internal bool UseLightMapToneMapping() =>
+        LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
+
+    internal bool DrawOverbright() =>
+        !(Main.gameMenu || Main.mapFullscreen)
+        && LightMapRenderMode
+            is RenderMode.BicubicOverbright
+                or RenderMode.EnhancedHdr
+                or RenderMode.EnhancedHdrBloom;
+
+    internal bool HiDefFeaturesEnabled() =>
+        !(Main.gameMenu || Main.mapFullscreen || FancyLightingMod._inCameraMode)
+        && SmoothLightingEnabled()
+        && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef
+        && LightMapRenderMode is RenderMode.EnhancedHdr or RenderMode.EnhancedHdrBloom;
+
+    internal bool DrawBloom() =>
+        HiDefFeaturesEnabled() && LightMapRenderMode is RenderMode.EnhancedHdrBloom;
 
     public override void OnChanged()
     {
@@ -49,21 +56,12 @@ public sealed class LightingConfig : ModConfig
 
     private void CopyFrom(PresetOptions options)
     {
-        _useHiDefFeatures = options.UseHiDefFeatures;
-
         _useSmoothLighting = options.UseSmoothLighting;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
-        _useLightMapToneMapping = options.UseLightMapToneMapping;
         _simulateNormalMaps = options.SimulateNormalMaps;
-        _glowMaskSupport = options.GlowMaskSupport;
+        _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _lightMapRenderMode = options.LightMapRenderMode;
-        _overbrightWaterfalls = options.OverbrightWaterfalls;
-        _overbrightNPCsAndPlayer = options.OverbrightNPCsAndPlayer;
-        _overbrightProjectiles = options.OverbrightProjectiles;
-        _overbrightDustAndGore = options.OverbrightDustAndGore;
-        _overbrightItems = options.OverbrightItems;
-        _overbrightRain = options.OverbrightRain;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
@@ -119,19 +117,6 @@ public sealed class LightingConfig : ModConfig
 
     private Preset _preset;
 
-    [DefaultValue(DefaultOptions.UseHiDefFeatures)]
-    public bool UseHiDefFeatures
-    {
-        get => _useHiDefFeatures;
-        set
-        {
-            _useHiDefFeatures = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _useHiDefFeatures;
-
     // Smooth Lighting, Normal Maps, Overbright
     [Header("SmoothLighting")]
     [DefaultValue(DefaultOptions.UseSmoothLighting)]
@@ -173,19 +158,6 @@ public sealed class LightingConfig : ModConfig
 
     private bool _useEnhancedBlurring;
 
-    [DefaultValue(DefaultOptions.UseLightMapToneMapping)]
-    public bool UseLightMapToneMapping
-    {
-        get => _useLightMapToneMapping;
-        set
-        {
-            _useLightMapToneMapping = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _useLightMapToneMapping;
-
     [DefaultValue(DefaultOptions.SimulateNormalMaps)]
     public bool SimulateNormalMaps
     {
@@ -199,18 +171,17 @@ public sealed class LightingConfig : ModConfig
 
     private bool _simulateNormalMaps;
 
-    [DefaultValue(DefaultOptions.GlowMaskSupport)]
-    [DrawTicks]
-    public GlowMaskMode GlowMaskSupport
+    [DefaultValue(DefaultOptions.UseEnhancedGlowMaskSupport)]
+    public bool UseEnhancedGlowMaskSupport
     {
-        get => _glowMaskSupport;
+        get => _useEnhancedGlowMaskSupport;
         set
         {
-            _glowMaskSupport = value;
+            _useEnhancedGlowMaskSupport = value;
             UpdatePreset();
         }
     }
-    private GlowMaskMode _glowMaskSupport;
+    private bool _useEnhancedGlowMaskSupport;
 
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
     [DrawTicks]
@@ -225,84 +196,6 @@ public sealed class LightingConfig : ModConfig
     }
 
     private RenderMode _lightMapRenderMode;
-
-    [DefaultValue(DefaultOptions.OverbrightWaterfalls)]
-    public bool OverbrightWaterfalls
-    {
-        get => _overbrightWaterfalls;
-        set
-        {
-            _overbrightWaterfalls = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightWaterfalls;
-
-    [DefaultValue(DefaultOptions.OverbrightNPCsAndPlayer)]
-    public bool OverbrightNPCsAndPlayer
-    {
-        get => _overbrightNPCsAndPlayer;
-        set
-        {
-            _overbrightNPCsAndPlayer = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightNPCsAndPlayer;
-
-    [DefaultValue(DefaultOptions.OverbrightProjectiles)]
-    public bool OverbrightProjectiles
-    {
-        get => _overbrightProjectiles;
-        set
-        {
-            _overbrightProjectiles = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightProjectiles;
-
-    [DefaultValue(DefaultOptions.OverbrightDustAndGore)]
-    public bool OverbrightDustAndGore
-    {
-        get => _overbrightDustAndGore;
-        set
-        {
-            _overbrightDustAndGore = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightDustAndGore;
-
-    [DefaultValue(DefaultOptions.OverbrightItems)]
-    public bool OverbrightItems
-    {
-        get => _overbrightItems;
-        set
-        {
-            _overbrightItems = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightItems;
-
-    [DefaultValue(DefaultOptions.OverbrightRain)]
-    public bool OverbrightRain
-    {
-        get => _overbrightRain;
-        set
-        {
-            _overbrightRain = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _overbrightRain;
 
     // Ambient Occlusion
     [Header("AmbientOcclusion")]

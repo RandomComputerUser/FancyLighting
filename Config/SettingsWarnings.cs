@@ -32,7 +32,8 @@ internal static class SettingsWarnings
             if (Main.WaveQuality is not (1 or 2 or 3))
             {
                 if (
-                    PreferencesConfig.Instance.DoPostProcessing()
+                    PreferencesConfig.Instance.UseCustomGamma()
+                    || PreferencesConfig.Instance.UseSrgb
                     || (
                         LightingConfig.Instance.UseSmoothLighting
                         && LightingConfig.Instance.DrawOverbright()

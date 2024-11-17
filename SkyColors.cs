@@ -104,7 +104,7 @@ public static class SkyColors
         var hour = Main.dayTime
             ? 4.5 + (Main.time / 3600.0)
             : 12.0 + 7.5 + (Main.time / 3600.0);
-        VectorToColor.Assign(ref bgColor, 1f, CalculateSkyColor(hour));
+        ColorUtils.Assign(ref bgColor, 1f, CalculateSkyColor(hour));
     }
 
     public static Vector3 CalculateSkyColor(double hour)
