@@ -232,8 +232,18 @@ internal sealed class SmoothLighting
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
-    internal void ApplyBrightenTranslucentGlowShader() =>
-        _brightenTranslucentGlowShader.Apply();
+    internal void ApplyBrightenTranslucentGlowShader()
+    {
+        var gamma = PreferencesConfig.Instance.GammaExponent();
+        _brightenTranslucentGlowShader
+            .SetParameter("Gamma", gamma)
+            .SetParameter("ReciprocalGamma", 1f / gamma)
+            .SetParameter(
+                "TranslucentGlowBrightness",
+                MathF.Pow(1f / PostProcessing.HiDefBrightnessScale, gamma) - 1f
+            )
+            .Apply();
+    }
 
     private void PrintException()
     {
@@ -1764,13 +1774,17 @@ internal sealed class SmoothLighting
             var normalMapStrength = 1f / (1f + normalMapMult);
             var overbrightMult = doOverbright
                 ? hiDef
-                    ? 1f
+                    ? 1f / PostProcessing.HiDefBrightnessScale
                     : 255f / 128
                 : 1f;
 
             shader
                 .SetParameter("Gamma", gamma)
                 .SetParameter("ReciprocalGamma", 1f / gamma)
+                .SetParameter(
+                    "TranslucentGlowBrightness",
+                    MathF.Pow(1f / PostProcessing.HiDefBrightnessScale, gamma) - 1f
+                )
                 .SetParameter("OverbrightMult", overbrightMult)
                 .SetParameter(
                     "NormalMapResolution",

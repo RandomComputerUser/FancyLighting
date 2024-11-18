@@ -69,21 +69,10 @@ float4 GammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
     );
 }
 
-float4 DitherHiDef(float2 coords : TEXCOORD0) : COLOR0
-{
-    return float4(
-        Dither(
-            tex2D(ScreenSampler, coords).rgb,
-            coords
-        ),
-        1
-    );
-}
-
 float4 ToneMap(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = pow(ToneMapColor(Exposure * pow(color.rgb, 2.2)), 1 / 2.2);
+    color.rgb = ToneMapColor(Exposure * pow(color.rgb, GammaRatio));
     return color;
 }
 
@@ -97,11 +86,6 @@ technique Technique1
     pass GammaToSrgb
     {
         PixelShader = compile ps_3_0 GammaToSrgb();
-    }
-    
-    pass DitherHiDef
-    {
-        PixelShader = compile ps_3_0 DitherHiDef();
     }
     
     pass ToneMap

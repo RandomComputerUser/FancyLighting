@@ -18,7 +18,6 @@ internal sealed class PostProcessing
 
     private Shader _gammaToGammaShader;
     private Shader _gammaToSrgbShader;
-    private Shader _ditherHiDefShader;
     private Shader _toneMapShader;
 
     public PostProcessing()
@@ -38,10 +37,6 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "GammaToSrgb"
         );
-        _ditherHiDefShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "DitherHiDef"
-        );
         _toneMapShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "ToneMap"
@@ -53,7 +48,6 @@ internal sealed class PostProcessing
         _ditherNoise?.Dispose();
         EffectLoader.UnloadEffect(ref _gammaToGammaShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
-        EffectLoader.UnloadEffect(ref _ditherHiDefShader);
         EffectLoader.UnloadEffect(ref _toneMapShader);
     }
 
@@ -75,8 +69,9 @@ internal sealed class PostProcessing
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var cameraMode = FancyLightingMod._inCameraMode;
-        var customGamma = PreferencesConfig.Instance.UseCustomGamma();
+        var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
+        var gamma = PreferencesConfig.Instance.GammaExponent();
 
         if (LightingConfig.Instance.DrawOverbright())
         {
@@ -130,7 +125,11 @@ internal sealed class PostProcessing
                     HiDefBrightnessScale * backgroundBrightness
                 );
             }
-            Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+            if (backgroundTarget is not null)
+            {
+                Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+            }
+
             if (hiDef)
             {
                 smoothLightingInstance.ApplyNoFilterShader();
@@ -143,6 +142,9 @@ internal sealed class PostProcessing
 
         if (hiDef)
         {
+            var exposure = 1f / HiDefBrightnessScale;
+            exposure = MathF.Pow(exposure, gamma);
+
             Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
@@ -152,10 +154,12 @@ internal sealed class PostProcessing
                 RasterizerState.CullNone
             );
             _toneMapShader
-                .SetParameter("Exposure", 1f / MathF.Pow(HiDefBrightnessScale, 2.2f))
+                .SetParameter("Exposure", exposure)
+                .SetParameter("GammaRatio", gamma)
                 .Apply();
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
+            gamma = 1f;
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
         }
@@ -172,16 +176,12 @@ internal sealed class PostProcessing
             );
 
             var useSrgb = PreferencesConfig.Instance.UseSrgb;
-            var gammaRatio = PreferencesConfig.Instance.GammaExponent();
             if (!useSrgb)
             {
-                gammaRatio /= 2.2f;
+                gamma /= 2.2f;
             }
 
-            var shader =
-                useSrgb ? _gammaToSrgbShader
-                : customGamma ? _gammaToGammaShader
-                : _ditherHiDefShader;
+            var shader = useSrgb ? _gammaToSrgbShader : _gammaToGammaShader;
             shader
                 .SetParameter(
                     "DitherCoordMult",
@@ -190,7 +190,7 @@ internal sealed class PostProcessing
                         (float)-currTarget.Height / _ditherNoise.Height
                     )
                 ) // Multiply by -1 so that it's different from the dithering in bicubic filtering
-                .SetParameter("GammaRatio", gammaRatio)
+                .SetParameter("GammaRatio", gamma)
                 .Apply();
 
             Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;

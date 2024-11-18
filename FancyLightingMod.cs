@@ -569,7 +569,7 @@ public sealed class FancyLightingMod : Mod
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        var sunMoonBrightness = Main.dayTime ? 2f : 1.5f;
+        var sunMoonBrightness = Main.dayTime ? 3f : 2f;
         sunMoonBrightness /= PostProcessing.HiDefSurfaceBrightness;
 
         Main.spriteBatch.Begin(
@@ -605,10 +605,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (
-            !LightingConfig.Instance.HiDefFeaturesEnabled()
-            || PreferencesConfig.Instance.RenderOnlyLight
-        )
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
         {
             _TileDrawing_PostDrawTiles_inner(
                 orig,

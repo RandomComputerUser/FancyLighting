@@ -115,7 +115,7 @@ internal record PresetOptions
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
-            UseEnhancedGlowMaskSupport = true,
+            UseEnhancedGlowMaskSupport = false,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
