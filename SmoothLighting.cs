@@ -69,7 +69,6 @@ internal sealed class SmoothLighting
     private Shader _overbrightMaxShader;
     private Shader _lightOnlyShader;
     private Shader _brightenShader;
-    private Shader _brightenTranslucentGlowShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
@@ -175,10 +174,6 @@ internal sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "Brighten"
         );
-        _brightenTranslucentGlowShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "BrightenTranslucentGlow"
-        );
         _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "GlowMask",
@@ -220,7 +215,6 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenShader);
-        EffectLoader.UnloadEffect(ref _brightenTranslucentGlowShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
@@ -231,19 +225,6 @@ internal sealed class SmoothLighting
 
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
-
-    internal void ApplyBrightenTranslucentGlowShader()
-    {
-        var gamma = PreferencesConfig.Instance.GammaExponent();
-        _brightenTranslucentGlowShader
-            .SetParameter("Gamma", gamma)
-            .SetParameter("ReciprocalGamma", 1f / gamma)
-            .SetParameter(
-                "TranslucentGlowBrightness",
-                MathF.Pow(1f / PostProcessing.HiDefBrightnessScale, gamma) - 1f
-            )
-            .Apply();
-    }
 
     private void PrintException()
     {
@@ -1781,10 +1762,6 @@ internal sealed class SmoothLighting
             shader
                 .SetParameter("Gamma", gamma)
                 .SetParameter("ReciprocalGamma", 1f / gamma)
-                .SetParameter(
-                    "TranslucentGlowBrightness",
-                    MathF.Pow(1f / PostProcessing.HiDefBrightnessScale, gamma) - 1f
-                )
                 .SetParameter("OverbrightMult", overbrightMult)
                 .SetParameter(
                     "NormalMapResolution",
