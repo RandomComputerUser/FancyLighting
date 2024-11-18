@@ -5,6 +5,8 @@
 
 This mod is not endorsed by the creators of either Terraria or tModLoader.
 
+[EasyXnb](https://github.com/SuperAndyHero/EasyXnb) is required to build this mod. The EasyXnb config file can be found in the Effects directory.
+
 ## Latest Version
 
 **v0.9.0 (2024-11-??)**
