@@ -42,10 +42,16 @@ float3 Dither(float3 color, float2 coords)
     return lerp(hi, lo, selector);
 }
 
-float3 ToneMapColor(float3 color)
+float3 ToneMapColor(float3 x)
 {
-    // TODO: Find a good, filmic tone mapping operator that desaturates very bright highlights
-    return (1 - 1 / (4096 * color * color + 1)) * (color / (1 + color));
+    float c1 = 1.35555555556;
+    float c2 = 0.815573770492;
+    float c3 = 22500;
+    float c4 = 2;
+    float c5 = 1.77777777778;
+    return saturate(
+        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
+    );
 }
 
 float4 GammaToGamma(float2 coords : TEXCOORD0) : COLOR0
