@@ -53,7 +53,12 @@ float3 ToneMapColor(float3 x)
 
 float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
 {
-    return float4(Exposure * pow(tex2D(ScreenSampler, coords).rgb, GammaRatio), 1);
+    float3 color = tex2D(ScreenSampler, coords).rgb;
+    color = max(color, 0); // prevent NaN
+    color = pow(color, GammaRatio);
+    color = min(color, 10000); // prevent infinity
+    color *= Exposure;
+    return float4(color, 1);
 }
 
 float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0

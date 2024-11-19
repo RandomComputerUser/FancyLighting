@@ -43,7 +43,6 @@ float4 Downsample(float2 coords : TEXCOORD0) : COLOR0
         = 0.125 * (e + j + k + l + m)
         + 0.03125 * (a + c + g + i)
         + 0.0625 * (b + d + f + h);
-    downsample = max(downsample, 1e-4);
     return float4(downsample, 1);
 }
 
@@ -89,7 +88,6 @@ float4 DownsampleKaris(float2 coords : TEXCOORD0) : COLOR0
         + kw3 * groups[3]
         + kw4 * groups[4]
     ) / (kw0 + kw1 + kw2 + kw3 + kw4);
-    downsample = max(downsample, 1e-4);
     return float4(downsample, 1);
 }
 
