@@ -73,7 +73,7 @@ PreferencesConfig: {
 	}
 
 	BloomStrength: {
-		Label: Bloom Strength (%)
+		Label: Bloom Strength
 		Tooltip:
 			'''
 			Controls the strength of the bloom effect

@@ -23,7 +23,7 @@ public sealed class PreferencesConfig : ModConfig
             ? 0.5f * NormalMapsIntensity
             : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
-    internal float BloomLerp() => BloomStrength / 100f;
+    internal float BloomLerp() => BloomStrength / 200f;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 

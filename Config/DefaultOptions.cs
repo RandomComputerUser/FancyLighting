@@ -31,7 +31,7 @@ public static class DefaultOptions
     public const int NormalMapsIntensity = 5;
     public const bool FineNormalMaps = false;
     public const int BloomRadius = 4;
-    public const int BloomStrength = 2;
+    public const int BloomStrength = 5;
     public const bool RenderOnlyLight = false;
 
     // Ambient Occlusion
