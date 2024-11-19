@@ -475,7 +475,7 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self);
 
-        if (!LightingConfig.Instance.DrawOverbright())
+        if (!LightingConfig.Instance.OverbrightOverrideBackground())
         {
             return;
         }
@@ -520,7 +520,7 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, flat);
 
-        if (!_inCameraMode || !LightingConfig.Instance.DrawOverbright())
+        if (!_inCameraMode || !LightingConfig.Instance.OverbrightOverrideBackground())
         {
             return;
         }
@@ -559,7 +559,10 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
-        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
+        if (
+            !LightingConfig.Instance.HiDefFeaturesEnabled()
+            || !LightingConfig.Instance.OverbrightOverrideBackground()
+        )
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;

@@ -33,15 +33,16 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
 
     internal bool DrawOverbright() =>
-        !(Main.gameMenu || Main.mapFullscreen)
-        && LightMapRenderMode
+        LightMapRenderMode
             is RenderMode.BicubicOverbright
                 or RenderMode.EnhancedHdr
                 or RenderMode.EnhancedHdrBloom;
 
+    internal bool OverbrightOverrideBackground() =>
+        DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen);
+
     internal bool HiDefFeaturesEnabled() =>
-        !(Main.gameMenu || Main.mapFullscreen || FancyLightingMod._inCameraMode)
-        && SmoothLightingEnabled()
+        SmoothLightingEnabled()
         && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef
         && LightMapRenderMode is RenderMode.EnhancedHdr or RenderMode.EnhancedHdrBloom;
 
