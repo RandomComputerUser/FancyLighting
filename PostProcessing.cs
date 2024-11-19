@@ -16,9 +16,16 @@ internal sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
-    private Shader _gammaToGammaShader;
-    private Shader _gammaToSrgbShader;
+    private Shader _gammaToLinearShader;
+    private Shader _gammaToGammaDitherShader;
+    private Shader _gammaToSrgbDitherShader;
     private Shader _toneMapShader;
+    private Shader _downsampleShader;
+    private Shader _downsampleKarisShader;
+    private Shader _blurShader;
+    private Shader _bloomCompositeShader;
+
+    private RenderTarget2D[] _blurTargets;
 
     public PostProcessing()
     {
@@ -29,32 +36,62 @@ internal sealed class PostProcessing
             )
             .Value;
 
-        _gammaToGammaShader = EffectLoader.LoadEffect(
+        _gammaToLinearShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "GammaToGamma"
+            "GammaToLinear"
         );
-        _gammaToSrgbShader = EffectLoader.LoadEffect(
+        _gammaToGammaDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgb"
+            "GammaToGammaDither"
+        );
+        _gammaToSrgbDitherShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToSrgbDither"
         );
         _toneMapShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "ToneMap"
+        );
+        _downsampleShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Blur",
+            "Downsample"
+        );
+        _downsampleKarisShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Blur",
+            "DownsampleKaris"
+        );
+        _blurShader = EffectLoader.LoadEffect("FancyLighting/Effects/Blur", "Blur");
+        _bloomCompositeShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "BloomComposite"
         );
     }
 
     public void Unload()
     {
         _ditherNoise?.Dispose();
-        EffectLoader.UnloadEffect(ref _gammaToGammaShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbShader);
+        EffectLoader.UnloadEffect(ref _gammaToLinearShader);
+        EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
         EffectLoader.UnloadEffect(ref _toneMapShader);
+        EffectLoader.UnloadEffect(ref _downsampleShader);
+        EffectLoader.UnloadEffect(ref _downsampleKarisShader);
+        EffectLoader.UnloadEffect(ref _blurShader);
+        EffectLoader.UnloadEffect(ref _bloomCompositeShader);
+
+        if (_blurTargets is not null)
+        {
+            foreach (var target in _blurTargets)
+            {
+                target?.Dispose();
+            }
+        }
     }
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
         HiDefSurfaceBrightness =
-            1f + 0.5f * ColorUtils.Luminance(Main.ColorOfTheSkies.ToVector3());
+            1f + (0.5f * ColorUtils.Luminance(Main.ColorOfTheSkies.ToVector3()));
     }
 
     internal void ApplyPostProcessing(
@@ -64,10 +101,14 @@ internal sealed class PostProcessing
         SmoothLighting smoothLightingInstance
     )
     {
+        var width = target.Width;
+        var height = target.Height;
+
         var currTarget = target;
         var nextTarget = tmpTarget;
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var doBloom = LightingConfig.Instance.BloomEnabled();
         var cameraMode = FancyLightingMod._inCameraMode;
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
@@ -153,7 +194,7 @@ internal sealed class PostProcessing
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _toneMapShader
+            _gammaToLinearShader
                 .SetParameter("Exposure", exposure)
                 .SetParameter("GammaRatio", gamma)
                 .Apply();
@@ -162,9 +203,160 @@ internal sealed class PostProcessing
             gamma = 1f;
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
+
+            if (doBloom)
+            {
+                // https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
+
+                var passCount = Math.Clamp(PreferencesConfig.Instance.BloomRadius, 1, 5);
+                var bloomStrength = Math.Clamp(
+                    PreferencesConfig.Instance.BloomLerp(),
+                    0f,
+                    1f
+                );
+
+                if (_blurTargets is null || _blurTargets.Length != passCount)
+                {
+                    if (_blurTargets is not null)
+                    {
+                        foreach (var targetToDispose in _blurTargets)
+                        {
+                            targetToDispose?.Dispose();
+                        }
+                    }
+
+                    _blurTargets = new RenderTarget2D[passCount];
+                }
+
+                var scale = 1f;
+                for (var i = 0; i < passCount; ++i)
+                {
+                    scale *= 0.5f;
+                    TextureUtils.MakeSize(
+                        ref _blurTargets[i],
+                        (int)(width * scale),
+                        (int)(height * scale),
+                        forcePreserve: true
+                    );
+
+                    var currBlurTarget = i == 0 ? currTarget : _blurTargets[i - 1];
+                    var nextBlurTarget = _blurTargets[i];
+
+                    var shader = i == 0 ? _downsampleKarisShader : _downsampleShader;
+
+                    Main.graphics.GraphicsDevice.SetRenderTarget(nextBlurTarget);
+                    Main.spriteBatch.Begin(
+                        SpriteSortMode.Immediate,
+                        BlendState.Opaque,
+                        SamplerState.LinearClamp,
+                        DepthStencilState.None,
+                        RasterizerState.CullNone
+                    );
+                    shader
+                        .SetParameter(
+                            "FilterSize",
+                            new Vector2(
+                                1f / currBlurTarget.Width,
+                                1f / currBlurTarget.Height
+                            )
+                        )
+                        .Apply();
+                    Main.spriteBatch.Draw(
+                        currBlurTarget,
+                        Vector2.Zero,
+                        null,
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        new Vector2(
+                            (float)nextBlurTarget.Width / currBlurTarget.Width,
+                            (float)nextBlurTarget.Height / currBlurTarget.Height
+                        ), // simulates "fullscreen" vertex shader
+                        SpriteEffects.None,
+                        0f
+                    );
+                    Main.spriteBatch.End();
+                }
+
+                for (var i = passCount; i-- > 1; )
+                {
+                    var currBlurTarget = _blurTargets[i];
+                    var nextBlurTarget = _blurTargets[i - 1];
+
+                    Main.graphics.GraphicsDevice.SetRenderTarget(nextBlurTarget);
+                    Main.spriteBatch.Begin(
+                        SpriteSortMode.Immediate,
+                        BlendState.Additive,
+                        SamplerState.LinearClamp,
+                        DepthStencilState.None,
+                        RasterizerState.CullNone
+                    );
+                    _blurShader
+                        .SetParameter(
+                            "FilterSize",
+                            new Vector2(
+                                0.005f
+                                    * (
+                                        (float)currBlurTarget.Height
+                                        / currBlurTarget.Width
+                                    ),
+                                0.005f
+                            )
+                        )
+                        .Apply();
+                    Main.spriteBatch.Draw(
+                        currBlurTarget,
+                        Vector2.Zero,
+                        null,
+                        Color.White,
+                        0f,
+                        Vector2.Zero,
+                        new Vector2(
+                            (float)nextBlurTarget.Width / currBlurTarget.Width,
+                            (float)nextBlurTarget.Height / currBlurTarget.Height
+                        ),
+                        SpriteEffects.None,
+                        0f
+                    );
+                    Main.spriteBatch.End();
+                }
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Immediate,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                _bloomCompositeShader
+                    .SetParameter("BloomStrength", bloomStrength)
+                    .Apply();
+
+                Main.graphics.GraphicsDevice.Textures[4] = _blurTargets[0];
+                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.LinearClamp;
+                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                (currTarget, nextTarget) = (nextTarget, currTarget);
+            }
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Immediate,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            _toneMapShader.Apply();
+            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
         }
 
-        if (hiDef || customGamma || srgb)
+        if (customGamma || srgb)
         {
             Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
             Main.spriteBatch.Begin(
@@ -181,7 +373,7 @@ internal sealed class PostProcessing
                 gamma /= 2.2f;
             }
 
-            var shader = useSrgb ? _gammaToSrgbShader : _gammaToGammaShader;
+            var shader = useSrgb ? _gammaToSrgbDitherShader : _gammaToGammaDitherShader;
             shader
                 .SetParameter(
                     "DitherCoordMult",

@@ -1,14 +1,11 @@
 sampler ScreenSampler : register(s0);
 sampler DitherSampler : register(s4);
+sampler BloomBlurSampler : register(s4);
 
 float2 DitherCoordMult;
 float GammaRatio;
 float Exposure;
-
-float3 GammaToLinear(float3 color)
-{
-    return pow(color, 2.2);
-}
+float BloomStrength;
 
 float3 LinearToSrgb(float3 color)
 {
@@ -32,10 +29,10 @@ float3 Dither(float3 color, float2 coords)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
     float3 hi = lo + 1.0 / 255;
-    float3 loLinear = GammaToLinear(lo);
-    float3 hiLinear = GammaToLinear(hi);
+    float3 loLinear = pow(lo, 2.2);
+    float3 hiLinear = pow(hi, 2.2);
 
-    float3 t = (GammaToLinear(color) - loLinear) / (hiLinear - loLinear);
+    float3 t = (pow(color, 2.2) - loLinear) / (hiLinear - loLinear);
     float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords).r;
     float3 selector = step(t, rand);
 
@@ -54,7 +51,12 @@ float3 ToneMapColor(float3 x)
     );
 }
 
-float4 GammaToGamma(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
+{
+    return float4(Exposure * pow(tex2D(ScreenSampler, coords).rgb, GammaRatio), 1);
+}
+
+float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
 {
     return float4(
         Dither(
@@ -65,7 +67,7 @@ float4 GammaToGamma(float2 coords : TEXCOORD0) : COLOR0
     );
 }
 
-float4 GammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
 {
     return float4(
         LinearToSrgb(
@@ -78,24 +80,41 @@ float4 GammaToSrgb(float2 coords : TEXCOORD0) : COLOR0
 float4 ToneMap(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor(Exposure * pow(color.rgb, GammaRatio));
+    color.rgb = ToneMapColor(color.rgb);
     return color;
+}
+
+float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    float4 bloomColor = tex2D(BloomBlurSampler, coords);
+    return lerp(color, bloomColor, BloomStrength);
 }
 
 technique Technique1
 {   
-    pass GammaToGamma
+    pass GammaToLinear
     {
-        PixelShader = compile ps_3_0 GammaToGamma();
+        PixelShader = compile ps_3_0 GammaToLinear();
+    }
+
+    pass GammaToGammaDither
+    {
+        PixelShader = compile ps_3_0 GammaToGammaDither();
     }
     
-    pass GammaToSrgb
+    pass GammaToSrgbDither
     {
-        PixelShader = compile ps_3_0 GammaToSrgb();
+        PixelShader = compile ps_3_0 GammaToSrgbDither();
     }
     
     pass ToneMap
     {
         PixelShader = compile ps_3_0 ToneMap();
+    }
+    
+    pass BloomComposite
+    {
+        PixelShader = compile ps_3_0 BloomComposite();
     }
 }

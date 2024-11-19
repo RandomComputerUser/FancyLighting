@@ -12,7 +12,12 @@ internal static class TextureUtils
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
 
-    public static void MakeSize(ref RenderTarget2D target, int width, int height)
+    public static void MakeSize(
+        ref RenderTarget2D target,
+        int width,
+        int height,
+        bool forcePreserve = false
+    )
     {
         if (
             target is null
@@ -22,6 +27,9 @@ internal static class TextureUtils
             || target.Format != TextureSurfaceFormat
         )
         {
+            var usage = forcePreserve
+                ? RenderTargetUsage.PreserveContents
+                : target?.RenderTargetUsage ?? RenderTargetUsage.DiscardContents;
             target?.Dispose();
             target = new RenderTarget2D(
                 Main.graphics.GraphicsDevice,
@@ -29,7 +37,9 @@ internal static class TextureUtils
                 height,
                 false,
                 TextureSurfaceFormat,
-                DepthFormat.None
+                DepthFormat.None,
+                0,
+                usage
             );
         }
     }

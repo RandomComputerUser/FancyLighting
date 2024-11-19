@@ -45,7 +45,11 @@ PreferencesConfig: {
 	
 	NormalMapsIntensity: {
 		Label: Normal Maps Strength
-		Tooltip: Controls the strength of simulated normal maps
+		Tooltip:
+			'''
+			Controls the strength of simulated normal maps
+			Simulated normal maps must be enabled for this setting to have any effect
+			'''
 	}
 
 	FineNormalMaps: {
@@ -56,6 +60,24 @@ PreferencesConfig: {
 			Coarse normal maps are simulated at half resolution, matching vanilla textures
 			Fine normal maps are simulated at full resolution
 			Recommended to enable when using HD textures
+			'''
+	}
+
+	BloomRadius: {
+		Label: Bloom Radius
+		Tooltip:
+			'''
+			Controls the bloom radius
+			Bloom must be enabled for this setting to have any effect
+			'''
+	}
+
+	BloomStrength: {
+		Label: Bloom Strength (%)
+		Tooltip:
+			'''
+			Controls the strength of the bloom effect
+			Bloom must be enabled for this setting to have any effect
 			'''
 	}
 

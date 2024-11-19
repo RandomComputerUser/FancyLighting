@@ -45,7 +45,7 @@ public sealed class LightingConfig : ModConfig
         && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef
         && LightMapRenderMode is RenderMode.EnhancedHdr or RenderMode.EnhancedHdrBloom;
 
-    internal bool DrawBloom() =>
+    internal bool BloomEnabled() =>
         HiDefFeaturesEnabled() && LightMapRenderMode is RenderMode.EnhancedHdrBloom;
 
     public override void OnChanged()
