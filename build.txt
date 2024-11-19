@@ -5,6 +5,8 @@ side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
 buildIgnore = Effects/*.config, Effects/BlurKernelGenerator/*, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user
 
+sortAfter = Lights
+
 hideCode = false
 hideResources = false
 includeSource = true
