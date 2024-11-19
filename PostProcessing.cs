@@ -90,8 +90,7 @@ internal sealed class PostProcessing
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
-        HiDefSurfaceBrightness =
-            1f + (0.5f * ColorUtils.Luminance(Main.ColorOfTheSkies.ToVector3()));
+        HiDefSurfaceBrightness = 1.4f;
     }
 
     internal void ApplyPostProcessing(

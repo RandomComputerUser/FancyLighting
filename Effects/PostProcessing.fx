@@ -43,7 +43,7 @@ float3 ToneMapColor(float3 x)
 {
     float c1 = 1.35555555556;
     float c2 = 0.815573770492;
-    float c3 = 22500;
+    float c3 = 40000;
     float c4 = 2;
     float c5 = 1.77777777778;
     return saturate(
