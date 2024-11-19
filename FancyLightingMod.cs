@@ -572,7 +572,7 @@ public sealed class FancyLightingMod : Mod
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        var sunMoonBrightness = Main.dayTime ? 1.65f : 1.5f;
+        var sunMoonBrightness = Main.dayTime ? 2f : 1.5f;
         sunMoonBrightness /= PostProcessing.HiDefSurfaceBrightness;
 
         Main.spriteBatch.Begin(
