@@ -22,4 +22,8 @@ internal static class TileUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasShimmer(Tile tile) =>
         tile is { LiquidAmount: > 0, LiquidType: LiquidID.Shimmer };
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasLava(Tile tile) =>
+        tile is { LiquidAmount: > 0, LiquidType: LiquidID.Lava };
 }

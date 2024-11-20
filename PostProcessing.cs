@@ -12,7 +12,7 @@ namespace FancyLighting;
 internal sealed class PostProcessing
 {
     internal const float HiDefBrightnessScale = 0.5f;
-    public static float HiDefSurfaceBrightness { get; private set; }
+    public static float HiDefBackgroundBrightness { get; private set; }
 
     private readonly Texture2D _ditherNoise;
 
@@ -133,7 +133,7 @@ internal sealed class PostProcessing
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
-        HiDefSurfaceBrightness = 1.45f;
+        HiDefBackgroundBrightness = 1.45f;
     }
 
     internal void ApplyPostProcessing(
@@ -193,16 +193,8 @@ internal sealed class PostProcessing
 
             if (hiDef)
             {
-                var worldY = cameraMode
-                    ? FancyLightingMod._cameraModeArea.Y
-                        + (0.5f * FancyLightingMod._cameraModeArea.Height)
-                    : (Main.screenPosition.Y + (0.5f * Main.screenHeight)) / 16f;
-                var aboveSurface =
-                    worldY <= (Main.worldSurface + Main.UnderworldLayer) / 2f;
-                var backgroundBrightness = aboveSurface ? HiDefSurfaceBrightness : 1f;
-
                 smoothLightingInstance.ApplyBrightenShader(
-                    HiDefBrightnessScale * backgroundBrightness
+                    HiDefBrightnessScale * HiDefBackgroundBrightness
                 );
             }
             if (backgroundTarget is not null)

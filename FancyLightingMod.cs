@@ -418,6 +418,8 @@ public sealed class FancyLightingMod : Mod
         On_LightingEngine.ProcessBlur += _LightingEngine_ProcessBlur;
         On_LightMap.Blur += _LightMap_Blur;
         On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
+        On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
+        On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
         // Camera mode hooks added below
         // For some reason the order in which these are added matters to ensure that camera mode works
         // Maybe DrawCapture needs to be added last
@@ -573,7 +575,7 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2f : 1.5f;
-        sunMoonBrightness /= PostProcessing.HiDefSurfaceBrightness;
+        sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightness;
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -1405,12 +1407,72 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
+        if (!FancyLightingModSystem._hiDef)
         {
             return;
         }
 
-        lightColor *= PostProcessing.HiDefSurfaceBrightness;
+        lightColor *= PostProcessing.HiDefBackgroundBrightness;
+    }
+
+    private static void _TileLightScanner_ApplyHellLight(
+        On_TileLightScanner.orig_ApplyHellLight orig,
+        TileLightScanner self,
+        Tile tile,
+        int x,
+        int y,
+        ref Vector3 lightColor
+    )
+    {
+        orig(self, tile, x, y, ref lightColor);
+
+        if (!FancyLightingModSystem._hiDef)
+        {
+            return;
+        }
+
+        lightColor *= PostProcessing.HiDefBackgroundBrightness;
+    }
+
+    private static void _TileLightScanner_ApplyLiquidLight(
+        On_TileLightScanner.orig_ApplyLiquidLight orig,
+        TileLightScanner self,
+        Tile tile,
+        ref Vector3 lightColor
+    )
+    {
+        // This code is adapted from vanilla
+
+        if (!FancyLightingModSystem._hiDef)
+        {
+            orig(self, tile, ref lightColor);
+            return;
+        }
+
+        if (tile.LiquidAmount <= 0)
+        {
+            return;
+        }
+
+        if (tile.LiquidType is LiquidID.Lava)
+        {
+            var brightness = 0.55f;
+            brightness += (270 - Main.mouseTextColor) / 900f;
+            brightness *= 2f;
+            lightColor.X = Math.Max(lightColor.X, brightness);
+            lightColor.Y = Math.Max(lightColor.Y, 0.5f * brightness);
+            lightColor.Z = Math.Max(lightColor.Z, 0.15f * brightness);
+        }
+        else if (tile.LiquidType is LiquidID.Shimmer)
+        {
+            var redBlue = 0.7f;
+            var green = 0.7f;
+            redBlue += (270 - Main.mouseTextColor) / 900f;
+            green += (270 - Main.mouseTextColor) / 125f;
+            lightColor.X = Math.Max(lightColor.X, redBlue * 0.6f);
+            lightColor.Y = Math.Max(lightColor.Y, green * 0.25f);
+            lightColor.Z = Math.Max(lightColor.Z, redBlue * 0.9f);
+        }
     }
 
     // Camera mode hooks below

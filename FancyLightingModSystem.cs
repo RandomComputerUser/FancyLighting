@@ -11,6 +11,8 @@ internal sealed class FancyLightingModSystem : ModSystem
     internal static readonly ParallelOptions _parallelOptions =
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
 
+    internal static bool _hiDef;
+
     private bool _doWarning = false;
 
     internal void OnConfigChange()
@@ -27,6 +29,7 @@ internal sealed class FancyLightingModSystem : ModSystem
     {
         _parallelOptions.MaxDegreeOfParallelism =
             PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount;
+        _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() ?? false;
         PostProcessing.CalculateHiDefSurfaceBrightness();
         EnsureRenderTargets();
 
