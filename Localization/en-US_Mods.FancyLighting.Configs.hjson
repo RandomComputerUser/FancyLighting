@@ -244,6 +244,11 @@ LightingConfig: {
 			'''
 	}
 
+	HdrBloom: {
+		Label: Bloom (Enhanced HDR)
+		Tooltip: Toggles whether to render bloom when using the enhanced HDR render mode
+	}
+
 	# Ambient Occlusion
 	
 	UseAmbientOcclusion: {
@@ -343,7 +348,6 @@ RenderMode: {
 	Bicubic.Label: Bicubic Upscaling
 	BicubicOverbright.Label: Basic HDR Rendering
 	EnhancedHdr.Label: Enhanced HDR Rendering
-	EnhancedHdrBloom.Label: Enhanced HDR with Bloom
 }
 
 SkyColorPreset: {

@@ -26,6 +26,7 @@ public static class DefaultOptions
     public const bool SimulateNormalMaps = false;
     public const bool UseEnhancedGlowMaskSupport = false;
     public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
+    public const bool HdrBloom = true;
 
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 5;

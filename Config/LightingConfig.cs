@@ -33,10 +33,7 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
 
     internal bool DrawOverbright() =>
-        LightMapRenderMode
-            is RenderMode.BicubicOverbright
-                or RenderMode.EnhancedHdr
-                or RenderMode.EnhancedHdrBloom;
+        LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr;
 
     internal bool OverbrightOverrideBackground() =>
         DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen);
@@ -44,10 +41,9 @@ public sealed class LightingConfig : ModConfig
     internal bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled()
         && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef
-        && LightMapRenderMode is RenderMode.EnhancedHdr or RenderMode.EnhancedHdrBloom;
+        && LightMapRenderMode is RenderMode.EnhancedHdr;
 
-    internal bool BloomEnabled() =>
-        HiDefFeaturesEnabled() && LightMapRenderMode is RenderMode.EnhancedHdrBloom;
+    internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
 
     public override void OnChanged()
     {
@@ -63,6 +59,7 @@ public sealed class LightingConfig : ModConfig
         _simulateNormalMaps = options.SimulateNormalMaps;
         _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _lightMapRenderMode = options.LightMapRenderMode;
+        _hdrBloom = options.HdrBloom;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
@@ -197,6 +194,19 @@ public sealed class LightingConfig : ModConfig
     }
 
     private RenderMode _lightMapRenderMode;
+
+    [DefaultValue(DefaultOptions.HdrBloom)]
+    public bool HdrBloom
+    {
+        get => _hdrBloom;
+        set
+        {
+            _hdrBloom = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _hdrBloom;
 
     // Ambient Occlusion
     [Header("AmbientOcclusion")]

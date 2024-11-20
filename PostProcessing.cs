@@ -78,14 +78,57 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _downsampleKarisShader);
         EffectLoader.UnloadEffect(ref _blurShader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
+        DisposeBlurTargets();
+    }
 
-        if (_blurTargets is not null)
+    private void EnsureBlurTargets(int width, int height, int targetCount)
+    {
+        if (
+            _blurTargets is not null
+            && _blurTargets.Length >= targetCount
+            && _blurTargets[0]?.Width == width
+            && _blurTargets[0]?.Height == height
+        )
         {
-            foreach (var target in _blurTargets)
-            {
-                target?.Dispose();
-            }
+            return;
         }
+
+        DisposeBlurTargets();
+
+        _blurTargets = new RenderTarget2D[targetCount];
+        var scale = 1f;
+        for (var i = 0; i < targetCount; ++i)
+        {
+            scale *= 0.5f;
+            var currWidth = (int)(width * scale);
+            var currHeight = (int)(height * scale);
+
+            _blurTargets[i] = new RenderTarget2D(
+                Main.graphics.GraphicsDevice,
+                currWidth,
+                currHeight,
+                false,
+                SurfaceFormat.HalfVector4,
+                DepthFormat.None,
+                0,
+                RenderTargetUsage.PreserveContents
+            );
+        }
+    }
+
+    private void DisposeBlurTargets()
+    {
+        if (_blurTargets is null)
+        {
+            return;
+        }
+
+        foreach (var target in _blurTargets)
+        {
+            target?.Dispose();
+        }
+
+        _blurTargets = null;
     }
 
     internal static void CalculateHiDefSurfaceBrightness()
@@ -100,9 +143,6 @@ internal sealed class PostProcessing
         SmoothLighting smoothLightingInstance
     )
     {
-        var width = target.Width;
-        var height = target.Height;
-
         var currTarget = target;
         var nextTarget = tmpTarget;
 
@@ -214,30 +254,10 @@ internal sealed class PostProcessing
                     1f
                 );
 
-                if (_blurTargets is null || _blurTargets.Length != passCount)
-                {
-                    if (_blurTargets is not null)
-                    {
-                        foreach (var targetToDispose in _blurTargets)
-                        {
-                            targetToDispose?.Dispose();
-                        }
-                    }
+                EnsureBlurTargets(target.Width, target.Height, passCount);
 
-                    _blurTargets = new RenderTarget2D[passCount];
-                }
-
-                var scale = 1f;
                 for (var i = 0; i < passCount; ++i)
                 {
-                    scale *= 0.5f;
-                    TextureUtils.MakeSize(
-                        ref _blurTargets[i],
-                        (int)(width * scale),
-                        (int)(height * scale),
-                        forcePreserve: true
-                    );
-
                     var currBlurTarget = i == 0 ? currTarget : _blurTargets[i - 1];
                     var nextBlurTarget = _blurTargets[i];
 
@@ -277,7 +297,7 @@ internal sealed class PostProcessing
                     Main.spriteBatch.End();
                 }
 
-                for (var i = passCount; i-- > 1; )
+                for (var i = passCount - 1; i >= 1; --i)
                 {
                     var currBlurTarget = _blurTargets[i];
                     var nextBlurTarget = _blurTargets[i - 1];
@@ -334,6 +354,7 @@ internal sealed class PostProcessing
 
                 Main.graphics.GraphicsDevice.Textures[4] = _blurTargets[0];
                 Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.LinearClamp;
+
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
 
