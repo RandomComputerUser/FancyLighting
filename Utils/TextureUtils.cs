@@ -82,14 +82,16 @@ internal static class TextureUtils
         }
     }
 
-    public static void EnsureFormat(ref RenderTarget2D target)
+    public static void EnsureFormat(ref RenderTarget2D target, bool reset = false)
     {
         if (target is null || target.GraphicsDevice != Main.graphics.GraphicsDevice)
         {
             return;
         }
 
-        if (target.Format == TextureSurfaceFormat)
+        var format = reset ? SurfaceFormat.Color : TextureSurfaceFormat;
+
+        if (target.Format == format)
         {
             return;
         }
@@ -106,7 +108,7 @@ internal static class TextureUtils
             width,
             height,
             mipMap,
-            TextureSurfaceFormat,
+            format,
             depthStencilFormat,
             multisampleCount,
             renderTargetUsage

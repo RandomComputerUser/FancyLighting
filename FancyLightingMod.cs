@@ -349,6 +349,8 @@ public sealed class FancyLightingMod : Mod
             _ambientOcclusionInstance?.Unload();
             _fancyLightingEngineInstance?.Unload();
             _postProcessingInstance?.Unload();
+
+            FancyLightingModSystem.EnsureRenderTargets(true);
         });
 
         base.Unload();
