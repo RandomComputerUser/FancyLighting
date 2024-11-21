@@ -15,6 +15,7 @@ using Terraria.Graphics.Capture;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 using Terraria.ID;
+using Terraria.Map;
 using Terraria.ModLoader;
 
 namespace FancyLighting;
@@ -410,6 +411,7 @@ public sealed class FancyLightingMod : Mod
     {
         On_Dust.NewDust += _Dust_NewDust;
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
+        On_WorldMap.UpdateLighting += _WorldMap_UpdateLighting;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
@@ -459,6 +461,23 @@ public sealed class FancyLightingMod : Mod
         ushort type,
         short frameX
     ) => !_overrideLightColor && orig(type, frameX);
+
+    private static bool _WorldMap_UpdateLighting(
+        On_WorldMap.orig_UpdateLighting orig,
+        WorldMap self,
+        int x,
+        int y,
+        byte light
+    )
+    {
+        if (FancyLightingModSystem._hiDef)
+        {
+            // Change if PostProcessing.HiDefBrightnessScale changes
+            light = (byte)Math.Min((int)light << 1, 255);
+        }
+
+        return orig(self, x, y, light);
+    }
 
     // Post-processing
     private void _FilterManager_EndCapture(
