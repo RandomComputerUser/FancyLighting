@@ -4,6 +4,7 @@ using System.Reflection;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
+using FancyLighting.ModCompatibility;
 using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -331,6 +332,8 @@ public sealed class FancyLightingMod : Mod
 
         AddHooks();
         SkyColors.AddSkyColorsHooks();
+
+        LightsCompatibility.Load();
     }
 
     public override void Unload()
@@ -356,6 +359,8 @@ public sealed class FancyLightingMod : Mod
 
             FancyLightingModSystem.EnsureRenderTargets(true);
         });
+
+        LightsCompatibility.Unload();
 
         base.Unload();
     }

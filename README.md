@@ -9,16 +9,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.0 (2024-11-21)**
-- Overhauled HDR rendering (previously called overbright lighting)
-- Removed the extreme preset and the settings to apply overbright lighting to different objects, which are now effectively always enabled
-- Removed the setting to enable enhanced shaders and colors, which is now included in the enhanced HDR render mode
-- Removed the setting to enable light map tone mapping, which is now included in the bicubic and basic HDR render modes
-- Added HDR-to-SDR tone mapping
-- Added bloom (available in the enhanced HDR render mode)
-- Removed the option to disable smooth lighting glow mask support
-- The spelunker, dangersense, and biome sight potions no longer use a custom glow effect
-- Slightly reduced the strength of simulated normal maps on translucent surfaces
-- Fixed a visual issue that sometimes caused water to appear black
-- Made some minor optimizations
+**v0.9.1 (2024-11-21)**
+- Fixed compability with Lights and Shadows when using the enhanced HDR render mode
 - Updated the mod icon

@@ -12,14 +12,24 @@ internal static class TextureUtils
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
 
-    public static void MakeSize(ref RenderTarget2D target, int width, int height)
+    public static void MakeSize(
+        ref RenderTarget2D target,
+        int width,
+        int height,
+        SurfaceFormat? format = null,
+        RenderTargetUsage? usage = null
+    )
     {
+        format ??= TextureSurfaceFormat;
+        usage ??= RenderTargetUsage.DiscardContents;
+
         if (
             target is null
             || target.GraphicsDevice != Main.graphics.GraphicsDevice
             || target.Width != width
             || target.Height != height
-            || target.Format != TextureSurfaceFormat
+            || target.Format != format
+            || target.RenderTargetUsage != usage
         )
         {
             target?.Dispose();
@@ -28,8 +38,10 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                TextureSurfaceFormat,
-                DepthFormat.None
+                format.Value,
+                DepthFormat.None,
+                0,
+                usage.Value
             );
         }
     }
@@ -101,7 +113,7 @@ internal static class TextureUtils
         var mipMap = target.LevelCount > 1;
         var depthStencilFormat = target.DepthStencilFormat;
         var multisampleCount = target.MultiSampleCount;
-        var renderTargetUsage = target.RenderTargetUsage;
+        var usage = target.RenderTargetUsage;
         target.Dispose();
         target = new RenderTarget2D(
             Main.graphics.GraphicsDevice,
@@ -111,7 +123,7 @@ internal static class TextureUtils
             format,
             depthStencilFormat,
             multisampleCount,
-            renderTargetUsage
+            usage
         );
     }
 }
