@@ -67,7 +67,7 @@ PreferencesConfig: {
 		Label: Bloom Radius
 		Tooltip:
 			'''
-			Controls the bloom radius
+			Controls the radius of the bloom effect
 			Bloom must be enabled for this setting to have any effect
 			'''
 	}
@@ -142,7 +142,7 @@ PreferencesConfig: {
 		Tooltip:
 			'''
 			Controls how bright indirect lighting is compared to direct lighting
-			Indirect lighting is spread only when global illumination is enabled
+			Global illumination must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -197,7 +197,7 @@ LightingConfig: {
 			'''
 			Toggles whether to use smooth lighting
 			When disabled, vanilla lighting visuals are used
-			Rendering performance is affected primarily by the GPU
+			Smooth lighting is primarily GPU intensive
 			'''
 	}
 
@@ -257,7 +257,7 @@ LightingConfig: {
 			'''
 			Toggles whether to use ambient occlusion
 			When enabled, tiles produce shadows in front of walls
-			Rendering performance is affected primarily by the GPU
+			Ambient occlusion is primarily GPU intensive
 			'''
 	}
 
@@ -291,6 +291,7 @@ LightingConfig: {
 			When enabled, light is spread more accurately with noticeable shadows
 			Performance is affected by the number of light sources in the scene
 			Lighting performance is affected primarily by the CPU; the GPU is not used
+			The fancy lighting engine is primarily CPU intensive
 			'''
 	}
 
