@@ -144,7 +144,7 @@ internal sealed class PostProcessing
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
-        HiDefBackgroundBrightness = 1.5f;
+        HiDefBackgroundBrightness = 1.4f;
     }
 
     internal void ApplyPostProcessing(
