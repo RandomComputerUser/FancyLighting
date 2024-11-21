@@ -1622,10 +1622,10 @@ public sealed class FancyLightingMod : Mod
         {
             var brightness = 0.55f;
             brightness += (270 - Main.mouseTextColor) / 900f;
-            brightness *= 2f;
+            brightness *= 1.67f;
             lightColor.X = Math.Max(lightColor.X, brightness);
-            lightColor.Y = Math.Max(lightColor.Y, 0.5f * brightness);
-            lightColor.Z = Math.Max(lightColor.Z, 0.15f * brightness);
+            lightColor.Y = Math.Max(lightColor.Y, 0.6f * brightness);
+            lightColor.Z = Math.Max(lightColor.Z, 0.2f * brightness);
         }
         else if (tile.LiquidType is LiquidID.Shimmer)
         {
