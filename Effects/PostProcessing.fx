@@ -53,32 +53,37 @@ float3 ToneMapColor(float3 x)
 
 float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
 {
-    float3 color = tex2D(ScreenSampler, coords).rgb;
-    color = max(color, 0); // prevent NaN
-    color = pow(color, GammaRatio);
-    color = min(color, 10000); // prevent infinity
-    color *= Exposure;
-    return float4(color, 1);
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = max(color.rgb, 0); // prevent NaN
+    color.rgb = pow(color.rgb, GammaRatio);
+    color.rgb = min(color.rgb, 10000); // prevent infinity
+    color.rgb *= Exposure;
+    color.a = saturate(color.a);
+    return color;
 }
 
 float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
 {
+    float4 color = tex2D(ScreenSampler, coords);
+
     return float4(
         Dither(
-            pow(tex2D(ScreenSampler, coords).rgb, GammaRatio),
+            pow(color.rgb, GammaRatio),
             coords
         ),
-        1
+        color.a
     );
 }
 
 float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
 {
+    float4 color = tex2D(ScreenSampler, coords);
+    
     return float4(
         LinearToSrgb(
-            pow(tex2D(ScreenSampler, coords).rgb, GammaRatio)
+            pow(color.rgb, GammaRatio)
         ) + DitherNoise(coords),
-        1
+        color.a
     );
 }
 

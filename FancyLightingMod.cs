@@ -26,6 +26,7 @@ public sealed class FancyLightingMod : Mod
     private static bool _overrideLightColor;
     private static bool _useBlack;
     internal static bool _inCameraMode;
+    private static bool _cameraModeDrawBackground;
     private static bool _disableLightColorOverride;
     private static bool _preventDust;
 
@@ -39,6 +40,8 @@ public sealed class FancyLightingMod : Mod
     internal FieldInfo _field_workingProcessedArea;
     private FieldInfo _field_colors;
     private FieldInfo _field_mask;
+    private FieldInfo _field_filterFrameBuffer1;
+    private FieldInfo _field_filterFrameBuffer2;
 
     private delegate void TileDrawingMethod(TileDrawing self);
 
@@ -428,6 +431,7 @@ public sealed class FancyLightingMod : Mod
         // Camera mode hooks added below
         // For some reason the order in which these are added matters to ensure that camera mode works
         // Maybe DrawCapture needs to be added last
+        On_CaptureCamera.DrawTick += _CaptureCamera_DrawTick;
         On_Main.DrawLiquid += _Main_DrawLiquid;
         On_Main.DrawWalls += _Main_DrawWalls;
         On_Main.DrawTiles += _Main_DrawTiles;
@@ -466,10 +470,16 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
+        var backgroundTarget = _inCameraMode
+            ? _cameraModeDrawBackground
+                ? _cameraModeBackgroundTarget
+                : null
+            : _backgroundTarget;
+
         _postProcessingInstance.ApplyPostProcessing(
             screenTarget1,
             screenTarget2,
-            _inCameraMode ? _cameraModeBackgroundTarget : _backgroundTarget,
+            backgroundTarget,
             _smoothLightingInstance
         );
 
@@ -1629,6 +1639,42 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    private void _CaptureCamera_DrawTick(On_CaptureCamera.orig_DrawTick orig, object self)
+    {
+        _field_filterFrameBuffer1 ??= self.GetType()
+            .GetField(
+                "_filterFrameBuffer1",
+                BindingFlags.NonPublic | BindingFlags.Instance
+            )
+            .AssertNotNull();
+
+        _field_filterFrameBuffer2 ??= self.GetType()
+            .GetField(
+                "_filterFrameBuffer2",
+                BindingFlags.NonPublic | BindingFlags.Instance
+            )
+            .AssertNotNull();
+
+        RenderTarget2D target;
+        target = (RenderTarget2D)_field_filterFrameBuffer1.GetValue(self);
+        TextureUtils.EnsureFormat(ref target);
+        _field_filterFrameBuffer1.SetValue(self, target);
+        target = (RenderTarget2D)_field_filterFrameBuffer2.GetValue(self);
+        TextureUtils.EnsureFormat(ref target);
+        _field_filterFrameBuffer2.SetValue(self, target);
+
+        _inCameraMode = LightingConfig.Instance.ModifyCameraModeRendering();
+        try
+        {
+            orig(self);
+        }
+        finally
+        {
+            _inCameraMode = false;
+            _cameraModeTarget = null;
+        }
+    }
+
     // Camera mode hooks below
 
     private void _Main_DrawLiquid(
@@ -2026,7 +2072,7 @@ public sealed class FancyLightingMod : Mod
         if (LightingConfig.Instance.ModifyCameraModeRendering())
         {
             _cameraModeTarget = MainGraphics.GetRenderTarget();
-            _inCameraMode = _cameraModeTarget is not null;
+            _inCameraMode = _inCameraMode && _cameraModeTarget is not null;
         }
         else
         {
@@ -2037,16 +2083,10 @@ public sealed class FancyLightingMod : Mod
         {
             _cameraModeArea = area;
             _cameraModeBiome = settings.Biome;
-            FancyLightingModSystem.EnsureRenderTargets();
+            _cameraModeDrawBackground = settings.CaptureBackground;
+            FancyLightingModSystem.SettingsUpdate();
         }
 
-        try
-        {
-            orig(self, area, settings);
-        }
-        finally
-        {
-            _inCameraMode = false;
-        }
+        orig(self, area, settings);
     }
 }

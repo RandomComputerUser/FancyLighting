@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FancyLighting.Config;
 using FancyLighting.Utils;
-using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -43,7 +42,7 @@ internal sealed class FancyLightingModSystem : ModSystem
         }
     }
 
-    private void SettingsUpdate()
+    internal static void SettingsUpdate()
     {
         _parallelOptions.MaxDegreeOfParallelism =
             PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount;
@@ -54,9 +53,6 @@ internal sealed class FancyLightingModSystem : ModSystem
 
     internal static void EnsureRenderTargets(bool reset = false)
     {
-        Main.graphics.GraphicsDevice.PresentationParameters.BackBufferFormat = reset
-            ? SurfaceFormat.Color
-            : TextureUtils.TextureSurfaceFormat;
         TextureUtils.EnsureFormat(ref Main.waterTarget, reset);
         TextureUtils.EnsureFormat(ref Main.instance.backWaterTarget, reset);
         TextureUtils.EnsureFormat(ref Main.instance.blackTarget, reset);

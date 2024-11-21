@@ -14,6 +14,17 @@ internal sealed class PostProcessing
     internal const float HiDefBrightnessScale = 0.5f;
     public static float HiDefBackgroundBrightness { get; private set; }
 
+    private static BlendState _trueAdditiveBlend =
+        new()
+        {
+            ColorBlendFunction = BlendFunction.Add,
+            AlphaBlendFunction = BlendFunction.Add,
+            ColorSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+            AlphaDestinationBlend = Blend.One,
+        };
+
     private readonly Texture2D _ditherNoise;
 
     private Shader _gammaToLinearShader;
@@ -158,6 +169,9 @@ internal sealed class PostProcessing
             smoothLightingInstance.CalculateSmoothLighting(cameraMode, cameraMode);
             if (cameraMode)
             {
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
                 smoothLightingInstance.GetCameraModeRenderTarget(
                     FancyLightingMod._cameraModeTarget
                 );
@@ -181,35 +195,35 @@ internal sealed class PostProcessing
                 );
             }
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            Main.spriteBatch.Begin(
-                hiDef ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-
-            if (hiDef)
-            {
-                smoothLightingInstance.ApplyBrightenShader(
-                    HiDefBrightnessScale * HiDefBackgroundBrightness
-                );
-            }
             if (backgroundTarget is not null)
             {
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+                Main.spriteBatch.Begin(
+                    hiDef ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+
+                if (hiDef)
+                {
+                    smoothLightingInstance.ApplyBrightenShader(
+                        HiDefBrightnessScale * HiDefBackgroundBrightness
+                    );
+                }
                 Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
-            }
 
-            if (hiDef)
-            {
-                smoothLightingInstance.ApplyNoFilterShader();
-            }
-            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
+                if (hiDef)
+                {
+                    smoothLightingInstance.ApplyNoFilterShader();
+                }
+                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
 
-            (currTarget, nextTarget) = (nextTarget, currTarget);
+                (currTarget, nextTarget) = (nextTarget, currTarget);
+            }
         }
 
         if (hiDef)
@@ -297,7 +311,7 @@ internal sealed class PostProcessing
                     Main.graphics.GraphicsDevice.SetRenderTarget(nextBlurTarget);
                     Main.spriteBatch.Begin(
                         SpriteSortMode.Immediate,
-                        BlendState.Additive,
+                        _trueAdditiveBlend,
                         SamplerState.LinearClamp,
                         DepthStencilState.None,
                         RasterizerState.CullNone
