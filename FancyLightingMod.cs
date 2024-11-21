@@ -440,7 +440,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawCapture += _Main_DrawCapture;
     }
 
-    private int _Dust_NewDust(
+    private static int _Dust_NewDust(
         On_Dust.orig_NewDust orig,
         Vector2 Position,
         int Width,
@@ -456,7 +456,7 @@ public sealed class FancyLightingMod : Mod
             ? Main.dust.Length - 1 // no dust
             : orig(Position, Width, Height, Type, SpeedX, SpeedY, Alpha, newColor, Scale);
 
-    private bool _TileDrawing_ShouldTileShine(
+    private static bool _TileDrawing_ShouldTileShine(
         On_TileDrawing.orig_ShouldTileShine orig,
         ushort type,
         short frameX
