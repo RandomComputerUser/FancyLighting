@@ -1641,7 +1641,7 @@ public sealed class FancyLightingMod : Mod
         {
             var brightness = 0.55f;
             brightness += (270 - Main.mouseTextColor) / 900f;
-            brightness *= 1.6f;
+            brightness *= 1.7f;
             lightColor.X = Math.Max(lightColor.X, brightness);
             lightColor.Y = Math.Max(lightColor.Y, 0.6f * brightness);
             lightColor.Z = Math.Max(lightColor.Z, 0.2f * brightness);
