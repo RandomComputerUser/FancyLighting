@@ -21,3 +21,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Slightly reduced the strength of simulated normal maps on translucent surfaces
 - Fixed a visual issue that sometimes caused water to appear black
 - Made some minor optimizations
+- Updated the mod icon
