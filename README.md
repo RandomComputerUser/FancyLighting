@@ -10,5 +10,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.1 (2024-11-21)**
-- Fixed compability with Lights and Shadows when using the enhanced HDR render mode
+- Fixed compatibility with the Lights and Shadows mod when using the enhanced HDR render mode
 - Updated the mod icon
