@@ -9,7 +9,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.0 (2024-11-??)**
+**v0.9.0 (2024-11-21)**
 - Overhauled HDR rendering (previously called overbright lighting)
 - Removed the extreme preset and the settings to apply overbright lighting to different objects, which are now effectively always enabled
 - Removed the setting to enable enhanced shaders and colors, which is now included in the enhanced HDR render mode
