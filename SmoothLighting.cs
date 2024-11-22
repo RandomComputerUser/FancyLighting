@@ -176,13 +176,11 @@ internal sealed class SmoothLighting
         );
         _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "GlowMask",
-            true
+            "GlowMask"
         );
         _enhancedGlowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "EnhancedGlowMask",
-            true
+            "EnhancedGlowMask"
         );
     }
 

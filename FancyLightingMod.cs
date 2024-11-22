@@ -443,6 +443,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawWalls += _Main_DrawWalls;
         On_Main.DrawTiles += _Main_DrawTiles;
         On_Main.DrawCapture += _Main_DrawCapture;
+        On_Main.DoDraw += _Main_DoDraw;
     }
 
     private static int _Dust_NewDust(
@@ -603,6 +604,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.HiDefFeaturesEnabled()
             || !LightingConfig.Instance.OverbrightOverrideBackground()
+            || _inCameraMode // For some reason this affects the whole sky in camera mode
         )
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
@@ -2111,6 +2113,47 @@ public sealed class FancyLightingMod : Mod
             FancyLightingModSystem.SettingsUpdate();
         }
 
-        orig(self, area, settings);
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+        )
+        {
+            orig(self, area, settings);
+            return;
+        }
+
+        var originalAlphaSourceBlend = BlendState.Additive.AlphaSourceBlend;
+        BlendState.Additive.AlphaSourceBlend = Blend.Zero;
+        try
+        {
+            orig(self, area, settings);
+        }
+        finally
+        {
+            BlendState.Additive.AlphaSourceBlend = originalAlphaSourceBlend;
+        }
+    }
+
+    private void _Main_DoDraw(On_Main.orig_DoDraw orig, Main self, GameTime gameTime)
+    {
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+        )
+        {
+            orig(self, gameTime);
+            return;
+        }
+
+        var originalAlphaSourceBlend = BlendState.Additive.AlphaSourceBlend;
+        BlendState.Additive.AlphaSourceBlend = Blend.Zero;
+        try
+        {
+            orig(self, gameTime);
+        }
+        finally
+        {
+            BlendState.Additive.AlphaSourceBlend = originalAlphaSourceBlend;
+        }
     }
 }

@@ -10,7 +10,8 @@ internal static class GammaConverter
     internal static float _reciprocalGamma;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void GammaToLinear(ref float x) => x = MathF.Pow(x, _gamma);
+    public static void GammaToLinear(ref float x) =>
+        x = x < 0f ? 0f : MathF.Pow(x, _gamma);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void GammaToLinear(ref Vector3 color)
@@ -21,7 +22,7 @@ internal static class GammaConverter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float LinearToGamma(ref float x) => x = MathF.Pow(x, _reciprocalGamma);
+    public static void LinearToGamma(ref float x) => x = MathF.Pow(x, _reciprocalGamma);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LinearToGamma(ref Vector3 color)

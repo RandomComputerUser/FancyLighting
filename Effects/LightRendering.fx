@@ -408,33 +408,7 @@ float4 GlowMask(float2 coords : TEXCOORD0) : COLOR0
     );
 }
 
-float4 GlowMaskHiDef(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 primary = tex2D(TextureSampler, coords);
-    float4 glow = tex2D(GlowSampler, GlowCoordMult * coords);
-    float4 selector = glow;
-    float4 bright = max(primary, glow);
-    
-    return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, glow.rgb)),
-        bright.a
-    );
-}
-
 float4 EnhancedGlowMask(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 primary = tex2D(TextureSampler, coords);
-    float4 selector = tex2D(GlowSampler, GlowCoordMult * coords);
-    float4 glow = tex2D(LightedGlowSampler, LightedGlowCoordMult * coords);
-    float4 bright = max(primary, glow);
-    
-    return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, selector.rgb)),
-        bright.a
-    );
-}
-
-float4 EnhancedGlowMaskHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 primary = tex2D(TextureSampler, coords);
     float4 selector = tex2D(GlowSampler, GlowCoordMult * coords);
@@ -584,18 +558,8 @@ technique Technique1
         PixelShader = compile ps_3_0 GlowMask();
     }
     
-    pass GlowMaskHiDef
-    {
-        PixelShader = compile ps_3_0 GlowMaskHiDef();
-    }
-    
     pass EnhancedGlowMask
     {
         PixelShader = compile ps_3_0 EnhancedGlowMask();
-    }
-    
-    pass EnhancedGlowMaskHiDef
-    {
-        PixelShader = compile ps_3_0 EnhancedGlowMaskHiDef();
     }
 }

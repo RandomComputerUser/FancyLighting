@@ -9,6 +9,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.1 (2024-11-21)**
-- Fixed compatibility with the Lights and Shadows mod when using the enhanced HDR render mode
-- Updated the mod icon
+**v0.9.2 (2024-11-22)**
+- Fixed a bug that sometimes caused areas to appear black when using the enhanced HDR render mode
+- Fixed a bug with objects drawn using `BlendState.Additive` when using HDR rendering
+- Fixed a camera mode bug that brightened the sky when using the enhanced HDR render mode
