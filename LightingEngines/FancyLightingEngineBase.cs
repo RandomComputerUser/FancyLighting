@@ -202,9 +202,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            GammaConverter.GammaToLinear(ref _initialBrightnessCutoff);
-            GammaConverter.GammaToLinear(ref cutoff);
-            GammaConverter.GammaToLinear(ref basicWorkCutoff);
+            ColorUtils.GammaToLinear(ref _initialBrightnessCutoff);
+            ColorUtils.GammaToLinear(ref cutoff);
+            ColorUtils.GammaToLinear(ref basicWorkCutoff);
         }
 
         _logBrightnessCutoff = MathF.Log(cutoff);
@@ -259,12 +259,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            GammaConverter.GammaToLinear(ref lightAirDecayBaseline);
-            GammaConverter.GammaToLinear(ref lightSolidDecayBaseline);
-            GammaConverter.GammaToLinear(ref lightWaterDecayBaseline);
-            GammaConverter.GammaToLinear(ref lightHoneyDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightAirDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightSolidDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightWaterDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightHoneyDecayBaseline);
 
-            GammaConverter.GammaToLinear(ref _lightLossExitingSolid);
+            ColorUtils.GammaToLinear(ref _lightLossExitingSolid);
         }
 
         const float ThresholdMultExponent = 0.41421354f; // sqrt(2) - 1
@@ -373,7 +373,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 var i = height * x;
                 for (var y = 0; y < height; ++y)
                 {
-                    GammaConverter.GammaToLinear(ref colors[i++]);
+                    ColorUtils.GammaToLinear(ref colors[i++]);
                 }
             }
         );
@@ -579,7 +579,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Vector3[] source,
         Vector3[] destination,
         int width,
-        int height
+        int height,
+        int passCount
     )
     {
         var length = width * height;
@@ -588,7 +589,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            GammaConverter.GammaToLinear(ref giMult);
+            ColorUtils.GammaToLinear(ref giMult);
         }
 
         ArrayUtils.MakeAtLeastSize(ref _workingLightMaps[0], length);
@@ -623,7 +624,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             }
         );
 
-        for (var i = 6; i-- > 0; )
+        for (var i = passCount; i-- > 0; )
         {
             // down
             Parallel.For(

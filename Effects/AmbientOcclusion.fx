@@ -19,6 +19,7 @@ float HemisphereBlurBrightness(float2 coords)
     float brightness = HemisphereKernel[0] * tex2D(OccluderSampler, coords).r;
 
     float2 offset = 0;
+    [unroll]
     for (int i = 1; i <= 7; ++i)
     {
         offset += BlurSize;
@@ -36,6 +37,7 @@ float BlurBrightness(float2 coords)
     float brightness = GaussianKernel[0] * tex2D(OccluderSampler, coords).r;
 
     float2 offset = 0;
+    [unroll]
     for (int i = 1; i <= 7; ++i)
     {
         offset += BlurSize;
@@ -50,13 +52,13 @@ float BlurBrightness(float2 coords)
 
 float4 AlphaToRed(float2 coords : TEXCOORD0) : COLOR0
 {
-    float brightness = 1 - tex2D(OccluderSampler, coords).a;
+    float brightness = 1 - saturate(tex2D(OccluderSampler, coords).a);
     return float4(brightness.x, 0, 0, 0);
 }
 
 float4 AlphaToLightRed(float2 coords : TEXCOORD0) : COLOR0
 {
-    float brightness = -0.8 * tex2D(OccluderSampler, coords).a + 1;
+    float brightness = -0.8 * saturate(tex2D(OccluderSampler, coords).a) + 1;
     return float4(brightness.x, 0, 0, 0);
 }
 

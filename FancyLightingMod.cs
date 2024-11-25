@@ -404,7 +404,6 @@ public sealed class FancyLightingMod : Mod
     internal void OnConfigChange()
     {
         _smoothLightingInstance?.CalculateSmoothLighting(false, true);
-        _smoothLightingInstance?.CalculateSmoothLighting(false, true);
 
         if (_fancyLightingEngineInstance is not null)
         {
@@ -495,6 +494,12 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
+        if (!FancyLightingModSystem.NeedsPostProcessing())
+        {
+            orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+            return;
+        }
+
         var backgroundTarget = _inCameraMode
             ? _cameraModeDrawBackground
                 ? _cameraModeBackgroundTarget
@@ -2110,7 +2115,7 @@ public sealed class FancyLightingMod : Mod
             _cameraModeArea = area;
             _cameraModeBiome = settings.Biome;
             _cameraModeDrawBackground = settings.CaptureBackground;
-            FancyLightingModSystem.SettingsUpdate();
+            ModContent.GetInstance<FancyLightingModSystem>().SettingsUpdate();
         }
 
         if (

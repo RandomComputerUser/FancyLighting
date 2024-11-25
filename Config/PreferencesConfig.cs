@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using FancyLighting.Config.Enums;
-using FancyLighting.Utils;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
@@ -13,6 +12,8 @@ public sealed class PreferencesConfig : ModConfig
 
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
+
+    internal bool NeedsColorLightMode() => UseCustomSkyColors;
 
     internal float GammaExponent() => Gamma / 100f;
 
@@ -45,9 +46,6 @@ public sealed class PreferencesConfig : ModConfig
     {
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
         ModContent.GetInstance<FancyLightingModSystem>()?.OnConfigChange();
-
-        GammaConverter._gamma = GammaExponent();
-        GammaConverter._reciprocalGamma = 1f / GammaConverter._gamma;
     }
 
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]

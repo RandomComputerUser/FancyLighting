@@ -15,6 +15,9 @@ public sealed class LightingConfig : ModConfig
     // Handled automatically by tModLoader
     public static LightingConfig Instance;
 
+    internal bool NeedsColorLightMode() =>
+        UseSmoothLighting || UseAmbientOcclusion || UseFancyLightingEngine;
+
     internal bool ModifyCameraModeRendering() =>
         SmoothLightingEnabled() || AmbientOcclusionEnabled();
 
@@ -36,7 +39,7 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr;
 
     internal bool OverbrightOverrideBackground() =>
-        DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen);
+        DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
     internal bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled()

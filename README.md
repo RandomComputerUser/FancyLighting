@@ -9,7 +9,10 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.2 (2024-11-22)**
-- Fixed a bug that sometimes caused areas to appear black when using the enhanced HDR render mode
-- Fixed a bug with objects drawn using `BlendState.Additive` when using HDR rendering
-- Fixed a camera mode bug that brightened the sky when using the enhanced HDR render mode
+**v0.9.3 (2024-11-25)**
+- The vanilla Lighting setting is now automatically set to Color when necessary
+- Tone mapping and HDR rendering now work when Waves Quality is set to Off
+- Fixed some potential visual bugs with enhanced HDR rendering
+- Made some minor optimizations
+- Updated the smooth lighting error messages
+- Updated the mod description

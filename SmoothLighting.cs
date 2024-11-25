@@ -227,12 +227,13 @@ internal sealed class SmoothLighting
     private void PrintException()
     {
         LightingConfig.Instance.UseSmoothLighting = false;
+        var prefix = ModLoader.HasMod("ChatSource") ? string.Empty : "[Fancy Lighting] ";
         Main.NewText(
-            "[Fancy Lighting] Caught an IndexOutOfRangeException while trying to run smooth lighting.",
+            $"{prefix}An error occurred while trying to use smooth lighting.",
             Color.Orange
         );
         Main.NewText(
-            "[Fancy Lighting] Smooth lighting has been automatically disabled.",
+            $"{prefix}Smooth lighting has been automatically disabled.",
             Color.Orange
         );
     }
@@ -394,7 +395,6 @@ internal sealed class SmoothLighting
         _smoothLightingLightMapValid = false;
         _smoothLightingPositionValid = false;
         _smoothLightingComplete = false;
-        _smoothLightingHiResComplete = false;
 
         var length = width * height;
 
@@ -431,7 +431,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            GammaConverter.GammaToLinear(ref colors[i++]);
+                            ColorUtils.GammaToLinear(ref colors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -521,9 +521,9 @@ internal sealed class SmoothLighting
                         {
                             ref var lightColor = ref lights[i++];
 
-                            GammaConverter.GammaToLinear(ref lightColor);
+                            ColorUtils.GammaToLinear(ref lightColor);
                             ToneMapping.ToneMap(ref lightColor);
-                            GammaConverter.LinearToGamma(ref lightColor);
+                            ColorUtils.LinearToGamma(ref lightColor);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -557,7 +557,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            GammaConverter.LinearToGamma(ref lights[i]);
+                            ColorUtils.LinearToGamma(ref lights[i]);
                             lights[i++] *= PostProcessing.HiDefBrightnessScale;
                         }
                         catch (IndexOutOfRangeException)
@@ -1200,6 +1200,8 @@ internal sealed class SmoothLighting
                 cameraMode
             );
         }
+
+        _smoothLightingHiResComplete = false;
     }
 
     private void CalculateSmoothLightingHiDef(
@@ -1420,11 +1422,6 @@ internal sealed class SmoothLighting
         RenderTarget2D ambientOcclusionTarget = null
     )
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
-        {
-            return;
-        }
-
         if (!_smoothLightingComplete)
         {
             return;
@@ -1758,7 +1755,6 @@ internal sealed class SmoothLighting
                 : 1f;
 
             shader
-                .SetParameter("Gamma", gamma)
                 .SetParameter("ReciprocalGamma", 1f / gamma)
                 .SetParameter("OverbrightMult", overbrightMult)
                 .SetParameter(

@@ -274,7 +274,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
 
         if (LightingConfig.Instance.SimulateGlobalIllumination)
         {
-            SimulateGlobalIllumination(colors, colors, width, height);
+            SimulateGlobalIllumination(colors, colors, width, height, 4);
         }
     }
 

@@ -164,7 +164,10 @@ internal sealed class PostProcessing
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
 
-        if (LightingConfig.Instance.DrawOverbright())
+        if (
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright()
+        )
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode, cameraMode);
             if (cameraMode)

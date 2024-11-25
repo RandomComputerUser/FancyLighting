@@ -66,7 +66,7 @@ float4 BicubicNoDitherHiDef(float2 coords : TEXCOORD0) : COLOR0
     // No dithering
     // Dithering is done in the post processing HiDef shaders
 
-    return float4(color, 1);
+    return float4(max(color, 0), 1);
 }
 
 float4 NoFilter(float2 coords : TEXCOORD0) : COLOR0

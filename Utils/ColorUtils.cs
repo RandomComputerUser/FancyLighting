@@ -5,8 +5,11 @@ using Microsoft.Xna.Framework.Graphics.PackedVector;
 
 namespace FancyLighting.Utils;
 
-public static class ColorUtils
+internal static class ColorUtils
 {
+    internal static float _gamma;
+    internal static float _reciprocalGamma;
+
     // Provide better conversions from Vector3 to Color than XNA
     // XNA uses (byte)(x * 255f) for each component
 
@@ -25,10 +28,27 @@ public static class ColorUtils
         color = new HalfVector4(rgb.X, rgb.Y, rgb.Z, 1f);
     }
 
-    // Input must be in gamma space;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Luminance(Vector3 color) =>
-        (0.2126f * MathF.Pow(color.X, 2.2f))
-        + (0.7152f * MathF.Pow(color.Y, 2.2f))
-        + (0.0722f * MathF.Pow(color.Z, 2.2f));
+    public static void GammaToLinear(ref float x) =>
+        x = MathF.Pow(Math.Max(x, 0f), _gamma);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void GammaToLinear(ref Vector3 color)
+    {
+        GammaToLinear(ref color.X);
+        GammaToLinear(ref color.Y);
+        GammaToLinear(ref color.Z);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void LinearToGamma(ref float x) =>
+        x = MathF.Pow(Math.Max(x, 0f), _reciprocalGamma);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void LinearToGamma(ref Vector3 color)
+    {
+        LinearToGamma(ref color.X);
+        LinearToGamma(ref color.Y);
+        LinearToGamma(ref color.Z);
+    }
 }
