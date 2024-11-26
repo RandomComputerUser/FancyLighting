@@ -4,26 +4,28 @@ float2 BlurSize;
 float BlurPower;
 float BlurMult;
 
-float HemisphereKernel[8] =
-{
-    0.08443596, 0.08368205, 0.08137844, 0.07738684, 0.07142482, 0.06293485, 0.05066158, 0.030313438
+const float CenterWeight = 0.20947266;
+const float GaussianKernel[7] = {
+    0.18328857, 0.12219238, 0.06109619, 0.022216797, 0.005554199, 0.0008544922, 6.1035156e-05
+};
+const float BilinearCenterWeight = 0.17619705;
+const float BilinearGaussianWeights[5] = {
+    0.2803135, 0.11089325, 0.019406319, 0.0012683868, 2.002716e-05
+};
+const float BilinearGaussianOffsets[5] = {
+    1.4285715, 3.3333333, 5.2380953, 7.142857, 9.047619
 };
 
-float GaussianKernel[8] =
+float BlurBrightness(float2 coords)
 {
-    0.20947266, 0.18328857, 0.12219238, 0.06109619, 0.022216797, 0.005554199, 0.0008544922, 6.1035156e-05
-};
+    float brightness = CenterWeight * tex2D(OccluderSampler, coords).r;
 
-float HemisphereBlurBrightness(float2 coords)
-{
-    float brightness = HemisphereKernel[0] * tex2D(OccluderSampler, coords).r;
-
-    float2 offset = 0;
     [unroll]
-    for (int i = 1; i <= 7; ++i)
+    float2 offset = 0;
+    for (int i = 0; i < 7; ++i)
     {
         offset += BlurSize;
-        brightness += HemisphereKernel[i] * (
+        brightness += GaussianKernel[i] * (
             tex2D(OccluderSampler, coords - offset).r
             + tex2D(OccluderSampler, coords + offset).r
         );
@@ -32,16 +34,15 @@ float HemisphereBlurBrightness(float2 coords)
     return brightness;
 }
 
-float BlurBrightness(float2 coords)
+float BilinearBlurBrightness(float2 coords)
 {
-    float brightness = GaussianKernel[0] * tex2D(OccluderSampler, coords).r;
+    float brightness = BilinearCenterWeight * tex2D(OccluderSampler, coords).r;
 
-    float2 offset = 0;
     [unroll]
-    for (int i = 1; i <= 7; ++i)
+    for (int i = 0; i < 5; ++i)
     {
-        offset += BlurSize;
-        brightness += GaussianKernel[i] * (
+        float2 offset = BilinearGaussianOffsets[i] * BlurSize;
+        brightness += BilinearGaussianWeights[i] * (
             tex2D(OccluderSampler, coords - offset).r
             + tex2D(OccluderSampler, coords + offset).r
         );
@@ -62,13 +63,6 @@ float4 AlphaToLightRed(float2 coords : TEXCOORD0) : COLOR0
     return float4(brightness.x, 0, 0, 0);
 }
 
-float4 HemisphereBlur(float2 coords : TEXCOORD0) : COLOR0
-{
-    float brightness = HemisphereBlurBrightness(coords);
-
-    return float4(brightness.x, 0, 0, 0);
-}
-
 float4 Blur(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = BlurBrightness(coords);
@@ -76,9 +70,16 @@ float4 Blur(float2 coords : TEXCOORD0) : COLOR0
     return float4(brightness.x, 0, 0, 0);
 }
 
+float4 BilinearBlur(float2 coords : TEXCOORD0) : COLOR0
+{
+    float brightness = BilinearBlurBrightness(coords);
+
+    return float4(brightness.x, 0, 0, 0);
+}
+
 float4 FinalBlur(float2 coords : TEXCOORD0) : COLOR0
 {
-    float brightness = BlurBrightness(coords);
+    float brightness = BilinearBlurBrightness(coords);
     brightness = 1 - BlurMult * (1 - pow(brightness, BlurPower));
 
     return float4(brightness.xxx, 1);
@@ -96,14 +97,14 @@ technique Technique1
         PixelShader = compile ps_3_0 AlphaToLightRed();
     }
 
-    pass HemisphereBlur
-    {
-        PixelShader = compile ps_3_0 HemisphereBlur();
-    }
-
     pass Blur
     {
         PixelShader = compile ps_3_0 Blur();
+    }
+
+    pass BilinearBlur
+    {
+        PixelShader = compile ps_3_0 BilinearBlur();
     }
 
     pass FinalBlur

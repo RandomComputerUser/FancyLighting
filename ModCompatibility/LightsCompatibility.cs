@@ -4,7 +4,6 @@ using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
-using Terraria;
 using Terraria.ModLoader;
 
 namespace FancyLighting.ModCompatibility;
@@ -83,11 +82,8 @@ internal static class LightsCompatibility
         _hook_UseLightAndShadow?.Dispose();
         _hook_UseBloom?.Dispose();
 
-        Main.QueueMainThreadAction(() =>
-        {
-            _lightsTarget1?.Dispose();
-            _lightsTarget2?.Dispose();
-        });
+        _lightsTarget1?.Dispose();
+        _lightsTarget2?.Dispose();
     }
 
     private delegate void orig_NewScreenTarget(object self);

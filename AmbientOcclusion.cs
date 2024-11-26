@@ -23,8 +23,8 @@ internal sealed class AmbientOcclusion
 
     private Shader _alphaToRedShader;
     private Shader _alphaToLightRedShader;
-    private Shader _hemisphereBlurShader;
     private Shader _blurShader;
+    private Shader _bilinearBlurShader;
     private Shader _finalBlurShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
@@ -39,13 +39,13 @@ internal sealed class AmbientOcclusion
             "FancyLighting/Effects/AmbientOcclusion",
             "AlphaToLightRed"
         );
-        _hemisphereBlurShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "HemisphereBlur"
-        );
         _blurShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
             "Blur"
+        );
+        _bilinearBlurShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/AmbientOcclusion",
+            "BilinearBlur"
         );
         _finalBlurShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
@@ -73,8 +73,8 @@ internal sealed class AmbientOcclusion
         _tileEntityTarget?.Dispose();
         EffectLoader.UnloadEffect(ref _alphaToRedShader);
         EffectLoader.UnloadEffect(ref _alphaToLightRedShader);
-        EffectLoader.UnloadEffect(ref _hemisphereBlurShader);
         EffectLoader.UnloadEffect(ref _blurShader);
+        EffectLoader.UnloadEffect(ref _bilinearBlurShader);
         EffectLoader.UnloadEffect(ref _finalBlurShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
@@ -340,7 +340,9 @@ internal sealed class AmbientOcclusion
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
                 BlendState.Opaque,
-                SamplerState.PointClamp,
+                shader == _blurShader
+                    ? SamplerState.PointClamp
+                    : SamplerState.LinearClamp,
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
@@ -466,18 +468,19 @@ internal sealed class AmbientOcclusion
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var firstShaderBlurStep = radius switch
         {
-            1 => 1,
-            2 => 2,
-            3 => 3,
-            4 => 4,
+            1 => 2,
+            2 => 3,
+            3 => 4,
+            4 => 5,
+            5 => 6,
             _ => 2,
         };
 
         // We need to switch between render targets
         useTarget2 = true;
-        ApplyBlurPass(ref useTarget2, firstShaderBlurStep, 0, _hemisphereBlurShader);
-        ApplyBlurPass(ref useTarget2, 0, firstShaderBlurStep, _hemisphereBlurShader);
-        ApplyBlurPass(ref useTarget2, 1, 0, _blurShader);
+        ApplyBlurPass(ref useTarget2, firstShaderBlurStep, 0, _blurShader);
+        ApplyBlurPass(ref useTarget2, 0, firstShaderBlurStep, _blurShader);
+        ApplyBlurPass(ref useTarget2, 1, 0, _bilinearBlurShader);
         ApplyBlurPass(ref useTarget2, 0, 1, _finalBlurShader, power, mult);
 
         if (!doDraw)

@@ -7,7 +7,7 @@ namespace FancyLighting.Utils;
 
 internal static class TextureUtils
 {
-    public static SurfaceFormat TextureSurfaceFormat =>
+    public static SurfaceFormat Format =>
         LightingConfig.Instance.HiDefFeaturesEnabled()
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
@@ -20,7 +20,7 @@ internal static class TextureUtils
         RenderTargetUsage? usage = null
     )
     {
-        format ??= TextureSurfaceFormat;
+        format ??= Format;
         usage ??= RenderTargetUsage.DiscardContents;
 
         if (
@@ -53,7 +53,7 @@ internal static class TextureUtils
             || target.GraphicsDevice != Main.graphics.GraphicsDevice
             || target.Width < width
             || target.Height < height
-            || target.Format != TextureSurfaceFormat
+            || target.Format != Format
         )
         {
             target?.Dispose();
@@ -64,7 +64,7 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                TextureSurfaceFormat,
+                Format,
                 DepthFormat.None
             );
         }
@@ -77,7 +77,7 @@ internal static class TextureUtils
             || texture.GraphicsDevice != Main.graphics.GraphicsDevice
             || texture.Width < width
             || texture.Height < height
-            || texture.Format != TextureSurfaceFormat
+            || texture.Format != Format
         )
         {
             width = Math.Max(width, texture?.Width ?? 0);
@@ -89,7 +89,7 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                TextureSurfaceFormat
+                Format
             );
         }
     }
@@ -101,7 +101,7 @@ internal static class TextureUtils
             return;
         }
 
-        var format = reset ? SurfaceFormat.Color : TextureSurfaceFormat;
+        var format = reset ? SurfaceFormat.Color : Format;
 
         if (target.Format == format)
         {

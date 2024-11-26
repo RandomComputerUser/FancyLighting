@@ -30,7 +30,7 @@ internal static class EffectLoader
     {
         try
         {
-            shader.Unload();
+            shader?.Unload();
         }
         catch (Exception) // Shouldn't normally happen
         { }

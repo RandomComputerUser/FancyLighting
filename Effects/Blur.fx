@@ -1,135 +1,74 @@
-﻿// https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
+﻿// https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
 
 sampler TextureSampler : register(s0);
 
-float2 FilterSize;
+float2 PixelSize;
 
-// Input must be in linear space
-float Luma(float3 color)
+float4 BlurDownsample(float2 coords : TEXCOORD0) : COLOR0
 {
-    return dot(pow(color, 1 / 2.2), float3(0.2126, 0.7152, 0.0722));
+    float4 sum = tex2D(TextureSampler, coords) * 4.0;
+    sum += tex2D(TextureSampler, coords - PixelSize);
+    sum += tex2D(TextureSampler, coords + PixelSize);
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y));
+    sum += tex2D(TextureSampler, coords - float2(PixelSize.x, -PixelSize.y));
+    return (1.0 / 8) * sum;
 }
 
-// Input must be in linear space
-float KarisAverage(float3 color)
+float4 BlurUpsample(float2 coords : TEXCOORD0) : COLOR0
 {
-    return 1.0 / (1.0 + Luma(color));
+    float4 sum = tex2D(TextureSampler, coords + float2(-PixelSize.x * 2.0, 0.0));
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, PixelSize.y)) * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, PixelSize.y * 2.0));
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, PixelSize.y)) * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x * 2.0, 0.0));
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)) * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, -PixelSize.y * 2.0));
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, -PixelSize.y)) * 2.0;
+    return (1.0 / 12) * sum;
 }
 
-// Input must be in linear space
-float4 Downsample(float2 coords : TEXCOORD0) : COLOR0
+float4 BlurDownsampleRed(float2 coords : TEXCOORD0) : COLOR0
 {
-    float dx = FilterSize.x;
-    float dy = FilterSize.y;
-
-    float4 a = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y + 2*dy));
-    float4 b = tex2D(TextureSampler, float2(coords.x,        coords.y + 2*dy));
-    float4 c = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y + 2*dy));
-
-    float4 d = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y));
-    float4 e = tex2D(TextureSampler, float2(coords.x,        coords.y));
-    float4 f = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y));
-
-    float4 g = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y - 2*dy));
-    float4 h = tex2D(TextureSampler, float2(coords.x,        coords.y - 2*dy));
-    float4 i = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y - 2*dy));
-
-    float4 j = tex2D(TextureSampler, float2(coords.x - dx,   coords.y + dy));
-    float4 k = tex2D(TextureSampler, float2(coords.x + dx,   coords.y + dy));
-    float4 l = tex2D(TextureSampler, float2(coords.x - dx,   coords.y - dy));
-    float4 m = tex2D(TextureSampler, float2(coords.x + dx,   coords.y - dy));
-    
-    float4 downsample
-        = 0.125 * (e + j + k + l + m)
-        + 0.03125 * (a + c + g + i)
-        + 0.0625 * (b + d + f + h);
-    return downsample;
+    float sum = tex2D(TextureSampler, coords).r * 4.0;
+    sum += tex2D(TextureSampler, coords - PixelSize).r;
+    sum += tex2D(TextureSampler, coords + PixelSize).r;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).r;
+    sum += tex2D(TextureSampler, coords - float2(PixelSize.x, -PixelSize.y)).r;
+    return float4((1.0 / 8) * sum, 0, 0, 0);
 }
 
-// Input must be in linear space
-float4 DownsampleKaris(float2 coords : TEXCOORD0) : COLOR0
+float4 BlurUpsampleRed(float2 coords : TEXCOORD0) : COLOR0
 {
-    float dx = FilterSize.x;
-    float dy = FilterSize.y;
-    
-    float4 a = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y + 2*dy));
-    float4 b = tex2D(TextureSampler, float2(coords.x,        coords.y + 2*dy));
-    float4 c = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y + 2*dy));
-    
-    float4 d = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y));
-    float4 e = tex2D(TextureSampler, float2(coords.x,        coords.y));
-    float4 f = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y));
-    
-    float4 g = tex2D(TextureSampler, float2(coords.x - 2*dx, coords.y - 2*dy));
-    float4 h = tex2D(TextureSampler, float2(coords.x,        coords.y - 2*dy));
-    float4 i = tex2D(TextureSampler, float2(coords.x + 2*dx, coords.y - 2*dy));
-    
-    float4 j = tex2D(TextureSampler, float2(coords.x - dx,   coords.y + dy));
-    float4 k = tex2D(TextureSampler, float2(coords.x + dx,   coords.y + dy));
-    float4 l = tex2D(TextureSampler, float2(coords.x - dx,   coords.y - dy));
-    float4 m = tex2D(TextureSampler, float2(coords.x + dx,   coords.y - dy));
-    
-    float4 groups[5];
-    groups[0] = (a+b+d+e) / 4.0;
-    groups[1] = (b+c+e+f) / 4.0;
-    groups[2] = (d+e+g+h) / 4.0;
-    groups[3] = (e+f+h+i) / 4.0;
-    groups[4] = (j+k+l+m) / 4.0;
-    float kw0 = KarisAverage(groups[0].rgb);
-    float kw1 = KarisAverage(groups[1].rgb);
-    float kw2 = KarisAverage(groups[2].rgb);
-    float kw3 = KarisAverage(groups[3].rgb);
-    float kw4 = KarisAverage(groups[4].rgb);
-    
-    float4 downsample = (
-        kw0 * groups[0]
-        + kw1 * groups[1]
-        + kw2 * groups[2]
-        + kw3 * groups[3]
-        + kw4 * groups[4]
-    ) / (kw0 + kw1 + kw2 + kw3 + kw4);
-    return downsample;
-}
-
-// Input must be in linear space
-float4 Blur(float2 coords : TEXCOORD0) : COLOR0
-{
-    float dx = FilterSize.x;
-    float dy = FilterSize.y;
-    
-    float4 a = tex2D(TextureSampler, float2(coords.x - dx, coords.y + dy));
-    float4 b = tex2D(TextureSampler, float2(coords.x,      coords.y + dy));
-    float4 c = tex2D(TextureSampler, float2(coords.x + dx, coords.y + dy));
-
-    float4 d = tex2D(TextureSampler, float2(coords.x - dx, coords.y));
-    float4 e = tex2D(TextureSampler, float2(coords.x,      coords.y));
-    float4 f = tex2D(TextureSampler, float2(coords.x + dx, coords.y));
-
-    float4 g = tex2D(TextureSampler, float2(coords.x - dx, coords.y - dy));
-    float4 h = tex2D(TextureSampler, float2(coords.x,      coords.y - dy));
-    float4 i = tex2D(TextureSampler, float2(coords.x + dx, coords.y - dy));
-
-    float4 upsample
-        = 0.25 * e
-        + 0.125 * (b + d + f + h)
-        + 0.0625 * (a + c + g + i);
-    return upsample;
+    float sum = tex2D(TextureSampler, coords + float2(-PixelSize.x * 2.0, 0.0)).r;
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, PixelSize.y)).r * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, PixelSize.y * 2.0)).r;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, PixelSize.y)).r * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x * 2.0, 0.0)).r;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).r * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, -PixelSize.y * 2.0)).r;
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, -PixelSize.y)).r * 2.0;
+    return float4((1.0 / 12) * sum, 0, 0, 0);
 }
 
 technique Technique1
 {
-    pass Downsample
+    pass BlurDownsample
     {
-        PixelShader = compile ps_3_0 Downsample();
+        PixelShader = compile ps_3_0 BlurDownsample();
     }
 
-    pass DownsampleKaris
+    pass BlurUpsample
     {
-        PixelShader = compile ps_3_0 DownsampleKaris();
+        PixelShader = compile ps_3_0 BlurUpsample();
+    }
+    
+    pass BlurDownsampleRed
+    {
+        PixelShader = compile ps_3_0 BlurDownsampleRed();
     }
 
-    pass Blur
+    pass BlurUpsampleRed
     {
-        PixelShader = compile ps_3_0 Blur();
+        PixelShader = compile ps_3_0 BlurUpsampleRed();
     }
 }

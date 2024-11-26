@@ -9,10 +9,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.3 (2024-11-25)**
-- The vanilla Lighting setting is now automatically set to Color when necessary
-- Tone mapping and HDR rendering now work when Waves Quality is set to Off
-- Fixed some potential visual bugs with enhanced HDR rendering
-- Made some minor optimizations
-- Updated the smooth lighting error messages
-- Updated the mod description
+**v0.9.4 (2024-11-25)**
+- Optimized and improved bloom
+- Tweaked ambient occlusion
+- Updated the mod icon

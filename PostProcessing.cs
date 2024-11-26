@@ -14,7 +14,7 @@ internal sealed class PostProcessing
     internal const float HiDefBrightnessScale = 0.5f;
     public static float HiDefBackgroundBrightness { get; private set; }
 
-    private static BlendState _trueAdditiveBlend =
+    private static readonly BlendState _trueAdditiveBlend =
         new()
         {
             ColorBlendFunction = BlendFunction.Add,
@@ -31,12 +31,9 @@ internal sealed class PostProcessing
     private Shader _gammaToGammaDitherShader;
     private Shader _gammaToSrgbDitherShader;
     private Shader _toneMapShader;
-    private Shader _downsampleShader;
-    private Shader _downsampleKarisShader;
-    private Shader _blurShader;
     private Shader _bloomCompositeShader;
 
-    private RenderTarget2D[] _blurTargets;
+    private readonly BlurRenderer _blurRenderer = new();
 
     public PostProcessing()
     {
@@ -63,15 +60,6 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "ToneMap"
         );
-        _downsampleShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Blur",
-            "Downsample"
-        );
-        _downsampleKarisShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Blur",
-            "DownsampleKaris"
-        );
-        _blurShader = EffectLoader.LoadEffect("FancyLighting/Effects/Blur", "Blur");
         _bloomCompositeShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "BloomComposite"
@@ -85,61 +73,9 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
         EffectLoader.UnloadEffect(ref _toneMapShader);
-        EffectLoader.UnloadEffect(ref _downsampleShader);
-        EffectLoader.UnloadEffect(ref _downsampleKarisShader);
-        EffectLoader.UnloadEffect(ref _blurShader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
-        DisposeBlurTargets();
-    }
 
-    private void EnsureBlurTargets(int width, int height, int targetCount)
-    {
-        if (
-            _blurTargets is not null
-            && _blurTargets.Length >= targetCount
-            && _blurTargets[0]?.Width == width
-            && _blurTargets[0]?.Height == height
-        )
-        {
-            return;
-        }
-
-        DisposeBlurTargets();
-
-        _blurTargets = new RenderTarget2D[targetCount];
-        var scale = 1f;
-        for (var i = 0; i < targetCount; ++i)
-        {
-            scale *= 0.5f;
-            var currWidth = (int)(width * scale);
-            var currHeight = (int)(height * scale);
-
-            _blurTargets[i] = new RenderTarget2D(
-                Main.graphics.GraphicsDevice,
-                currWidth,
-                currHeight,
-                false,
-                SurfaceFormat.HalfVector4,
-                DepthFormat.None,
-                0,
-                RenderTargetUsage.PreserveContents
-            );
-        }
-    }
-
-    private void DisposeBlurTargets()
-    {
-        if (_blurTargets is null)
-        {
-            return;
-        }
-
-        foreach (var target in _blurTargets)
-        {
-            target?.Dispose();
-        }
-
-        _blurTargets = null;
+        _blurRenderer.Unload();
     }
 
     internal static void CalculateHiDefSurfaceBrightness()
@@ -263,91 +199,12 @@ internal sealed class PostProcessing
                     1f
                 );
 
-                EnsureBlurTargets(target.Width, target.Height, passCount);
-
-                for (var i = 0; i < passCount; ++i)
-                {
-                    var currBlurTarget = i == 0 ? currTarget : _blurTargets[i - 1];
-                    var nextBlurTarget = _blurTargets[i];
-
-                    var shader = i == 0 ? _downsampleKarisShader : _downsampleShader;
-
-                    Main.graphics.GraphicsDevice.SetRenderTarget(nextBlurTarget);
-                    Main.spriteBatch.Begin(
-                        SpriteSortMode.Immediate,
-                        BlendState.Opaque,
-                        SamplerState.LinearClamp,
-                        DepthStencilState.None,
-                        RasterizerState.CullNone
-                    );
-                    shader
-                        .SetParameter(
-                            "FilterSize",
-                            new Vector2(
-                                1f / currBlurTarget.Width,
-                                1f / currBlurTarget.Height
-                            )
-                        )
-                        .Apply();
-                    Main.spriteBatch.Draw(
-                        currBlurTarget,
-                        Vector2.Zero,
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        new Vector2(
-                            (float)nextBlurTarget.Width / currBlurTarget.Width,
-                            (float)nextBlurTarget.Height / currBlurTarget.Height
-                        ), // simulates "fullscreen" vertex shader
-                        SpriteEffects.None,
-                        0f
-                    );
-                    Main.spriteBatch.End();
-                }
-
-                for (var i = passCount - 1; i >= 1; --i)
-                {
-                    var currBlurTarget = _blurTargets[i];
-                    var nextBlurTarget = _blurTargets[i - 1];
-
-                    Main.graphics.GraphicsDevice.SetRenderTarget(nextBlurTarget);
-                    Main.spriteBatch.Begin(
-                        SpriteSortMode.Immediate,
-                        _trueAdditiveBlend,
-                        SamplerState.LinearClamp,
-                        DepthStencilState.None,
-                        RasterizerState.CullNone
-                    );
-                    _blurShader
-                        .SetParameter(
-                            "FilterSize",
-                            new Vector2(
-                                0.005f
-                                    * (
-                                        (float)currBlurTarget.Height
-                                        / currBlurTarget.Width
-                                    ),
-                                0.005f
-                            )
-                        )
-                        .Apply();
-                    Main.spriteBatch.Draw(
-                        currBlurTarget,
-                        Vector2.Zero,
-                        null,
-                        Color.White,
-                        0f,
-                        Vector2.Zero,
-                        new Vector2(
-                            (float)nextBlurTarget.Width / currBlurTarget.Width,
-                            (float)nextBlurTarget.Height / currBlurTarget.Height
-                        ),
-                        SpriteEffects.None,
-                        0f
-                    );
-                    Main.spriteBatch.End();
-                }
+                var bloomTarget = _blurRenderer.RenderBlur(
+                    currTarget,
+                    null,
+                    passCount,
+                    true
+                );
 
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.spriteBatch.Begin(
@@ -361,7 +218,7 @@ internal sealed class PostProcessing
                     .SetParameter("BloomStrength", bloomStrength)
                     .Apply();
 
-                Main.graphics.GraphicsDevice.Textures[4] = _blurTargets[0];
+                Main.graphics.GraphicsDevice.Textures[4] = bloomTarget;
                 Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.LinearClamp;
 
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);

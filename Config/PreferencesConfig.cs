@@ -108,7 +108,7 @@ public sealed class PreferencesConfig : ModConfig
 
     // Ambient Occlusion
     [Header("AmbientOcclusion")]
-    [Range(1, 4)]
+    [Range(1, 5)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.AmbientOcclusionRadius)]
     [Slider]
