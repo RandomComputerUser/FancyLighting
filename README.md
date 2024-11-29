@@ -9,7 +9,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.4 (2024-11-25)**
-- Optimized and improved bloom
-- Tweaked ambient occlusion
-- Updated the mod icon
+**v0.9.5 (2024-11-28)**
+- Improved the mod compatibility of the enhanced HDR render mode

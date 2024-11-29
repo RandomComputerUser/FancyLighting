@@ -364,6 +364,12 @@ public sealed class FancyLightingMod : Mod
         base.Unload();
     }
 
+    public override void PostSetupContent()
+    {
+        // MonoMod hooks that are added later get run earlier
+        AddPriorityHooks();
+    }
+
     private void SetFancyLightingEngineInstance()
     {
         var mode =
@@ -415,7 +421,6 @@ public sealed class FancyLightingMod : Mod
         On_Dust.NewDust += _Dust_NewDust;
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
         On_WorldMap.UpdateLighting += _WorldMap_UpdateLighting;
-        On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
         On_Main.DrawSunAndMoon += _Main_DrawSunAndMoon;
@@ -442,6 +447,11 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawTiles += _Main_DrawTiles;
         On_Main.DrawCapture += _Main_DrawCapture;
         On_Main.DoDraw += _Main_DoDraw;
+    }
+
+    private void AddPriorityHooks()
+    {
+        On_FilterManager.EndCapture += _FilterManager_EndCapture;
     }
 
     private static int _Dust_NewDust(
