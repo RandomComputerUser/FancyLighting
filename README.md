@@ -9,5 +9,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.5 (2024-11-28)**
-- Improved the mod compatibility of the enhanced HDR render mode
+**v0.9.6 (2024-12-04)**
+- Fixed a bug that caused flickering in dark areas just above the underworld
+- Made some minor optimizations

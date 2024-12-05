@@ -30,7 +30,7 @@ internal sealed class SmoothLighting
     private RenderTarget2D _drawTarget2;
 
     private Vector3[] _lights;
-    private byte[] _hasLight;
+    private bool[] _hasLight;
     private Color[] _finalLights;
     private HalfVector4[] _finalLightsHiDef;
 
@@ -589,44 +589,23 @@ internal sealed class SmoothLighting
             }
         }
 
-        var low = 0.49f / 255f;
-        const int HasLightAmount = 1;
+        var low = (1f / 255f) / Lighting.GlobalBrightness;
 
-        var ymax = lightMapTileArea.Y + lightMapTileArea.Height;
         Parallel.For(
-            lightMapTileArea.X,
-            lightMapTileArea.X + lightMapTileArea.Width,
+            0,
+            width,
             FancyLightingModSystem._parallelOptions,
             (x) =>
             {
-                var isXInTilemap = x >= 0 && x < Main.tile.Width;
-                var tilemapHeight = Main.tile.Height;
-                var i = height * (x - lightMapTileArea.X);
-                for (var y = lightMapTileArea.Y; y < ymax; ++y)
+                var i = height * x;
+                var end = i + height;
+                while (i < end)
                 {
                     try
                     {
                         ref var color = ref _lights[i];
-                        if (color.X > low || color.Y > low || color.Z > low)
-                        {
-                            _hasLight[i++] = HasLightAmount;
-                            continue;
-                        }
-                        else if (isXInTilemap && y >= 0 && y < tilemapHeight)
-                        {
-                            if (TileUtils.HasShimmer(Main.tile[x, y]))
-                            {
-                                _hasLight[i++] = HasLightAmount;
-                                continue;
-                            }
-                        }
-
-                        if (_hasLight[i] != 0)
-                        {
-                            --_hasLight[i];
-                        }
-
-                        ++i;
+                        _hasLight[i++] =
+                            color.X >= low || color.Y >= low || color.Z >= low;
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -658,15 +637,15 @@ internal sealed class SmoothLighting
                         ref var blackLight = ref _blackLights[i];
 
                         if (
-                            _hasLight[i] != 0
-                            || _hasLight[i - 1] != 0
-                            || _hasLight[i + 1] != 0
-                            || _hasLight[i - height] != 0
-                            || _hasLight[i - height - 1] != 0
-                            || _hasLight[i - height + 1] != 0
-                            || _hasLight[i + height] != 0
-                            || _hasLight[i + height - 1] != 0
-                            || _hasLight[i + height + 1] != 0
+                            _hasLight[i]
+                            || _hasLight[i - 1]
+                            || _hasLight[i + 1]
+                            || _hasLight[i - height]
+                            || _hasLight[i - height - 1]
+                            || _hasLight[i - height + 1]
+                            || _hasLight[i + height]
+                            || _hasLight[i + height - 1]
+                            || _hasLight[i + height + 1]
                         )
                         {
                             whiteLight.X = 1f;
@@ -1239,7 +1218,6 @@ internal sealed class SmoothLighting
                         Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
                         var tile = Main.tile[x, y];
 
-                        // TODO: Figure out why glow mask support doesn't apply to shimmer
                         if (TileUtils.HasShimmer(tile))
                         {
                             lightColor.X = Math.Max(lightColor.X, 1f);

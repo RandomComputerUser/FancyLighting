@@ -83,44 +83,10 @@ public sealed class FancyLightingMod : Mod
                 return;
             }
 
-            if (!Lighting.UsingNewLighting)
+            if (OverrideLightMap(value, _smoothLightingInstance._whiteLights))
             {
-                return;
+                _overrideLightColor = value;
             }
-
-            var activeEngine = _field_activeEngine.GetValue(null);
-            if (activeEngine is not LightingEngine lightingEngine)
-            {
-                return;
-            }
-
-            if (value && _smoothLightingInstance._whiteLights is null)
-            {
-                return;
-            }
-
-            var lightMapInstance = (LightMap)
-                _field_activeLightMap.GetValue(lightingEngine).AssertNotNull();
-
-            if (value)
-            {
-                _smoothLightingInstance._tmpLights = (Vector3[])
-                    _field_colors.GetValue(lightMapInstance).AssertNotNull();
-            }
-
-            _field_colors.SetValue(
-                lightMapInstance,
-                value
-                    ? _smoothLightingInstance._whiteLights
-                    : _smoothLightingInstance._tmpLights
-            );
-
-            if (!value)
-            {
-                _smoothLightingInstance._tmpLights = null;
-            }
-
-            _overrideLightColor = value;
         }
     }
 
@@ -134,45 +100,51 @@ public sealed class FancyLightingMod : Mod
                 return;
             }
 
-            if (!Lighting.UsingNewLighting)
+            if (OverrideLightMap(value, _smoothLightingInstance._blackLights))
             {
-                return;
+                _useBlack = value;
             }
-
-            var activeEngine = _field_activeEngine.GetValue(null);
-            if (activeEngine is not LightingEngine lightingEngine)
-            {
-                return;
-            }
-
-            if (value && _smoothLightingInstance._blackLights is null)
-            {
-                return;
-            }
-
-            var lightMapInstance = (LightMap)
-                _field_activeLightMap.GetValue(lightingEngine).AssertNotNull();
-
-            if (value)
-            {
-                _smoothLightingInstance._tmpLights = (Vector3[])
-                    _field_colors.GetValue(lightMapInstance).AssertNotNull();
-            }
-
-            _field_colors.SetValue(
-                lightMapInstance,
-                value
-                    ? _smoothLightingInstance._blackLights
-                    : _smoothLightingInstance._tmpLights
-            );
-
-            if (!value)
-            {
-                _smoothLightingInstance._tmpLights = null;
-            }
-
-            _useBlack = value;
         }
+    }
+
+    private bool OverrideLightMap(bool doOverride, Vector3[] overrideLights)
+    {
+        if (!Lighting.UsingNewLighting)
+        {
+            return false;
+        }
+
+        var activeEngine = _field_activeEngine.GetValue(null);
+        if (activeEngine is not LightingEngine lightingEngine)
+        {
+            return false;
+        }
+
+        if (doOverride && overrideLights is null)
+        {
+            return false;
+        }
+
+        var lightMapInstance = (LightMap)
+            _field_activeLightMap.GetValue(lightingEngine).AssertNotNull();
+
+        if (doOverride)
+        {
+            _smoothLightingInstance._tmpLights = (Vector3[])
+                _field_colors.GetValue(lightMapInstance).AssertNotNull();
+        }
+
+        _field_colors.SetValue(
+            lightMapInstance,
+            doOverride ? overrideLights : _smoothLightingInstance._tmpLights
+        );
+
+        if (!doOverride)
+        {
+            _smoothLightingInstance._tmpLights = null;
+        }
+
+        return true;
     }
 
     public override void Load()
@@ -420,6 +392,7 @@ public sealed class FancyLightingMod : Mod
     {
         On_Dust.NewDust += _Dust_NewDust;
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
+        On_Main.ShouldDrawBackgroundTileAt += _Main_ShouldDrawBackgroundTileAt;
         On_WorldMap.UpdateLighting += _WorldMap_UpdateLighting;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
@@ -475,6 +448,12 @@ public sealed class FancyLightingMod : Mod
         ushort type,
         short frameX
     ) => !_overrideLightColor && orig(type, frameX);
+
+    private static bool _Main_ShouldDrawBackgroundTileAt(
+        On_Main.orig_ShouldDrawBackgroundTileAt orig,
+        int i,
+        int j
+    ) => _overrideLightColor || orig(i, j);
 
     private static bool _WorldMap_UpdateLighting(
         On_WorldMap.orig_UpdateLighting orig,
@@ -1091,17 +1070,6 @@ public sealed class FancyLightingMod : Mod
                                 || WorldGen.SolidTile(tile)
                                 || (liquidLevel > 128 && brightness < 1f / 255f)
                             );
-
-                        /*
-                        Original:
-                        var isDark =
-                            brightness <= blackThreshold
-                            && (
-                                (!inUnderworld && liquidLevel < 250)
-                                || WorldGen.SolidTile(tile)
-                                || (liquidLevel >= 200 && brightness < 1f / 255f)
-                            );
-                        */
 
                         var canTileBeBlack =
                             tile.HasTile
