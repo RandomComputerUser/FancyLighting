@@ -9,6 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.6 (2024-12-04)**
-- Fixed a bug that caused flickering in dark areas just above the underworld
-- Made some minor optimizations
+**v0.9.7 (2024-12-??)**
