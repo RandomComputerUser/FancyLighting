@@ -7,7 +7,12 @@ namespace FancyLighting.Utils;
 
 internal static class TextureUtils
 {
-    public static SurfaceFormat Format =>
+    public static SurfaceFormat ScreenFormat =>
+        LightingConfig.Instance.HiDefFeaturesEnabled()
+            ? SurfaceFormat.HalfVector4
+            : SurfaceFormat.Color;
+
+    public static SurfaceFormat LightMapFormat =>
         LightingConfig.Instance.HiDefFeaturesEnabled()
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
@@ -16,11 +21,10 @@ internal static class TextureUtils
         ref RenderTarget2D target,
         int width,
         int height,
-        SurfaceFormat? format = null,
+        SurfaceFormat format,
         RenderTargetUsage? usage = null
     )
     {
-        format ??= Format;
         usage ??= RenderTargetUsage.DiscardContents;
 
         if (
@@ -38,7 +42,7 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                format.Value,
+                format,
                 DepthFormat.None,
                 0,
                 usage.Value
@@ -46,14 +50,19 @@ internal static class TextureUtils
         }
     }
 
-    public static void MakeAtLeastSize(ref RenderTarget2D target, int width, int height)
+    public static void MakeAtLeastSize(
+        ref RenderTarget2D target,
+        int width,
+        int height,
+        SurfaceFormat format
+    )
     {
         if (
             target is null
             || target.GraphicsDevice != Main.graphics.GraphicsDevice
             || target.Width < width
             || target.Height < height
-            || target.Format != Format
+            || target.Format != format
         )
         {
             target?.Dispose();
@@ -64,20 +73,25 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                Format,
+                format,
                 DepthFormat.None
             );
         }
     }
 
-    public static void MakeAtLeastSize(ref Texture2D texture, int width, int height)
+    public static void MakeAtLeastSize(
+        ref Texture2D texture,
+        int width,
+        int height,
+        SurfaceFormat format
+    )
     {
         if (
             texture is null
             || texture.GraphicsDevice != Main.graphics.GraphicsDevice
             || texture.Width < width
             || texture.Height < height
-            || texture.Format != Format
+            || texture.Format != format
         )
         {
             width = Math.Max(width, texture?.Width ?? 0);
@@ -89,21 +103,18 @@ internal static class TextureUtils
                 width,
                 height,
                 false,
-                Format
+                format
             );
         }
     }
 
-    public static void EnsureFormat(ref RenderTarget2D target, bool reset = false)
+    public static void EnsureFormat(ref RenderTarget2D target, SurfaceFormat format)
     {
-        if (target is null || target.GraphicsDevice != Main.graphics.GraphicsDevice)
-        {
-            return;
-        }
-
-        var format = reset ? SurfaceFormat.Color : Format;
-
-        if (target.Format == format)
+        if (
+            target is null
+            || target.GraphicsDevice != Main.graphics.GraphicsDevice
+            || target.Format == format
+        )
         {
             return;
         }

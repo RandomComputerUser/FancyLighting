@@ -54,7 +54,6 @@ internal sealed class SmoothLighting
 
     private Shader _bicubicDitherShader;
     private Shader _bicubicNoDitherHiDefShader;
-    private Shader _noFilterShader;
     private Shader _normalsShader;
     private Shader _normalsOverbrightShader;
     private Shader _normalsOverbrightAmbientOcclusionShader;
@@ -100,10 +99,6 @@ internal sealed class SmoothLighting
         _bicubicNoDitherHiDefShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/Upscaling",
             "BicubicNoDitherHiDef"
-        );
-        _noFilterShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Upscaling",
-            "NoFilter"
         );
 
         _normalsShader = EffectLoader.LoadEffect(
@@ -196,7 +191,6 @@ internal sealed class SmoothLighting
         _ditherNoise?.Dispose();
         EffectLoader.UnloadEffect(ref _bicubicDitherShader);
         EffectLoader.UnloadEffect(ref _bicubicNoDitherHiDefShader);
-        EffectLoader.UnloadEffect(ref _noFilterShader);
         EffectLoader.UnloadEffect(ref _normalsShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightAmbientOcclusionShader);
@@ -216,8 +210,6 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
-
-    internal void ApplyNoFilterShader() => _noFilterShader.Apply();
 
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
 
@@ -423,7 +415,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 0,
                 width,
-                FancyLightingModSystem._parallelOptions,
+                SettingsSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -511,7 +503,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 0,
                 width,
-                FancyLightingModSystem._parallelOptions,
+                SettingsSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -549,7 +541,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 0,
                 width,
-                FancyLightingModSystem._parallelOptions,
+                SettingsSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -594,7 +586,7 @@ internal sealed class SmoothLighting
         Parallel.For(
             0,
             width,
-            FancyLightingModSystem._parallelOptions,
+            SettingsSystem._parallelOptions,
             (x) =>
             {
                 var i = height * x;
@@ -625,7 +617,7 @@ internal sealed class SmoothLighting
         Parallel.For(
             1,
             width - 1,
-            FancyLightingModSystem._parallelOptions,
+            SettingsSystem._parallelOptions,
             (x) =>
             {
                 var i = height * x;
@@ -709,7 +701,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     1,
                     width - 1,
-                    FancyLightingModSystem._parallelOptions,
+                    SettingsSystem._parallelOptions,
                     (x) =>
                     {
                         var i = height * x;
@@ -827,7 +819,7 @@ internal sealed class SmoothLighting
                 Parallel.For(
                     1,
                     width - 1,
-                    FancyLightingModSystem._parallelOptions,
+                    SettingsSystem._parallelOptions,
                     (x) =>
                     {
                         var tileX = x + lightMapTileArea.X;
@@ -1011,7 +1003,7 @@ internal sealed class SmoothLighting
             Parallel.For(
                 1,
                 width - 1,
-                FancyLightingModSystem._parallelOptions,
+                SettingsSystem._parallelOptions,
                 (x) =>
                 {
                     var i = height * x;
@@ -1206,7 +1198,7 @@ internal sealed class SmoothLighting
         Parallel.For(
             clampedStart,
             clampedEnd,
-            FancyLightingModSystem._parallelOptions,
+            SettingsSystem._parallelOptions,
             (x1) =>
             {
                 var i = (height * x1) + offset;
@@ -1244,7 +1236,12 @@ internal sealed class SmoothLighting
             return;
         }
 
-        TextureUtils.MakeAtLeastSize(ref _colors, height, width);
+        TextureUtils.MakeAtLeastSize(
+            ref _colors,
+            height,
+            width,
+            SurfaceFormat.HalfVector4
+        );
 
         _colors.SetData(0, _lightMapRenderArea, _finalLightsHiDef, 0, length);
 
@@ -1280,7 +1277,7 @@ internal sealed class SmoothLighting
         Parallel.For(
             clampedStart,
             clampedEnd,
-            FancyLightingModSystem._parallelOptions,
+            SettingsSystem._parallelOptions,
             (x1) =>
             {
                 var i = (height * x1) + offset;
@@ -1322,7 +1319,7 @@ internal sealed class SmoothLighting
             return;
         }
 
-        TextureUtils.MakeAtLeastSize(ref _colors, height, width);
+        TextureUtils.MakeAtLeastSize(ref _colors, height, width, SurfaceFormat.Color);
 
         _colors.SetData(0, _lightMapRenderArea, _finalLights, 0, length);
 
@@ -1334,7 +1331,8 @@ internal sealed class SmoothLighting
         TextureUtils.MakeAtLeastSize(
             ref hiResLights,
             16 * lights.Width,
-            16 * lights.Height
+            16 * lights.Height,
+            TextureUtils.LightMapFormat
         );
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
@@ -1409,7 +1407,12 @@ internal sealed class SmoothLighting
         Vector2 offset;
         if (tmpTarget is null)
         {
-            TextureUtils.MakeSize(ref _drawTarget1, target.Width, target.Height);
+            TextureUtils.MakeSize(
+                ref _drawTarget1,
+                target.Width,
+                target.Height,
+                TextureUtils.ScreenFormat
+            );
             tmpTarget = _drawTarget1;
             offset = new Vector2(Main.offScreenRange);
         }
@@ -1430,7 +1433,8 @@ internal sealed class SmoothLighting
             TextureUtils.MakeAtLeastSize(
                 ref _drawTarget2,
                 tmpTarget.Width,
-                tmpTarget.Height
+                tmpTarget.Height,
+                TextureUtils.ScreenFormat
             );
         }
 
@@ -1468,7 +1472,8 @@ internal sealed class SmoothLighting
         TextureUtils.MakeSize(
             ref _cameraModeTarget1,
             screenTarget.Width,
-            screenTarget.Height
+            screenTarget.Height,
+            TextureUtils.ScreenFormat
         );
         return _cameraModeTarget1;
     }
@@ -1490,12 +1495,14 @@ internal sealed class SmoothLighting
         TextureUtils.MakeAtLeastSize(
             ref _cameraModeTarget2,
             16 * lightMapTexture.Height,
-            16 * lightMapTexture.Width
+            16 * lightMapTexture.Width,
+            TextureUtils.ScreenFormat
         );
         TextureUtils.MakeAtLeastSize(
             ref _cameraModeTarget3,
             16 * lightMapTexture.Height,
-            16 * lightMapTexture.Width
+            16 * lightMapTexture.Width,
+            TextureUtils.ScreenFormat
         );
 
         ApplySmoothLighting(
@@ -1625,14 +1632,10 @@ internal sealed class SmoothLighting
         }
 
         Main.graphics.GraphicsDevice.SetRenderTarget(doOneStepOnly ? target1 : target2);
-        if (doOneStepOnly)
-        {
-            Main.graphics.GraphicsDevice.Clear(Color.White);
-        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
-            doOneStepOnly ? FancyLightingMod.MultiplyBlend : BlendState.Opaque,
+            BlendState.Opaque,
             SamplerState.LinearClamp,
             DepthStencilState.None,
             RasterizerState.CullNone
@@ -1677,118 +1680,129 @@ internal sealed class SmoothLighting
             0f
         );
 
-        if (!doOneStepOnly)
-        {
-            Main.spriteBatch.End();
+        Main.spriteBatch.End();
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(target1);
-            if (!doOverbright)
+        if (doOneStepOnly)
+        {
+            if (!lightOnly)
             {
-                Main.graphics.GraphicsDevice.Clear(Color.White);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendStates.Multiply,
+                    SamplerState.LinearClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
             }
 
+            return;
+        }
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(target1);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            simulateNormalMaps && !hiDef
+                ? SamplerState.LinearClamp
+                : SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+
+        var shader = simulateNormalMaps
+            ? doOverbright
+                ? lightOnly
+                    ? background
+                        ? doAmbientOcclusion
+                            ? _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
+                            : _normalsOverbrightLightOnlyOpaqueShader
+                        : _normalsOverbrightLightOnlyShader
+                    : doAmbientOcclusion
+                        ? _normalsOverbrightAmbientOcclusionShader
+                        : _normalsOverbrightShader
+                : _normalsShader
+            : doScaling // doOverbright is guaranteed to be true here
+                ? _overbrightMaxShader // if doScaling is true we're doing post-processing
+                : lightOnly
+                    ? background
+                        ? doAmbientOcclusion
+                            ? _overbrightLightOnlyOpaqueAmbientOcclusionShader
+                            : _overbrightLightOnlyOpaqueShader
+                        : _overbrightLightOnlyShader
+                    : doAmbientOcclusion
+                        ? _overbrightAmbientOcclusionShader
+                        : _overbrightShader;
+
+        var gamma = PreferencesConfig.Instance.GammaExponent();
+        var normalMapResolution = fineNormalMaps ? 1f : 2f;
+        var normalMapRadius = hiDef ? 12f : 12.5f;
+        var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
+        var normalMapStrength = 1f / (1f + normalMapMult);
+        var overbrightMult = doOverbright
+            ? hiDef
+                ? 1f / PostProcessing.HiDefBrightnessScale
+                : 255f / 128
+            : 1f;
+
+        shader
+            .SetParameter("ReciprocalGamma", 1f / gamma)
+            .SetParameter("OverbrightMult", overbrightMult)
+            .SetParameter(
+                "NormalMapResolution",
+                new Vector2(
+                    normalMapResolution / worldTarget.Width,
+                    normalMapResolution / worldTarget.Height
+                )
+            )
+            .SetParameter(
+                "NormalMapRadius",
+                new Vector2(
+                    normalMapRadius / target2.Width,
+                    normalMapRadius / target2.Height
+                )
+            )
+            .SetParameter("NormalMapStrength", normalMapStrength)
+            .SetParameter(
+                "WorldCoordMult",
+                new Vector2(
+                    (float)target2.Width / worldTarget.Width,
+                    (float)target2.Height / worldTarget.Height
+                )
+            );
+        Main.graphics.GraphicsDevice.Textures[4] = worldTarget;
+        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+
+        if (doAmbientOcclusion)
+        {
+            shader.SetParameter(
+                "AmbientOcclusionCoordMult",
+                new Vector2(
+                    (float)target2.Width / ambientOcclusionTarget.Width,
+                    (float)target2.Height / ambientOcclusionTarget.Height
+                )
+            );
+            Main.graphics.GraphicsDevice.Textures[5] = ambientOcclusionTarget;
+            Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+        }
+
+        shader.Apply();
+        Main.spriteBatch.Draw(target2, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        if (!doOverbright && !lightOnly)
+        {
             Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                doOverbright ? BlendState.Opaque : FancyLightingMod.MultiplyBlend,
-                simulateNormalMaps && !hiDef
-                    ? SamplerState.LinearClamp
-                    : SamplerState.PointClamp,
+                SpriteSortMode.Deferred,
+                BlendStates.Multiply,
+                SamplerState.LinearClamp,
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-
-            var shader = simulateNormalMaps
-                ? doOverbright
-                    ? lightOnly
-                        ? background
-                            ? doAmbientOcclusion
-                                ? _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
-                                : _normalsOverbrightLightOnlyOpaqueShader
-                            : _normalsOverbrightLightOnlyShader
-                        : doAmbientOcclusion
-                            ? _normalsOverbrightAmbientOcclusionShader
-                            : _normalsOverbrightShader
-                    : _normalsShader
-                : doScaling // doOverbright is guaranteed to be true here
-                    ? _overbrightMaxShader // if doScaling is true we're doing post-processing
-                    : lightOnly
-                        ? background
-                            ? doAmbientOcclusion
-                                ? _overbrightLightOnlyOpaqueAmbientOcclusionShader
-                                : _overbrightLightOnlyOpaqueShader
-                            : _overbrightLightOnlyShader
-                        : doAmbientOcclusion
-                            ? _overbrightAmbientOcclusionShader
-                            : _overbrightShader;
-
-            var gamma = PreferencesConfig.Instance.GammaExponent();
-            var normalMapResolution = fineNormalMaps ? 1f : 2f;
-            var normalMapRadius = hiDef ? 12f : 12.5f;
-            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
-            var normalMapStrength = 1f / (1f + normalMapMult);
-            var overbrightMult = doOverbright
-                ? hiDef
-                    ? 1f / PostProcessing.HiDefBrightnessScale
-                    : 255f / 128
-                : 1f;
-
-            shader
-                .SetParameter("ReciprocalGamma", 1f / gamma)
-                .SetParameter("OverbrightMult", overbrightMult)
-                .SetParameter(
-                    "NormalMapResolution",
-                    new Vector2(
-                        normalMapResolution / worldTarget.Width,
-                        normalMapResolution / worldTarget.Height
-                    )
-                )
-                .SetParameter(
-                    "NormalMapRadius",
-                    new Vector2(
-                        normalMapRadius / target2.Width,
-                        normalMapRadius / target2.Height
-                    )
-                )
-                .SetParameter("NormalMapStrength", normalMapStrength)
-                .SetParameter(
-                    "WorldCoordMult",
-                    new Vector2(
-                        (float)target2.Width / worldTarget.Width,
-                        (float)target2.Height / worldTarget.Height
-                    )
-                );
-            Main.graphics.GraphicsDevice.Textures[4] = worldTarget;
-            Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
-
-            if (doAmbientOcclusion)
-            {
-                shader.SetParameter(
-                    "AmbientOcclusionCoordMult",
-                    new Vector2(
-                        (float)target2.Width / ambientOcclusionTarget.Width,
-                        (float)target2.Height / ambientOcclusionTarget.Height
-                    )
-                );
-                Main.graphics.GraphicsDevice.Textures[5] = ambientOcclusionTarget;
-                Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
-            }
-
-            shader.Apply();
-
-            Main.spriteBatch.Draw(target2, Vector2.Zero, Color.White);
-        }
-
-        if (!(doOverbright || lightOnly))
-        {
-            if (doBicubicUpscaling || simulateNormalMaps)
-            {
-                _noFilterShader.Apply();
-            }
-
             Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
         }
-
-        Main.spriteBatch.End();
     }
 
     internal void DrawGlow(

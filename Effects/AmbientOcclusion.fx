@@ -18,7 +18,7 @@ const float BilinearGaussianOffsets[5] = {
 
 float BlurBrightness(float2 coords)
 {
-    float brightness = CenterWeight * tex2D(OccluderSampler, coords).r;
+    float brightness = CenterWeight * tex2D(OccluderSampler, coords).a;
 
     [unroll]
     float2 offset = 0;
@@ -26,8 +26,8 @@ float BlurBrightness(float2 coords)
     {
         offset += BlurSize;
         brightness += GaussianKernel[i] * (
-            tex2D(OccluderSampler, coords - offset).r
-            + tex2D(OccluderSampler, coords + offset).r
+            tex2D(OccluderSampler, coords - offset).a
+            + tex2D(OccluderSampler, coords + offset).a
         );
     }
 
@@ -36,45 +36,45 @@ float BlurBrightness(float2 coords)
 
 float BilinearBlurBrightness(float2 coords)
 {
-    float brightness = BilinearCenterWeight * tex2D(OccluderSampler, coords).r;
+    float brightness = BilinearCenterWeight * tex2D(OccluderSampler, coords).a;
 
     [unroll]
     for (int i = 0; i < 5; ++i)
     {
         float2 offset = BilinearGaussianOffsets[i] * BlurSize;
         brightness += BilinearGaussianWeights[i] * (
-            tex2D(OccluderSampler, coords - offset).r
-            + tex2D(OccluderSampler, coords + offset).r
+            tex2D(OccluderSampler, coords - offset).a
+            + tex2D(OccluderSampler, coords + offset).a
         );
     }
 
     return brightness;
 }
 
-float4 AlphaToRed(float2 coords : TEXCOORD0) : COLOR0
+float4 ExtractInverseAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = 1 - saturate(tex2D(OccluderSampler, coords).a);
-    return float4(brightness.x, 0, 0, 0);
+    return float4(0, 0, 0, brightness);
 }
 
-float4 AlphaToLightRed(float2 coords : TEXCOORD0) : COLOR0
+float4 ExtractInverseMultipliedAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = -0.8 * saturate(tex2D(OccluderSampler, coords).a) + 1;
-    return float4(brightness.x, 0, 0, 0);
+    return float4(0, 0, 0, brightness);
 }
 
 float4 Blur(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = BlurBrightness(coords);
 
-    return float4(brightness.x, 0, 0, 0);
+    return float4(0, 0, 0, brightness);
 }
 
 float4 BilinearBlur(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = BilinearBlurBrightness(coords);
 
-    return float4(brightness.x, 0, 0, 0);
+    return float4(0, 0, 0, brightness);
 }
 
 float4 FinalBlur(float2 coords : TEXCOORD0) : COLOR0
@@ -82,19 +82,19 @@ float4 FinalBlur(float2 coords : TEXCOORD0) : COLOR0
     float brightness = BilinearBlurBrightness(coords);
     brightness = 1 - BlurMult * (1 - pow(brightness, BlurPower));
 
-    return float4(brightness.xxx, 1);
+    return float4(0, 0, 0, brightness);
 }
 
 technique Technique1
 {
-    pass AlphaToRed
+    pass ExtractInverseAlpha
     {
-        PixelShader = compile ps_3_0 AlphaToRed();
+        PixelShader = compile ps_3_0 ExtractInverseAlpha();
     }
 
-    pass AlphaToLightRed
+    pass ExtractInverseMultipliedAlpha
     {
-        PixelShader = compile ps_3_0 AlphaToLightRed();
+        PixelShader = compile ps_3_0 ExtractInverseMultipliedAlpha();
     }
 
     pass Blur

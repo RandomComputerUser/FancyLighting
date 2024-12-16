@@ -156,7 +156,14 @@ internal sealed class PostProcessing
 
                 if (hiDef)
                 {
-                    smoothLightingInstance.ApplyNoFilterShader();
+                    Main.spriteBatch.End();
+                    Main.spriteBatch.Begin(
+                        SpriteSortMode.Deferred,
+                        BlendState.AlphaBlend,
+                        SamplerState.PointClamp,
+                        DepthStencilState.None,
+                        RasterizerState.CullNone
+                    );
                 }
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();

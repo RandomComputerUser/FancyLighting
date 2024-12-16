@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FancyLighting.Config;
 using FancyLighting.Utils;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
@@ -8,7 +9,7 @@ using Terraria.ModLoader;
 
 namespace FancyLighting;
 
-internal sealed class FancyLightingModSystem : ModSystem
+internal sealed class SettingsSystem : ModSystem
 {
     internal static readonly ParallelOptions _parallelOptions =
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
@@ -30,6 +31,8 @@ internal sealed class FancyLightingModSystem : ModSystem
     internal void OnConfigChange()
     {
         SettingsUpdate();
+        ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+        Main.renderNow = true;
     }
 
     internal void SettingsUpdate()
@@ -47,7 +50,7 @@ internal sealed class FancyLightingModSystem : ModSystem
 
         _parallelOptions.MaxDegreeOfParallelism =
             PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount;
-        _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() ?? false;
+        _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PostProcessing.CalculateHiDefSurfaceBrightness();
@@ -69,15 +72,17 @@ internal sealed class FancyLightingModSystem : ModSystem
 
     internal static void EnsureRenderTargets(bool reset = false)
     {
-        TextureUtils.EnsureFormat(ref Main.waterTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.backWaterTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.blackTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.tileTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.tile2Target, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.wallTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.instance.backgroundTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.screenTarget, reset);
-        TextureUtils.EnsureFormat(ref Main.screenTargetSwap, reset);
+        var format = reset ? SurfaceFormat.Color : TextureUtils.ScreenFormat;
+
+        TextureUtils.EnsureFormat(ref Main.waterTarget, format);
+        TextureUtils.EnsureFormat(ref Main.instance.backWaterTarget, format);
+        TextureUtils.EnsureFormat(ref Main.instance.blackTarget, format);
+        TextureUtils.EnsureFormat(ref Main.instance.tileTarget, format);
+        TextureUtils.EnsureFormat(ref Main.instance.tile2Target, format);
+        TextureUtils.EnsureFormat(ref Main.instance.wallTarget, format);
+        TextureUtils.EnsureFormat(ref Main.instance.backgroundTarget, format);
+        TextureUtils.EnsureFormat(ref Main.screenTarget, format);
+        TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
     internal static bool NeedsPostProcessing() =>

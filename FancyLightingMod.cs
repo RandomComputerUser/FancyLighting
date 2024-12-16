@@ -23,8 +23,6 @@ namespace FancyLighting;
 
 public sealed class FancyLightingMod : Mod
 {
-    public static BlendState MultiplyBlend { get; private set; }
-
     private static bool _overrideLightColor;
     private static bool _useBlack;
     internal static bool _inCameraMode;
@@ -64,8 +62,6 @@ public sealed class FancyLightingMod : Mod
     internal static Rectangle _cameraModeArea;
     private static CaptureBiome _cameraModeBiome;
 
-    private static RenderTarget2D _screenTarget1;
-    private static RenderTarget2D _screenTarget2;
     private static RenderTarget2D _tmpTarget1;
     private static RenderTarget2D _tmpTarget2;
     private static RenderTarget2D _tmpTarget3;
@@ -159,13 +155,6 @@ public sealed class FancyLightingMod : Mod
         _inCameraMode = false;
         _disableLightColorOverride = false;
         _preventDust = false;
-
-        MultiplyBlend = new()
-        {
-            ColorBlendFunction = BlendFunction.Add,
-            ColorSourceBlend = Blend.Zero,
-            ColorDestinationBlend = Blend.SourceColor,
-        };
 
         _smoothLightingInstance = new SmoothLighting(this);
         _ambientOcclusionInstance = new AmbientOcclusion();
@@ -314,8 +303,6 @@ public sealed class FancyLightingMod : Mod
         {
             // Do not dispose _cameraModeTarget
             // _cameraModeTarget comes from the Main class, so we don't own it
-            _screenTarget1?.Dispose();
-            _screenTarget2?.Dispose();
             _tmpTarget1?.Dispose();
             _tmpTarget2?.Dispose();
             _tmpTarget3?.Dispose();
@@ -329,7 +316,7 @@ public sealed class FancyLightingMod : Mod
             _fancyLightingEngineInstance?.Unload();
             _postProcessingInstance?.Unload();
 
-            FancyLightingModSystem.EnsureRenderTargets(true);
+            SettingsSystem.EnsureRenderTargets(true);
             LightsCompatibility.Unload();
         });
 
@@ -463,7 +450,7 @@ public sealed class FancyLightingMod : Mod
         byte light
     )
     {
-        if (FancyLightingModSystem._hiDef)
+        if (SettingsSystem._hiDef)
         {
             // Change if PostProcessing.HiDefBrightnessScale changes
             light = (byte)Math.Min((int)light << 1, 255);
@@ -482,7 +469,7 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
-        if (!FancyLightingModSystem.NeedsPostProcessing())
+        if (!SettingsSystem.NeedsPostProcessing())
         {
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
             return;
@@ -520,7 +507,12 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
-        TextureUtils.MakeSize(ref _backgroundTarget, target.Width, target.Height);
+        TextureUtils.MakeSize(
+            ref _backgroundTarget,
+            target.Width,
+            target.Height,
+            TextureUtils.ScreenFormat
+        );
 
         Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
         Main.spriteBatch.Begin(
@@ -565,7 +557,8 @@ public sealed class FancyLightingMod : Mod
         TextureUtils.MakeSize(
             ref _cameraModeBackgroundTarget,
             _cameraModeTarget.Width,
-            _cameraModeTarget.Height
+            _cameraModeTarget.Height,
+            TextureUtils.ScreenFormat
         );
 
         Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
@@ -701,15 +694,17 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -739,10 +734,11 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MakeAtLeastSize(
+                TextureUtils.MakeSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
-                    tileTarget.Height
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 _disableLightColorOverride = true;
@@ -1132,15 +1128,17 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -1168,10 +1166,11 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MakeAtLeastSize(
+                TextureUtils.MakeSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
-                    tileTarget.Height
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 orig(self);
@@ -1249,15 +1248,17 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -1285,10 +1286,11 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MakeAtLeastSize(
+                TextureUtils.MakeSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
-                    tileTarget.Height
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 orig(self);
@@ -1382,15 +1384,17 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget1,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
-            TextureUtils.MakeAtLeastSize(
+            TextureUtils.MakeSize(
                 ref _tmpTarget2,
                 tileTarget.Width,
-                tileTarget.Height
+                tileTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -1418,10 +1422,11 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MakeAtLeastSize(
+                TextureUtils.MakeSize(
                     ref _tmpTarget3,
                     tileTarget.Width,
-                    tileTarget.Height
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 orig(self);
@@ -1579,7 +1584,7 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (!FancyLightingModSystem._hiDef)
+        if (!SettingsSystem._hiDef)
         {
             return;
         }
@@ -1598,7 +1603,7 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (!FancyLightingModSystem._hiDef)
+        if (!SettingsSystem._hiDef)
         {
             return;
         }
@@ -1615,7 +1620,7 @@ public sealed class FancyLightingMod : Mod
     {
         // This code is adapted from vanilla
 
-        if (!FancyLightingModSystem._hiDef)
+        if (!SettingsSystem._hiDef)
         {
             orig(self, tile, ref lightColor);
             return;
@@ -1665,10 +1670,10 @@ public sealed class FancyLightingMod : Mod
 
         RenderTarget2D target;
         target = (RenderTarget2D)_field_filterFrameBuffer1.GetValue(self);
-        TextureUtils.EnsureFormat(ref target);
+        TextureUtils.EnsureFormat(ref target, TextureUtils.ScreenFormat);
         _field_filterFrameBuffer1.SetValue(self, target);
         target = (RenderTarget2D)_field_filterFrameBuffer2.GetValue(self);
-        TextureUtils.EnsureFormat(ref target);
+        TextureUtils.EnsureFormat(ref target, TextureUtils.ScreenFormat);
         _field_filterFrameBuffer2.SetValue(self, target);
 
         _inCameraMode = LightingConfig.Instance.ModifyCameraModeRendering();
@@ -1718,7 +1723,8 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
-                _cameraModeTarget.Height
+                _cameraModeTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -1742,7 +1748,8 @@ public sealed class FancyLightingMod : Mod
                 TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
-                    _cameraModeTarget.Height
+                    _cameraModeTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 Main.spriteBatch.End();
@@ -1840,7 +1847,8 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
-                _cameraModeTarget.Height
+                _cameraModeTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -1866,7 +1874,8 @@ public sealed class FancyLightingMod : Mod
                 TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
-                    _cameraModeTarget.Height
+                    _cameraModeTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 Main.tileBatch.End();
@@ -1978,7 +1987,8 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.MakeSize(
                 ref _cameraModeTmpTarget1,
                 _cameraModeTarget.Width,
-                _cameraModeTarget.Height
+                _cameraModeTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
             UseBlackLights = true;
@@ -2010,7 +2020,8 @@ public sealed class FancyLightingMod : Mod
                 TextureUtils.MakeSize(
                     ref _cameraModeTmpTarget2,
                     _cameraModeTarget.Width,
-                    _cameraModeTarget.Height
+                    _cameraModeTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 Main.tileBatch.End();
@@ -2092,7 +2103,7 @@ public sealed class FancyLightingMod : Mod
             _cameraModeArea = area;
             _cameraModeBiome = settings.Biome;
             _cameraModeDrawBackground = settings.CaptureBackground;
-            ModContent.GetInstance<FancyLightingModSystem>().SettingsUpdate();
+            ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
         }
 
         if (

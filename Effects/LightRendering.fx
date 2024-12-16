@@ -53,7 +53,7 @@ float AmbientOcclusion(float2 coords, float alpha)
 {
     alpha = saturate(alpha);
     return lerp(
-        1, tex2D(AmbientOcclusionSampler, coords * AmbientOcclusionCoordMult).r, alpha
+        1, tex2D(AmbientOcclusionSampler, coords * AmbientOcclusionCoordMult).a, alpha
     );
 }
 

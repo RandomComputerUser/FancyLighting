@@ -69,11 +69,6 @@ float4 BicubicNoDitherHiDef(float2 coords : TEXCOORD0) : COLOR0
     return float4(max(color, 0), 1);
 }
 
-float4 NoFilter(float2 coords : TEXCOORD0) : COLOR0
-{
-    return tex2D(LightSampler, coords);
-}
-
 technique Technique1
 {
     pass BicubicDither
@@ -84,10 +79,5 @@ technique Technique1
     pass BicubicNoDitherHiDef
     {
         PixelShader = compile ps_3_0 BicubicNoDitherHiDef();
-    }
-
-    pass NoFilter
-    {
-        PixelShader = compile ps_3_0 NoFilter();
     }
 }

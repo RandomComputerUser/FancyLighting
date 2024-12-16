@@ -44,7 +44,7 @@ internal class BlurRenderer
 
     private void EnsureBlurTargets(int width, int height, int targetCount)
     {
-        var format = TextureUtils.Format;
+        var format = TextureUtils.ScreenFormat;
 
         if (
             _blurTargets is not null

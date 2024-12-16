@@ -10,3 +10,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.7 (2024-12-??)**
+- Made some optimizations (TODO: update this change note)
+- Reduced the temporary visual disruption that occurs when changing some settings

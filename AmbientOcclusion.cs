@@ -10,19 +10,20 @@ namespace FancyLighting;
 
 internal sealed class AmbientOcclusion
 {
-    private RenderTarget2D _drawTarget1;
-    private RenderTarget2D _drawTarget2;
+    private RenderTarget2D _blurTarget1;
+    private RenderTarget2D _blurTarget2;
+
+    private RenderTarget2D _drawTarget;
 
     private RenderTarget2D _cameraModeTarget1;
     private RenderTarget2D _cameraModeTarget2;
-    private RenderTarget2D _cameraModeTarget3;
 
     private RenderTarget2D _tileEntityTarget;
 
     internal bool _drawingTileEntities;
 
-    private Shader _alphaToRedShader;
-    private Shader _alphaToLightRedShader;
+    private Shader _extractInverseAlphaShader;
+    private Shader _extractInverseMultipliedAlphaShader;
     private Shader _blurShader;
     private Shader _bilinearBlurShader;
     private Shader _finalBlurShader;
@@ -31,13 +32,13 @@ internal sealed class AmbientOcclusion
 
     public AmbientOcclusion()
     {
-        _alphaToRedShader = EffectLoader.LoadEffect(
+        _extractInverseAlphaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
-            "AlphaToRed"
+            "ExtractInverseAlpha"
         );
-        _alphaToLightRedShader = EffectLoader.LoadEffect(
+        _extractInverseMultipliedAlphaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
-            "AlphaToLightRed"
+            "ExtractInverseMultipliedAlpha"
         );
         _blurShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
@@ -65,33 +66,18 @@ internal sealed class AmbientOcclusion
 
     public void Unload()
     {
-        _drawTarget1?.Dispose();
-        _drawTarget2?.Dispose();
+        _blurTarget1?.Dispose();
+        _blurTarget2?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
-        _cameraModeTarget3?.Dispose();
         _tileEntityTarget?.Dispose();
-        EffectLoader.UnloadEffect(ref _alphaToRedShader);
-        EffectLoader.UnloadEffect(ref _alphaToLightRedShader);
+        EffectLoader.UnloadEffect(ref _extractInverseAlphaShader);
+        EffectLoader.UnloadEffect(ref _extractInverseMultipliedAlphaShader);
         EffectLoader.UnloadEffect(ref _blurShader);
         EffectLoader.UnloadEffect(ref _bilinearBlurShader);
         EffectLoader.UnloadEffect(ref _finalBlurShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
-    }
-
-    private void InitSurfaces()
-    {
-        TextureUtils.MakeSize(
-            ref _drawTarget1,
-            Main.instance.tileTarget.Width,
-            Main.instance.tileTarget.Height
-        );
-        TextureUtils.MakeSize(
-            ref _drawTarget2,
-            Main.instance.tileTarget.Width,
-            Main.instance.tileTarget.Height
-        );
     }
 
     internal RenderTarget2D ApplyAmbientOcclusion(bool doDraw = true)
@@ -101,18 +87,38 @@ internal sealed class AmbientOcclusion
             return null;
         }
 
-        InitSurfaces();
+        TextureUtils.MakeSize(
+            ref _blurTarget1,
+            Main.instance.tileTarget.Width,
+            Main.instance.tileTarget.Height,
+            SurfaceFormat.Alpha8
+        );
+        TextureUtils.MakeSize(
+            ref _blurTarget2,
+            Main.instance.tileTarget.Width,
+            Main.instance.tileTarget.Height,
+            SurfaceFormat.Alpha8
+        );
+        if (doDraw)
+        {
+            TextureUtils.MakeSize(
+                ref _drawTarget,
+                Main.instance.tileTarget.Width,
+                Main.instance.tileTarget.Height,
+                TextureUtils.ScreenFormat
+            );
+        }
 
-        ApplyAmbientOcclusionInner(
+        var target = ApplyAmbientOcclusionInner(
             Main.instance.wallTarget,
             Main.instance.tileTarget,
             Main.instance.tile2Target,
             Main.sceneTilePos - (Main.screenPosition - new Vector2(Main.offScreenRange)),
             Main.sceneTile2Pos - (Main.screenPosition - new Vector2(Main.offScreenRange)),
-            _drawTarget1,
-            _drawTarget2,
+            _blurTarget1,
+            _blurTarget2,
             doDraw,
-            out var useTarget2
+            _drawTarget
         );
 
         if (doDraw)
@@ -125,19 +131,13 @@ internal sealed class AmbientOcclusion
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            Main.spriteBatch.Draw(
-                useTarget2 ? _drawTarget1 : _drawTarget2,
-                Vector2.Zero,
-                Color.White
-            );
+            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
         }
 
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
 
-        return doDraw ? null
-            : useTarget2 ? _drawTarget1
-            : _drawTarget2;
+        return doDraw ? null : target;
     }
 
     internal RenderTarget2D ApplyAmbientOcclusionCameraMode(
@@ -150,19 +150,28 @@ internal sealed class AmbientOcclusion
     )
     {
         TextureUtils.MakeSize(
+            ref _blurTarget1,
+            screenTarget.Width,
+            screenTarget.Height,
+            SurfaceFormat.Alpha8
+        );
+        TextureUtils.MakeSize(
+            ref _blurTarget2,
+            Main.instance.tileTarget.Width,
+            Main.instance.tileTarget.Height,
+            SurfaceFormat.Alpha8
+        );
+        TextureUtils.MakeSize(
             ref _cameraModeTarget1,
             screenTarget.Width,
-            screenTarget.Height
+            screenTarget.Height,
+            TextureUtils.ScreenFormat
         );
         TextureUtils.MakeSize(
             ref _cameraModeTarget2,
             screenTarget.Width,
-            screenTarget.Height
-        );
-        TextureUtils.MakeSize(
-            ref _cameraModeTarget3,
-            screenTarget.Width,
-            screenTarget.Height
+            screenTarget.Height,
+            TextureUtils.ScreenFormat
         );
 
         Main.instance.TilesRenderer.SpecificHacksForCapture();
@@ -220,19 +229,17 @@ internal sealed class AmbientOcclusion
         Main.tileBatch.End();
         Main.spriteBatch.End();
 
-        ApplyAmbientOcclusionInner(
+        var target = ApplyAmbientOcclusionInner(
             wallTarget,
             _cameraModeTarget1,
             _cameraModeTarget2,
             Vector2.Zero,
             Vector2.Zero,
-            _cameraModeTarget3,
-            _cameraModeTarget2,
+            _blurTarget1,
+            _blurTarget2,
             doDraw,
-            out var useTarget2
+            _cameraModeTarget2
         );
-
-        var walls = useTarget2 ? _cameraModeTarget3 : _cameraModeTarget2;
 
         if (doDraw)
         {
@@ -259,7 +266,7 @@ internal sealed class AmbientOcclusion
             Main.spriteBatch.Draw(_cameraModeTarget1, Vector2.Zero, Color.White);
             if (glow is null)
             {
-                Main.spriteBatch.Draw(walls, Vector2.Zero, Color.White);
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
             }
             else
             {
@@ -269,8 +276,8 @@ internal sealed class AmbientOcclusion
                         .SetParameter(
                             "GlowCoordMult",
                             new Vector2(
-                                (float)walls.Width / glow.Width,
-                                (float)walls.Height / glow.Height
+                                (float)target.Width / glow.Width,
+                                (float)target.Height / glow.Height
                             )
                         )
                         .Apply();
@@ -281,15 +288,15 @@ internal sealed class AmbientOcclusion
                         .SetParameter(
                             "GlowCoordMult",
                             new Vector2(
-                                (float)walls.Width / glow.Width,
-                                (float)walls.Height / glow.Height
+                                (float)target.Width / glow.Width,
+                                (float)target.Height / glow.Height
                             )
                         )
                         .SetParameter(
                             "LightedGlowCoordMult",
                             new Vector2(
-                                (float)walls.Width / lightedGlow.Width,
-                                (float)walls.Height / lightedGlow.Height
+                                (float)target.Width / lightedGlow.Width,
+                                (float)target.Height / lightedGlow.Height
                             )
                         )
                         .Apply();
@@ -300,7 +307,7 @@ internal sealed class AmbientOcclusion
 
                 Main.graphics.GraphicsDevice.Textures[4] = glow;
                 Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
-                Main.spriteBatch.Draw(walls, Vector2.Zero, Color.White);
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
             }
             Main.spriteBatch.End();
         }
@@ -308,10 +315,10 @@ internal sealed class AmbientOcclusion
         // Reset special tile counts
         Main.instance.TilesRenderer.PreDrawTiles(false, false, true);
 
-        return doDraw ? null : walls;
+        return doDraw ? null : target;
     }
 
-    private void ApplyAmbientOcclusionInner(
+    private RenderTarget2D ApplyAmbientOcclusionInner(
         RenderTarget2D wallTarget,
         RenderTarget2D tileTarget,
         RenderTarget2D tile2Target,
@@ -320,7 +327,7 @@ internal sealed class AmbientOcclusion
         RenderTarget2D target1,
         RenderTarget2D target2,
         bool doDraw,
-        out bool useTarget2
+        RenderTarget2D drawTarget
     )
     {
         void ApplyBlurPass(
@@ -332,10 +339,10 @@ internal sealed class AmbientOcclusion
             float blurMult = 0f
         )
         {
-            var surfaceDestination = useTarget2 ? target2 : target1;
-            var surfaceSource = useTarget2 ? target1 : target2;
+            var destination = useTarget2 ? target2 : target1;
+            var source = useTarget2 ? target1 : target2;
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(surfaceDestination);
+            Main.graphics.GraphicsDevice.SetRenderTarget(destination);
 
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
@@ -350,16 +357,13 @@ internal sealed class AmbientOcclusion
             shader
                 .SetParameter(
                     "BlurSize",
-                    new Vector2(
-                        (float)dx / surfaceSource.Width,
-                        (float)dy / surfaceSource.Height
-                    )
+                    new Vector2((float)dx / source.Width, (float)dy / source.Height)
                 )
                 .SetParameter("BlurPower", blurPower)
                 .SetParameter("BlurMult", blurMult)
                 .Apply();
 
-            Main.spriteBatch.Draw(surfaceSource, Vector2.Zero, Color.White);
+            Main.spriteBatch.Draw(source, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
 
             useTarget2 = !useTarget2;
@@ -380,7 +384,7 @@ internal sealed class AmbientOcclusion
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _alphaToRedShader.Apply();
+            _extractInverseAlphaShader.Apply();
             Main.spriteBatch.Draw(tileTarget, tileTargetPosition, Color.White);
             Main.spriteBatch.End();
         }
@@ -391,7 +395,8 @@ internal sealed class AmbientOcclusion
                 TextureUtils.MakeSize(
                     ref _tileEntityTarget,
                     Main.instance.tileTarget.Width,
-                    Main.instance.tileTarget.Height
+                    Main.instance.tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
 
                 Main.graphics.GraphicsDevice.SetRenderTarget(_tileEntityTarget);
@@ -420,16 +425,16 @@ internal sealed class AmbientOcclusion
 
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
-                FancyLightingMod.MultiplyBlend,
+                BlendStates.Multiply,
                 SamplerState.PointClamp,
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
 
-            _alphaToRedShader.Apply();
+            _extractInverseAlphaShader.Apply();
             Main.spriteBatch.Draw(tileTarget, tileTargetPosition, Color.White);
 
-            _alphaToLightRedShader.Apply();
+            _extractInverseMultipliedAlphaShader.Apply();
 
             if (drawNonSolidTiles && tile2Target is not null)
             {
@@ -476,26 +481,39 @@ internal sealed class AmbientOcclusion
             _ => 2,
         };
 
-        // We need to switch between render targets
-        useTarget2 = true;
+        var useTarget2 = true;
         ApplyBlurPass(ref useTarget2, firstShaderBlurStep, 0, _blurShader);
         ApplyBlurPass(ref useTarget2, 0, firstShaderBlurStep, _blurShader);
         ApplyBlurPass(ref useTarget2, 1, 0, _bilinearBlurShader);
         ApplyBlurPass(ref useTarget2, 0, 1, _finalBlurShader, power, mult);
 
+        var target = useTarget2 ? target1 : target2;
+
         if (!doDraw)
         {
-            return;
+            return target;
         }
 
+        Main.graphics.GraphicsDevice.SetRenderTarget(drawTarget);
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
-            FancyLightingMod.MultiplyBlend,
+            BlendState.Opaque,
             SamplerState.PointClamp,
             DepthStencilState.None,
             RasterizerState.CullNone
         );
         Main.spriteBatch.Draw(wallTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendStates.MultiplyColorByAlpha,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        return drawTarget;
     }
 }

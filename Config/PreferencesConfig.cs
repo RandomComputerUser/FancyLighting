@@ -44,8 +44,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public override void OnChanged()
     {
-        ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
-        ModContent.GetInstance<FancyLightingModSystem>()?.OnConfigChange();
+        ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
     }
 
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]

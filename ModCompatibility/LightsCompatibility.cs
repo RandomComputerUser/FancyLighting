@@ -90,7 +90,7 @@ internal static class LightsCompatibility
 
     private static void _NewScreenTarget(orig_NewScreenTarget orig, object self)
     {
-        if (FancyLightingModSystem._hiDef)
+        if (SettingsSystem._hiDef)
         {
             return;
         }
@@ -115,7 +115,7 @@ internal static class LightsCompatibility
         RenderTarget2D rt2
     )
     {
-        if (!FancyLightingModSystem._hiDef)
+        if (!SettingsSystem._hiDef)
         {
             orig(self, gd, sb, rt1, rt2);
             return;
@@ -173,7 +173,7 @@ internal static class LightsCompatibility
         RenderTarget2D rt2
     )
     {
-        if (FancyLightingModSystem._hiDef)
+        if (SettingsSystem._hiDef)
         {
             // Use the included bloom effect instead
             return;
