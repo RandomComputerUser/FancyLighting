@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
@@ -9,9 +8,7 @@ using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
-using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
-using Terraria.GameContent.Liquid;
 using Terraria.Graphics.Capture;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
@@ -966,145 +963,7 @@ public sealed class FancyLightingMod : Mod
         OverrideLightColor = false;
         try
         {
-            // This code is adapted from vanilla
-
-            if (Main.shimmerAlpha == 1f)
-            {
-                return;
-            }
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var offscreenRange = Main.drawToScreen
-                ? Vector2.Zero
-                : new Vector2(Main.offScreenRange, Main.offScreenRange);
-            var backgroundBrightness =
-                (Main.tileColor.R + Main.tileColor.G + Main.tileColor.B) / 3;
-            var blackThreshold = backgroundBrightness * (0.4f / 255f);
-            var screenOverdrawOffset = Main.GetScreenOverdrawOffset();
-            var tileOverdraw = new Point(
-                (-Main.offScreenRange / 16) + screenOverdrawOffset.X,
-                (-Main.offScreenRange / 16) + screenOverdrawOffset.Y
-            );
-            var xmin =
-                (int)(((Main.screenPosition.X - offscreenRange.X) / 16f) - 1f)
-                + tileOverdraw.X;
-            var xmax =
-                (int)((Main.screenPosition.X + Main.screenWidth + offscreenRange.X) / 16f)
-                + 2
-                - tileOverdraw.X;
-            var ymin =
-                (int)(((Main.screenPosition.Y - offscreenRange.Y) / 16f) - 1f)
-                + tileOverdraw.Y;
-            var ymax =
-                (int)(
-                    (Main.screenPosition.Y + Main.screenHeight + offscreenRange.Y) / 16f
-                )
-                + 5
-                - tileOverdraw.Y;
-
-            if (xmin < 0)
-            {
-                xmin = tileOverdraw.X;
-            }
-            if (xmax > Main.maxTilesX)
-            {
-                xmax = Main.maxTilesX - tileOverdraw.X;
-            }
-            if (ymin < 0)
-            {
-                ymin = tileOverdraw.Y;
-            }
-            if (ymax > Main.maxTilesY)
-            {
-                ymax = Main.maxTilesY - tileOverdraw.Y;
-            }
-
-            if (!force)
-            {
-                if (ymin < Main.maxTilesY / 2)
-                {
-                    ymax = Math.Min(ymax, (int)Main.worldSurface + 1);
-                    ymin = Math.Min(ymin, (int)Main.worldSurface + 1);
-                }
-                else
-                {
-                    ymax = Math.Max(ymax, Main.UnderworldLayer);
-                    ymin = Math.Max(ymin, Main.UnderworldLayer);
-                }
-            }
-
-            var showInvisible = Main.ShouldShowInvisibleWalls();
-
-            for (var y = ymin; y < ymax; ++y)
-            {
-                var inUnderworld = y >= Main.UnderworldLayer;
-                if (inUnderworld)
-                {
-                    blackThreshold = 0.2f;
-                }
-
-                for (var x = xmin; x < xmax; ++x)
-                {
-                    var startX = x;
-                    for (; x < xmax; ++x)
-                    {
-                        if (!WorldGen.InWorld(x, y))
-                        {
-                            return;
-                        }
-
-                        var tile = Main.tile[x, y];
-                        var brightness = Lighting.Brightness(x, y);
-                        var liquidLevel = tile.LiquidAmount;
-
-                        var isDark =
-                            brightness <= blackThreshold
-                            && (
-                                (!inUnderworld && liquidLevel <= 128) // liquid level above 128 uses water/honey LightMaskMode
-                                || WorldGen.SolidTile(tile)
-                                || (liquidLevel > 128 && brightness < 1f / 255f)
-                            );
-
-                        var canTileBeBlack =
-                            tile.HasTile
-                            && Main.tileBlockLight[tile.TileType]
-                            && (showInvisible || !tile.IsTileInvisible);
-                        var canWallBeBlack =
-                            !WallID.Sets.Transparent[tile.WallType]
-                            && (showInvisible || !tile.IsWallInvisible);
-
-                        if (
-                            !isDark
-                            || (!canWallBeBlack && !canTileBeBlack)
-                            || (
-                                !Main.drawToScreen
-                                && LiquidRenderer.Instance.HasFullWater(x, y)
-                                && tile is { WallType: 0, IsHalfBlock: false }
-                                && y > Main.worldSurface
-                            )
-                        )
-                        {
-                            break;
-                        }
-                    }
-
-                    if (x - startX > 0)
-                    {
-                        Main.spriteBatch.Draw(
-                            TextureAssets.BlackTile.Value,
-                            new Vector2(startX << 4, y << 4)
-                                - Main.screenPosition
-                                + offscreenRange,
-                            new Rectangle(0, 0, (x - startX) << 4, 16),
-                            Color.Black
-                        );
-                    }
-                }
-            }
-
-            TimeLogger.DrawTime(5, stopwatch.Elapsed.TotalMilliseconds);
+            orig(self, force);
         }
         finally
         {

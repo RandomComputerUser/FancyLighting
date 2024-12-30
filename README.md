@@ -12,3 +12,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 **v0.9.7 (2024-12-??)**
 - Made some optimizations (TODO: update this change note)
 - Reduced the temporary visual disruption that occurs when changing some settings
+- Reverted the change made in v0.9.0 to the rendering of black areas, which sometimes caused flickering
