@@ -27,27 +27,27 @@ float4 BlurUpsample(float2 coords : TEXCOORD0) : COLOR0
     return (1.0 / 12) * sum;
 }
 
-float4 BlurDownsampleRed(float2 coords : TEXCOORD0) : COLOR0
+float4 BlurDownsampleAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
-    float sum = tex2D(TextureSampler, coords).r * 4.0;
-    sum += tex2D(TextureSampler, coords - PixelSize).r;
-    sum += tex2D(TextureSampler, coords + PixelSize).r;
-    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).r;
-    sum += tex2D(TextureSampler, coords - float2(PixelSize.x, -PixelSize.y)).r;
-    return float4((1.0 / 8) * sum, 0, 0, 0);
+    float sum = tex2D(TextureSampler, coords).a * 4.0;
+    sum += tex2D(TextureSampler, coords - PixelSize).a;
+    sum += tex2D(TextureSampler, coords + PixelSize).a;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).a;
+    sum += tex2D(TextureSampler, coords - float2(PixelSize.x, -PixelSize.y)).a;
+    return float4(0, 0, 0, (1.0 / 8) * sum);
 }
 
-float4 BlurUpsampleRed(float2 coords : TEXCOORD0) : COLOR0
+float4 BlurUpsampleAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
-    float sum = tex2D(TextureSampler, coords + float2(-PixelSize.x * 2.0, 0.0)).r;
-    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, PixelSize.y)).r * 2.0;
-    sum += tex2D(TextureSampler, coords + float2(0.0, PixelSize.y * 2.0)).r;
-    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, PixelSize.y)).r * 2.0;
-    sum += tex2D(TextureSampler, coords + float2(PixelSize.x * 2.0, 0.0)).r;
-    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).r * 2.0;
-    sum += tex2D(TextureSampler, coords + float2(0.0, -PixelSize.y * 2.0)).r;
-    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, -PixelSize.y)).r * 2.0;
-    return float4((1.0 / 12) * sum, 0, 0, 0);
+    float sum = tex2D(TextureSampler, coords + float2(-PixelSize.x * 2.0, 0.0)).a;
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, PixelSize.y)).a * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, PixelSize.y * 2.0)).a;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, PixelSize.y)).a * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x * 2.0, 0.0)).a;
+    sum += tex2D(TextureSampler, coords + float2(PixelSize.x, -PixelSize.y)).a * 2.0;
+    sum += tex2D(TextureSampler, coords + float2(0.0, -PixelSize.y * 2.0)).a;
+    sum += tex2D(TextureSampler, coords + float2(-PixelSize.x, -PixelSize.y)).a * 2.0;
+    return float4(0, 0, 0, (1.0 / 12) * sum);
 }
 
 technique Technique1
@@ -62,13 +62,13 @@ technique Technique1
         PixelShader = compile ps_3_0 BlurUpsample();
     }
     
-    pass BlurDownsampleRed
+    pass BlurDownsampleAlpha
     {
-        PixelShader = compile ps_3_0 BlurDownsampleRed();
+        PixelShader = compile ps_3_0 BlurDownsampleAlpha();
     }
 
-    pass BlurUpsampleRed
+    pass BlurUpsampleAlpha
     {
-        PixelShader = compile ps_3_0 BlurUpsampleRed();
+        PixelShader = compile ps_3_0 BlurUpsampleAlpha();
     }
 }

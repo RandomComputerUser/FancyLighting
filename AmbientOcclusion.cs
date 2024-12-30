@@ -10,8 +10,7 @@ namespace FancyLighting;
 
 internal sealed class AmbientOcclusion
 {
-    private RenderTarget2D _blurTarget1;
-    private RenderTarget2D _blurTarget2;
+    private RenderTarget2D _blurTarget;
 
     private RenderTarget2D _drawTarget;
 
@@ -24,11 +23,11 @@ internal sealed class AmbientOcclusion
 
     private Shader _extractInverseAlphaShader;
     private Shader _extractInverseMultipliedAlphaShader;
-    private Shader _blurShader;
-    private Shader _bilinearBlurShader;
-    private Shader _finalBlurShader;
+    private Shader _toneMappingShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
+
+    private readonly BlurRenderer _blurRenderer = new(true, false);
 
     public AmbientOcclusion()
     {
@@ -40,17 +39,9 @@ internal sealed class AmbientOcclusion
             "FancyLighting/Effects/AmbientOcclusion",
             "ExtractInverseMultipliedAlpha"
         );
-        _blurShader = EffectLoader.LoadEffect(
+        _toneMappingShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
-            "Blur"
-        );
-        _bilinearBlurShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "BilinearBlur"
-        );
-        _finalBlurShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "FinalBlur"
+            "ToneMapping"
         );
         _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
@@ -66,18 +57,17 @@ internal sealed class AmbientOcclusion
 
     public void Unload()
     {
-        _blurTarget1?.Dispose();
-        _blurTarget2?.Dispose();
+        _blurTarget?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _tileEntityTarget?.Dispose();
         EffectLoader.UnloadEffect(ref _extractInverseAlphaShader);
         EffectLoader.UnloadEffect(ref _extractInverseMultipliedAlphaShader);
-        EffectLoader.UnloadEffect(ref _blurShader);
-        EffectLoader.UnloadEffect(ref _bilinearBlurShader);
-        EffectLoader.UnloadEffect(ref _finalBlurShader);
+        EffectLoader.UnloadEffect(ref _toneMappingShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
+
+        _blurRenderer.Unload();
     }
 
     internal RenderTarget2D ApplyAmbientOcclusion(bool doDraw = true)
@@ -88,13 +78,7 @@ internal sealed class AmbientOcclusion
         }
 
         TextureUtils.MakeSize(
-            ref _blurTarget1,
-            Main.instance.tileTarget.Width,
-            Main.instance.tileTarget.Height,
-            SurfaceFormat.Alpha8
-        );
-        TextureUtils.MakeSize(
-            ref _blurTarget2,
+            ref _blurTarget,
             Main.instance.tileTarget.Width,
             Main.instance.tileTarget.Height,
             SurfaceFormat.Alpha8
@@ -115,8 +99,7 @@ internal sealed class AmbientOcclusion
             Main.instance.tile2Target,
             Main.sceneTilePos - (Main.screenPosition - new Vector2(Main.offScreenRange)),
             Main.sceneTile2Pos - (Main.screenPosition - new Vector2(Main.offScreenRange)),
-            _blurTarget1,
-            _blurTarget2,
+            _blurTarget,
             doDraw,
             _drawTarget
         );
@@ -150,15 +133,9 @@ internal sealed class AmbientOcclusion
     )
     {
         TextureUtils.MakeSize(
-            ref _blurTarget1,
+            ref _blurTarget,
             screenTarget.Width,
             screenTarget.Height,
-            SurfaceFormat.Alpha8
-        );
-        TextureUtils.MakeSize(
-            ref _blurTarget2,
-            Main.instance.tileTarget.Width,
-            Main.instance.tileTarget.Height,
             SurfaceFormat.Alpha8
         );
         TextureUtils.MakeSize(
@@ -235,8 +212,7 @@ internal sealed class AmbientOcclusion
             _cameraModeTarget2,
             Vector2.Zero,
             Vector2.Zero,
-            _blurTarget1,
-            _blurTarget2,
+            _blurTarget,
             doDraw,
             _cameraModeTarget2
         );
@@ -324,57 +300,17 @@ internal sealed class AmbientOcclusion
         RenderTarget2D tile2Target,
         Vector2 tileTargetPosition,
         Vector2 tile2TargetPosition,
-        RenderTarget2D target1,
-        RenderTarget2D target2,
+        RenderTarget2D target,
         bool doDraw,
         RenderTarget2D drawTarget
     )
     {
-        void ApplyBlurPass(
-            ref bool useTarget2,
-            int dx,
-            int dy,
-            Shader shader,
-            float blurPower = 0f,
-            float blurMult = 0f
-        )
-        {
-            var destination = useTarget2 ? target2 : target1;
-            var source = useTarget2 ? target1 : target2;
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(destination);
-
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                shader == _blurShader
-                    ? SamplerState.PointClamp
-                    : SamplerState.LinearClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-
-            shader
-                .SetParameter(
-                    "BlurSize",
-                    new Vector2((float)dx / source.Width, (float)dy / source.Height)
-                )
-                .SetParameter("BlurPower", blurPower)
-                .SetParameter("BlurMult", blurMult)
-                .Apply();
-
-            Main.spriteBatch.Draw(source, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            useTarget2 = !useTarget2;
-        }
-
         var drawNonSolidTiles = LightingConfig.Instance.DoNonSolidAmbientOcclusion;
         var drawTileEntities = LightingConfig.Instance.DoTileEntityAmbientOcclusion;
 
         if (!(drawNonSolidTiles || drawTileEntities))
         {
-            Main.graphics.GraphicsDevice.SetRenderTarget(target1);
+            Main.graphics.GraphicsDevice.SetRenderTarget(target);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
 
             Main.spriteBatch.Begin(
@@ -420,7 +356,7 @@ internal sealed class AmbientOcclusion
                 }
             }
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(target1);
+            Main.graphics.GraphicsDevice.SetRenderTarget(target);
             Main.graphics.GraphicsDevice.Clear(Color.White);
 
             Main.spriteBatch.Begin(
@@ -471,23 +407,36 @@ internal sealed class AmbientOcclusion
         }
 
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
-        var firstShaderBlurStep = radius switch
-        {
-            1 => 2,
-            2 => 3,
-            3 => 4,
-            4 => 5,
-            5 => 6,
-            _ => 2,
-        };
+        var passCount = Math.Clamp(radius, 1, 4);
+        var blurTarget = _blurRenderer.RenderBlur(target, null, passCount);
 
-        var useTarget2 = true;
-        ApplyBlurPass(ref useTarget2, firstShaderBlurStep, 0, _blurShader);
-        ApplyBlurPass(ref useTarget2, 0, firstShaderBlurStep, _blurShader);
-        ApplyBlurPass(ref useTarget2, 1, 0, _bilinearBlurShader);
-        ApplyBlurPass(ref useTarget2, 0, 1, _finalBlurShader, power, mult);
-
-        var target = useTarget2 ? target1 : target2;
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.LinearClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _toneMappingShader
+            .SetParameter("BlurPower", power)
+            .SetParameter("BlurMult", mult)
+            .Apply();
+        Main.spriteBatch.Draw(
+            blurTarget,
+            Vector2.Zero,
+            null,
+            Color.White,
+            0f,
+            Vector2.Zero,
+            new Vector2(
+                (float)target.Width / blurTarget.Width,
+                (float)target.Height / blurTarget.Height
+            ),
+            SpriteEffects.None,
+            0f
+        );
+        Main.spriteBatch.End();
 
         if (!doDraw)
         {

@@ -5,10 +5,12 @@ using Terraria;
 
 namespace FancyLighting;
 
-internal class BlurRenderer
+internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
 {
     private static Shader _blurDownsampleShader;
     private static Shader _blurUpsampleShader;
+    private static Shader _blurDownsampleAlphaShader;
+    private static Shader _blurUpsampleAlphaShader;
 
     private static readonly BlendState _trueAdditiveBlend =
         new()
@@ -33,19 +35,32 @@ internal class BlurRenderer
             "FancyLighting/Effects/Blur",
             "BlurUpsample"
         );
+        _blurDownsampleAlphaShader ??= EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Blur",
+            "BlurDownsampleAlpha"
+        );
+        _blurUpsampleAlphaShader ??= EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Blur",
+            "BlurUpsampleAlpha"
+        );
     }
 
     public void Unload()
     {
         EffectLoader.UnloadEffect(ref _blurDownsampleShader);
         EffectLoader.UnloadEffect(ref _blurUpsampleShader);
+        EffectLoader.UnloadEffect(ref _blurDownsampleAlphaShader);
+        EffectLoader.UnloadEffect(ref _blurUpsampleAlphaShader);
         DisposeBlurTargets();
     }
 
-    private void EnsureBlurTargets(int width, int height, int targetCount)
+    private void EnsureBlurTargets(
+        int width,
+        int height,
+        int targetCount,
+        SurfaceFormat format
+    )
     {
-        var format = TextureUtils.ScreenFormat;
-
         if (
             _blurTargets is not null
             && _blurTargets.Length >= targetCount
@@ -75,7 +90,9 @@ internal class BlurRenderer
                 format,
                 DepthFormat.None,
                 0,
-                RenderTargetUsage.PreserveContents
+                useAdditiveBlend
+                    ? RenderTargetUsage.PreserveContents
+                    : RenderTargetUsage.PlatformContents
             );
         }
     }
@@ -98,15 +115,23 @@ internal class BlurRenderer
     public RenderTarget2D RenderBlur(
         RenderTarget2D src,
         RenderTarget2D dst,
-        int passCount,
-        bool useAdditiveBlend = false
+        int passCount
     )
     {
+        EnsureBlurTargets(
+            src.Width,
+            src.Height,
+            passCount,
+            alphaOnly ? SurfaceFormat.Alpha8 : TextureUtils.ScreenFormat
+        );
+        InitShaders();
+
         var upsampleBlend = useAdditiveBlend ? _trueAdditiveBlend : BlendState.Opaque;
         var skipFinalUpsample = dst is null;
-
-        EnsureBlurTargets(src.Width, src.Height, passCount);
-        InitShaders();
+        var downsampleShader = alphaOnly
+            ? _blurDownsampleAlphaShader
+            : _blurDownsampleShader;
+        var upsampleShader = alphaOnly ? _blurUpsampleAlphaShader : _blurUpsampleShader;
 
         for (var i = 0; i < passCount; ++i)
         {
@@ -121,7 +146,7 @@ internal class BlurRenderer
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _blurDownsampleShader
+            downsampleShader
                 .SetParameter(
                     "PixelSize",
                     new Vector2(1f / currBlurTarget.Width, 1f / currBlurTarget.Height)
@@ -158,7 +183,7 @@ internal class BlurRenderer
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _blurUpsampleShader
+            upsampleShader
                 .SetParameter(
                     "PixelSize",
                     new Vector2(1f / nextBlurTarget.Width, 1f / nextBlurTarget.Height)

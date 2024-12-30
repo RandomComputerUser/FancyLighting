@@ -33,7 +33,7 @@ internal sealed class PostProcessing
     private Shader _toneMapShader;
     private Shader _bloomCompositeShader;
 
-    private readonly BlurRenderer _blurRenderer = new();
+    private readonly BlurRenderer _blurRenderer = new(false, true);
 
     public PostProcessing()
     {
@@ -206,12 +206,7 @@ internal sealed class PostProcessing
                     1f
                 );
 
-                var bloomTarget = _blurRenderer.RenderBlur(
-                    currTarget,
-                    null,
-                    passCount,
-                    true
-                );
+                var bloomTarget = _blurRenderer.RenderBlur(currTarget, null, passCount);
 
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.spriteBatch.Begin(
