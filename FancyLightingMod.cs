@@ -295,6 +295,11 @@ public sealed class FancyLightingMod : Mod
         SkyColors.AddSkyColorsHooks();
 
         LightsCompatibility.Load();
+
+        Main.QueueMainThreadAction(() =>
+        {
+            ColorUtils.Load();
+        });
     }
 
     public override void Unload()

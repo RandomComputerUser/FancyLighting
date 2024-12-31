@@ -1,14 +1,53 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using Terraria;
 
 namespace FancyLighting.Utils;
 
 internal static class ColorUtils
 {
+    private static bool _swapRedAndBlueRgba1010102 = false;
+
     internal static float _gamma;
     internal static float _reciprocalGamma;
+
+    internal static void Load()
+    {
+        var textureRgba1010102 = new Texture2D(
+            Main.graphics.GraphicsDevice,
+            1,
+            1,
+            false,
+            SurfaceFormat.Rgba1010102
+        );
+        var targetColor = new RenderTarget2D(
+            Main.graphics.GraphicsDevice,
+            1,
+            1,
+            false,
+            SurfaceFormat.Color,
+            DepthFormat.None
+        );
+
+        textureRgba1010102.SetData([new Rgba1010102(1f, 0f, 0f, 0f)]);
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(targetColor);
+        Main.spriteBatch.Begin();
+        Main.spriteBatch.Draw(textureRgba1010102, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+        Main.graphics.GraphicsDevice.SetRenderTarget(null);
+
+        var colors = new Color[1];
+        targetColor.GetData(colors);
+        // I have found this to occur on Vulkan
+        _swapRedAndBlueRgba1010102 = colors[0].B >= 128;
+
+        textureRgba1010102.Dispose();
+        targetColor.Dispose();
+    }
 
     // Provide better conversions from Vector3 to Color than XNA
     // XNA uses (byte)(x * 255f) for each component
@@ -29,7 +68,10 @@ internal static class ColorUtils
         var green = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
         var blue = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
         const uint Alpha = 0b11;
-        color.PackedValue = red | (green << 10) | (blue << 20) | (Alpha << 30);
+
+        color.PackedValue = _swapRedAndBlueRgba1010102
+            ? blue | (green << 10) | (red << 20) | (Alpha << 30)
+            : red | (green << 10) | (blue << 20) | (Alpha << 30);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
