@@ -10,7 +10,8 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.7 (2024-12-??)**
-- Made some optimizations (TODO: update this change note)
-- Reworked and slightly optimized ambient occlusion
+- Optimized smooth lighting
+- The maximum brightness of light in the basic HDR render mode is no longer limited
+- Reworked and optimized ambient occlusion
 - Reduced the temporary visual disruption that occurs when changing some settings
 - Reverted the change made in v0.9.0 to the rendering of black areas, which sometimes caused flickering

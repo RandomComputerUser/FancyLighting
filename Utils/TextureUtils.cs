@@ -1,5 +1,4 @@
-﻿using System;
-using FancyLighting.Config;
+﻿using FancyLighting.Config;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 
@@ -13,7 +12,7 @@ internal static class TextureUtils
             : SurfaceFormat.Color;
 
     public static SurfaceFormat LightMapFormat =>
-        LightingConfig.Instance.HiDefFeaturesEnabled()
+        LightingConfig.Instance.DrawOverbright()
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Color;
 
@@ -50,36 +49,7 @@ internal static class TextureUtils
         }
     }
 
-    public static void MakeAtLeastSize(
-        ref RenderTarget2D target,
-        int width,
-        int height,
-        SurfaceFormat format
-    )
-    {
-        if (
-            target is null
-            || target.GraphicsDevice != Main.graphics.GraphicsDevice
-            || target.Width < width
-            || target.Height < height
-            || target.Format != format
-        )
-        {
-            target?.Dispose();
-            width = Math.Max(width, target?.Width ?? 0);
-            height = Math.Max(height, target?.Height ?? 0);
-            target = new RenderTarget2D(
-                Main.graphics.GraphicsDevice,
-                width,
-                height,
-                false,
-                format,
-                DepthFormat.None
-            );
-        }
-    }
-
-    public static void MakeAtLeastSize(
+    public static void MakeSize(
         ref Texture2D texture,
         int width,
         int height,
@@ -89,14 +59,11 @@ internal static class TextureUtils
         if (
             texture is null
             || texture.GraphicsDevice != Main.graphics.GraphicsDevice
-            || texture.Width < width
-            || texture.Height < height
+            || texture.Width != width
+            || texture.Height != height
             || texture.Format != format
         )
         {
-            width = Math.Max(width, texture?.Width ?? 0);
-            height = Math.Max(height, texture?.Height ?? 0);
-
             texture?.Dispose();
             texture = new Texture2D(
                 Main.graphics.GraphicsDevice,

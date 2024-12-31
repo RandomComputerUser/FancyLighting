@@ -269,7 +269,7 @@ internal sealed class PostProcessing
                         (float)-currTarget.Width / _ditherNoise.Width,
                         (float)-currTarget.Height / _ditherNoise.Height
                     )
-                ) // Multiply by -1 so that it's different from the dithering in bicubic filtering
+                ) // Multiply by -1 so that it's different from the dithering in smooth lighting
                 .SetParameter("GammaRatio", gamma)
                 .Apply();
 

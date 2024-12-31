@@ -20,8 +20,8 @@ float3 LinearToSrgb(float3 color)
 float3 DitherNoise(float2 coords)
 {
     return (
-        tex2D(DitherSampler, coords * DitherCoordMult).rgb - 128 / 255.0
-    ) * (0.5 / 128);
+        (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r - 0.5 / 255
+    ).xxx;
 }
 
 // Input color should be in gamma 2.2

@@ -49,35 +49,17 @@ float3 BicubicColor(float2 coords)
     return lerp(lerp(sample3, sample2, sx), lerp(sample1, sample0, sx), sy);
 }
 
-float4 BicubicDither(float2 coords : TEXCOORD0) : COLOR0
+float4 BicubicFiltering(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 color = BicubicColor(coords);
-
-    // Dithering
-    color += (tex2D(DitherSampler, coords * DitherCoordMult).rgb - 128 / 255.0) * (0.5 / 128);
-
-    return float4(color, 1);
-}
-
-float4 BicubicNoDitherHiDef(float2 coords : TEXCOORD0) : COLOR0
-{
-    float3 color = BicubicColor(coords);
-
-    // No dithering
-    // Dithering is done in the post processing HiDef shaders
-
+    
     return float4(max(color, 0), 1);
 }
 
 technique Technique1
 {
-    pass BicubicDither
+    pass BicubicFiltering
     {
-        PixelShader = compile ps_3_0 BicubicDither();
-    }
-
-    pass BicubicNoDitherHiDef
-    {
-        PixelShader = compile ps_3_0 BicubicNoDitherHiDef();
+        PixelShader = compile ps_3_0 BicubicFiltering();
     }
 }

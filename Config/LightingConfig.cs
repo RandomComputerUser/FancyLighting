@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using FancyLighting.Config.Enums;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Terraria;
 using Terraria.ModLoader;
@@ -42,9 +41,7 @@ public sealed class LightingConfig : ModConfig
         DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
     internal bool HiDefFeaturesEnabled() =>
-        SmoothLightingEnabled()
-        && Main.graphics.GraphicsProfile is GraphicsProfile.HiDef
-        && LightMapRenderMode is RenderMode.EnhancedHdr;
+        SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
 
     internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
 

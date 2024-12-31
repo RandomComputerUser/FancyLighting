@@ -3,19 +3,19 @@ sampler TextureSampler : register(s0);
 sampler LightSampler : register(s0);
 sampler WorldSampler : register(s4);
 sampler AmbientOcclusionSampler : register(s5);
+sampler DitherSampler : register(s6);
 
 sampler GlowSampler : register(s4);
 sampler LightedGlowSampler : register(s5);
 
 float ReciprocalGamma;
 
-float OverbrightMult;
 float2 NormalMapResolution;
-float2 NormalMapRadius;
+float2 NormalMapGradientMult;
 float NormalMapStrength;
 float2 WorldCoordMult;
+float2 WorldCoordOffset;
 float2 DitherCoordMult;
-float2 AmbientOcclusionCoordMult;
 float BrightnessMult;
 float2 GlowCoordMult;
 float2 LightedGlowCoordMult;
@@ -40,7 +40,7 @@ float Luma(float3 color)
 float3 OverbrightLightAt(float2 coords)
 {
     float3 color = tex2D(LightSampler, coords).rgb;
-    return (255.0 / 128) * color;
+    return color;
 }
 
 float3 OverbrightLightAtHiDef(float2 coords)
@@ -49,12 +49,31 @@ float3 OverbrightLightAtHiDef(float2 coords)
     return color;
 }
 
+float2 WorldCoords(float2 lightMapCoords)
+{
+    return WorldCoordMult * lightMapCoords.yx + WorldCoordOffset;
+}
+
 float AmbientOcclusion(float2 coords, float alpha)
 {
     alpha = saturate(alpha);
     return lerp(
-        1, tex2D(AmbientOcclusionSampler, coords * AmbientOcclusionCoordMult).a, alpha
+        1, tex2D(AmbientOcclusionSampler, WorldCoords(coords)).a, alpha
     );
+}
+
+// Not technically correct because it ignores gamma, but cheap and decent quality
+float4 Dithered(float4 color, float2 coords)
+{
+    float noise
+        = (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r
+        - 0.5 / 255;
+    
+    color.r += noise;
+    color.g += noise;
+    color.b += noise;
+    
+    return color;
 }
 
 float4 GradientAndMult(
@@ -112,13 +131,9 @@ float4 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
 
 float2 NormalsLightGradient(float2 coords)
 {
-    float3 left = tex2D(LightSampler, coords - float2(NormalMapRadius.x, 0)).rgb;
-    float3 right = tex2D(LightSampler, coords + float2(NormalMapRadius.x, 0)).rgb;
-    float3 up = tex2D(LightSampler, coords - float2(0, NormalMapRadius.y)).rgb;
-    float3 down = tex2D(LightSampler, coords + float2(0, NormalMapRadius.y)).rgb;
-    float horizontalDiff = Luma(right) - Luma(left);
-    float verticalDiff = Luma(down) - Luma(up);
-    return OverbrightMult * float2(horizontalDiff, verticalDiff);
+    float3 light = tex2D(LightSampler, coords).rgb;
+    float luma = Luma(light);
+    return NormalMapGradientMult * float2(ddx(luma), ddy(luma));
 }
 
 float NormalsMultiplier(float2 coords, float2 worldTexCoords)
@@ -171,30 +186,33 @@ float4 NormalsColorOverbrightHiDef(float2 coords, float2 worldTexCoords)
 
 float4 Normals(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     
     return float4(NormalsColor(coords, worldTexCoords), 1);
 }
 
 float4 NormalsHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     
     return float4(NormalsColor(coords, worldTexCoords), 1);
 }
 
 float4 NormalsOverbright(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbright(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
-    return float4(min(lightColor.rgb, 1) * lightColor.a, 1) * texColor;
+    return Dithered(
+        float4(min(lightColor.rgb, 1) * lightColor.a, 1) * texColor,
+        coords
+    );
 }
 
 float4 NormalsOverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbrightHiDef(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
@@ -203,18 +221,22 @@ float4 NormalsOverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbright(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
-    return float4(
-        min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusion(coords, texColor.a), 1
-    ) * texColor;
+    return Dithered(
+        float4(
+            min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusion(coords, texColor.a),
+            1
+        ) * texColor,
+        coords
+    );
 }
 
 float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbrightHiDef(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
@@ -227,16 +249,19 @@ float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR
 
 float4 NormalsOverbrightLightOnly(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbright(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
-    return float4(min(lightColor.rgb, 1) * lightColor.a, 1) * texColor.a;
+    return Dithered(
+        float4(min(lightColor.rgb, 1) * lightColor.a, 1) * texColor.a,
+        coords
+    );
 }
 
 float4 NormalsOverbrightLightOnlyHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbrightHiDef(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
@@ -245,15 +270,18 @@ float4 NormalsOverbrightLightOnlyHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightLightOnlyOpaque(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbright(coords, worldTexCoords);
 
-    return float4(min(lightColor.rgb, 1) * lightColor.a, 1);
+    return Dithered(
+        float4(min(lightColor.rgb, 1) * lightColor.a, 1),
+        coords
+    );
 }
 
 float4 NormalsOverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbrightHiDef(coords, worldTexCoords);
 
     return float4(min(lightColor.rgb, 1) * lightColor.a, 1);
@@ -261,18 +289,22 @@ float4 NormalsOverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
 
 float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbright(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
     
-    return float4(
-        min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusion(coords, texColor.a), 1
+    return Dithered(
+        float4(
+            min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusion(coords, texColor.a),
+            1
+        ),
+        coords
     );
 }
 
 float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
-    float2 worldTexCoords = WorldCoordMult * coords;
+    float2 worldTexCoords = WorldCoords(coords);
     float4 lightColor = NormalsColorOverbrightHiDef(coords, worldTexCoords);
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
@@ -286,15 +318,18 @@ float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEX
 float4 Overbright(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
-    return float4(min(lightColor, 1), 1) * texColor;
+    return Dithered(
+        float4(min(lightColor, 1), 1) * texColor,
+        coords
+    );
 }
 
 float4 OverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAtHiDef(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
     
     return float4(min(lightColor, 1), 1) * texColor;
 }
@@ -302,15 +337,18 @@ float4 OverbrightHiDef(float2 coords : TEXCOORD0) : COLOR0
 float4 OverbrightAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
-    return float4(min(lightColor, 1) * AmbientOcclusion(coords, texColor.a), 1) * texColor;
+    return Dithered(
+        float4(min(lightColor, 1) * AmbientOcclusion(coords, texColor.a), 1) * texColor,
+        coords
+    );
 }
 
 float4 OverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAtHiDef(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(
         min(lightColor, 1)
@@ -322,15 +360,18 @@ float4 OverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 float4 OverbrightLightOnly(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
-    return float4(min(lightColor, 1), 1) * texColor.a;
+    return Dithered(
+        float4(min(lightColor, 1), 1) * texColor.a,
+        coords
+    );
 }
 
 float4 OverbrightLightOnlyHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAtHiDef(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(min(lightColor, 1), 1) * texColor.a;
 }
@@ -339,7 +380,10 @@ float4 OverbrightLightOnlyOpaque(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
 
-    return float4(min(lightColor, 1), 1);
+    return Dithered(
+        float4(min(lightColor, 1), 1),
+        coords
+    );
 }
 
 float4 OverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
@@ -352,15 +396,18 @@ float4 OverbrightLightOnlyOpaqueHiDef(float2 coords : TEXCOORD0) : COLOR0
 float4 OverbrightLightOnlyOpaqueAmbientOcclusion(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
-    return float4(min(lightColor, 1) * AmbientOcclusion(coords, texColor.a), 1);
+    return Dithered(
+        float4(min(lightColor, 1) * AmbientOcclusion(coords, texColor.a), 1),
+        coords
+    );
 }
 
 float4 OverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAtHiDef(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(
         min(lightColor, 1)
@@ -372,15 +419,18 @@ float4 OverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEXCOORD0)
 float4 OverbrightMax(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAt(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
-    return float4(max(lightColor, 1), 1) * texColor;
+    return Dithered(
+        float4(max(lightColor, 1), 1) * texColor,
+        coords
+    );
 }
 
 float4 OverbrightMaxHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 lightColor = OverbrightLightAtHiDef(coords);
-    float4 texColor = tex2D(WorldSampler, WorldCoordMult * coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(max(lightColor, 1), 1) * texColor;
 }

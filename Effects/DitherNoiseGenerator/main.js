@@ -9,8 +9,8 @@ function main() {
     const canvas = document.querySelector("#output")
     const ctx = canvas.getContext("2d")
 
-    canvas.width = 64
-    canvas.height = 64
+    canvas.width = 32
+    canvas.height = 32
 
     const tileSize = 4
     const numSteps = tileSize * tileSize
@@ -50,6 +50,18 @@ function main() {
                     ctx.fillRect(x + x1, y + y1, 1, 1)
                 }
             }
+        }
+    }
+    
+    const tiled = document.querySelector("#output-tiled")
+    const tiledCtx = tiled.getContext("2d")
+    
+    tiled.width = 8 * canvas.width
+    tiled.height = 8 * canvas.height
+    
+    for (let y = 0; y < tiled.height; y += canvas.height) {
+        for (let x = 0; x < tiled.width; x += canvas.width) {
+            tiledCtx.drawImage(canvas, x, y)
         }
     }
 }

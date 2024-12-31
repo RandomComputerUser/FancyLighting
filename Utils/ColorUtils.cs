@@ -23,6 +23,16 @@ internal static class ColorUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Assign(ref Rgba1010102 color, float brightness, Vector3 rgb)
+    {
+        var red = (uint)((1023f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
+        var green = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
+        var blue = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
+        const uint Alpha = 0b11;
+        color.PackedValue = red | (green << 10) | (blue << 20) | (Alpha << 30);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assign(ref HalfVector4 color, Vector3 rgb)
     {
         color = new HalfVector4(rgb.X, rgb.Y, rgb.Z, 1f);
