@@ -38,7 +38,9 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr;
 
     internal bool OverbrightOverrideBackground() =>
-        DrawOverbright() && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
+        SmoothLightingEnabled()
+        && DrawOverbright()
+        && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
     internal bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
