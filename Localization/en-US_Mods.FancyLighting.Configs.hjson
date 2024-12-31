@@ -64,7 +64,7 @@ PreferencesConfig: {
 	}
 
 	Exposure: {
-		Label: Enhanced HDR: Exposure (%)
+		Label: Exposure (Enhanced HDR) (%)
 		Tooltip:
 			'''
 			Controls the exposure of the scene
@@ -254,7 +254,7 @@ LightingConfig: {
 	}
 
 	HdrBloom: {
-		Label: Enhanced HDR: Bloom
+		Label: Bloom (Enhanced HDR)
 		Tooltip: Toggles whether to render bloom when using the enhanced HDR render mode
 	}
 
