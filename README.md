@@ -13,5 +13,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Optimized smooth lighting
 - The maximum brightness of light in the basic HDR render mode is no longer limited
 - Reworked and optimized ambient occlusion
+- Adjusted how normal maps are simulated on translucent surfaces
+- Fixed a bug that caused normal maps to be simulated on liquids adjacent to sloped blocks
 - Reduced the temporary visual disruption that occurs when changing some settings
 - Reverted the change made in v0.9.0 to the rendering of black areas, which sometimes caused flickering

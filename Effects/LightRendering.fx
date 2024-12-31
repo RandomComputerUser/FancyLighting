@@ -76,33 +76,28 @@ float4 Dithered(float4 color, float2 coords)
     return color;
 }
 
-float4 GradientAndMult(
+float2 Gradient(
     float horizontalColorDiff,
-    float verticalColorDiff,
-    float leftAlpha,
-    float rightAlpha,
-    float upAlpha,
-    float downAlpha
+    float verticalColorDiff
 )
 {
     float2 gradient = float2(horizontalColorDiff, verticalColorDiff);
     gradient *= 0.5;
-    float2 mult = float2(leftAlpha * rightAlpha, upAlpha * downAlpha);
-    return float4(gradient, mult);
+    return gradient;
 }
 
 // Intentionally use gamma values for simulating normal maps
 
-float4 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
+float3 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
 {
-    float4 left = tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0));
-    float4 right = tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0));
-    float4 up = tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y));
-    float4 down = tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y));
-    float leftLuma = Luma(left.rgb);
-    float rightLuma = Luma(right.rgb);
-    float upLuma = Luma(up.rgb);
-    float downLuma = Luma(down.rgb);
+    float leftLuma
+        = Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0)).rgb);
+    float rightLuma
+        = Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0)).rgb);
+    float upLuma
+        = Luma(tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y)).rgb);
+    float downLuma
+        = Luma(tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y)).rgb);
     float positiveDiagonal
         = Luma(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb) // up left
         - Luma(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb); // down right
@@ -113,19 +108,16 @@ float4 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
     float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
-    float luma = Luma(tex2D(WorldSampler, worldTexCoords).rgb);
+    float4 color = tex2D(WorldSampler, worldTexCoords);
+    float luma = Luma(color.rgb);
     float maxLuma = max(
         luma,
         max(max(leftLuma, rightLuma), max(upLuma, downLuma))
     );
     float mult = 1 - maxLuma;
-    return float4(mult, mult, 1, 1) * GradientAndMult(
-        horizontalColorDiff,
-        verticalColorDiff,
-        left.a,
-        right.a,
-        up.a,
-        down.a
+    return float3(
+        mult * Gradient(horizontalColorDiff, verticalColorDiff),
+        color.a < 1.0 ? 0.0 : 1.0
     );
 }
 
@@ -148,11 +140,11 @@ float NormalsMultiplier(float2 coords, float2 worldTexCoords)
     
     lightGradient /= lightGradientLength;
     
-    float4 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(worldTexCoords);
+    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(worldTexCoords);
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     surfaceGradient = surfaceGradientLength == 0 ? 0 : surfaceGradient / surfaceGradientLength;
-    surfaceGradient *= surfaceGradientAndMult.zw;
+    surfaceGradient *= surfaceGradientAndMult.z;
     
     float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
     return lerp(

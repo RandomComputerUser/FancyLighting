@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.GameContent.Drawing;
+using Terraria.Graphics;
 using Terraria.Graphics.Capture;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
@@ -26,6 +27,7 @@ public sealed class FancyLightingMod : Mod
     private static bool _cameraModeDrawBackground;
     private static bool _disableLightColorOverride;
     private static bool _preventDust;
+    private static bool _makePartialLiquidTranslucent;
 
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
@@ -152,6 +154,7 @@ public sealed class FancyLightingMod : Mod
         _inCameraMode = false;
         _disableLightColorOverride = false;
         _preventDust = false;
+        _makePartialLiquidTranslucent = false;
 
         _smoothLightingInstance = new SmoothLighting(this);
         _ambientOcclusionInstance = new AmbientOcclusion();
@@ -378,6 +381,7 @@ public sealed class FancyLightingMod : Mod
         On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
         On_Main.ShouldDrawBackgroundTileAt += _Main_ShouldDrawBackgroundTileAt;
         On_WorldMap.UpdateLighting += _WorldMap_UpdateLighting;
+        On_TileDrawing.DrawPartialLiquid += _TileDrawing_DrawPartialLiquid;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
         On_Main.DrawSunAndMoon += _Main_DrawSunAndMoon;
@@ -454,6 +458,36 @@ public sealed class FancyLightingMod : Mod
         }
 
         return orig(self, x, y, light);
+    }
+
+    private static void _TileDrawing_DrawPartialLiquid(
+        On_TileDrawing.orig_DrawPartialLiquid orig,
+        TileDrawing self,
+        bool behindBlocks,
+        Tile tileCache,
+        ref Vector2 position,
+        ref Rectangle liquidSize,
+        int liquidType,
+        ref VertexColors colors
+    )
+    {
+        if (_makePartialLiquidTranslucent)
+        {
+            colors.TopLeftColor.A = Math.Min(colors.TopLeftColor.A, (byte)254);
+            colors.TopRightColor.A = Math.Min(colors.TopRightColor.A, (byte)254);
+            colors.BottomLeftColor.A = Math.Min(colors.BottomLeftColor.A, (byte)254);
+            colors.BottomRightColor.A = Math.Min(colors.BottomRightColor.A, (byte)254);
+        }
+
+        orig(
+            self,
+            behindBlocks,
+            tileCache,
+            ref position,
+            ref liquidSize,
+            liquidType,
+            ref colors
+        );
     }
 
     // Post-processing
@@ -661,7 +695,7 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
     }
 
-    // Non-moving objects (tiles, walls, etc.)
+    // Liquids
 
     private void _Main_RenderWater(On_Main.orig_RenderWater orig, Main self)
     {
@@ -971,6 +1005,8 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    // Non-moving objects (tiles, walls, etc.)
+
     private void _Main_RenderTiles(On_Main.orig_RenderTiles orig, Main self)
     {
         if (!LightingConfig.Instance.SmoothLightingEnabled())
@@ -1049,12 +1085,14 @@ public sealed class FancyLightingMod : Mod
 
         OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         _preventDust = enhancedGlowMasks;
+        _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
         try
         {
             orig(self);
         }
         finally
         {
+            _makePartialLiquidTranslucent = false;
             _preventDust = false;
             OverrideLightColor = false;
         }
@@ -1619,14 +1657,15 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        OverrideLightColor = true;
-        _preventDust = enhancedGlowMasks;
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(
             _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget)
         );
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
         Main.spriteBatch.Begin();
+
+        OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
         try
         {
             orig(self, bg, Style, Alpha, drawSinglePassLiquids);
@@ -1747,14 +1786,15 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        OverrideLightColor = true;
-        _preventDust = enhancedGlowMasks;
         Main.tileBatch.End();
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(wallTarget);
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
         Main.tileBatch.Begin();
         Main.spriteBatch.Begin();
+
+        OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
         try
         {
             orig(self);
@@ -1899,8 +1939,6 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        OverrideLightColor = true;
-        _preventDust = enhancedGlowMasks;
         Main.tileBatch.End();
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(
@@ -1909,6 +1947,10 @@ public sealed class FancyLightingMod : Mod
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
         Main.tileBatch.Begin();
         Main.spriteBatch.Begin();
+
+        OverrideLightColor = true;
+        _preventDust = enhancedGlowMasks;
+        _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
         try
         {
             orig(
@@ -1921,6 +1963,7 @@ public sealed class FancyLightingMod : Mod
         }
         finally
         {
+            _makePartialLiquidTranslucent = false;
             _preventDust = false;
             OverrideLightColor = false;
         }
