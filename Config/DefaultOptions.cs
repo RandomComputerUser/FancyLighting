@@ -31,8 +31,9 @@ public static class DefaultOptions
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 5;
     public const bool FineNormalMaps = false;
+    public const int Exposure = 80;
     public const int BloomRadius = 5;
-    public const int BloomStrength = 4;
+    public const int BloomStrength = 3;
     public const bool RenderOnlyLight = false;
 
     // Ambient Occlusion

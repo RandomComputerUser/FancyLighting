@@ -24,6 +24,8 @@ public sealed class PreferencesConfig : ModConfig
             ? 0.5f * NormalMapsIntensity
             : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
+    internal float ExposureMult() => Exposure / 100f;
+
     internal float BloomLerp() => BloomStrength / 200f;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
@@ -87,6 +89,13 @@ public sealed class PreferencesConfig : ModConfig
 
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
+
+    [Range(50, 150)]
+    [Increment(10)]
+    [DefaultValue(DefaultOptions.Exposure)]
+    [Slider]
+    [DrawTicks]
+    public int Exposure { get; set; }
 
     [Range(1, 5)]
     [Increment(1)]

@@ -632,7 +632,7 @@ public sealed class FancyLightingMod : Mod
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        var sunMoonBrightness = Main.dayTime ? 2f : 1.6f;
+        var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
         sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightness;
 
         Main.spriteBatch.Begin(
@@ -1532,7 +1532,7 @@ public sealed class FancyLightingMod : Mod
         {
             var brightness = 0.55f;
             brightness += (270 - Main.mouseTextColor) / 900f;
-            brightness *= 1.7f;
+            brightness *= 1.9f;
             lightColor.X = Math.Max(lightColor.X, brightness);
             lightColor.Y = Math.Max(lightColor.Y, 0.6f * brightness);
             lightColor.Z = Math.Max(lightColor.Z, 0.2f * brightness);

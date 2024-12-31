@@ -80,7 +80,7 @@ internal sealed class PostProcessing
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
-        HiDefBackgroundBrightness = 1.4f;
+        HiDefBackgroundBrightness = 1.5f;
     }
 
     internal void ApplyPostProcessing(
@@ -99,6 +99,11 @@ internal sealed class PostProcessing
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
+
+        if (hiDef)
+        {
+            gamma *= 1.1f;
+        }
 
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
@@ -176,6 +181,7 @@ internal sealed class PostProcessing
         {
             var exposure = 1f / HiDefBrightnessScale;
             exposure = MathF.Pow(exposure, gamma);
+            exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
 
             Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
             Main.spriteBatch.Begin(
