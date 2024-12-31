@@ -9,9 +9,8 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.7 (2024-12-??)**
-- Optimized smooth lighting
-- The maximum brightness of light in the basic HDR render mode is no longer limited
+**v0.9.7 (2024-12-31)**
+- Tweaked and optimized smooth lighting
 - Reworked and optimized ambient occlusion
 - Adjusted how normal maps are simulated on translucent surfaces
 - Tweaked the overall look of the enhanced HDR render mode
