@@ -9,13 +9,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.7 (2024-12-31)**
-- Tweaked and optimized smooth lighting
-- Reworked and optimized ambient occlusion
-- Adjusted how normal maps are simulated on translucent surfaces
-- Tweaked the overall look of the enhanced HDR render mode
-- Added a slider to adjust exposure when using the enhanced HDR render mode
-- Fixed a bug that caused normal maps to be simulated on liquids adjacent to sloped blocks
-- Reverted the change made in v0.9.0 to the rendering of black areas, which sometimes caused flickering
-- Fixed a bug that caused the background to become black when smooth lighting was disabled and HDR rendering was enabled
-- Reduced the temporary visual disruption that occurs when changing some settings
+**v0.9.8 (2025-01-??)**
+-
