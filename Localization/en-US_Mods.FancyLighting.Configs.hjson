@@ -23,10 +23,11 @@ PreferencesConfig: {
 	}
 
 	Gamma: {
-		Label: Gamma (%)
+		Label: Content Gamma (%)
 		Tooltip:
 			'''
 			Controls the gamma used by light and texture colors
+			The resulting image is converted to a display gamma of 2.2
 			Higher values increase the contrast between bright and dark areas
 			A value of 220% corresponds to a gamma of 2.2
 			'''
@@ -38,6 +39,7 @@ PreferencesConfig: {
 			'''
 			Toggles whether to output colors in sRGB instead of gamma 2.2
 			Enable if dark colors are desaturated and too bright
+			Recommended to enable when using Windows 11 HDR
 			'''
 	}
 
@@ -64,11 +66,12 @@ PreferencesConfig: {
 	}
 
 	Exposure: {
-		Label: Exposure (Enhanced HDR) (%)
+		Label: Exposure (Full HDR) (%)
 		Tooltip:
 			'''
-			Controls the exposure of the scene
-			Enhanced HDR rendering must be in use for this setting to have any effect
+			Controls the exposure used when tone mapping the scene
+			Higher values result in a brighter image
+			Full HDR rendering must be in use for this setting to have any effect
 			'''
 	}
 
@@ -92,7 +95,7 @@ PreferencesConfig: {
 
 	RenderOnlyLight: {
 		Label: (Debug) Show Light Colors
-		Tooltip: When enabled, renders light colors directly without tile, wall, and background textures
+		Tooltip: When enabled, light colors are shown directly, and most textures are hidden
 	}
 
 	# Ambient Occlusion
@@ -151,7 +154,7 @@ PreferencesConfig: {
 		Tooltip:
 			'''
 			Controls how bright indirect lighting is compared to direct lighting
-			Global illumination must be enabled for this setting to have any effect
+			Indirect lighting must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -224,8 +227,8 @@ LightingConfig: {
 		Label: Enhanced Light Map Blurring
 		Tooltip:
 			'''
-			Controls the blurring function used to blur the light map
-			When enabled, uses improved blurring affected by light absorption
+			Controls how the light map is blurred
+			When enabled, the light absorption of each tile affects how the light map is blurred
 			'''
 	}
 
@@ -235,11 +238,11 @@ LightingConfig: {
 	}
 
 	UseEnhancedGlowMaskSupport: {
-		Label: Enhanced Glow Effect Support
+		Label: Improved Glow Effect Accuracy
 		Tooltip:
 			'''
-			Controls how glow effects are rendered
-			Glow effect brightness may be inaccurate when enhanced glow support is disabled
+			Toggles whether to use a more accurate technique to support glow effects
+			When disabled, glow effect brightness may differ from vanilla
 			'''
 	}
 
@@ -248,14 +251,14 @@ LightingConfig: {
 		Tooltip:
 			'''
 			Controls how light is rendered
-			HDR rendering allows light brightness to surpass 100%
+			HDR rendering can display light with above 100% brightness
 			When using HDR rendering, the result will be tone mapped to SDR
 			'''
 	}
 
 	HdrBloom: {
-		Label: Bloom (Enhanced HDR)
-		Tooltip: Toggles whether to render bloom when using the enhanced HDR render mode
+		Label: Bloom (Full HDR)
+		Tooltip: Toggles whether to render bloom when using full HDR rendering
 	}
 
 	# Ambient Occlusion
@@ -316,20 +319,16 @@ LightingConfig: {
 	}
 
 	FancyLightingEngineMode: {
-		Label: Shadow Precision
-		Tooltip:
-			'''
-			Controls the internal resolution of the fancy lighting engine
-			Does not affect the final resolution of the light map
-			'''
+		Label: Lighting Quality
+		Tooltip: Controls the overall quality of lighting
 	}
 
 	SimulateGlobalIllumination: {
-		Label: Global Illumination
+		Label: Indirect Lighting
 		Tooltip:
 			'''
-			Toggles whether to simulate a basic form of global illumination
-			When enabled, indirect lighting makes shadows brighter
+			Toggles whether to simulate a basic form of indirect lighting
+			When enabled, indirect lighting makes shadows less dark
 			'''
 	}
 }
@@ -357,7 +356,7 @@ RenderMode: {
 	Bilinear.Label: Bilinear Upscaling
 	Bicubic.Label: Bicubic Upscaling
 	BicubicOverbright.Label: Basic HDR Rendering
-	EnhancedHdr.Label: Enhanced HDR Rendering
+	EnhancedHdr.Label: Full HDR Rendering
 }
 
 SkyColorPreset: {

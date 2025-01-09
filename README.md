@@ -10,4 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.8 (2025-01-??)**
--
+- Renamed some settings and changed some tooltips
