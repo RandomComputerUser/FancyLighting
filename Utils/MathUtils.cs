@@ -27,5 +27,28 @@ internal static class MathUtils
         return big * Math.Sqrt(1.0 + (ratio * ratio));
     }
 
+    public static float HypotF(float x, float y)
+    {
+        x = Math.Abs(x);
+        y = Math.Abs(y);
+
+        if (x == 0f)
+        {
+            return y;
+        }
+
+        if (y == 0f)
+        {
+            return x;
+        }
+
+        var big = Math.Max(x, y);
+        var small = Math.Min(x, y);
+
+        var ratio = small / big;
+
+        return big * MathF.Sqrt(1f + (ratio * ratio));
+    }
+
     public static float Lerp(float x, float y, float t) => ((1 - t) * x) + (t * y);
 }

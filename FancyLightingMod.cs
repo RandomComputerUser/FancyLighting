@@ -337,11 +337,11 @@ public sealed class FancyLightingMod : Mod
     private void SetFancyLightingEngineInstance()
     {
         var mode =
-            LightingConfig.Instance?.FancyLightingEngineMode ?? LightingEngineMode.One;
+            LightingConfig.Instance?.FancyLightingEngineMode ?? LightingEngineMode.Low;
         switch (mode)
         {
             default:
-            case LightingEngineMode.One:
+            case LightingEngineMode.Low:
                 if (_fancyLightingEngineInstance is not FancyLightingEngine1X)
                 {
                     _fancyLightingEngineInstance?.Unload();
@@ -350,7 +350,7 @@ public sealed class FancyLightingMod : Mod
 
                 break;
 
-            case LightingEngineMode.Two:
+            case LightingEngineMode.Medium:
                 if (_fancyLightingEngineInstance is not FancyLightingEngine2X)
                 {
                     _fancyLightingEngineInstance?.Unload();
@@ -359,11 +359,20 @@ public sealed class FancyLightingMod : Mod
 
                 break;
 
-            case LightingEngineMode.Four:
+            case LightingEngineMode.High:
                 if (_fancyLightingEngineInstance is not FancyLightingEngine4X)
                 {
                     _fancyLightingEngineInstance?.Unload();
                     _fancyLightingEngineInstance = new FancyLightingEngine4X();
+                }
+
+                break;
+
+            case LightingEngineMode.Ultra:
+                if (_fancyLightingEngineInstance is not RadianceCascadesLightingEngine)
+                {
+                    _fancyLightingEngineInstance?.Unload();
+                    _fancyLightingEngineInstance = new RadianceCascadesLightingEngine();
                 }
 
                 break;

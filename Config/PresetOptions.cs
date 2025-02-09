@@ -72,6 +72,7 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = false,
+            UseLightMapBlurring = true,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -80,7 +81,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
             UseFancyLightingEngine = false,
-            FancyLightingEngineMode = LightingEngineMode.One,
+            FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
         };
 
@@ -88,6 +89,7 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
+            UseLightMapBlurring = true,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -96,7 +98,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
             UseFancyLightingEngine = false,
-            FancyLightingEngineMode = LightingEngineMode.One,
+            FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
         };
 
@@ -106,6 +108,7 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
+            UseLightMapBlurring = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -114,7 +117,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
             UseFancyLightingEngine = true,
-            FancyLightingEngineMode = LightingEngineMode.Two,
+            FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = false,
         };
 
@@ -122,6 +125,7 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
+            UseLightMapBlurring = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             UseEnhancedGlowMaskSupport = false,
@@ -130,7 +134,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
             UseFancyLightingEngine = true,
-            FancyLightingEngineMode = LightingEngineMode.Two,
+            FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
         };
 
@@ -138,6 +142,7 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
+            UseLightMapBlurring = false,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             UseEnhancedGlowMaskSupport = true,
@@ -146,7 +151,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
             UseFancyLightingEngine = true,
-            FancyLightingEngineMode = LightingEngineMode.Four,
+            FancyLightingEngineMode = LightingEngineMode.Ultra,
             SimulateGlobalIllumination = true,
         };
 

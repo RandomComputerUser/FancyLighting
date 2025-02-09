@@ -80,7 +80,10 @@ internal sealed class PostProcessing
 
     internal static void CalculateHiDefSurfaceBrightness()
     {
-        HiDefBackgroundBrightness = 1.5f;
+        HiDefBackgroundBrightness = LightingConfig.Instance?.UsingAdditiveLighting()
+            is true
+            ? 1f
+            : 1.5f;
     }
 
     internal void ApplyPostProcessing(
@@ -153,8 +156,14 @@ internal sealed class PostProcessing
 
                 if (hiDef)
                 {
+                    var backgroundBrightness = HiDefBackgroundBrightness;
+                    if (LightingConfig.Instance.UsingAdditiveLighting())
+                    {
+                        backgroundBrightness *= 1.5f;
+                    }
+
                     smoothLightingInstance.ApplyBrightenShader(
-                        HiDefBrightnessScale * HiDefBackgroundBrightness
+                        HiDefBrightnessScale * backgroundBrightness
                     );
                 }
                 Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);

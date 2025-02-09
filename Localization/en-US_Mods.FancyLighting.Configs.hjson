@@ -335,9 +335,10 @@ LightingConfig: {
 
 LightingEngineMode: {
 	Tooltip: ""
-	One.Label: Low
-	Two.Label: Medium
-	Four.Label: High
+	Low.Label: Low
+	Medium.Label: Medium
+	High.Label: High
+	Ultra.Label: Ultra
 }
 
 Preset: {

@@ -2,7 +2,8 @@
 
 public enum LightingEngineMode
 {
-    One = 1,
-    Two = 2,
-    Four = 4,
+    Low = 1,
+    Medium = 2,
+    High = 4,
+    Ultra = 8,
 }

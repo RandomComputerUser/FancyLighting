@@ -9,4 +9,12 @@ internal static class ArrayUtils
             array = new T[length];
         }
     }
+
+    public static void MakeSize<T>(ref T[] array, int length)
+    {
+        if (array is null || array.Length != length)
+        {
+            array = new T[length];
+        }
+    }
 }

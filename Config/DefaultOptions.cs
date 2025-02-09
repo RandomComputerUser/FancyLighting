@@ -49,7 +49,7 @@ public static class DefaultOptions
     // Fancy Lighting Engine
     public const bool UseFancyLightingEngine = true;
     public const bool FancyLightingEngineUseTemporal = true;
-    public const LightingEngineMode FancyLightingEngineMode = LightingEngineMode.One;
+    public const LightingEngineMode FancyLightingEngineMode = LightingEngineMode.Low;
     public const bool SimulateGlobalIllumination = false;
 
     // Fancy Lighting Engine Preferences
