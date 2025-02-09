@@ -47,10 +47,6 @@ public sealed class LightingConfig : ModConfig
 
     internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
 
-    internal bool UsingAdditiveLighting() =>
-        FancyLightingEngineEnabled()
-        && FancyLightingEngineMode is LightingEngineMode.Ultra;
-
     public override void OnChanged()
     {
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();

@@ -151,7 +151,7 @@ internal record PresetOptions
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
             UseFancyLightingEngine = true,
-            FancyLightingEngineMode = LightingEngineMode.Ultra,
+            FancyLightingEngineMode = LightingEngineMode.High,
             SimulateGlobalIllumination = true,
         };
 

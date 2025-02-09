@@ -367,15 +367,6 @@ public sealed class FancyLightingMod : Mod
                 }
 
                 break;
-
-            case LightingEngineMode.Ultra:
-                if (_fancyLightingEngineInstance is not RadianceCascadesLightingEngine)
-                {
-                    _fancyLightingEngineInstance?.Unload();
-                    _fancyLightingEngineInstance = new RadianceCascadesLightingEngine();
-                }
-
-                break;
         }
     }
 

@@ -338,7 +338,6 @@ LightingEngineMode: {
 	Low.Label: Low
 	Medium.Label: Medium
 	High.Label: High
-	Ultra.Label: Ultra
 }
 
 Preset: {
