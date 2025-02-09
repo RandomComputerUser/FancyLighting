@@ -72,7 +72,6 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = false,
-            UseLightMapBlurring = true,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -89,7 +88,6 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
-            UseLightMapBlurring = true,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -108,7 +106,6 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
-            UseLightMapBlurring = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
@@ -125,7 +122,6 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
-            UseLightMapBlurring = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             UseEnhancedGlowMaskSupport = false,
@@ -142,7 +138,6 @@ internal record PresetOptions
         new()
         {
             UseSmoothLighting = true,
-            UseLightMapBlurring = false,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             UseEnhancedGlowMaskSupport = true,

@@ -153,9 +153,8 @@ internal sealed class PostProcessing
 
                 if (hiDef)
                 {
-                    var backgroundBrightness = HiDefBackgroundBrightness;
                     smoothLightingInstance.ApplyBrightenShader(
-                        HiDefBrightnessScale * backgroundBrightness
+                        HiDefBrightnessScale * HiDefBackgroundBrightness
                     );
                 }
                 Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
