@@ -11,6 +11,7 @@ namespace FancyLighting.LightingEngines;
 internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
 {
     private readonly record struct LightSpread(
+        float Brightness,
         int DistanceToTop,
         int DistanceToRight,
         Vec4 LightFromLeft,
@@ -35,12 +36,23 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
 
     private readonly record struct DistanceCache(double Top, double Right);
 
+    private readonly float[] _decayMultipliers;
     private readonly LightSpread[] _lightSpread;
 
     private bool _countTemporal;
 
     public FancyLightingEngine4X()
     {
+        _useAlternativeDecay = true;
+
+        _decayMultipliers = new float[MaxLightRange + 1];
+        for (var i = 0; i <= MaxLightRange; ++i)
+        {
+            _decayMultipliers[i] =
+                1f
+                / ((i * i) + (LightDistanceFromBackground * LightDistanceFromBackground));
+        }
+
         ComputeLightSpread(out _lightSpread);
         InitializeDecayArrays();
         ComputeCircles();
@@ -142,6 +154,13 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         static int DoubleToIndex(double x) =>
             Math.Clamp((int)Math.Round(DistanceTicks * x), 0, DistanceTicks);
 
+        var brightness =
+            1f
+            / (
+                (row * row)
+                + (col * col)
+                + (LightDistanceFromBackground * LightDistanceFromBackground)
+            );
         var distance = MathUtils.Hypot(col, row);
         var distanceToTop = MathUtils.Hypot(col, row + 1) - distance;
         var distanceToRight = MathUtils.Hypot(col + 1, row) - distance;
@@ -149,6 +168,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         if (row == 0 && col == 0)
         {
             return new(
+                brightness,
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
@@ -176,6 +196,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         if (row == 0)
         {
             return new(
+                brightness,
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
@@ -203,6 +224,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         if (col == 0)
         {
             return new(
+                brightness,
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
@@ -275,6 +297,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
             + (QuadrantSum(lightFrom, (8 * 4) + 4) / 4.0 * bottomDistanceError);
 
         return new(
+            brightness,
             DoubleToIndex(distanceToTop),
             DoubleToIndex(distanceToRight),
             new(
@@ -319,10 +342,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         UpdateBrightnessCutoff();
         UpdateDecays(lightMap);
 
-        if (LightingConfig.Instance.HiDefFeaturesEnabled())
-        {
-            ConvertLightColorsToLinear(colors, width, height);
-        }
+        ConvertLightColorsToLinear(colors, width, height, 2.5f * _brightness);
 
         var length = width * height;
 
@@ -349,6 +369,11 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         if (LightingConfig.Instance.SimulateGlobalIllumination)
         {
             SimulateGlobalIllumination(colors, colors, width, height, 6);
+        }
+
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
+        {
+            ConvertLightColorsToGamma(colors, width, height);
         }
     }
 
@@ -396,7 +421,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
             return;
         }
 
-        var lightRange = CalculateLightRange(color);
+        var lightRange = CalculateLightRangeAlternativeDecay(color);
 
         upDistance = Math.Min(upDistance, lightRange);
         downDistance = Math.Min(downDistance, lightRange);
@@ -405,22 +430,50 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
 
         if (doUp)
         {
-            SpreadLightLine(lightMap, color, index, upDistance, -1);
+            SpreadLightLineAlternativeDecay(
+                lightMap,
+                color,
+                index,
+                upDistance,
+                -1,
+                _decayMultipliers
+            );
         }
 
         if (doDown)
         {
-            SpreadLightLine(lightMap, color, index, downDistance, 1);
+            SpreadLightLineAlternativeDecay(
+                lightMap,
+                color,
+                index,
+                downDistance,
+                1,
+                _decayMultipliers
+            );
         }
 
         if (doLeft)
         {
-            SpreadLightLine(lightMap, color, index, leftDistance, -height);
+            SpreadLightLineAlternativeDecay(
+                lightMap,
+                color,
+                index,
+                leftDistance,
+                -height,
+                _decayMultipliers
+            );
         }
 
         if (doRight)
         {
-            SpreadLightLine(lightMap, color, index, rightDistance, height);
+            SpreadLightLineAlternativeDecay(
+                lightMap,
+                color,
+                index,
+                rightDistance,
+                height,
+                _decayMultipliers
+            );
         }
 
         // Using && instead of || for culling is sometimes inaccurate, but much faster
@@ -609,7 +662,9 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
                     (
                         Vec4.Dot(verticalLight, spread.LightFromBottom)
                         + Vec4.Dot(horizontalLight, spread.LightFromLeft)
-                    ) * color
+                    )
+                        * spread.Brightness
+                        * color
                 );
 
                 horizontalLightRef =

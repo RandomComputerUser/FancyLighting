@@ -12,17 +12,22 @@ namespace FancyLighting.LightingEngines;
 
 internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 {
+    protected const float LightDistanceFromBackground = 1.5f;
+    protected bool _useAlternativeDecay = false;
+    protected float _brightness = 1f;
+
     protected int[][] _circles;
     protected Rectangle _lightMapArea;
     private long _temporalData = 0;
 
-    protected const int MaxLightRange = 64;
+    protected const int MaxLightRange = 72;
     protected const int DistanceTicks = 256;
 
     private const float MaxDecayMult = 0.95f;
     private const float LowLightLevel = 0.03f;
 
     protected float _initialBrightnessCutoff;
+    protected float _brightnessCutoff;
     protected float _logBrightnessCutoff;
     protected float _logBasicWorkCutoff;
 
@@ -127,11 +132,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void InitializeDecayArrays()
     {
-        _lightAirDecay = new float[DistanceTicks + 2];
-        _lightSolidDecay = new float[DistanceTicks + 2];
-        _lightWaterDecay = new float[DistanceTicks + 2];
-        _lightHoneyDecay = new float[DistanceTicks + 2];
-        _lightNonSolidDecay = new float[DistanceTicks + 2];
+        _lightAirDecay = new float[DistanceTicks + 3];
+        _lightSolidDecay = new float[DistanceTicks + 3];
+        _lightWaterDecay = new float[DistanceTicks + 3];
+        _lightHoneyDecay = new float[DistanceTicks + 3];
+        _lightNonSolidDecay = new float[DistanceTicks + 3];
         for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
         {
             _lightAirDecay[exponent] = 1f;
@@ -141,13 +146,21 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightNonSolidDecay[exponent] = 1f;
         }
 
-        // Last element is for diagonal decay (used in GI)
+        // Second-to-last element is for GI decay
+        _lightAirDecay[^2] =
+            _lightSolidDecay[^2] =
+            _lightWaterDecay[^2] =
+            _lightHoneyDecay[^2] =
+            _lightNonSolidDecay[^2] =
+                1f;
+
+        // Last element is for GI diagonal decay
         _lightAirDecay[^1] =
             _lightSolidDecay[^1] =
             _lightWaterDecay[^1] =
             _lightHoneyDecay[^1] =
             _lightNonSolidDecay[^1] =
-                MathF.Sqrt(2f);
+                1f;
     }
 
     protected void ComputeCircles()
@@ -200,13 +213,14 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         var basicWorkCutoff = BaseCutoff;
 
-        if (LightingConfig.Instance.HiDefFeaturesEnabled())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled() || _useAlternativeDecay)
         {
             ColorUtils.GammaToLinear(ref _initialBrightnessCutoff);
             ColorUtils.GammaToLinear(ref cutoff);
             ColorUtils.GammaToLinear(ref basicWorkCutoff);
         }
 
+        _brightnessCutoff = cutoff;
         _logBrightnessCutoff = MathF.Log(cutoff);
         _logBasicWorkCutoff = MathF.Log(basicWorkCutoff);
     }
@@ -257,7 +271,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightLossExitingSolid *= _lightLossExitingSolid;
         }
 
-        if (LightingConfig.Instance.HiDefFeaturesEnabled())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled() || _useAlternativeDecay)
         {
             ColorUtils.GammaToLinear(ref lightAirDecayBaseline);
             ColorUtils.GammaToLinear(ref lightSolidDecayBaseline);
@@ -289,21 +303,45 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         }
     }
 
-    private static void UpdateDecay(float[] decay, float baseline)
+    private void UpdateDecay(float[] decay, float baseline)
     {
-        if (baseline == decay[DistanceTicks])
+        if (baseline == decay[DistanceTicks + 1])
         {
             return;
         }
 
-        var logBaseline = MathF.Log(baseline);
-        const float ExponentMult = 1f / DistanceTicks;
-        for (var i = 0; i < decay.Length; ++i)
+        if (decay == _lightAirDecay)
         {
-            decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
+            _brightness = 1f;
         }
 
-        decay[^1] = MathF.Exp(1.5f * logBaseline);
+        var modifiedBaseline = baseline;
+        if (_useAlternativeDecay)
+        {
+            var airBaseline = 0.91f;
+            if (LightingConfig.Instance.HiDefFeaturesEnabled())
+            {
+                ColorUtils.GammaToLinear(ref airBaseline);
+            }
+
+            var ratio = baseline / airBaseline;
+            modifiedBaseline = Math.Min(ratio, 1f);
+
+            if (ratio > 1f && decay == _lightAirDecay)
+            {
+                _brightness = MathF.Pow(ratio, 3);
+            }
+        }
+
+        var logModifiedBaseline = MathF.Log(modifiedBaseline);
+        const float ExponentMult = 1f / DistanceTicks;
+        for (var i = 0; i <= DistanceTicks; ++i)
+        {
+            decay[i] = MathF.Exp(ExponentMult * i * logModifiedBaseline);
+        }
+
+        decay[DistanceTicks + 1] = baseline;
+        decay[DistanceTicks + 2] = MathF.Pow(baseline, MathF.Sqrt(2f));
     }
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
@@ -374,6 +412,47 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 for (var y = 0; y < height; ++y)
                 {
                     ColorUtils.GammaToLinear(ref colors[i++]);
+                }
+            }
+        );
+
+    protected static void ConvertLightColorsToLinear(
+        Vector3[] colors,
+        int width,
+        int height,
+        float brightness
+    ) =>
+        Parallel.For(
+            0,
+            width,
+            SettingsSystem._parallelOptions,
+            (x) =>
+            {
+                var i = height * x;
+                for (var y = 0; y < height; ++y)
+                {
+                    ref var color = ref colors[i++];
+                    ColorUtils.GammaToLinear(ref color);
+                    Vector3.Multiply(ref color, brightness, out color);
+                }
+            }
+        );
+
+    protected static void ConvertLightColorsToGamma(
+        Vector3[] colors,
+        int width,
+        int height
+    ) =>
+        Parallel.For(
+            0,
+            width,
+            SettingsSystem._parallelOptions,
+            (x) =>
+            {
+                var i = height * x;
+                for (var y = 0; y < height; ++y)
+                {
+                    ColorUtils.LinearToGamma(ref colors[i++]);
                 }
             }
         );
@@ -587,7 +666,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         var giMult =
             PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
-        if (LightingConfig.Instance.HiDefFeaturesEnabled())
+        if (LightingConfig.Instance.HiDefFeaturesEnabled() || _useAlternativeDecay)
         {
             ColorUtils.GammaToLinear(ref giMult);
         }
@@ -643,7 +722,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         }
 
                         ref var value = ref lights[j];
-                        value = Vec3.Max(value, lights[j - 1] * mask[DistanceTicks]);
+                        value = Vec3.Max(value, lights[j - 1] * mask[DistanceTicks + 1]);
                     }
                 }
             );
@@ -664,7 +743,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         }
 
                         ref var value = ref lights[j];
-                        value = Vec3.Max(value, lights[j + 1] * mask[DistanceTicks]);
+                        value = Vec3.Max(value, lights[j + 1] * mask[DistanceTicks + 1]);
                     }
                 }
             );
@@ -685,7 +764,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         }
 
                         ref var value = ref lights[j];
-                        value = Vec3.Max(value, lights[j - height] * mask[DistanceTicks]);
+                        value = Vec3.Max(
+                            value,
+                            lights[j - height] * mask[DistanceTicks + 1]
+                        );
                     }
                 }
             );
@@ -706,7 +788,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         }
 
                         ref var value = ref lights[j];
-                        value = Vec3.Max(value, lights[j + height] * mask[DistanceTicks]);
+                        value = Vec3.Max(
+                            value,
+                            lights[j + height] * mask[DistanceTicks + 1]
+                        );
                     }
                 }
             );
@@ -741,7 +826,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         ref var value = ref lights[j];
                         value = Vec3.Max(
                             value,
-                            lights[j - inc] * mask[DistanceTicks + 1]
+                            lights[j - inc] * mask[DistanceTicks + 2]
                         );
                     }
                 }
@@ -778,7 +863,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         ref var value = ref lights[j];
                         value = Vec3.Max(
                             value,
-                            lights[j - inc] * mask[DistanceTicks + 1]
+                            lights[j - inc] * mask[DistanceTicks + 2]
                         );
                     }
                 }
@@ -816,7 +901,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         ref var value = ref lights[j];
                         value = Vec3.Max(
                             value,
-                            lights[j - inc] * mask[DistanceTicks + 1]
+                            lights[j - inc] * mask[DistanceTicks + 2]
                         );
                     }
                 }
@@ -853,7 +938,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         ref var value = ref lights[j];
                         value = Vec3.Max(
                             value,
-                            lights[j - inc] * mask[DistanceTicks + 1]
+                            lights[j - inc] * mask[DistanceTicks + 2]
                         );
                     }
                 }
@@ -915,7 +1000,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         {
             ref var otherColorRef = ref colors[otherIndex];
             var otherColor = new Vec3(otherColorRef.X, otherColorRef.Y, otherColorRef.Z);
-            otherColor *= _lightMask[otherIndex][DistanceTicks];
+            otherColor *= _lightMask[otherIndex][DistanceTicks + 1];
             return otherColor.X < threshold.X
                 || otherColor.Y < threshold.Y
                 || otherColor.Z < threshold.Z;
@@ -942,6 +1027,25 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected int CalculateLightRangeAlternativeDecay(Vec3 color) =>
+        Math.Clamp(
+            (int)
+                Math.Ceiling(
+                    MathF.Sqrt(
+                        (
+                            1f
+                            / (
+                                _brightnessCutoff
+                                / Math.Max(color.X, Math.Max(color.Y, color.Z))
+                            )
+                        ) - (LightDistanceFromBackground * LightDistanceFromBackground)
+                    )
+                ) + 1,
+            1,
+            MaxLightRange
+        );
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected static void SetLight(ref Vec3 light, Vec3 value) =>
         light = Vec3.Max(light, value);
 
@@ -949,7 +1053,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Vec3[] lightMap,
         Vec3 color,
         int index,
-        int distance,
+        int length,
         int indexChange
     )
     {
@@ -962,7 +1066,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         SetLight(ref lightMap[index], color);
 
         // Would multiply by (distance + 1), but we already incremented index once
-        var endIndex = index + (distance * indexChange);
+        var endIndex = index + (length * indexChange);
         var prevMask = lightMask[index];
         while (true)
         {
@@ -985,6 +1089,51 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             prevMask = mask;
 
             SetLight(ref lightMap[index], color);
+        }
+    }
+
+    protected void SpreadLightLineAlternativeDecay(
+        Vec3[] lightMap,
+        Vec3 color,
+        int index,
+        int length,
+        int indexChange,
+        float[] decayMultipliers
+    )
+    {
+        // Performance optimization
+        var lightMask = _lightMask;
+        var solidDecay = _lightSolidDecay;
+        var lightLoss = _lightLossExitingSolid;
+
+        index += indexChange;
+        SetLight(ref lightMap[index], color * decayMultipliers[1]);
+
+        // Would multiply by (distance + 1), but we already incremented index once
+        var endIndex = index + (length * indexChange);
+        var prevMask = lightMask[index];
+        var distance = 1;
+        while (true)
+        {
+            index += indexChange;
+            if (index == endIndex)
+            {
+                break;
+            }
+
+            var mask = lightMask[index];
+            if (prevMask == solidDecay && mask != solidDecay)
+            {
+                color *= lightLoss * prevMask[DistanceTicks];
+            }
+            else
+            {
+                color *= prevMask[DistanceTicks];
+            }
+
+            prevMask = mask;
+
+            SetLight(ref lightMap[index], color * decayMultipliers[++distance]);
         }
     }
 
