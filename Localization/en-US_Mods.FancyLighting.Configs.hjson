@@ -154,7 +154,7 @@ PreferencesConfig: {
 		Tooltip:
 			'''
 			Controls how bright indirect lighting is compared to direct lighting
-			Indirect lighting must be enabled for this setting to have any effect
+			Global illumination must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -324,10 +324,10 @@ LightingConfig: {
 	}
 
 	SimulateGlobalIllumination: {
-		Label: Indirect Lighting
+		Label: Global Illumination
 		Tooltip:
 			'''
-			Toggles whether to simulate a basic form of indirect lighting
+			Toggles whether to simulate a basic form of global illumination
 			When enabled, indirect lighting makes shadows less dark
 			'''
 	}
