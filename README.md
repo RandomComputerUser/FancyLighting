@@ -10,4 +10,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.8 (2025-01-??)**
+- Fixed a bug that occured when the black tile optimization setting from High FPS Support was enabled
 - Renamed some settings and changed some tooltips

@@ -395,7 +395,6 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawWaters += _Main_DrawWaters;
         On_Main.RenderBackground += _Main_RenderBackground;
         On_Main.DrawBackground += _Main_DrawBackground;
-        On_Main.DrawBlack += _Main_DrawBlack;
         On_Main.RenderTiles += _Main_RenderTiles;
         On_Main.RenderTiles2 += _Main_RenderTiles2;
         On_Main.RenderWalls += _Main_RenderWalls;
@@ -418,6 +417,7 @@ public sealed class FancyLightingMod : Mod
     private void AddPriorityHooks()
     {
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
+        On_Main.DrawBlack += _Main_DrawBlack;
     }
 
     private static int _Dust_NewDust(
