@@ -134,11 +134,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         _lightNonSolidDecay = new float[DistanceTicks + 2];
         for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
         {
-            _lightAirDecay[exponent] = 1f;
-            _lightSolidDecay[exponent] = 1f;
-            _lightWaterDecay[exponent] = 1f;
-            _lightHoneyDecay[exponent] = 1f;
-            _lightNonSolidDecay[exponent] = 1f;
+            _lightAirDecay[exponent] =
+                _lightSolidDecay[exponent] =
+                _lightWaterDecay[exponent] =
+                _lightHoneyDecay[exponent] =
+                _lightNonSolidDecay[exponent] =
+                    1f;
         }
 
         // Last element is for diagonal decay (used in GI)
@@ -147,7 +148,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _lightWaterDecay[^1] =
             _lightHoneyDecay[^1] =
             _lightNonSolidDecay[^1] =
-                MathF.Sqrt(2f);
+                1f;
     }
 
     protected void ComputeCircles()
@@ -267,7 +268,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             ColorUtils.GammaToLinear(ref _lightLossExitingSolid);
         }
 
-        const float ThresholdMultExponent = 0.41421354f; // sqrt(2) - 1
+        var thresholdMultExponent = MathF.Sqrt(2) - 1;
 
         var logSlowestDecay = MathF.Log(
             Math.Max(
@@ -275,7 +276,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 Math.Max(lightWaterDecayBaseline, lightHoneyDecayBaseline)
             )
         );
-        _thresholdMult = MathF.Exp(ThresholdMultExponent * logSlowestDecay);
+        _thresholdMult = MathF.Exp(thresholdMultExponent * logSlowestDecay);
         _reciprocalLogSlowestDecay = 1f / logSlowestDecay;
 
         UpdateDecay(_lightAirDecay, lightAirDecayBaseline);
@@ -303,7 +304,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
         }
 
-        decay[^1] = MathF.Exp(1.5f * logBaseline);
+        decay[^1] = MathF.Exp(MathF.Sqrt(2) * logBaseline);
     }
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
