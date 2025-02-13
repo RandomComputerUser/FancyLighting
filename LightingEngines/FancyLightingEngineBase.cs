@@ -17,7 +17,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     private long _temporalData = 0;
 
     protected const int MaxLightRange = 64;
-    protected const int DistanceTicks = 256;
+    protected const int DistanceTicks = 64;
 
     private const float MaxDecayMult = 0.95f;
     private const float LowLightLevel = 0.03f;
@@ -284,7 +284,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         UpdateDecay(_lightWaterDecay, lightWaterDecayBaseline);
         UpdateDecay(_lightHoneyDecay, lightHoneyDecayBaseline);
 
-        if (!PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
+        if (
+            !PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque
+            && _lightNonSolidDecay[DistanceTicks] != _lightSolidDecay[DistanceTicks]
+        )
         {
             Array.Copy(_lightSolidDecay, _lightNonSolidDecay, _lightSolidDecay.Length);
         }

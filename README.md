@@ -11,5 +11,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.9.8 (2025-02-??)**
 - Tweaked global illumination
+- Made small optimizations to the fancy lighting engine
 - Fixed a bug that occured when the black tile optimization setting from High FPS Support was enabled
 - Renamed some settings and changed some tooltips
