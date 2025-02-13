@@ -2,6 +2,7 @@
 using FancyLighting.Config.Enums;
 using Newtonsoft.Json;
 using Terraria;
+using Terraria.Graphics.Effects;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
 
@@ -40,7 +41,8 @@ public sealed class LightingConfig : ModConfig
     internal bool OverbrightOverrideBackground() =>
         SmoothLightingEnabled()
         && DrawOverbright()
-        && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
+        && !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen)
+        && Filters.Scene.CanCapture();
 
     internal bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;

@@ -12,5 +12,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 **v0.9.8 (2025-02-??)**
 - Tweaked global illumination
 - Made small optimizations to the fancy lighting engine
-- Fixed a bug that occured when the black tile optimization setting from High FPS Support was enabled
+- Fixed a bug that occurred when the black tile optimization setting from High FPS Support was enabled
+- Partly fixed a bug that occurred when fighting the Devourer of Gods from Calamity Mod in Infernum Mode
 - Renamed some settings and changed some tooltips
