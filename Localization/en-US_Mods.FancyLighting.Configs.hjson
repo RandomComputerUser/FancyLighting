@@ -319,8 +319,8 @@ LightingConfig: {
 	}
 
 	FancyLightingEngineMode: {
-		Label: Lighting Quality
-		Tooltip: Controls the overall quality of lighting
+		Label: Shadow Accuracy
+		Tooltip: Controls how accurate shadows are
 	}
 
 	SimulateGlobalIllumination: {
