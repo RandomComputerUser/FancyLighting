@@ -1624,6 +1624,10 @@ internal sealed class SmoothLighting
             : 1f;
         var normalMapGradientMult = 24f * overbrightMult * zoom;
         var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
+        if (background)
+        {
+            normalMapMult *= 0.75f;
+        }
         var normalMapStrength = 1f / (1f + normalMapMult);
 
         var worldCoordMult =

@@ -100,11 +100,6 @@ internal sealed class PostProcessing
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
 
-        if (hiDef)
-        {
-            gamma *= 1.1f;
-        }
-
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
