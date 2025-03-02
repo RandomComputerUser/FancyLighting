@@ -18,4 +18,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made small optimizations to the fancy lighting engine
 - Fixed a bug that occurred when the black tile optimization setting from High FPS Support was enabled
 - Partially fixed a bug that occurred when fighting the Devourer of Gods from Calamity Mod in Infernum Mode
+- Made settings changes seamless
 - Renamed some settings and changed some tooltips

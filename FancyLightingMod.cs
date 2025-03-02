@@ -372,12 +372,24 @@ public sealed class FancyLightingMod : Mod
 
     internal void OnConfigChange()
     {
-        _smoothLightingInstance?.CalculateSmoothLighting(false, true);
-
-        if (_fancyLightingEngineInstance is not null)
+        Main.renderNow = true;
+        if (!Main.gameMenu)
         {
-            SetFancyLightingEngineInstance();
+            Main.GetAreaToLight(
+                out var firstTileX,
+                out var lastTileX,
+                out var firstTileY,
+                out var lastTileY
+            );
+            for (var i = 4; i-- > 0; )
+            {
+                Lighting.LightTiles(firstTileX, lastTileX, firstTileY, lastTileY);
+            }
+
+            _smoothLightingInstance?.InvalidateSmoothLighting();
         }
+
+        SetFancyLightingEngineInstance();
     }
 
     private void AddHooks()
@@ -2036,6 +2048,8 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_DoDraw(On_Main.orig_DoDraw orig, Main self, GameTime gameTime)
     {
+        ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
+
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || !LightingConfig.Instance.DrawOverbright()

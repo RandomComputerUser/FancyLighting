@@ -197,6 +197,8 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
 
+    internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
+
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
 
     internal void ApplyBrightenShader(float brightness) =>
@@ -1040,7 +1042,7 @@ internal sealed class SmoothLighting
         caughtException = caught;
     }
 
-    internal void CalculateSmoothLighting(bool cameraMode = false, bool force = false)
+    internal void CalculateSmoothLighting(bool cameraMode = false)
     {
         if (!LightingConfig.Instance.SmoothLightingEnabled())
         {
@@ -1052,7 +1054,7 @@ internal sealed class SmoothLighting
             return;
         }
 
-        if (!force && !cameraMode && _smoothLightingComplete)
+        if (!cameraMode && _smoothLightingComplete)
         {
             return;
         }

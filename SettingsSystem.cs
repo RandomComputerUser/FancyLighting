@@ -23,16 +23,10 @@ internal sealed class SettingsSystem : ModSystem
         Filters.Scene.OnPostDraw -= DoNothing;
     }
 
-    public override void PostUpdateEverything()
-    {
-        SettingsUpdate();
-    }
-
     internal void OnConfigChange()
     {
         SettingsUpdate();
         ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
-        Main.renderNow = true;
     }
 
     internal void SettingsUpdate()

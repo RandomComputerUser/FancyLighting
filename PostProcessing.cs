@@ -105,7 +105,7 @@ internal sealed class PostProcessing
             && LightingConfig.Instance.DrawOverbright()
         )
         {
-            smoothLightingInstance.CalculateSmoothLighting(cameraMode, cameraMode);
+            smoothLightingInstance.CalculateSmoothLighting(cameraMode);
             if (cameraMode)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
