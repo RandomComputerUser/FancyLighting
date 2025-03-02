@@ -139,37 +139,56 @@ internal sealed class PostProcessing
                 );
             }
 
-            if (backgroundTarget is not null)
+            if (hiDef)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.spriteBatch.Begin(
-                    hiDef ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
+                    SpriteSortMode.Immediate,
                     BlendState.AlphaBlend,
                     SamplerState.PointClamp,
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
 
-                if (hiDef)
+                var exposure = 1f / HiDefBrightnessScale;
+                exposure = MathF.Pow(exposure, gamma);
+                exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
+
+                if (backgroundTarget is not null)
                 {
-                    smoothLightingInstance.ApplyBrightenShader(
+                    var backgroundBrightness = ColorUtils.GammaToLinear(
                         HiDefBrightnessScale * HiDefBackgroundBrightness
                     );
+                    _gammaToLinearShader
+                        .SetParameter("Exposure", exposure * backgroundBrightness)
+                        .SetParameter("GammaRatio", gamma)
+                        .Apply();
+                    Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
                 }
-                Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
 
-                if (hiDef)
-                {
-                    Main.spriteBatch.End();
-                    Main.spriteBatch.Begin(
-                        SpriteSortMode.Deferred,
-                        BlendState.AlphaBlend,
-                        SamplerState.PointClamp,
-                        DepthStencilState.None,
-                        RasterizerState.CullNone
-                    );
-                }
+                _gammaToLinearShader
+                    .SetParameter("Exposure", exposure)
+                    .SetParameter("GammaRatio", gamma)
+                    .Apply();
+                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+                gamma = 1f;
+
+                (currTarget, nextTarget) = (nextTarget, currTarget);
+            }
+            else if (backgroundTarget is not null)
+            {
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.AlphaBlend,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
 
@@ -179,28 +198,6 @@ internal sealed class PostProcessing
 
         if (hiDef)
         {
-            var exposure = 1f / HiDefBrightnessScale;
-            exposure = MathF.Pow(exposure, gamma);
-            exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            _gammaToLinearShader
-                .SetParameter("Exposure", exposure)
-                .SetParameter("GammaRatio", gamma)
-                .Apply();
-            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-            gamma = 1f;
-
-            (currTarget, nextTarget) = (nextTarget, currTarget);
-
             if (doBloom)
             {
                 // https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom

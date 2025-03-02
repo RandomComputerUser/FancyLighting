@@ -9,7 +9,8 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.8 (2025-02-??)**
+**v0.9.8 (2025-03-??)**
+- Improved blending between the foreground and the background when using full HDR rendering
 - Tweaked global illumination
 - Made small optimizations to the fancy lighting engine
 - Fixed a bug that occurred when the black tile optimization setting from High FPS Support was enabled
