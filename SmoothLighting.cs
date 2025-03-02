@@ -35,7 +35,6 @@ internal sealed class SmoothLighting
     internal Vector3[] _blackLights;
 
     private bool _smoothLightingLightMapValid;
-    private bool _smoothLightingPositionValid;
     private bool _smoothLightingComplete;
     private bool _smoothLightingHiResComplete;
 
@@ -72,7 +71,6 @@ internal sealed class SmoothLighting
         _lightMapTileArea = new(0, 0, 0, 0);
 
         _smoothLightingLightMapValid = false;
-        _smoothLightingPositionValid = false;
         _smoothLightingComplete = false;
         _smoothLightingHiResComplete = false;
 
@@ -373,7 +371,6 @@ internal sealed class SmoothLighting
     )
     {
         _smoothLightingLightMapValid = false;
-        _smoothLightingPositionValid = false;
         _smoothLightingComplete = false;
 
         var length = width * height;
@@ -1058,8 +1055,6 @@ internal sealed class SmoothLighting
         {
             return;
         }
-
-        _smoothLightingPositionValid = !cameraMode;
 
         if (Main.tile.Height == 0 || Main.tile.Width == 0)
         {
