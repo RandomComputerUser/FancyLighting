@@ -9,7 +9,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.8 (2025-03-??)**
+**v0.9.8 (2025-03-02)**
 - Decreased the default normal map strength and the strength of normal maps on walls
 - Decreased bloom strength
 - Slightly decreased content gamma when using full HDR rendering (previously it was boosted)
