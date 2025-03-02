@@ -313,7 +313,7 @@ LightingConfig: {
 			'''
 			Toggles whether to use temporal optimization with the fancy lighting engine
 			When enabled, optimizes lighting using data from the previous lighting update
-			Makes lighting quicker in more intensely lit areas
+			Improves lighting performance in more intensely lit areas
 			May sometimes cause lighting quality to be slightly reduced
 			'''
 	}
