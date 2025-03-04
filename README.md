@@ -9,14 +9,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.8 (2025-03-02)**
-- Decreased the default normal map strength and the strength of normal maps on walls
-- Decreased bloom strength
-- Slightly decreased content gamma when using full HDR rendering (previously it was boosted)
-- Improved blending between the foreground and the background when using full HDR rendering
-- Tweaked global illumination
-- Made small optimizations to the fancy lighting engine
-- Fixed a bug that occurred when the black tile optimization setting from High FPS Support was enabled
-- Partially fixed a bug that occurred when fighting the Devourer of Gods from Calamity Mod in Infernum Mode
-- Made settings changes seamless
-- Renamed some settings and changed some tooltips
+**v0.9.8.1 (2025-03-04)**
+- Updated the mod icon
