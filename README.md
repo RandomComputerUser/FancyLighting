@@ -9,5 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.8.1 (2025-03-04)**
-- Updated the mod icon
+**v0.9.9 (2025-03-??)**
