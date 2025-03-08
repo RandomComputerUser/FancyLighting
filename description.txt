@@ -1,4 +1,4 @@
-Fancy Lighting improves the quality of lighting by using a new lighting engine and various shaders.
+Fancy Lighting improves the quality of lighting by adding a new lighting engine and various shaders.
 
 Features:
 - Smooth lighting
