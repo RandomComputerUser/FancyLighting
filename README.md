@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.9 (2025-03-??)**
+- Made the background slightly brighter when using full HDR rendering

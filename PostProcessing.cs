@@ -152,8 +152,13 @@ internal sealed class PostProcessing
 
                 if (backgroundTarget is not null)
                 {
+                    // The brightness of the background isn't normally affected by
+                    // Lighting.GlobalBrightness (which is reduced when the player
+                    // has the Darkness debuff), but I've decided to change that
                     var backgroundBrightness = ColorUtils.GammaToLinear(
-                        HiDefBrightnessScale * HiDefBackgroundBrightness
+                        HiDefBrightnessScale
+                            * HiDefBackgroundBrightness
+                            * (0.9f * Lighting.GlobalBrightness)
                     );
                     _gammaToLinearShader
                         .SetParameter("Exposure", exposure * backgroundBrightness)
