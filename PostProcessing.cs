@@ -14,17 +14,6 @@ internal sealed class PostProcessing
     internal const float HiDefBrightnessScale = 0.5f;
     public static float HiDefBackgroundBrightness { get; private set; }
 
-    private static readonly BlendState _trueAdditiveBlend =
-        new()
-        {
-            ColorBlendFunction = BlendFunction.Add,
-            AlphaBlendFunction = BlendFunction.Add,
-            ColorSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.One,
-            AlphaSourceBlend = Blend.One,
-            AlphaDestinationBlend = Blend.One,
-        };
-
     private readonly Texture2D _ditherNoise;
 
     private Shader _gammaToLinearShader;
