@@ -158,7 +158,7 @@ internal sealed class PostProcessing
                     var backgroundBrightness = ColorUtils.GammaToLinear(
                         HiDefBrightnessScale
                             * HiDefBackgroundBrightness
-                            * (0.9f * Lighting.GlobalBrightness)
+                            * (0.92f * Lighting.GlobalBrightness)
                     );
                     _gammaToLinearShader
                         .SetParameter("Exposure", exposure * backgroundBrightness)
