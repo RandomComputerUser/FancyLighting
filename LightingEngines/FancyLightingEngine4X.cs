@@ -612,6 +612,8 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
                     ) * color
                 );
 
+                // The last time I tested this, it was slightly faster than using
+                // Vector4.Transform(Vector4, Matrix4x4)
                 horizontalLightRef =
                     (
                         (
