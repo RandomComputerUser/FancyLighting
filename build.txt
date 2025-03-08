@@ -3,7 +3,7 @@ author = RandomComputerUser
 version = 0.9.10
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
-buildIgnore = icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user
+buildIgnore = description_workshop.txt, icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user
 
 hideCode = false
 hideResources = false

@@ -1,0 +1,21 @@
+﻿Fancy Lighting improves the quality of lighting by using a new lighting engine and various shaders.
+
+[h3]Features[/h3]
+[list]
+    [*]Smooth lighting
+    [*]Ambient occlusion
+    [*]Accurate shadows
+    [*]Fancy sky colors
+    [*]HDR rendering (tone mapped to SDR)
+    [*]Bloom
+    [*]Simulated normal maps
+    [*]Camera mode compatibility
+[/list]
+
+For the best performance, lower the in-game resolution to either 1920x1080 or 1920x1200 depending on the aspect ratio of your display.
+
+Occasionally, after launching the game, this mod might not work. This can usually be fixed by restarting the game.
+
+Some tiles are tinted when being drawn. For example, pearlstone is tinted pink so that its in-game appearance is more pink than its texture. Smooth lighting supports all vanilla tinted tiles. Modded tinted tiles are not supported.
+
+You may report issues, download old releases, and view the source code on [url=https://github.com/RandomComputerUser/FancyLighting]the GitHub repository[/url].
