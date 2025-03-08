@@ -11,3 +11,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.9.9 (2025-03-??)**
 - Increased the brightness of the background when using full HDR rendering
+- Updated the mod icon
