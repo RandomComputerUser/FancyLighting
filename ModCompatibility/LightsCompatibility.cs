@@ -4,6 +4,7 @@ using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
+using Terraria.Graphics.Effects;
 using Terraria.ModLoader;
 
 namespace FancyLighting.ModCompatibility;
@@ -115,7 +116,7 @@ internal static class LightsCompatibility
         RenderTarget2D rt2
     )
     {
-        if (!SettingsSystem._hiDef)
+        if (!SettingsSystem._hiDef || !Filters.Scene.CanCapture())
         {
             orig(self, gd, sb, rt1, rt2);
             return;
