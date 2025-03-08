@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.10 (2025-03-08)**
+- Made lava redder when using full HDR rendering
