@@ -9,7 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.9 (2025-03-08)**
-- Increased the brightness of the background when using full HDR rendering
-- Made the fix for the Devourer of Gods from Calamity Mod in Infernum Mode work correctly when Lights and Shadows is enabled
-- Updated the mod icon
+**v0.9.10 (2025-03-08)**
