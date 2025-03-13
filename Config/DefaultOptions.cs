@@ -34,6 +34,7 @@ public static class DefaultOptions
     public const int Exposure = 100;
     public const int BloomRadius = 5;
     public const int BloomStrength = 4;
+    public const bool UseHdrCompatibilityFixes = false;
     public const bool RenderOnlyLight = false;
 
     // Ambient Occlusion

@@ -18,10 +18,12 @@ internal sealed class SmoothLighting
 {
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
+    private RenderTarget2D _colorsHiResSwap;
 
     private readonly Texture2D _ditherNoise;
 
     private Rectangle _lightMapTileArea;
+    private Rectangle _lightMapTileAreaSwap;
 
     private RenderTarget2D _drawTarget;
 
@@ -37,6 +39,7 @@ internal sealed class SmoothLighting
     private bool _smoothLightingLightMapValid;
     private bool _smoothLightingComplete;
     private bool _smoothLightingHiResComplete;
+    private bool _smoothLightingHiResCompleteSwap;
 
     internal RenderTarget2D _cameraModeTarget1;
     internal RenderTarget2D _cameraModeTarget2;
@@ -59,6 +62,7 @@ internal sealed class SmoothLighting
     private Shader _overbrightLightOnlyOpaqueShader;
     private Shader _overbrightLightOnlyOpaqueAmbientOcclusionShader;
     private Shader _overbrightMaxShader;
+    private Shader _inverseOverbrightMaxHiDefShader;
     private Shader _lightOnlyShader;
     private Shader _brightenShader;
     private Shader _glowMaskShader;
@@ -68,7 +72,7 @@ internal sealed class SmoothLighting
     {
         _modInstance = mod;
 
-        _lightMapTileArea = new(0, 0, 0, 0);
+        _lightMapTileArea = _lightMapTileAreaSwap = new(0, 0, 0, 0);
 
         _smoothLightingLightMapValid = false;
         _smoothLightingComplete = false;
@@ -148,6 +152,11 @@ internal sealed class SmoothLighting
             "OverbrightMax",
             true
         );
+        _inverseOverbrightMaxHiDefShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "InverseOverbrightMaxHiDef",
+            true
+        );
         _lightOnlyShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "LightOnly"
@@ -171,6 +180,7 @@ internal sealed class SmoothLighting
         _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
+        _colorsHiResSwap?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _ditherNoise?.Dispose();
@@ -189,6 +199,7 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueShader);
         EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueAmbientOcclusionShader);
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
+        EffectLoader.UnloadEffect(ref _inverseOverbrightMaxHiDefShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
@@ -1262,16 +1273,22 @@ internal sealed class SmoothLighting
         _smoothLightingComplete = !cameraMode;
     }
 
-    private void RenderHiResLighting(Texture2D lights, ref RenderTarget2D hiResLights)
+    private void RenderHiResLighting(Texture2D lights)
     {
         TextureUtils.MakeSize(
-            ref hiResLights,
+            ref _colorsHiRes,
             4 * lights.Width,
             4 * lights.Height,
             TextureUtils.LightMapFormat
         );
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(hiResLights);
+        if (!SettingsSystem.HdrCompatibilityEnabled())
+        {
+            _colorsHiResSwap?.Dispose();
+            _colorsHiResSwap = null;
+        }
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiRes);
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
             BlendState.Opaque,
@@ -1297,10 +1314,62 @@ internal sealed class SmoothLighting
         Main.spriteBatch.End();
     }
 
+    internal void SaveLightMap()
+    {
+        if (_colorsHiRes is null || !_smoothLightingHiResComplete)
+        {
+            return;
+        }
+
+        TextureUtils.MakeSize(
+            ref _colorsHiResSwap,
+            _colorsHiRes.Width,
+            _colorsHiRes.Height,
+            TextureUtils.LightMapFormat
+        );
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiResSwap);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(_colorsHiRes, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        _lightMapTileAreaSwap = _lightMapTileArea;
+        _smoothLightingHiResCompleteSwap = true;
+    }
+
+    internal void SwapLightMap()
+    {
+        if (
+            _colorsHiRes is null
+            || _colorsHiResSwap is null
+            || !(_smoothLightingHiResComplete || _smoothLightingHiResCompleteSwap)
+        )
+        {
+            return;
+        }
+
+        (_colorsHiRes, _colorsHiResSwap) = (_colorsHiResSwap, _colorsHiRes);
+        (_lightMapTileArea, _lightMapTileAreaSwap) = (
+            _lightMapTileAreaSwap,
+            _lightMapTileArea
+        );
+        (_smoothLightingHiResComplete, _smoothLightingHiResCompleteSwap) = (
+            _smoothLightingHiResCompleteSwap,
+            _smoothLightingHiResComplete
+        );
+    }
+
     internal void DrawSmoothLighting(
         RenderTarget2D target,
         bool background,
         bool disableNormalMaps = false,
+        bool invertOverbright = false,
         RenderTarget2D tmpTarget = null,
         RenderTarget2D ambientOcclusionTarget = null
     )
@@ -1345,6 +1414,7 @@ internal sealed class SmoothLighting
             background,
             disableNormalMaps,
             doScaling,
+            invertOverbright,
             ambientOcclusionTarget
         );
 
@@ -1378,7 +1448,8 @@ internal sealed class SmoothLighting
         bool background,
         bool skipFinalPass = false,
         bool disableNormalMaps = false,
-        bool tileEntities = false,
+        bool doOverbrightMax = false,
+        bool invertOverbright = false,
         RenderTarget2D ambientOcclusionTarget = null,
         Texture2D glow = null,
         Texture2D lightedGlow = null
@@ -1406,7 +1477,8 @@ internal sealed class SmoothLighting
             target,
             background,
             disableNormalMaps,
-            tileEntities,
+            doOverbrightMax,
+            invertOverbright,
             ambientOcclusionTarget
         );
 
@@ -1493,6 +1565,7 @@ internal sealed class SmoothLighting
         bool background,
         bool disableNormalMaps,
         bool doScaling,
+        bool invertOverbright,
         RenderTarget2D ambientOcclusionTarget
     )
     {
@@ -1513,7 +1586,7 @@ internal sealed class SmoothLighting
         {
             if (!_smoothLightingHiResComplete)
             {
-                RenderHiResLighting(lightMapTexture, ref _colorsHiRes);
+                RenderHiResLighting(lightMapTexture);
                 _smoothLightingHiResComplete = true;
             }
 
@@ -1601,7 +1674,9 @@ internal sealed class SmoothLighting
                         : _normalsOverbrightShader
                 : _normalsShader
             : doScaling // doOverbright is guaranteed to be true here
-                ? _overbrightMaxShader // if doScaling is true we're doing post-processing
+                ? invertOverbright // if doScaling is true we're doing post-processing
+                    ? _inverseOverbrightMaxHiDefShader
+                    : _overbrightMaxShader
                 : lightOnly
                     ? background
                         ? doAmbientOcclusion

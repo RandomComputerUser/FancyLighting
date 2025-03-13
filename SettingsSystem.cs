@@ -47,7 +47,7 @@ internal sealed class SettingsSystem : ModSystem
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
-        PostProcessing.CalculateHiDefSurfaceBrightness();
+        PostProcessing.RecalculateHiDefSurfaceBrightness();
 
         var needsPostProcessing = NeedsPostProcessing();
         if (needsPostProcessing && !_needsPostProcessing)
@@ -91,6 +91,10 @@ internal sealed class SettingsSystem : ModSystem
             )
             || LightingConfig.Instance.HiDefFeaturesEnabled()
         );
+
+    internal static bool HdrCompatibilityEnabled() =>
+        PreferencesConfig.Instance.UseHdrCompatibilityFixes
+        && LightingConfig.Instance.HiDefFeaturesEnabled();
 
     private static void DoNothing() { }
 }

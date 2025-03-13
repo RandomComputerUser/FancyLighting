@@ -93,6 +93,15 @@ PreferencesConfig: {
 			'''
 	}
 
+	UseHdrCompatibilityFixes: {
+		Label: Mod Compatibility Fixes for Full HDR
+		Tooltip:
+			'''
+			Enables fixes that may improve mod compatibility when using full HDR rendering
+			Has a minor impact on visuals and performance
+			'''
+	}
+
 	RenderOnlyLight: {
 		Label: (Debug) Show Light Colors
 		Tooltip: When enabled, light colors are shown directly, and most textures are hidden

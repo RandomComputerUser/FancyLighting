@@ -562,19 +562,58 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.ScreenFormat
         );
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
+        if (SettingsSystem.HdrCompatibilityEnabled())
+        {
+            _smoothLightingInstance.DrawSmoothLighting(
+                target,
+                false,
+                true,
+                true,
+                tmpTarget: _backgroundTarget
+            );
+            _smoothLightingInstance.SaveLightMap();
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Immediate,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            _smoothLightingInstance.ApplyBrightenShader(
+                PostProcessing.CalculateHiDefBackgroundBrightness()
+            );
+            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(target);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(_backgroundTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+        }
+        else
+        {
+            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(target);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -609,19 +648,50 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.ScreenFormat
         );
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
+        if (SettingsSystem.HdrCompatibilityEnabled())
+        {
+            _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
+            _smoothLightingInstance.DrawSmoothLightingCameraMode(
+                _cameraModeBackgroundTarget,
+                _cameraModeTarget,
+                false,
+                false,
+                true,
+                true,
+                true
+            );
+            _smoothLightingInstance.SaveLightMap();
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Immediate,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            _smoothLightingInstance.ApplyBrightenShader(
+                PostProcessing.CalculateHiDefBackgroundBrightness()
+            );
+            Main.spriteBatch.Draw(_cameraModeBackgroundTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+        }
+        else
+        {
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        }
 
         Main.spriteBatch.Begin();
     }
@@ -650,7 +720,7 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
-        sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightness;
+        sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightnessMult;
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -1503,7 +1573,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        lightColor *= PostProcessing.HiDefBackgroundBrightness;
+        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
     }
 
     private static void _TileLightScanner_ApplyHellLight(
@@ -1522,7 +1592,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        lightColor *= PostProcessing.HiDefBackgroundBrightness;
+        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
     }
 
     private static void _TileLightScanner_ApplyLiquidLight(
@@ -2028,6 +2098,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || !LightingConfig.Instance.DrawOverbright()
+            || SettingsSystem.HdrCompatibilityEnabled()
         )
         {
             orig(self, area, settings);
@@ -2053,6 +2124,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || !LightingConfig.Instance.DrawOverbright()
+            || SettingsSystem.HdrCompatibilityEnabled()
         )
         {
             orig(self, gameTime);

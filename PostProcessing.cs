@@ -12,7 +12,7 @@ namespace FancyLighting;
 internal sealed class PostProcessing
 {
     internal const float HiDefBrightnessScale = 0.5f;
-    public static float HiDefBackgroundBrightness { get; private set; }
+    public static float HiDefBackgroundBrightnessMult { get; private set; }
 
     private readonly Texture2D _ditherNoise;
 
@@ -67,10 +67,15 @@ internal sealed class PostProcessing
         _blurRenderer.Unload();
     }
 
-    internal static void CalculateHiDefSurfaceBrightness()
+    internal static void RecalculateHiDefSurfaceBrightness()
     {
-        HiDefBackgroundBrightness = 1.5f;
+        HiDefBackgroundBrightnessMult = 1.5f;
     }
+
+    internal static float CalculateHiDefBackgroundBrightness() =>
+        HiDefBrightnessScale
+        * HiDefBackgroundBrightnessMult
+        * (0.88f * Lighting.GlobalBrightness);
 
     internal void ApplyPostProcessing(
         RenderTarget2D target,
@@ -84,6 +89,8 @@ internal sealed class PostProcessing
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = LightingConfig.Instance.BloomEnabled();
+        var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
+        var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
@@ -95,32 +102,50 @@ internal sealed class PostProcessing
         )
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
-            if (cameraMode)
-            {
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
 
-                smoothLightingInstance.GetCameraModeRenderTarget(
-                    FancyLightingMod._cameraModeTarget
-                );
-                smoothLightingInstance.DrawSmoothLightingCameraMode(
-                    nextTarget,
-                    currTarget,
-                    false,
-                    false,
-                    true,
-                    true
-                );
-                (currTarget, nextTarget) = (nextTarget, currTarget);
-            }
-            else
+            var swapLightMap =
+                hdrCompat && LightingConfig.Instance.OverbrightOverrideBackground();
+
+            if (swapLightMap)
             {
-                smoothLightingInstance.DrawSmoothLighting(
-                    currTarget,
-                    false,
-                    true,
-                    nextTarget
-                );
+                smoothLightingInstance.SwapLightMap();
+            }
+            try
+            {
+                if (cameraMode)
+                {
+                    Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                    Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
+                    smoothLightingInstance.GetCameraModeRenderTarget(
+                        FancyLightingMod._cameraModeTarget
+                    );
+                    smoothLightingInstance.DrawSmoothLightingCameraMode(
+                        nextTarget,
+                        currTarget,
+                        false,
+                        false,
+                        true,
+                        true
+                    );
+                    (currTarget, nextTarget) = (nextTarget, currTarget);
+                }
+                else
+                {
+                    smoothLightingInstance.DrawSmoothLighting(
+                        currTarget,
+                        false,
+                        true,
+                        tmpTarget: nextTarget
+                    );
+                }
+            }
+            finally
+            {
+                if (swapLightMap)
+                {
+                    smoothLightingInstance.SwapLightMap();
+                }
             }
 
             if (hiDef)
@@ -139,15 +164,13 @@ internal sealed class PostProcessing
                 exposure = MathF.Pow(exposure, gamma);
                 exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
 
-                if (backgroundTarget is not null)
+                if (separateBackground)
                 {
                     // The brightness of the background isn't normally affected by
                     // Lighting.GlobalBrightness (which is reduced when the player
                     // has the Darkness debuff), but I've decided to change that
                     var backgroundBrightness = ColorUtils.GammaToLinear(
-                        HiDefBrightnessScale
-                            * HiDefBackgroundBrightness
-                            * (0.88f * Lighting.GlobalBrightness)
+                        CalculateHiDefBackgroundBrightness()
                     );
                     _gammaToLinearShader
                         .SetParameter("Exposure", exposure * backgroundBrightness)
@@ -166,7 +189,7 @@ internal sealed class PostProcessing
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
-            else if (backgroundTarget is not null)
+            else if (separateBackground)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);

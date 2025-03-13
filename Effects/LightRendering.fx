@@ -427,6 +427,14 @@ float4 OverbrightMaxHiDef(float2 coords : TEXCOORD0) : COLOR0
     return float4(max(lightColor, 1), 1) * texColor;
 }
 
+float4 InverseOverbrightMaxHiDef(float2 coords : TEXCOORD0) : COLOR0
+{
+    float3 lightColor = OverbrightLightAtHiDef(coords);
+    float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
+
+    return texColor / float4(max(lightColor, 1), 1);
+}
+
 float4 LightOnly(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     return color * tex2D(TextureSampler, coords).a;
@@ -584,6 +592,11 @@ technique Technique1
     pass OverbrightMaxHiDef
     {
         PixelShader = compile ps_3_0 OverbrightMaxHiDef();
+    }
+
+    pass InverseOverbrightMaxHiDef
+    {
+        PixelShader = compile ps_3_0 InverseOverbrightMaxHiDef();
     }
 
     pass LightOnly
