@@ -410,6 +410,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.RenderTiles += _Main_RenderTiles;
         On_Main.RenderTiles2 += _Main_RenderTiles2;
         On_Main.RenderWalls += _Main_RenderWalls;
+        On_Main.DoLightTiles += _Main_DoLightTiles;
         On_LightingEngine.ProcessBlur += _LightingEngine_ProcessBlur;
         On_LightMap.Blur += _LightMap_Blur;
         On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
@@ -545,7 +546,10 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self);
 
-        if (!LightingConfig.Instance.OverbrightOverrideBackground())
+        if (
+            !LightingConfig.Instance.OverbrightOverrideBackground()
+            || SettingsSystem.HdrCompatibilityEnabled()
+        )
         {
             return;
         }
@@ -562,58 +566,19 @@ public sealed class FancyLightingMod : Mod
             TextureUtils.ScreenFormat
         );
 
-        if (SettingsSystem.HdrCompatibilityEnabled())
-        {
-            _smoothLightingInstance.DrawSmoothLighting(
-                target,
-                false,
-                true,
-                true,
-                tmpTarget: _backgroundTarget
-            );
-            _smoothLightingInstance.SaveLightMap();
+        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            _smoothLightingInstance.ApplyBrightenShader(
-                PostProcessing.CalculateHiDefBackgroundBrightness()
-            );
-            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(target);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            Main.spriteBatch.Draw(_backgroundTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-        }
-        else
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(target);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        }
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -1491,6 +1456,77 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.Draw(_tmpTarget2, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
+    }
+
+    private void _Main_DoLightTiles(On_Main.orig_DoLightTiles orig, Main self)
+    {
+        orig(self);
+
+        if (
+            !LightingConfig.Instance.OverbrightOverrideBackground()
+            || !SettingsSystem.HdrCompatibilityEnabled()
+            || _inCameraMode
+        )
+        {
+            return;
+        }
+
+        var samplerState = MainGraphics.GetSamplerState();
+        var transform = MainGraphics.GetTransformMatrix();
+        Main.spriteBatch.End();
+
+        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+        TextureUtils.MakeSize(
+            ref _backgroundTarget,
+            target.Width,
+            target.Height,
+            TextureUtils.ScreenFormat
+        );
+
+        _smoothLightingInstance.CalculateSmoothLighting();
+        _smoothLightingInstance.DrawSmoothLighting(
+            target,
+            false,
+            true,
+            true,
+            tmpTarget: _backgroundTarget
+        );
+        _smoothLightingInstance.SaveLightMap();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _smoothLightingInstance.ApplyBrightenShader(
+            PostProcessing.CalculateHiDefBackgroundBrightness()
+        );
+        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(_backgroundTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            Main.Rasterizer,
+            null,
+            transform
+        );
     }
 
     // Lighting engine
