@@ -619,6 +619,7 @@ public sealed class FancyLightingMod : Mod
 
         if (SettingsSystem.HdrCompatibilityEnabled())
         {
+            _smoothLightingInstance.CalculateSmoothLighting(true);
             _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
             _smoothLightingInstance.DrawSmoothLightingCameraMode(
                 _cameraModeBackgroundTarget,
@@ -629,7 +630,6 @@ public sealed class FancyLightingMod : Mod
                 true,
                 true
             );
-            _smoothLightingInstance.SaveLightMap();
 
             Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
             Main.spriteBatch.Begin(
@@ -1495,7 +1495,6 @@ public sealed class FancyLightingMod : Mod
             true,
             tmpTarget: _backgroundTarget
         );
-        _smoothLightingInstance.SaveLightMap();
 
         Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
         Main.spriteBatch.Begin(

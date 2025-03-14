@@ -18,12 +18,10 @@ internal sealed class SmoothLighting
 {
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
-    private RenderTarget2D _colorsHiResSwap;
 
     private readonly Texture2D _ditherNoise;
 
     private Rectangle _lightMapTileArea;
-    private Rectangle _lightMapTileAreaSwap;
 
     private RenderTarget2D _drawTarget;
 
@@ -39,7 +37,6 @@ internal sealed class SmoothLighting
     private bool _smoothLightingLightMapValid;
     private bool _smoothLightingComplete;
     private bool _smoothLightingHiResComplete;
-    private bool _smoothLightingHiResCompleteSwap;
 
     internal RenderTarget2D _cameraModeTarget1;
     internal RenderTarget2D _cameraModeTarget2;
@@ -72,7 +69,7 @@ internal sealed class SmoothLighting
     {
         _modInstance = mod;
 
-        _lightMapTileArea = _lightMapTileAreaSwap = new(0, 0, 0, 0);
+        _lightMapTileArea = new(0, 0, 0, 0);
 
         _smoothLightingLightMapValid = false;
         _smoothLightingComplete = false;
@@ -180,7 +177,6 @@ internal sealed class SmoothLighting
         _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
-        _colorsHiResSwap?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _ditherNoise?.Dispose();
@@ -1282,12 +1278,6 @@ internal sealed class SmoothLighting
             TextureUtils.LightMapFormat
         );
 
-        if (!SettingsSystem.HdrCompatibilityEnabled())
-        {
-            _colorsHiResSwap?.Dispose();
-            _colorsHiResSwap = null;
-        }
-
         Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiRes);
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -1312,57 +1302,6 @@ internal sealed class SmoothLighting
             0f
         );
         Main.spriteBatch.End();
-    }
-
-    internal void SaveLightMap()
-    {
-        if (_colorsHiRes is null || !_smoothLightingHiResComplete)
-        {
-            return;
-        }
-
-        TextureUtils.MakeSize(
-            ref _colorsHiResSwap,
-            _colorsHiRes.Width,
-            _colorsHiRes.Height,
-            TextureUtils.LightMapFormat
-        );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiResSwap);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_colorsHiRes, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        _lightMapTileAreaSwap = _lightMapTileArea;
-        _smoothLightingHiResCompleteSwap = true;
-    }
-
-    internal void SwapLightMap()
-    {
-        if (
-            _colorsHiRes is null
-            || _colorsHiResSwap is null
-            || !(_smoothLightingHiResComplete || _smoothLightingHiResCompleteSwap)
-        )
-        {
-            return;
-        }
-
-        (_colorsHiRes, _colorsHiResSwap) = (_colorsHiResSwap, _colorsHiRes);
-        (_lightMapTileArea, _lightMapTileAreaSwap) = (
-            _lightMapTileAreaSwap,
-            _lightMapTileArea
-        );
-        (_smoothLightingHiResComplete, _smoothLightingHiResCompleteSwap) = (
-            _smoothLightingHiResCompleteSwap,
-            _smoothLightingHiResComplete
-        );
     }
 
     internal void DrawSmoothLighting(

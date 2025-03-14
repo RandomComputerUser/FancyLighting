@@ -102,50 +102,32 @@ internal sealed class PostProcessing
         )
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
-
-            var swapLightMap =
-                hdrCompat && LightingConfig.Instance.OverbrightOverrideBackground();
-
-            if (swapLightMap)
+            if (cameraMode)
             {
-                smoothLightingInstance.SwapLightMap();
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
+                smoothLightingInstance.GetCameraModeRenderTarget(
+                    FancyLightingMod._cameraModeTarget
+                );
+                smoothLightingInstance.DrawSmoothLightingCameraMode(
+                    nextTarget,
+                    currTarget,
+                    false,
+                    false,
+                    true,
+                    true
+                );
+                (currTarget, nextTarget) = (nextTarget, currTarget);
             }
-            try
+            else
             {
-                if (cameraMode)
-                {
-                    Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                    Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-
-                    smoothLightingInstance.GetCameraModeRenderTarget(
-                        FancyLightingMod._cameraModeTarget
-                    );
-                    smoothLightingInstance.DrawSmoothLightingCameraMode(
-                        nextTarget,
-                        currTarget,
-                        false,
-                        false,
-                        true,
-                        true
-                    );
-                    (currTarget, nextTarget) = (nextTarget, currTarget);
-                }
-                else
-                {
-                    smoothLightingInstance.DrawSmoothLighting(
-                        currTarget,
-                        false,
-                        true,
-                        tmpTarget: nextTarget
-                    );
-                }
-            }
-            finally
-            {
-                if (swapLightMap)
-                {
-                    smoothLightingInstance.SwapLightMap();
-                }
+                smoothLightingInstance.DrawSmoothLighting(
+                    currTarget,
+                    false,
+                    true,
+                    tmpTarget: nextTarget
+                );
             }
 
             if (hiDef)

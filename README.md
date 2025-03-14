@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.12 (2025-03-14)**
+- Simplified some code related to full HDR mod compatibility fixes
