@@ -9,6 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.11 (2025-03-13)**
-- Added a setting to enable mod compatibility fixes for full HDR rendering
-- Made the background slightly darker when using full HDR rendering
+**v0.9.12 (2025-03-14)**
