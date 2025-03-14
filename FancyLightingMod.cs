@@ -29,6 +29,8 @@ public sealed class FancyLightingMod : Mod
     private static bool _preventDust;
     private static bool _makePartialLiquidTranslucent;
 
+    internal static bool _doingFilterManagerCapture;
+
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
     private ICustomLightingEngine _fancyLightingEngineInstance;
@@ -155,6 +157,8 @@ public sealed class FancyLightingMod : Mod
         _disableLightColorOverride = false;
         _preventDust = false;
         _makePartialLiquidTranslucent = false;
+
+        _doingFilterManagerCapture = false;
 
         _smoothLightingInstance = new SmoothLighting(this);
         _ambientOcclusionInstance = new AmbientOcclusion();
@@ -429,6 +433,7 @@ public sealed class FancyLightingMod : Mod
 
     private void AddPriorityHooks()
     {
+        On_FilterManager.BeginCapture += _FilterManager_BeginCapture;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_Main.DrawBlack += _Main_DrawBlack;
     }
@@ -509,6 +514,18 @@ public sealed class FancyLightingMod : Mod
     }
 
     // Post-processing
+    private void _FilterManager_BeginCapture(
+        On_FilterManager.orig_BeginCapture orig,
+        FilterManager self,
+        RenderTarget2D screenTarget1,
+        Color clearColor
+    )
+    {
+        orig(self, screenTarget1, clearColor);
+
+        _doingFilterManagerCapture = true;
+    }
+
     private void _FilterManager_EndCapture(
         On_FilterManager.orig_EndCapture orig,
         FilterManager self,
@@ -518,6 +535,8 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
+        _doingFilterManagerCapture = false;
+
         if (!SettingsSystem.NeedsPostProcessing())
         {
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
@@ -2159,6 +2178,7 @@ public sealed class FancyLightingMod : Mod
     private void _Main_DoDraw(On_Main.orig_DoDraw orig, Main self, GameTime gameTime)
     {
         ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
+        _doingFilterManagerCapture = false;
 
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
