@@ -599,7 +599,11 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, flat);
 
-        if (!_inCameraMode || !LightingConfig.Instance.OverbrightOverrideBackground())
+        if (
+            !_inCameraMode
+            || !LightingConfig.Instance.SmoothLightingEnabled()
+            || !LightingConfig.Instance.DrawOverbright()
+        )
         {
             return;
         }
