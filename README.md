@@ -10,4 +10,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.13 (2025-03-15)**
+- Made ambient occlusion softer by default
 - Increased the default bloom strength

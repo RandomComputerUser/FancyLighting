@@ -43,8 +43,8 @@ public static class DefaultOptions
     public const bool DoTileEntityAmbientOcclusion = false;
 
     // Ambient Occlusion Preferences
-    public const int AmbientOcclusionRadius = 3;
-    public const int AmbientOcclusionIntensity = 200;
+    public const int AmbientOcclusionRadius = 4;
+    public const int AmbientOcclusionIntensity = 150;
     public const int AmbientLightProportion = 50;
 
     // Fancy Lighting Engine
