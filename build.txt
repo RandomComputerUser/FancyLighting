@@ -1,6 +1,6 @@
 displayName = Fancy Lighting
 author = RandomComputerUser
-version = 0.9.13
+version = 0.9.14
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
 buildIgnore = description_workshop.txt, icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user

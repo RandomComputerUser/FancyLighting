@@ -218,7 +218,7 @@ LightingConfig: {
 			'''
 			Toggles whether to use smooth lighting
 			When disabled, vanilla lighting visuals are used
-			Smooth lighting is primarily GPU intensive
+			[c/00FFFF:Primarily affected by single-threaded CPU and GPU performance]
 			'''
 	}
 
@@ -278,7 +278,7 @@ LightingConfig: {
 			'''
 			Toggles whether to use ambient occlusion
 			When enabled, tiles produce shadows in front of walls
-			Ambient occlusion is primarily GPU intensive
+			[c/00FFFF:Primarily affected by GPU performance]
 			'''
 	}
 
@@ -311,8 +311,7 @@ LightingConfig: {
 			Toggles whether to use a new lighting engine
 			When enabled, light is spread more accurately with noticeable shadows
 			Performance is affected by the number of light sources in the scene
-			Lighting performance is affected primarily by the CPU; the GPU is not used
-			The fancy lighting engine is primarily CPU intensive
+			[c/00FFFF:Primarily affected by multithreaded CPU performance]
 			'''
 	}
 

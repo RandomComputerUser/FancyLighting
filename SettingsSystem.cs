@@ -79,6 +79,9 @@ internal sealed class SettingsSystem : ModSystem
         TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
+    internal static bool AllowPostProcessing() =>
+        !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
+
     internal static bool NeedsPostProcessing() =>
         PreferencesConfig.Instance is not null
         && LightingConfig.Instance is not null
@@ -89,7 +92,6 @@ internal sealed class SettingsSystem : ModSystem
                 LightingConfig.Instance.SmoothLightingEnabled()
                 && LightingConfig.Instance.DrawOverbright()
             )
-            || LightingConfig.Instance.HiDefFeaturesEnabled()
         );
 
     internal static bool HdrCompatibilityEnabled() =>
