@@ -538,7 +538,7 @@ public sealed class FancyLightingMod : Mod
         _doingFilterManagerCapture = false;
 
         if (
-            (!SettingsSystem.AllowPostProcessing() && !_inCameraMode)
+            (!SettingsSystem.PostProcessingAllowed() && !_inCameraMode)
             || !SettingsSystem.NeedsPostProcessing()
         )
         {

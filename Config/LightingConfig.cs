@@ -40,7 +40,7 @@ public sealed class LightingConfig : ModConfig
     internal bool OverbrightOverrideBackground() =>
         SmoothLightingEnabled()
         && DrawOverbright()
-        && SettingsSystem.AllowPostProcessing()
+        && SettingsSystem.PostProcessingAllowed()
         && FancyLightingMod._doingFilterManagerCapture;
 
     internal bool HiDefFeaturesEnabled() =>

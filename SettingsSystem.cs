@@ -79,7 +79,7 @@ internal sealed class SettingsSystem : ModSystem
         TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
-    internal static bool AllowPostProcessing() =>
+    internal static bool PostProcessingAllowed() =>
         !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
     internal static bool NeedsPostProcessing() =>
