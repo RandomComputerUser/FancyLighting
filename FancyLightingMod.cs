@@ -153,6 +153,7 @@ public sealed class FancyLightingMod : Mod
         SkyColors.AddSkyColorsHooks();
 
         LightsCompatibility.Load();
+        SpiritReforgedCompatibility.Load();
 
         Main.QueueMainThreadAction(() =>
         {
@@ -181,6 +182,7 @@ public sealed class FancyLightingMod : Mod
 
             SettingsSystem.EnsureRenderTargets(true);
             LightsCompatibility.Unload();
+            SpiritReforgedCompatibility.Unload();
         });
 
         base.Unload();

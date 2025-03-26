@@ -26,9 +26,8 @@ internal static class LightsCompatibility
         }
 
         var modClass = ModLoader.GetMod("Lights").GetType();
-        MethodInfo detourMethod;
 
-        detourMethod = modClass.GetMethod(
+        var detourMethod = modClass.GetMethod(
             "NewScreenTarget",
             BindingFlags.Public | BindingFlags.Instance
         );
