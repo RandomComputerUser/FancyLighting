@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -7,13 +7,6 @@ namespace FancyLighting.Utils;
 
 internal static class MainGraphics
 {
-    private static FieldInfo _field_samplerState = typeof(SpriteBatch)
-        .GetField("samplerState", BindingFlags.NonPublic | BindingFlags.Instance)
-        .AssertNotNull();
-    private static FieldInfo _field_transformMatrix = typeof(SpriteBatch)
-        .GetField("transformMatrix", BindingFlags.NonPublic | BindingFlags.Instance)
-        .AssertNotNull();
-
     public static RenderTarget2D GetRenderTarget()
     {
         var renderTargets = Main.graphics.GraphicsDevice.GetRenderTargets();
@@ -25,10 +18,8 @@ internal static class MainGraphics
     }
 
     public static SamplerState GetSamplerState() =>
-        (SamplerState)(
-            _field_samplerState.GetValue(Main.spriteBatch) ?? SamplerState.LinearClamp
-        );
+        SpriteBatchAccessors.samplerState(Main.spriteBatch) ?? SamplerState.LinearClamp;
 
     public static Matrix GetTransformMatrix() =>
-        (Matrix)(_field_transformMatrix.GetValue(Main.spriteBatch) ?? Matrix.Identity);
+        SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
 }

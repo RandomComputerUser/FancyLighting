@@ -5,6 +5,7 @@ using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
 using FancyLighting.ModCompatibility;
 using FancyLighting.Utils;
+using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -36,26 +37,8 @@ public sealed class FancyLightingMod : Mod
     private ICustomLightingEngine _fancyLightingEngineInstance;
     private PostProcessing _postProcessingInstance;
 
-    internal FieldInfo _field_activeEngine;
-    private FieldInfo _field_activeLightMap;
-    internal FieldInfo _field_workingProcessedArea;
-    private FieldInfo _field_colors;
-    private FieldInfo _field_mask;
     private FieldInfo _field_filterFrameBuffer1;
     private FieldInfo _field_filterFrameBuffer2;
-
-    private delegate void TileDrawingMethod(TileDrawing self);
-
-    private TileDrawingMethod _method_DrawMultiTileVines;
-    private TileDrawingMethod _method_DrawMultiTileGrass;
-    private TileDrawingMethod _method_DrawVoidLenses;
-    private TileDrawingMethod _method_DrawTeleportationPylons;
-    private TileDrawingMethod _method_DrawMasterTrophies;
-    private TileDrawingMethod _method_DrawGrass;
-    private TileDrawingMethod _method_DrawAnyDirectionalGrass;
-    private TileDrawingMethod _method_DrawTrees;
-    private TileDrawingMethod _method_DrawVines;
-    private TileDrawingMethod _method_DrawReverseVines;
 
     internal static RenderTarget2D _cameraModeTarget;
     private static RenderTarget2D _cameraModeTmpTarget1;
@@ -111,7 +94,7 @@ public sealed class FancyLightingMod : Mod
             return false;
         }
 
-        var activeEngine = _field_activeEngine.GetValue(null);
+        var activeEngine = LightingAccessors._activeEngine(null);
         if (activeEngine is not LightingEngine lightingEngine)
         {
             return false;
@@ -122,19 +105,20 @@ public sealed class FancyLightingMod : Mod
             return false;
         }
 
-        var lightMapInstance = (LightMap)
-            _field_activeLightMap.GetValue(lightingEngine).AssertNotNull();
+        var lightMapInstance = LightingEngineAccessors
+            ._activeLightMap(lightingEngine)
+            .AssertNotNull();
 
         if (doOverride)
         {
-            _smoothLightingInstance._tmpLights = (Vector3[])
-                _field_colors.GetValue(lightMapInstance).AssertNotNull();
+            _smoothLightingInstance._tmpLights = LightMapAccessors
+                ._colors(lightMapInstance)
+                .AssertNotNull();
         }
 
-        _field_colors.SetValue(
-            lightMapInstance,
-            doOverride ? overrideLights : _smoothLightingInstance._tmpLights
-        );
+        LightMapAccessors._colors(lightMapInstance) = doOverride
+            ? overrideLights
+            : _smoothLightingInstance._tmpLights;
 
         if (!doOverride)
         {
@@ -160,140 +144,10 @@ public sealed class FancyLightingMod : Mod
 
         _doingFilterManagerCapture = false;
 
-        _smoothLightingInstance = new SmoothLighting(this);
+        _smoothLightingInstance = new SmoothLighting();
         _ambientOcclusionInstance = new AmbientOcclusion();
         SetFancyLightingEngineInstance();
         _postProcessingInstance = new PostProcessing();
-
-        _field_activeEngine = typeof(Lighting)
-            .GetField("_activeEngine", BindingFlags.NonPublic | BindingFlags.Static)
-            .AssertNotNull();
-        _field_activeLightMap = typeof(LightingEngine)
-            .GetField("_activeLightMap", BindingFlags.NonPublic | BindingFlags.Instance)
-            .AssertNotNull();
-        _field_workingProcessedArea = typeof(LightingEngine)
-            .GetField(
-                "_workingProcessedArea",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            )
-            .AssertNotNull();
-        _field_colors = typeof(LightMap)
-            .GetField("_colors", BindingFlags.NonPublic | BindingFlags.Instance)
-            .AssertNotNull();
-        _field_mask = typeof(LightMap)
-            .GetField("_mask", BindingFlags.NonPublic | BindingFlags.Instance)
-            .AssertNotNull();
-
-        _method_DrawMultiTileVines = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawMultiTileVines",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawMultiTileGrass = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawMultiTileGrass",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawVoidLenses = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawVoidLenses",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawTeleportationPylons = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawTeleportationPylons",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawMasterTrophies = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawMasterTrophies",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawGrass = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawGrass",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawAnyDirectionalGrass = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawAnyDirectionalGrass",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawTrees = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawTrees",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawVines = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawVines",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
-        _method_DrawReverseVines = (TileDrawingMethod)
-            Delegate.CreateDelegate(
-                typeof(TileDrawingMethod),
-                typeof(TileDrawing)
-                    .GetMethod(
-                        "DrawReverseVines",
-                        BindingFlags.NonPublic | BindingFlags.Instance,
-                        []
-                    )
-                    .AssertNotNull()
-            );
 
         AddHooks();
         SkyColors.AddSkyColorsHooks();
@@ -759,16 +613,16 @@ public sealed class FancyLightingMod : Mod
 
         _smoothLightingInstance.ApplyLightOnlyShader();
 
-        _method_DrawMultiTileVines(self);
-        _method_DrawMultiTileGrass(self);
-        _method_DrawVoidLenses(self);
-        _method_DrawTeleportationPylons(self);
-        _method_DrawMasterTrophies(self);
-        _method_DrawGrass(self);
-        _method_DrawAnyDirectionalGrass(self);
-        _method_DrawTrees(self);
-        _method_DrawVines(self);
-        _method_DrawReverseVines(self);
+        TileDrawingAccessors.DrawMultiTileVines(self);
+        TileDrawingAccessors.DrawMultiTileGrass(self);
+        TileDrawingAccessors.DrawVoidLenses(self);
+        TileDrawingAccessors.DrawTeleportationPylons(self);
+        TileDrawingAccessors.DrawMasterTrophies(self);
+        TileDrawingAccessors.DrawGrass(self);
+        TileDrawingAccessors.DrawAnyDirectionalGrass(self);
+        TileDrawingAccessors.DrawTrees(self);
+        TileDrawingAccessors.DrawVines(self);
+        TileDrawingAccessors.DrawReverseVines(self);
 
         Main.spriteBatch.End();
     }
@@ -1568,7 +1422,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         _fancyLightingEngineInstance.SetLightMapArea(
-            (Rectangle)_field_workingProcessedArea.GetValue(self).AssertNotNull()
+            LightingEngineAccessors._workingProcessedArea(self)
         );
         orig(self);
     }
@@ -1584,8 +1438,8 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var colors = (Vector3[])_field_colors.GetValue(self);
-        var lightMasks = (LightMaskMode[])_field_mask.GetValue(self);
+        var colors = LightMapAccessors._colors(self);
+        var lightMasks = LightMapAccessors._mask(self);
         if (colors is null || lightMasks is null)
         {
             orig(self);

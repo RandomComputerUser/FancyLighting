@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FancyLighting.Config;
 using FancyLighting.Utils;
+using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
@@ -44,8 +45,6 @@ internal sealed class SmoothLighting
     internal bool CanDrawSmoothLighting =>
         _smoothLightingComplete && LightingConfig.Instance.SmoothLightingEnabled();
 
-    private readonly FancyLightingMod _modInstance;
-
     private Shader _bicubicFilteringShader;
     private Shader _normalsShader;
     private Shader _normalsOverbrightShader;
@@ -65,10 +64,8 @@ internal sealed class SmoothLighting
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
-    public SmoothLighting(FancyLightingMod mod)
+    public SmoothLighting()
     {
-        _modInstance = mod;
-
         _lightMapTileArea = new(0, 0, 0, 0);
 
         _smoothLightingLightMapValid = false;
@@ -433,11 +430,9 @@ internal sealed class SmoothLighting
             }
         }
 
-        var lightEngine = (LightingEngine)_modInstance._field_activeEngine.GetValue(null);
-        var lightMapTileArea = (Rectangle)
-            _modInstance
-                ._field_workingProcessedArea.GetValue(lightEngine)
-                .AssertNotNull();
+        var lightEngine = (LightingEngine)
+            LightingAccessors._activeEngine(null).AssertNotNull();
+        var lightMapTileArea = LightingEngineAccessors._workingProcessedArea(lightEngine);
 
         if (blurLightMap)
         {
