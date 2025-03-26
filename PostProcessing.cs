@@ -11,6 +11,7 @@ namespace FancyLighting;
 
 internal sealed class PostProcessing
 {
+    // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
     public static float HiDefBackgroundBrightnessMult { get; private set; }
 

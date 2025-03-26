@@ -332,7 +332,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (SettingsSystem._hiDef)
         {
-            // Change if PostProcessing.HiDefBrightnessScale changes
+            // Update if PostProcessing.HiDefBrightnessScale changes
             light = (byte)Math.Min((int)light << 1, 255);
         }
 
