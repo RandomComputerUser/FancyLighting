@@ -9,6 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.15 (2025-03-26)**
-- Disabled the custom water lighting of Spirit Reforged when smooth lighting is enabled to prevent visual issues
-- Replaced most uses of reflection with UnsafeAccessorAttribute
+**v0.9.16 (2025-03-30)**
