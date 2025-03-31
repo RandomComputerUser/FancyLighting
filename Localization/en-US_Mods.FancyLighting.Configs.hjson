@@ -98,7 +98,7 @@ PreferencesConfig: {
 		Tooltip:
 			'''
 			Enables fixes that may improve mod compatibility when using full HDR rendering
-			Has a minor impact on visuals and performance
+			Has a small impact on visuals and performance
 			'''
 	}
 
@@ -106,7 +106,7 @@ PreferencesConfig: {
 		Label: Disable HDR During Boss Fights
 		Tooltip:
 			'''
-			Toggles whether to disable HDR rendering during boss fights
+			Disables HDR rendering during boss fights
 			HDR rendering may cause visual issues with some modded boss fights
 			'''
 	}
