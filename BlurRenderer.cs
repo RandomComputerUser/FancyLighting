@@ -82,7 +82,7 @@ internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
             var currWidth = (int)(width * scale);
             var currHeight = (int)(height * scale);
 
-            _blurTargets[i] = new RenderTarget2D(
+            _blurTargets[i] = new(
                 Main.graphics.GraphicsDevice,
                 currWidth,
                 currHeight,

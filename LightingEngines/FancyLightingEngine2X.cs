@@ -532,7 +532,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
                 SetLight(
                     ref lightMap[i],
                     Vec4.Dot(
-                        new Vec4(horizontalLight, verticalLight.X, verticalLight.Y),
+                        new(horizontalLight, verticalLight.X, verticalLight.Y),
                         spread.LightFrom
                     ) * color
                 );

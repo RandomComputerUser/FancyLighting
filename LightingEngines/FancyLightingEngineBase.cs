@@ -879,7 +879,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 for (var j = height * i; j < endIndex; ++j)
                 {
                     ref var value = ref destination[j];
-                    var max = Vec3.Max(new Vec3(value.X, value.Y, value.Z), lights[j]);
+                    var max = Vec3.Max(new(value.X, value.Y, value.Z), lights[j]);
                     value.X = max.X;
                     value.Y = max.Y;
                     value.Z = max.Z;

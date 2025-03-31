@@ -37,7 +37,7 @@ internal static class TextureUtils
         )
         {
             target?.Dispose();
-            target = new RenderTarget2D(
+            target = new(
                 Main.graphics.GraphicsDevice,
                 width,
                 height,
@@ -72,13 +72,7 @@ internal static class TextureUtils
             }
 
             texture?.Dispose();
-            texture = new Texture2D(
-                Main.graphics.GraphicsDevice,
-                width,
-                height,
-                false,
-                format
-            );
+            texture = new(Main.graphics.GraphicsDevice, width, height, false, format);
         }
     }
 
@@ -100,7 +94,7 @@ internal static class TextureUtils
         var multisampleCount = target.MultiSampleCount;
         var usage = target.RenderTargetUsage;
         target.Dispose();
-        target = new RenderTarget2D(
+        target = new(
             Main.graphics.GraphicsDevice,
             width,
             height,

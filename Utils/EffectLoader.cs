@@ -23,7 +23,7 @@ internal static class EffectLoader
             hiDefPassName = null;
         }
 
-        return new Shader(effect, passName, hiDefPassName);
+        return new(effect, passName, hiDefPassName);
     }
 
     public static void UnloadEffect(ref Shader shader)

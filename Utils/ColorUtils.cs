@@ -77,7 +77,7 @@ internal static class ColorUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assign(ref HalfVector4 color, Vector3 rgb)
     {
-        color = new HalfVector4(rgb.X, rgb.Y, rgb.Z, 1f);
+        color = new(rgb.X, rgb.Y, rgb.Z, 1f);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

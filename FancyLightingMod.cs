@@ -144,10 +144,10 @@ public sealed class FancyLightingMod : Mod
 
         _doingFilterManagerCapture = false;
 
-        _smoothLightingInstance = new SmoothLighting();
-        _ambientOcclusionInstance = new AmbientOcclusion();
+        _smoothLightingInstance = new();
+        _ambientOcclusionInstance = new();
         SetFancyLightingEngineInstance();
-        _postProcessingInstance = new PostProcessing();
+        _postProcessingInstance = new();
 
         AddHooks();
 

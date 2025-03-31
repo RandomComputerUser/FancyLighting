@@ -1334,7 +1334,7 @@ internal sealed class SmoothLighting
                 TextureUtils.ScreenFormat
             );
             tmpTarget = _drawTarget;
-            offset = new Vector2(Main.offScreenRange);
+            offset = new(Main.offScreenRange);
         }
         else
         {

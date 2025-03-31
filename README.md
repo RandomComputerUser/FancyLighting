@@ -14,3 +14,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Optimized smooth lighting
 - Optimized ambient occlusion
 - Fixed a rare bug that converted a world to a Constant world when using fancy sky colors
+- Made small improvements to the code
