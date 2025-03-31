@@ -441,7 +441,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         LightingAction lightingAction
     )
     {
-        var taskCount = PreferencesConfig.Instance.ThreadCount;
+        var taskCount = SettingsSystem._parallelOptions.MaxDegreeOfParallelism;
 
         if (countTemporalData)
         {
@@ -506,7 +506,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         Parallel.For(
             0,
             ((lightMapSize - 1) / ChunkSize) + 1,
-            new ParallelOptions { MaxDegreeOfParallelism = taskCount },
+            SettingsSystem._parallelOptions,
             (i) =>
             {
                 var begin = ChunkSize * i;
