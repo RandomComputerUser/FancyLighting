@@ -114,6 +114,9 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }
 
+    [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
+    public bool DisableHdrDuringBossFights { get; set; }
+
     [DefaultValue(DefaultOptions.RenderOnlyLight)]
     public bool RenderOnlyLight { get; set; }
 

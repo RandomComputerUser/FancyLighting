@@ -102,6 +102,15 @@ PreferencesConfig: {
 			'''
 	}
 
+	DisableHdrDuringBossFights: {
+		Label: Disable HDR During Boss Fights
+		Tooltip:
+			'''
+			Toggles whether to disable HDR rendering during boss fights
+			HDR rendering may cause visual issues with some modded boss fights
+			'''
+	}
+
 	RenderOnlyLight: {
 		Label: (Debug) Show Light Colors
 		Tooltip: When enabled, light colors are shown directly, and most textures are hidden

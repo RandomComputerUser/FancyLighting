@@ -35,6 +35,7 @@ public static class DefaultOptions
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
     public const bool UseHdrCompatibilityFixes = false;
+    public const bool DisableHdrDuringBossFights = false;
     public const bool RenderOnlyLight = false;
 
     // Ambient Occlusion

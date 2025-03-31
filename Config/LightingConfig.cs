@@ -35,7 +35,8 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
 
     internal bool DrawOverbright() =>
-        LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr;
+        LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr
+        && !SettingsSystem.HdrDisabled();
 
     internal bool OverbrightOverrideBackground() =>
         SmoothLightingEnabled()
@@ -44,7 +45,9 @@ public sealed class LightingConfig : ModConfig
         && FancyLightingMod._doingFilterManagerCapture;
 
     internal bool HiDefFeaturesEnabled() =>
-        SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
+        SmoothLightingEnabled()
+        && LightMapRenderMode is RenderMode.EnhancedHdr
+        && !SettingsSystem.HdrDisabled();
 
     internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
 

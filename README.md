@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.16 (2025-03-30)**
+- Added a setting to disable HDR rendering during boss fights

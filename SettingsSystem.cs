@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using FancyLighting.Config;
+using FancyLighting.Config.Enums;
 using FancyLighting.Utils;
+using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Graphics.Effects;
@@ -16,7 +18,8 @@ internal sealed class SettingsSystem : ModSystem
 
     internal static bool _hiDef;
 
-    private bool _needsPostProcessing = false;
+    private bool _prevNeedsPostProcessing = false;
+    private bool _prevHdrDisabled = false;
 
     public override void Unload()
     {
@@ -50,18 +53,31 @@ internal sealed class SettingsSystem : ModSystem
         PostProcessing.RecalculateHiDefSurfaceBrightness();
 
         var needsPostProcessing = NeedsPostProcessing();
-        if (needsPostProcessing && !_needsPostProcessing)
+        if (needsPostProcessing && !_prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw += DoNothing;
-            _needsPostProcessing = true;
+            _prevNeedsPostProcessing = true;
         }
-        else if (!needsPostProcessing && _needsPostProcessing)
+        else if (!needsPostProcessing && _prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw -= DoNothing;
-            _needsPostProcessing = false;
+            _prevNeedsPostProcessing = false;
         }
 
         EnsureRenderTargets();
+
+        var hdrDisabled = HdrDisabled();
+        if (
+            hdrDisabled != _prevHdrDisabled
+            && LightingConfig.Instance?.SmoothLightingEnabled() is true
+            && LightingConfig.Instance?.LightMapRenderMode
+                is RenderMode.BicubicOverbright
+                    or RenderMode.EnhancedHdr
+        )
+        {
+            ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+        }
+        _prevHdrDisabled = hdrDisabled;
     }
 
     internal static void EnsureRenderTargets(bool reset = false)
@@ -82,6 +98,9 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool PostProcessingAllowed() =>
         !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
+    internal static bool IsBossFightOccurring() =>
+        BigProgressBarSystemAccessors._currentBar(Main.BigBossProgressBar) is not null;
+
     internal static bool NeedsPostProcessing() =>
         PreferencesConfig.Instance is not null
         && LightingConfig.Instance is not null
@@ -97,6 +116,10 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool HdrCompatibilityEnabled() =>
         PreferencesConfig.Instance.UseHdrCompatibilityFixes
         && LightingConfig.Instance.HiDefFeaturesEnabled();
+
+    internal static bool HdrDisabled() =>
+        IsBossFightOccurring()
+        && PreferencesConfig.Instance?.DisableHdrDuringBossFights is true;
 
     private static void DoNothing() { }
 }
