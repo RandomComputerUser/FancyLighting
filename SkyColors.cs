@@ -1,26 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.Profiles;
 using FancyLighting.Profiles.SkyColor;
 using FancyLighting.Utils;
 using Microsoft.Xna.Framework;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using Terraria;
-using Terraria.GameContent;
 
 namespace FancyLighting;
 
 public static class SkyColors
 {
+    private static ILHook _ilHook_SetBackColor;
+
     public static Dictionary<SkyColorPreset, ISimpleColorProfile> Profiles
     {
         get;
         private set;
     }
-
-    private static bool _dayTimeTmp;
-    private static bool _dontStarveWorldTmp;
-    private static bool _modifyNightColor = false;
 
     private static void Initialize() =>
         Profiles = new()
@@ -31,76 +35,63 @@ public static class SkyColors
             [SkyColorPreset.Profile4] = new SkyColors4(),
         };
 
-    internal static void AddSkyColorsHooks()
+    internal static void Load()
     {
         Initialize();
 
-        On_Main.SetBackColor += _Main_SetBackColor;
-        On_DontStarveSeed.ModifyNightColor += _Main_ModifyNightColor;
-    }
-
-    private static void _Main_SetBackColor(
-        On_Main.orig_SetBackColor orig,
-        Main.InfoToSetBackColor info,
-        out Color sunColor,
-        out Color moonColor
-    )
-    {
-        if (!(PreferencesConfig.Instance?.CustomSkyColorsEnabled() ?? false))
+        var detourMethod = typeof(Main).GetMethod(
+            "SetBackColor",
+            BindingFlags.NonPublic | BindingFlags.Static
+        );
+        if (detourMethod is not null)
         {
-            orig(info, out sunColor, out moonColor);
-            return;
-        }
-
-        _modifyNightColor = false;
-        orig(info, out sunColor, out moonColor);
-
-        _dayTimeTmp = Main.dayTime;
-        _dontStarveWorldTmp = Main.dontStarveWorld;
-        _modifyNightColor = true;
-        Main.dayTime = false;
-        Main.dontStarveWorld = true;
-        // info is a struct, so we don't have to reset this value
-        info.isInGameMenuOrIsServer = false;
-        try
-        {
-            orig(info, out _, out _);
-        }
-        finally
-        {
-            Main.dayTime = _dayTimeTmp;
-            Main.dontStarveWorld = _dontStarveWorldTmp;
-            _modifyNightColor = false;
+            try
+            {
+                _ilHook_SetBackColor = new(detourMethod, _SetBackColor, true);
+            }
+            catch (Exception)
+            {
+                // Unable to add the hook
+            }
         }
     }
 
-    private static void _Main_ModifyNightColor(
-        On_DontStarveSeed.orig_ModifyNightColor orig,
-        ref Color backColor,
-        ref Color moonColor
-    )
+    internal static void Unload()
     {
-        if (
-            !_modifyNightColor
-            || Profiles is null
-            || !(PreferencesConfig.Instance?.CustomSkyColorsEnabled() ?? false)
-        )
-        {
-            orig(ref backColor, ref moonColor);
-            return;
-        }
+        _ilHook_SetBackColor?.Dispose();
+    }
 
-        Main.dayTime = _dayTimeTmp;
-        Main.dontStarveWorld = _dontStarveWorldTmp;
-        SetBaseSkyColor(ref backColor);
-        if (!Main.dayTime && Main.dontStarveWorld)
-        {
-            orig(ref backColor, ref moonColor);
-        }
+    private static void _SetBackColor(ILContext context)
+    {
+        var cursor = new ILCursor(context);
+
+        var setSkyColorMethod = typeof(SkyColors)
+            .GetMethod("SetBaseSkyColor", BindingFlags.NonPublic | BindingFlags.Static)
+            .AssertNotNull();
+        var skyColorVariable = cursor.Body.Variables.First(x =>
+            x.VariableType.Name is "Color"
+        );
+
+        cursor.GotoNext(
+            MoveType.After,
+            (instruction) =>
+                instruction.OpCode == OpCodes.Call
+                && (instruction.Operand as MethodReference)?.Name is "ModifyNightColor"
+        );
+        cursor.MoveAfterLabels();
+        Console.WriteLine(cursor.Prev);
+        cursor.Emit(OpCodes.Ldloca, skyColorVariable);
+        cursor.Emit(OpCodes.Call, setSkyColorMethod);
+        Console.WriteLine(cursor.Next);
     }
 
     private static void SetBaseSkyColor(ref Color bgColor)
     {
+        if (PreferencesConfig.Instance?.CustomSkyColorsEnabled() is not true)
+        {
+            return;
+        }
+
         var hour = Main.dayTime
             ? 4.5 + (Main.time / 3600.0)
             : 12.0 + 7.5 + (Main.time / 3600.0);

@@ -13,3 +13,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added a setting to disable HDR rendering during boss fights
 - Optimized smooth lighting
 - Optimized ambient occlusion
+- Fixed a rare bug that converted a world to a Constant world when using fancy sky colors

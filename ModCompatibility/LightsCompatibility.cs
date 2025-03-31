@@ -37,7 +37,7 @@ internal static class LightsCompatibility
             {
                 _hook_NewScreenTarget = new(detourMethod, _NewScreenTarget, true);
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
                 // Unable to add the hook
             }
@@ -53,7 +53,7 @@ internal static class LightsCompatibility
             {
                 _hook_UseLightAndShadow = new(detourMethod, _UseLightAndShadow, true);
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
                 // Unable to add the hook
             }
@@ -69,7 +69,7 @@ internal static class LightsCompatibility
             {
                 _hook_UseBloom = new(detourMethod, _UseBloom, true);
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
                 // Unable to add the hook
             }

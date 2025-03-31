@@ -49,7 +49,7 @@ internal static class SpiritReforgedCompatibility
             {
                 _hook_ModifyColor = new(detourMethod, _ModifyColors, true);
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
                 // Unable to add the hook
             }

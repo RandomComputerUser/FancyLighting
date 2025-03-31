@@ -150,7 +150,8 @@ public sealed class FancyLightingMod : Mod
         _postProcessingInstance = new PostProcessing();
 
         AddHooks();
-        SkyColors.AddSkyColorsHooks();
+
+        SkyColors.Load();
 
         LightsCompatibility.Load();
         SpiritReforgedCompatibility.Load();
@@ -175,12 +176,16 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTmpTarget2?.Dispose();
             _backgroundTarget?.Dispose();
             _cameraModeBackgroundTarget?.Dispose();
+
             _smoothLightingInstance?.Unload();
             _ambientOcclusionInstance?.Unload();
             _fancyLightingEngineInstance?.Unload();
             _postProcessingInstance?.Unload();
 
             SettingsSystem.EnsureRenderTargets(true);
+
+            SkyColors.Unload();
+
             LightsCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
         });
