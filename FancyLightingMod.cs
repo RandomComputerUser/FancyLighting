@@ -130,7 +130,7 @@ public sealed class FancyLightingMod : Mod
 
     public override void Load()
     {
-        if (Main.netMode == NetmodeID.Server)
+        if (Main.netMode is NetmodeID.Server)
         {
             return;
         }
@@ -164,6 +164,11 @@ public sealed class FancyLightingMod : Mod
 
     public override void Unload()
     {
+        if (Main.netMode is NetmodeID.Server)
+        {
+            return;
+        }
+
         Main.QueueMainThreadAction(() =>
         {
             // Do not dispose _cameraModeTarget
