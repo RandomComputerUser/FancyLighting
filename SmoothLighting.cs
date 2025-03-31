@@ -1189,9 +1189,14 @@ internal sealed class SmoothLighting
             return;
         }
 
-        TextureUtils.MakeSize(ref _colors, height, width, SurfaceFormat.HalfVector4);
+        TextureUtils.MakeAtLeastSize(
+            ref _colors,
+            height,
+            width,
+            SurfaceFormat.HalfVector4
+        );
 
-        _colors.SetData(_finalLightsHiDef, 0, length);
+        _colors.SetData(0, new(0, 0, height, width), _finalLightsHiDef, 0, length);
 
         _smoothLightingComplete = !cameraMode;
     }
@@ -1257,9 +1262,14 @@ internal sealed class SmoothLighting
             return;
         }
 
-        TextureUtils.MakeSize(ref _colors, height, width, SurfaceFormat.Rgba1010102);
+        TextureUtils.MakeAtLeastSize(
+            ref _colors,
+            height,
+            width,
+            SurfaceFormat.Rgba1010102
+        );
 
-        _colors.SetData(_finalLights, 0, length);
+        _colors.SetData(0, new(0, 0, height, width), _finalLights, 0, length);
 
         _smoothLightingComplete = !cameraMode;
     }

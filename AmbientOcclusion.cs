@@ -81,7 +81,7 @@ internal sealed class AmbientOcclusion
             ref _blurTarget,
             Main.instance.tileTarget.Width,
             Main.instance.tileTarget.Height,
-            SurfaceFormat.Alpha8
+            SurfaceFormat.Color // SurfaceFormat.Alpha8 is not supported
         );
         if (doDraw)
         {

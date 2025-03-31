@@ -1,4 +1,5 @@
-﻿using FancyLighting.Config;
+﻿using System;
+using FancyLighting.Config;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 
@@ -49,7 +50,7 @@ internal static class TextureUtils
         }
     }
 
-    public static void MakeSize(
+    public static void MakeAtLeastSize(
         ref Texture2D texture,
         int width,
         int height,
@@ -59,11 +60,17 @@ internal static class TextureUtils
         if (
             texture is null
             || texture.GraphicsDevice != Main.graphics.GraphicsDevice
-            || texture.Width != width
-            || texture.Height != height
+            || texture.Width < width
+            || texture.Height < height
             || texture.Format != format
         )
         {
+            if (texture is not null)
+            {
+                width = Math.Max(width, texture.Width);
+                height = Math.Max(height, texture.Height);
+            }
+
             texture?.Dispose();
             texture = new Texture2D(
                 Main.graphics.GraphicsDevice,
