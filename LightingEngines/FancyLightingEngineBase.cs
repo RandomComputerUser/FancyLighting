@@ -1,10 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using FancyLighting.Config;
-using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
+﻿using System.Runtime.CompilerServices;
 using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
 

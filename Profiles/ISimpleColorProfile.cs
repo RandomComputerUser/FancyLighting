@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace FancyLighting.Profiles;
+﻿namespace FancyLighting.Profiles;
 
 public interface ISimpleColorProfile
 {

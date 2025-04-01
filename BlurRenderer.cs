@@ -1,9 +1,4 @@
-﻿using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
-
-namespace FancyLighting;
+﻿namespace FancyLighting;
 
 internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
 {

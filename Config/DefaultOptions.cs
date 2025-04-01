@@ -1,5 +1,4 @@
-﻿using System;
-using FancyLighting.Config.Enums;
+﻿using FancyLighting.Config.Enums;
 
 namespace FancyLighting.Config;
 

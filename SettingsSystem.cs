@@ -1,13 +1,7 @@
-﻿using System.Threading.Tasks;
-using FancyLighting.Config;
-using FancyLighting.Config.Enums;
-using FancyLighting.Utils;
+﻿using FancyLighting.Config.Enums;
 using FancyLighting.Utils.Accessors;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
-using Terraria.ModLoader;
 
 namespace FancyLighting;
 

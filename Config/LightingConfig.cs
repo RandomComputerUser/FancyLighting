@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
 using FancyLighting.Config.Enums;
 using Newtonsoft.Json;
-using Terraria;
-using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
 
 namespace FancyLighting.Config;

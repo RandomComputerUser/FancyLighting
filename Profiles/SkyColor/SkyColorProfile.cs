@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-
-namespace FancyLighting.Profiles.SkyColor;
+﻿namespace FancyLighting.Profiles.SkyColor;
 
 public class SkyColorProfile : ISimpleColorProfile
 {

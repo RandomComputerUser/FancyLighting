@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Terraria;
 using Terraria.ID;
 
 namespace FancyLighting.Utils;

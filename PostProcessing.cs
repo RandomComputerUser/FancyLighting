@@ -1,11 +1,4 @@
-﻿using System;
-using FancyLighting.Config;
-using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ReLogic.Content;
-using Terraria;
-using Terraria.ModLoader;
+﻿using ReLogic.Content;
 
 namespace FancyLighting;
 

@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Microsoft.Xna.Framework;
 using Terraria.Graphics.Light;
 
 namespace FancyLighting.Utils.Accessors;

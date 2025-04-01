@@ -1,7 +1,4 @@
 ﻿using FancyLighting.Utils.Accessors;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
 
 namespace FancyLighting.Utils;
 

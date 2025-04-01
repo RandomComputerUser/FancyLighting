@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace FancyLighting.Profiles.SkyColor;
+﻿namespace FancyLighting.Profiles.SkyColor;
 
 public class SkyColors4 : ISimpleColorProfile
 {

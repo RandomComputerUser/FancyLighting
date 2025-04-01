@@ -1,11 +1,6 @@
-﻿using System;
-using System.Reflection;
-using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using System.Reflection;
 using MonoMod.RuntimeDetour;
 using Terraria.Graphics.Effects;
-using Terraria.ModLoader;
 
 namespace FancyLighting.ModCompatibility;
 

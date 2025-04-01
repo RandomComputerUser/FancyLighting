@@ -1,14 +1,8 @@
-using System;
 using System.Reflection;
-using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
 using FancyLighting.ModCompatibility;
-using FancyLighting.Utils;
 using FancyLighting.Utils.Accessors;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
 using Terraria.GameContent.Drawing;
 using Terraria.Graphics;
 using Terraria.Graphics.Capture;
@@ -16,7 +10,6 @@ using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 using Terraria.Map;
-using Terraria.ModLoader;
 
 namespace FancyLighting;
 

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Reflection;
-using FancyLighting.Config;
+﻿using System.Reflection;
 using MonoMod.RuntimeDetour;
 using Terraria.Graphics;
-using Terraria.ModLoader;
 
 namespace FancyLighting.ModCompatibility;
 

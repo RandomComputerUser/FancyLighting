@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-
-namespace FancyLighting.Utils;
+﻿namespace FancyLighting.Utils;
 
 internal static class BlendStates
 {

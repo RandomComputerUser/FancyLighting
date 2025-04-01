@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using FancyLighting.Config;
+﻿using System.Reflection;
 using FancyLighting.Config.Enums;
 using FancyLighting.Profiles;
 using FancyLighting.Profiles.SkyColor;
-using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using Terraria;
 
 namespace FancyLighting;
 

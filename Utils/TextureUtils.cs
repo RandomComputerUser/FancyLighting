@@ -1,9 +1,4 @@
-﻿using System;
-using FancyLighting.Config;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
-
-namespace FancyLighting.Utils;
+﻿namespace FancyLighting.Utils;
 
 internal static class TextureUtils
 {

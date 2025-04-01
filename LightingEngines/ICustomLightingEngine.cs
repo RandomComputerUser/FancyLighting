@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Terraria.Graphics.Light;
+﻿using Terraria.Graphics.Light;
 
 namespace FancyLighting.LightingEngines;
 

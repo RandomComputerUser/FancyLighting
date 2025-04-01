@@ -1,10 +1,4 @@
-﻿using System;
-using FancyLighting.Config;
-using FancyLighting.Utils;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria;
-using Terraria.Graphics.Capture;
+﻿using Terraria.Graphics.Capture;
 
 namespace FancyLighting;
 
