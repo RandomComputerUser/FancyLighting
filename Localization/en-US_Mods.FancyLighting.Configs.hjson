@@ -103,10 +103,11 @@ PreferencesConfig: {
 	}
 
 	DisableHdrDuringBossFights: {
-		Label: Disable HDR During Boss Fights
+		Label: Disable HDR During Boss Fights and Events
 		Tooltip:
 			'''
-			Disables HDR rendering during boss fights
+			Disables HDR rendering during boss fights and events
+			Affects bosses with a boss health bar and events with a progress bar
 			HDR rendering may cause visual issues with some modded boss fights
 			'''
 	}

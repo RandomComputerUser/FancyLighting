@@ -92,8 +92,10 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool PostProcessingAllowed() =>
         !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
-    internal static bool IsBossFightOccurring() =>
+    private static bool IsBossFightOccurring() =>
         BigProgressBarSystemAccessors._currentBar(Main.BigBossProgressBar) is not null;
+
+    private static bool IsEventOccurring() => Main.invasionProgressNearInvasion;
 
     internal static bool NeedsPostProcessing() =>
         PreferencesConfig.Instance is not null
@@ -112,8 +114,8 @@ internal sealed class SettingsSystem : ModSystem
         && LightingConfig.Instance.HiDefFeaturesEnabled();
 
     internal static bool HdrDisabled() =>
-        IsBossFightOccurring()
-        && PreferencesConfig.Instance?.DisableHdrDuringBossFights is true;
+        PreferencesConfig.Instance?.DisableHdrDuringBossFights is true
+        && (IsBossFightOccurring() || IsEventOccurring());
 
     private static void DoNothing() { }
 }
