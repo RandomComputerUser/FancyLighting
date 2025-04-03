@@ -29,8 +29,10 @@ internal static class EffectLoader
         {
             shader?.Unload();
         }
-        catch (Exception) // Shouldn't normally happen
-        { }
+        catch (Exception)
+        {
+            // Shouldn't normally happen
+        }
         finally
         {
             shader = null;

@@ -139,8 +139,7 @@ internal sealed class SmoothLighting
         );
         _inverseOverbrightMaxHiDefShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "InverseOverbrightMaxHiDef",
-            true
+            "InverseOverbrightMaxHiDef"
         );
         _lightOnlyShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",

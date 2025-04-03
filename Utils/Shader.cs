@@ -1,8 +1,4 @@
-﻿using FancyLighting.Config;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace FancyLighting.Utils;
+﻿namespace FancyLighting.Utils;
 
 internal class Shader
 {
@@ -21,14 +17,9 @@ internal class Shader
         Effect = effect;
 
         _shader = effect.CurrentTechnique.Passes[passName];
-        if (string.IsNullOrEmpty(hiDefPassName))
-        {
-            _hiDefShader = null;
-        }
-        else
-        {
-            _hiDefShader = effect.CurrentTechnique.Passes[hiDefPassName];
-        }
+        _hiDefShader = string.IsNullOrEmpty(hiDefPassName)
+            ? null
+            : effect.CurrentTechnique.Passes[hiDefPassName];
     }
 
     public void Unload() => Effect?.Dispose();
