@@ -11,3 +11,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.9.17 (2025-04-02)**
 - The setting to disable HDR rendering during boss fights now also affects events
+- Updated settings tooltips
