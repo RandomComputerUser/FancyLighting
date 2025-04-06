@@ -72,10 +72,8 @@ public static class SkyColors
                 && (instruction.Operand as MethodReference)?.Name is "ModifyNightColor"
         );
         cursor.MoveAfterLabels();
-        Console.WriteLine(cursor.Prev);
         cursor.Emit(OpCodes.Ldloca, skyColorVariable);
         cursor.Emit(OpCodes.Call, setSkyColorMethod);
-        Console.WriteLine(cursor.Next);
     }
 
     private static void SetBaseSkyColor(ref Color bgColor)
