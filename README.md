@@ -9,9 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.17 (2025-04-06)**
-- The setting to disable HDR rendering during boss fights now also affects events
-- Made minor optimizations to smooth lighting
-- Made minor optimizations to ambient occlusion
-- Updated settings tooltips
-- Disabled the experimental tile renderer of Nitrate to prevent graphical glitches
+**v0.9.18 (2025-04-06)**
