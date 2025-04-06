@@ -147,6 +147,7 @@ public sealed class FancyLightingMod : Mod
         SkyColors.Load();
 
         LightsCompatibility.Load();
+        NitrateCompatibility.Load();
         SpiritReforgedCompatibility.Load();
 
         Main.QueueMainThreadAction(() =>
@@ -185,6 +186,7 @@ public sealed class FancyLightingMod : Mod
             SkyColors.Unload();
 
             LightsCompatibility.Unload();
+            NitrateCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
         });
 

@@ -14,3 +14,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made minor optimizations to smooth lighting
 - Made minor optimizations to ambient occlusion
 - Updated settings tooltips
+- Disabled the experimental tile renderer of Nitrate to prevent graphical glitches
