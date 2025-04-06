@@ -105,24 +105,25 @@ internal sealed class PostProcessing
                     FancyLightingMod._cameraModeTarget
                 );
                 smoothLightingInstance.DrawSmoothLightingCameraMode(
-                    nextTarget,
                     currTarget,
+                    nextTarget,
                     false,
                     false,
                     true,
                     true
                 );
-                (currTarget, nextTarget) = (nextTarget, currTarget);
             }
             else
             {
                 smoothLightingInstance.DrawSmoothLighting(
                     currTarget,
+                    nextTarget,
                     false,
                     true,
-                    tmpTarget: nextTarget
+                    true
                 );
             }
+            (currTarget, nextTarget) = (nextTarget, currTarget);
 
             if (hiDef)
             {

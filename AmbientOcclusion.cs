@@ -64,11 +64,25 @@ internal sealed class AmbientOcclusion
         _blurRenderer.Unload();
     }
 
-    internal RenderTarget2D ApplyAmbientOcclusion(bool doDraw = true)
+    internal RenderTarget2D ApplyAmbientOcclusion(
+        RenderTarget2D wallTarget = null,
+        bool doDraw = true,
+        bool updateWallTarget = true
+    )
     {
         if (!LightingConfig.Instance.AmbientOcclusionEnabled())
         {
             return null;
+        }
+
+        if (updateWallTarget)
+        {
+            doDraw = true;
+        }
+
+        if (doDraw)
+        {
+            wallTarget ??= Main.instance.wallTarget;
         }
 
         TextureUtils.MakeSize(
@@ -88,7 +102,7 @@ internal sealed class AmbientOcclusion
         }
 
         var target = ApplyAmbientOcclusionInner(
-            Main.instance.wallTarget,
+            wallTarget,
             Main.instance.tileTarget,
             Main.instance.tile2Target,
             Main.sceneTilePos - (Main.screenPosition - new Vector2(Main.offScreenRange)),
@@ -98,9 +112,9 @@ internal sealed class AmbientOcclusion
             _drawTarget
         );
 
-        if (doDraw)
+        if (updateWallTarget)
         {
-            Main.graphics.GraphicsDevice.SetRenderTarget(Main.instance.wallTarget);
+            Main.graphics.GraphicsDevice.SetRenderTarget(wallTarget);
             Main.spriteBatch.Begin(
                 SpriteSortMode.Deferred,
                 BlendState.Opaque,
@@ -112,9 +126,7 @@ internal sealed class AmbientOcclusion
             Main.spriteBatch.End();
         }
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        return doDraw ? null : target;
+        return updateWallTarget ? wallTarget : target;
     }
 
     internal RenderTarget2D ApplyAmbientOcclusionCameraMode(

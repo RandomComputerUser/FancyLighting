@@ -503,8 +503,8 @@ public sealed class FancyLightingMod : Mod
             _smoothLightingInstance.CalculateSmoothLighting(true);
             _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
             _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                _cameraModeBackgroundTarget,
                 _cameraModeTarget,
+                _cameraModeBackgroundTarget,
                 false,
                 false,
                 true,
@@ -747,30 +747,25 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        _smoothLightingInstance.DrawSmoothLighting(tileTarget, false, true);
+        _smoothLightingInstance.DrawSmoothLighting(
+            tileTarget,
+            useGlowMasks ? _tmpTarget2 : null,
+            false,
+            true
+        );
 
         if (!useGlowMasks)
         {
+            Main.graphics.GraphicsDevice.SetRenderTarget(null);
             return;
         }
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget2);
+        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
         _smoothLightingInstance.DrawGlow(
-            tileTarget,
+            _tmpTarget2,
             _tmpTarget1,
             enhancedGlowMasks ? _tmpTarget3 : null
         );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_tmpTarget2, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -840,14 +835,17 @@ public sealed class FancyLightingMod : Mod
 
         _smoothLightingInstance.DrawSmoothLighting(
             Main.instance.backgroundTarget,
+            null,
             true,
             true
         );
         _smoothLightingInstance.DrawSmoothLighting(
             Main.instance.backWaterTarget,
+            null,
             true,
             true
         );
+        Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
     private void _Main_DrawBackground(On_Main.orig_DrawBackground orig, Main self)
@@ -893,8 +891,8 @@ public sealed class FancyLightingMod : Mod
             Main.spriteBatch.End();
 
             _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                _cameraModeTarget,
                 _smoothLightingInstance._cameraModeTarget1,
+                _cameraModeTarget,
                 true,
                 false,
                 true
@@ -1039,30 +1037,24 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        _smoothLightingInstance.DrawSmoothLighting(tileTarget, false);
+        _smoothLightingInstance.DrawSmoothLighting(
+            tileTarget,
+            useGlowMasks ? _tmpTarget2 : null,
+            false
+        );
 
         if (!useGlowMasks)
         {
+            Main.graphics.GraphicsDevice.SetRenderTarget(null);
             return;
         }
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget2);
+        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
         _smoothLightingInstance.DrawGlow(
-            tileTarget,
+            _tmpTarget2,
             _tmpTarget1,
             enhancedGlowMasks ? _tmpTarget3 : null
         );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_tmpTarget2, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -1159,30 +1151,24 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        _smoothLightingInstance.DrawSmoothLighting(tileTarget, false);
+        _smoothLightingInstance.DrawSmoothLighting(
+            tileTarget,
+            useGlowMasks ? _tmpTarget2 : null,
+            false
+        );
 
         if (!useGlowMasks)
         {
+            Main.graphics.GraphicsDevice.SetRenderTarget(null);
             return;
         }
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget2);
+        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
         _smoothLightingInstance.DrawGlow(
-            tileTarget,
+            _tmpTarget2,
             _tmpTarget1,
             enhancedGlowMasks ? _tmpTarget3 : null
         );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_tmpTarget2, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -1194,6 +1180,7 @@ public sealed class FancyLightingMod : Mod
             if (LightingConfig.Instance.AmbientOcclusionEnabled())
             {
                 _ambientOcclusionInstance.ApplyAmbientOcclusion();
+                Main.graphics.GraphicsDevice.SetRenderTarget(null);
             }
 
             return;
@@ -1303,43 +1290,41 @@ public sealed class FancyLightingMod : Mod
         if (doAmbientOcclusion && doOverbright)
         {
             ambientOcclusionTarget = _ambientOcclusionInstance.ApplyAmbientOcclusion(
+                null,
+                false,
                 false
             );
         }
 
         _smoothLightingInstance.DrawSmoothLighting(
-            Main.instance.wallTarget,
+            tileTarget,
+            useGlowMasks ? _tmpTarget2 : null,
             true,
             ambientOcclusionTarget: ambientOcclusionTarget
         );
 
+        var lightedTarget = _tmpTarget2;
         if (doAmbientOcclusion && !doOverbright)
         {
-            _ambientOcclusionInstance.ApplyAmbientOcclusion();
+            lightedTarget = _ambientOcclusionInstance.ApplyAmbientOcclusion(
+                lightedTarget,
+                true,
+                false
+            );
         }
 
         if (!useGlowMasks)
         {
+            Main.graphics.GraphicsDevice.SetRenderTarget(null);
             return;
         }
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget2);
+        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
         _smoothLightingInstance.DrawGlow(
-            tileTarget,
+            lightedTarget,
             _tmpTarget1,
             enhancedGlowMasks ? _tmpTarget3 : null
         );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_tmpTarget2, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -1371,13 +1356,14 @@ public sealed class FancyLightingMod : Mod
         _smoothLightingInstance.CalculateSmoothLighting();
         _smoothLightingInstance.DrawSmoothLighting(
             target,
+            _backgroundTarget,
             false,
             true,
             true,
-            tmpTarget: _backgroundTarget
+            true
         );
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+        Main.graphics.GraphicsDevice.SetRenderTarget(target);
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
             BlendState.Opaque,
@@ -1387,17 +1373,6 @@ public sealed class FancyLightingMod : Mod
         );
         _smoothLightingInstance.ApplyBrightenShader(
             PostProcessing.CalculateHiDefBackgroundBrightness()
-        );
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
         );
         Main.spriteBatch.Draw(_backgroundTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
@@ -1685,8 +1660,8 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         _smoothLightingInstance.DrawSmoothLightingCameraMode(
-            _cameraModeTarget,
             _smoothLightingInstance._cameraModeTarget1,
+            _cameraModeTarget,
             bg,
             false,
             true,
@@ -1834,8 +1809,8 @@ public sealed class FancyLightingMod : Mod
         var skipFinalPass = doAmbientOcclusion && !doOverbright;
 
         _smoothLightingInstance.DrawSmoothLightingCameraMode(
-            _cameraModeTarget,
             wallTarget,
+            _cameraModeTarget,
             true,
             skipFinalPass,
             ambientOcclusionTarget: ambientOcclusionTarget,
@@ -1978,8 +1953,8 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         _smoothLightingInstance.DrawSmoothLightingCameraMode(
-            _cameraModeTarget,
             _smoothLightingInstance._cameraModeTarget1,
+            _cameraModeTarget,
             false,
             false,
             glow: useGlowMasks ? _cameraModeTmpTarget1 : null,

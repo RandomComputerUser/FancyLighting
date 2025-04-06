@@ -1301,10 +1301,11 @@ internal sealed class SmoothLighting
 
     internal void DrawSmoothLighting(
         RenderTarget2D target,
+        RenderTarget2D outputTarget,
         bool background,
         bool disableNormalMaps = false,
+        bool doScaling = false,
         bool invertOverbright = false,
-        RenderTarget2D tmpTarget = null,
         RenderTarget2D ambientOcclusionTarget = null
     )
     {
@@ -1313,8 +1314,8 @@ internal sealed class SmoothLighting
             return;
         }
 
-        var doScaling = tmpTarget is not null;
         Vector2 offset;
+        var tmpTarget = outputTarget;
         if (tmpTarget is null)
         {
             TextureUtils.MakeSize(
@@ -1352,6 +1353,11 @@ internal sealed class SmoothLighting
             ambientOcclusionTarget
         );
 
+        if (outputTarget is not null)
+        {
+            return;
+        }
+
         Main.graphics.GraphicsDevice.SetRenderTarget(target);
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -1362,7 +1368,6 @@ internal sealed class SmoothLighting
         );
         Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
-        Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
     internal RenderTarget2D GetCameraModeRenderTarget(RenderTarget2D screenTarget)
@@ -1377,8 +1382,8 @@ internal sealed class SmoothLighting
     }
 
     internal void DrawSmoothLightingCameraMode(
+        RenderTarget2D worldTarget,
         RenderTarget2D screenTarget,
-        RenderTarget2D target,
         bool background,
         bool skipFinalPass = false,
         bool disableNormalMaps = false,
@@ -1408,7 +1413,7 @@ internal sealed class SmoothLighting
                     FancyLightingMod._cameraModeArea.Y
                 ),
             Vector2.One,
-            target,
+            worldTarget,
             background,
             disableNormalMaps,
             doOverbrightMax,
@@ -1491,7 +1496,7 @@ internal sealed class SmoothLighting
 
     private void ApplySmoothLighting(
         Texture2D lightMapTexture,
-        RenderTarget2D target,
+        RenderTarget2D outputTarget,
         Vector2 lightMapPosition,
         Vector2 worldPosition,
         Vector2 zoom,
@@ -1547,7 +1552,7 @@ internal sealed class SmoothLighting
         var origin = 0.5f * new Vector2(lightMapTexture.Width, lightMapTexture.Height);
         var scale = lightMapScale * new Vector2(zoom.Y, zoom.X);
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
+        Main.graphics.GraphicsDevice.SetRenderTarget(outputTarget);
 
         if (doOneStepOnly)
         {
