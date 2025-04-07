@@ -104,4 +104,23 @@ internal static class ColorUtils
         LinearToGamma(ref color.Y);
         LinearToGamma(ref color.Z);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Luminance(Vector3 color)
+    {
+        GammaToLinear(ref color);
+        return (0.2126f * color.X) + (0.7152f * color.Y) + (0.0722f * color.Z);
+    }
+
+    public static float ApproximateLightAbsorption(Vector3 absorptionColor)
+    {
+        const float AbsorptionDepth = 8; // arbitrarily chosen
+
+        absorptionColor.X = MathF.Pow(absorptionColor.X, AbsorptionDepth);
+        absorptionColor.Y = MathF.Pow(absorptionColor.Y, AbsorptionDepth);
+        absorptionColor.Z = MathF.Pow(absorptionColor.Z, AbsorptionDepth);
+
+        var accumulatedAbsorption = Luminance(absorptionColor);
+        return MathF.Pow(LinearToGamma(accumulatedAbsorption), 1 / AbsorptionDepth);
+    }
 }

@@ -217,31 +217,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             MaxDecayMult
         );
         var lightWaterDecayBaseline = Math.Min(
-            (0.625f * lightMap.LightDecayThroughWater.Length() / Vector3.One.Length())
-                + (
-                    0.375f
-                    * Math.Max(
-                        lightMap.LightDecayThroughWater.X,
-                        Math.Max(
-                            lightMap.LightDecayThroughWater.Y,
-                            lightMap.LightDecayThroughWater.Z
-                        )
-                    )
-                ),
+            ColorUtils.ApproximateLightAbsorption(lightMap.LightDecayThroughWater),
             MaxDecayMult
         );
         var lightHoneyDecayBaseline = Math.Min(
-            (0.625f * lightMap.LightDecayThroughHoney.Length() / Vector3.One.Length())
-                + (
-                    0.375f
-                    * Math.Max(
-                        lightMap.LightDecayThroughHoney.X,
-                        Math.Max(
-                            lightMap.LightDecayThroughHoney.Y,
-                            lightMap.LightDecayThroughHoney.Z
-                        )
-                    )
-                ),
+            ColorUtils.ApproximateLightAbsorption(lightMap.LightDecayThroughHoney),
             MaxDecayMult
         );
 
