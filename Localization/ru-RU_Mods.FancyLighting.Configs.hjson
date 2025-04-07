@@ -1,5 +1,5 @@
 PreferencesConfig: {
-	DisplayName: Preferences
+	DisplayName: Настройки
 
 	Headers: {
 		ToneMapping: Тональное отображение
