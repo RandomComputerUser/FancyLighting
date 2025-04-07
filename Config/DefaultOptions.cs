@@ -4,7 +4,7 @@ namespace FancyLighting.Config;
 
 public static class DefaultOptions
 {
-    public const Preset QualityPreset = Preset.LowPreset;
+    public const SettingsPreset QualityPreset = SettingsPreset.LowPreset;
 
     // General Preferences
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
@@ -60,7 +60,9 @@ public static class DefaultOptions
     public const int FancyLightingEngineGlobalIlluminationMult = 50;
     public const bool FancyLightingEngineNonSolidOpaque = false;
 
-    // Fancy Sky Colors
-    public const bool UseCustomSkyColors = true;
-    public const SkyColorPreset CustomSkyPreset = SkyColorPreset.Profile4;
+    // Fancy Sky
+    public const bool UseFancySkyColors = true;
+
+    // Fancy Sky Preferences
+    public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
 }

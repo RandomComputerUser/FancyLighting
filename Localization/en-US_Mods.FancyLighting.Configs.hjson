@@ -5,8 +5,8 @@ PreferencesConfig: {
 		ToneMapping: Tone Mapping
 		SmoothLighting: Smooth Lighting
 		AmbientOcclusion: Ambient Occlusion
-		LightingEngine: Fancy Lighting Engine
-		SkyColor: Fancy Sky Colors
+		FancyLightingEngine: Fancy Lighting Engine
+		FancySky: Fancy Sky
 	}
 
 	# General
@@ -217,21 +217,16 @@ PreferencesConfig: {
 			'''
 	}
 
-	# Fancy Sky Colors
+	# Fancy Sky
 	
-	UseCustomSkyColors: {
-		Label: Fancy Sky Colors
+	FancySkyColorsPreset: {
+		Label: Sky Color Preset
 		Tooltip:
 			'''
-			Use new sky colors
+			Which set of sky colors is used
 
-			Primarily affects how sunrises and sunsets appear
+			Fancy sky colors must be enabled for this setting to have any effect
 			'''
-	}
-
-	CustomSkyPreset: {
-		Label: Sky Color Profile
-		Tooltip: Which set of sky colors is used
 	}
 }
 
@@ -241,8 +236,8 @@ LightingConfig: {
 	Headers: {
 		SmoothLighting: Smooth Lighting
 		AmbientOcclusion: Ambient Occlusion
-		LightingEngine: Fancy Lighting Engine
-		SkyColor: Sky Color
+		FancyLightingEngine: Fancy Lighting Engine
+		FancySky: Fancy Sky
 	}
 
 	# General
@@ -335,7 +330,7 @@ LightingConfig: {
 			'''
 			Use ambient occlusion
 
-			When enabled, tiles produce shadows in front of walls
+			Adds shadows on background walls in areas near foreground tiles
 			Performance is primarily affected by GPU performance
 			'''
 	}
@@ -370,7 +365,7 @@ LightingConfig: {
 			'''
 			Use a new lighting engine
 
-			When enabled, light is spread more realistically with pronounced shadows
+			Spreads light more realistically with pronounced shadows
 			Has a larger performance impact the more light sources there are in the scene
 			Performance is primarily affected by multithreaded CPU performance
 			'''
@@ -382,9 +377,9 @@ LightingConfig: {
 			'''
 			Use temporal optimization with the fancy lighting engine
 
-			When enabled, tunes lighting quality using data from the previous lighting update
+			Adjusts the lighting quality level using data from the previous lighting update
 			Improves lighting performance in more intensely lit areas
-			May sometimes cause a slight but noticeable reduction in lighting quality
+			May sometimes cause a slightly noticeable reduction in lighting quality
 			'''
 	}
 
@@ -402,6 +397,18 @@ LightingConfig: {
 			When enabled, indirect lighting makes shadows less dark
 			'''
 	}
+
+	# Fancy Sky
+	
+	UseFancySkyColors: {
+		Label: Fancy Sky Colors
+		Tooltip:
+			'''
+			Use new sky colors
+
+			Primarily affects the color of sunlight during the early morning and evening
+			'''
+	}
 }
 
 LightingEngineMode: {
@@ -409,17 +416,6 @@ LightingEngineMode: {
 	Low.Label: Low
 	Medium.Label: Medium
 	High.Label: High
-}
-
-Preset: {
-	Tooltip: ""
-	CustomPreset.Label: Custom
-	VanillaPreset.Label: Vanilla
-	MinimalPreset.Label: Minimal
-	LowPreset.Label: Low
-	MediumPreset.Label: Medium
-	HighPreset.Label: High
-	UltraPreset.Label: Ultra
 }
 
 RenderMode: {
@@ -430,10 +426,21 @@ RenderMode: {
 	EnhancedHdr.Label: Full HDR Rendering
 }
 
+SettingsPreset: {
+	Tooltip: ""
+	CustomPreset.Label: Custom
+	VanillaPreset.Label: Vanilla
+	MinimalPreset.Label: Minimal
+	LowPreset.Label: Low
+	MediumPreset.Label: Medium
+	HighPreset.Label: High
+	UltraPreset.Label: Ultra
+}
+
 SkyColorPreset: {
 	Tooltip: ""
-	Profile1.Label: Profile 1
-	Profile2.Label: Profile 2
-	Profile3.Label: Profile 3
-	Profile4.Label: Profile 4
+	Preset1.Label: Preset 1
+	Preset2.Label: Preset 2
+	Preset3.Label: Preset 3
+	Preset4.Label: Preset 4
 }

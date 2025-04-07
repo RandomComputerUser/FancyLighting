@@ -44,6 +44,10 @@ internal record PresetOptions
     public bool SimulateGlobalIllumination { get; init; } =
         DefaultOptions.SimulateGlobalIllumination;
 
+    // Fancy Sky
+
+    public bool UseFancySkyColors { get; init; } = DefaultOptions.UseFancySkyColors;
+
     public PresetOptions() { }
 
     public PresetOptions(LightingConfig config)
@@ -64,6 +68,8 @@ internal record PresetOptions
         FancyLightingEngineUseTemporal = config.FancyLightingEngineUseTemporal;
         FancyLightingEngineMode = config.FancyLightingEngineMode;
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
+
+        UseFancySkyColors = config.UseFancySkyColors;
     }
 
     public static readonly PresetOptions VanillaPresetOptions =
@@ -80,6 +86,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySkyColors = false,
         };
 
     public static readonly PresetOptions MinimalPresetOptions =
@@ -96,6 +103,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySkyColors = true,
         };
 
     public static readonly PresetOptions LowPresetOptions = new();
@@ -114,6 +122,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = false,
+            UseFancySkyColors = true,
         };
 
     public static readonly PresetOptions HighPresetOptions =
@@ -130,6 +139,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
+            UseFancySkyColors = true,
         };
 
     public static readonly PresetOptions UltraPresetOptions =
@@ -146,19 +156,20 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.High,
             SimulateGlobalIllumination = true,
+            UseFancySkyColors = true,
         };
 
-    public static readonly Dictionary<PresetOptions, Preset> PresetLookup =
+    public static readonly Dictionary<PresetOptions, SettingsPreset> PresetLookup =
         new()
         {
-            [VanillaPresetOptions] = Preset.VanillaPreset,
-            [MinimalPresetOptions] = Preset.MinimalPreset,
-            [LowPresetOptions] = Preset.LowPreset,
-            [MediumPresetOptions] = Preset.MediumPreset,
-            [HighPresetOptions] = Preset.HighPreset,
-            [UltraPresetOptions] = Preset.UltraPreset,
+            [VanillaPresetOptions] = SettingsPreset.VanillaPreset,
+            [MinimalPresetOptions] = SettingsPreset.MinimalPreset,
+            [LowPresetOptions] = SettingsPreset.LowPreset,
+            [MediumPresetOptions] = SettingsPreset.MediumPreset,
+            [HighPresetOptions] = SettingsPreset.HighPreset,
+            [UltraPresetOptions] = SettingsPreset.UltraPreset,
         };
 
-    public static readonly Dictionary<Preset, PresetOptions> PresetOptionsLookup =
+    public static readonly Dictionary<SettingsPreset, PresetOptions> PresetOptionsLookup =
         PresetLookup.ToDictionary(entry => entry.Value, entry => entry.Key);
 }

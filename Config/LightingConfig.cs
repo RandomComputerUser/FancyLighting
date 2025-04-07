@@ -13,19 +13,18 @@ public sealed class LightingConfig : ModConfig
     public static LightingConfig Instance;
 
     internal bool NeedsColorLightMode() =>
-        UseSmoothLighting || UseAmbientOcclusion || UseFancyLightingEngine;
+        UseSmoothLighting
+        || UseAmbientOcclusion
+        || UseFancyLightingEngine
+        || UseFancySkyColors;
 
     internal bool ModifyCameraModeRendering() =>
         SmoothLightingEnabled() || AmbientOcclusionEnabled();
 
+    // Smooth Lighting
+
     internal bool SmoothLightingEnabled() =>
         UseSmoothLighting && Lighting.UsingNewLighting;
-
-    internal bool AmbientOcclusionEnabled() =>
-        UseAmbientOcclusion && Lighting.UsingNewLighting;
-
-    internal bool FancyLightingEngineEnabled() =>
-        UseFancyLightingEngine && Lighting.UsingNewLighting;
 
     internal bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
@@ -48,6 +47,21 @@ public sealed class LightingConfig : ModConfig
         && !SettingsSystem.HdrDisabled();
 
     internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
+
+    // Ambient Occlusion
+
+    internal bool AmbientOcclusionEnabled() =>
+        UseAmbientOcclusion && Lighting.UsingNewLighting;
+
+    // Fancy Lighting Engine
+
+    internal bool FancyLightingEngineEnabled() =>
+        UseFancyLightingEngine && Lighting.UsingNewLighting;
+
+    // Fancy Sky
+
+    internal bool FancySkyColorsEnabled() =>
+        UseFancySkyColors && Lighting.UsingNewLighting;
 
     public override void OnChanged()
     {
@@ -72,6 +86,8 @@ public sealed class LightingConfig : ModConfig
         _fancyLightingEngineUseTemporal = options.FancyLightingEngineUseTemporal;
         _fancyLightingEngineMode = options.FancyLightingEngineMode;
         _simulateGlobalIllumination = options.SimulateGlobalIllumination;
+
+        _useFancySkyColors = options.UseFancySkyColors;
     }
 
     public void UpdatePreset()
@@ -81,19 +97,19 @@ public sealed class LightingConfig : ModConfig
             currentOptions,
             out var preset
         );
-        _preset = isPreset ? preset : Preset.CustomPreset;
+        _qualityPreset = isPreset ? preset : SettingsPreset.CustomPreset;
     }
 
     // Serialize this last
     [JsonProperty(Order = 1000)]
     [DefaultValue(DefaultOptions.QualityPreset)]
     [DrawTicks]
-    public Preset QualityPreset
+    public SettingsPreset QualityPreset
     {
-        get => _preset;
+        get => _qualityPreset;
         set
         {
-            if (value is Preset.CustomPreset)
+            if (value is SettingsPreset.CustomPreset)
             {
                 UpdatePreset();
             }
@@ -106,19 +122,20 @@ public sealed class LightingConfig : ModConfig
                 if (isPresetOptions)
                 {
                     CopyFrom(presetOptions);
-                    _preset = value;
+                    _qualityPreset = value;
                 }
                 else
                 {
-                    _preset = Preset.CustomPreset;
+                    _qualityPreset = SettingsPreset.CustomPreset;
                 }
             }
         }
     }
 
-    private Preset _preset;
+    private SettingsPreset _qualityPreset;
 
-    // Smooth Lighting, Normal Maps, Overbright
+    // Smooth Lighting
+
     [Header("SmoothLighting")]
     [DefaultValue(DefaultOptions.UseSmoothLighting)]
     public bool UseSmoothLighting
@@ -212,6 +229,7 @@ public sealed class LightingConfig : ModConfig
     private bool _hdrBloom;
 
     // Ambient Occlusion
+
     [Header("AmbientOcclusion")]
     [DefaultValue(DefaultOptions.UseAmbientOcclusion)]
     public bool UseAmbientOcclusion
@@ -253,7 +271,8 @@ public sealed class LightingConfig : ModConfig
     private bool _doTileEntityAmbientOcclusion;
 
     // Fancy Lighting Engine
-    [Header("LightingEngine")]
+
+    [Header("FancyLightingEngine")]
     [DefaultValue(DefaultOptions.UseFancyLightingEngine)]
     public bool UseFancyLightingEngine
     {
@@ -306,4 +325,20 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _simulateGlobalIllumination;
+
+    // Fancy Sky
+
+    [Header("FancySky")]
+    [DefaultValue(DefaultOptions.UseFancySkyColors)]
+    public bool UseFancySkyColors
+    {
+        get => _useFancySkyColors;
+        set
+        {
+            _useFancySkyColors = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _useFancySkyColors;
 }

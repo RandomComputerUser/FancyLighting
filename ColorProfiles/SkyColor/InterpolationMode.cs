@@ -1,4 +1,4 @@
-﻿namespace FancyLighting.Profiles.SkyColor;
+﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
 public enum InterpolationMode
 {

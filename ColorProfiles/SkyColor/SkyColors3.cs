@@ -1,12 +1,12 @@
-﻿namespace FancyLighting.Profiles.SkyColor;
+﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyColors2 : ISimpleColorProfile
+public class SkyColors3 : ISimpleColorProfile
 {
     private readonly SkyColorProfile _profile;
 
-    public SkyColors2()
+    public SkyColors3()
     {
-        // 0.6.0 sky colors
+        // v0.6.0 default sky colors
 
         _profile = new(InterpolationMode.Cubic);
 

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
+using FancyLighting.ColorProfiles;
+using FancyLighting.ColorProfiles.SkyColor;
 using FancyLighting.Config.Enums;
-using FancyLighting.Profiles;
-using FancyLighting.Profiles.SkyColor;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -9,23 +9,23 @@ using MonoMod.RuntimeDetour;
 
 namespace FancyLighting;
 
-public static class SkyColors
+public static class FancySkyColors
 {
     private static ILHook _ilHook_SetBackColor;
 
-    public static Dictionary<SkyColorPreset, ISimpleColorProfile> Profiles
+    public static Dictionary<SkyColorPreset, ISimpleColorProfile> Preset
     {
         get;
         private set;
     }
 
     private static void Initialize() =>
-        Profiles = new()
+        Preset = new()
         {
-            [SkyColorPreset.Profile1] = new SkyColors1(),
-            [SkyColorPreset.Profile2] = new SkyColors2(),
-            [SkyColorPreset.Profile3] = new SkyColors3(),
-            [SkyColorPreset.Profile4] = new SkyColors4(),
+            [SkyColorPreset.Preset1] = new SkyColors1(),
+            [SkyColorPreset.Preset2] = new SkyColors2(),
+            [SkyColorPreset.Preset3] = new SkyColors3(),
+            [SkyColorPreset.Preset4] = new SkyColors4(),
         };
 
     internal static void Load()
@@ -58,7 +58,7 @@ public static class SkyColors
     {
         var cursor = new ILCursor(context);
 
-        var setSkyColorMethod = typeof(SkyColors)
+        var setSkyColorMethod = typeof(FancySkyColors)
             .GetMethod("SetBaseSkyColor", BindingFlags.NonPublic | BindingFlags.Static)
             .AssertNotNull();
         var skyColorVariable = cursor.Body.Variables.First(x =>
@@ -78,7 +78,7 @@ public static class SkyColors
 
     private static void SetBaseSkyColor(ref Color bgColor)
     {
-        if (PreferencesConfig.Instance?.CustomSkyColorsEnabled() is not true)
+        if (LightingConfig.Instance?.FancySkyColorsEnabled() is not true)
         {
             return;
         }
@@ -91,8 +91,8 @@ public static class SkyColors
 
     public static Vector3 CalculateSkyColor(double hour)
     {
-        var foundProfile = Profiles.TryGetValue(
-            PreferencesConfig.Instance.CustomSkyPreset,
+        var foundProfile = Preset.TryGetValue(
+            PreferencesConfig.Instance.FancySkyColorsPreset,
             out var profile
         );
 

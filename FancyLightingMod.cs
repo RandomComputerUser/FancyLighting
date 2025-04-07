@@ -144,7 +144,7 @@ public sealed class FancyLightingMod : Mod
 
         AddHooks();
 
-        SkyColors.Load();
+        FancySkyColors.Load();
 
         LightsCompatibility.Load();
         NitrateCompatibility.Load();
@@ -183,7 +183,7 @@ public sealed class FancyLightingMod : Mod
 
             SettingsSystem.EnsureRenderTargets(true);
 
-            SkyColors.Unload();
+            FancySkyColors.Unload();
 
             LightsCompatibility.Unload();
             NitrateCompatibility.Unload();

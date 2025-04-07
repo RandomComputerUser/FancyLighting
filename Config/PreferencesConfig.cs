@@ -11,8 +11,6 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal bool NeedsColorLightMode() => UseCustomSkyColors;
-
     internal float GammaExponent() => Gamma / 100f;
 
     internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
@@ -39,9 +37,6 @@ public sealed class PreferencesConfig : ModConfig
     internal float FancyLightingEngineGlobalIlluminationMultiplier() =>
         FancyLightingEngineIndirectBrightness / 100f;
 
-    internal bool CustomSkyColorsEnabled() =>
-        UseCustomSkyColors && Lighting.UsingNewLighting;
-
     public override void OnChanged()
     {
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
@@ -65,6 +60,7 @@ public sealed class PreferencesConfig : ModConfig
     private int _threadCount;
 
     // Tone Mapping
+
     [Header("ToneMapping")]
     [Range(160, 280)]
     [Increment(10)]
@@ -76,7 +72,8 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.UseSrgb)]
     public bool UseSrgb { get; set; }
 
-    // Smooth Lighting, Normal Maps, Overbright
+    // Smooth Lighting
+
     [Header("SmoothLighting")]
     [Range(1, 12)]
     [Increment(1)]
@@ -122,6 +119,7 @@ public sealed class PreferencesConfig : ModConfig
     public bool RenderOnlyLight { get; set; }
 
     // Ambient Occlusion
+
     [Header("AmbientOcclusion")]
     [Range(1, 4)]
     [Increment(1)]
@@ -145,7 +143,8 @@ public sealed class PreferencesConfig : ModConfig
     public int AmbientLightProportion { get; set; }
 
     // Fancy Lighting Engine
-    [Header("LightingEngine")]
+
+    [Header("FancyLightingEngine")]
     [Range(0, 100)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightLoss)]
@@ -170,12 +169,10 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FancyLightingEngineNonSolidOpaque)]
     public bool FancyLightingEngineNonSolidOpaque { get; set; }
 
-    // Sky Color
-    [Header("SkyColor")]
-    [DefaultValue(DefaultOptions.UseCustomSkyColors)]
-    public bool UseCustomSkyColors { get; set; }
+    // Fancy Sky
 
-    [DefaultValue(DefaultOptions.CustomSkyPreset)]
+    [Header("FancySky")]
+    [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
     [DrawTicks]
-    public SkyColorPreset CustomSkyPreset { get; set; }
+    public SkyColorPreset FancySkyColorsPreset { get; set; }
 }

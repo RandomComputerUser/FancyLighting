@@ -1,4 +1,4 @@
-﻿namespace FancyLighting.Profiles;
+﻿namespace FancyLighting.ColorProfiles;
 
 public interface ISimpleColorProfile
 {

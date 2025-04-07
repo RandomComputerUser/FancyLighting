@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Config.Enums;
 
-public enum Preset
+public enum SettingsPreset
 {
     CustomPreset = 10,
     VanillaPreset = 20,
