@@ -2,8 +2,8 @@
 
 public enum SkyColorPreset
 {
-    Profile1 = 0,
-    Profile2 = 1,
-    Profile3 = 2,
-    Profile4 = 3,
+    Preset1 = 0,
+    Preset2 = 1,
+    Preset3 = 2,
+    Preset4 = 3,
 }

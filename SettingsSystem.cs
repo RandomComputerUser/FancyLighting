@@ -28,10 +28,7 @@ internal sealed class SettingsSystem : ModSystem
 
     internal void SettingsUpdate()
     {
-        if (
-            PreferencesConfig.Instance?.NeedsColorLightMode() is true
-            || LightingConfig.Instance?.NeedsColorLightMode() is true
-        )
+        if (LightingConfig.Instance?.NeedsColorLightMode() is true)
         {
             if (Lighting.Mode is not LightMode.Color)
             {
