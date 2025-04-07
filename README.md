@@ -11,3 +11,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.9.18 (2025-04-06)**
 - Increased the amount of light water absorbs when using the fancy lighting engine
+- Made ambient occlusion slightly stronger by default
