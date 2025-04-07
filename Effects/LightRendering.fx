@@ -183,13 +183,6 @@ float4 Normals(float2 coords : TEXCOORD0) : COLOR0
     return float4(NormalsColor(coords, worldTexCoords), 1);
 }
 
-float4 NormalsHiDef(float2 coords : TEXCOORD0) : COLOR0
-{
-    float2 worldTexCoords = WorldCoords(coords);
-    
-    return float4(NormalsColor(coords, worldTexCoords), 1);
-}
-
 float4 NormalsOverbright(float2 coords : TEXCOORD0) : COLOR0
 {
     float2 worldTexCoords = WorldCoords(coords);
@@ -478,12 +471,7 @@ technique Technique1
     {
         PixelShader = compile ps_3_0 Normals();
     }
-
-    pass NormalsHiDef
-    {
-        PixelShader = compile ps_3_0 NormalsHiDef();
-    }
-
+    
     pass NormalsOverbright
     {
         PixelShader = compile ps_3_0 NormalsOverbright();

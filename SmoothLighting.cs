@@ -79,8 +79,7 @@ internal sealed class SmoothLighting
 
         _normalsShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
-            "Normals",
-            true
+            "Normals"
         );
         _normalsOverbrightShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
