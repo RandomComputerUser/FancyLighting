@@ -195,20 +195,6 @@ internal sealed class SmoothLighting
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
-    private void PrintException()
-    {
-        LightingConfig.Instance.UseSmoothLighting = false;
-        var prefix = ModLoader.HasMod("ChatSource") ? string.Empty : "[Fancy Lighting] ";
-        Main.NewText(
-            $"{prefix}An error occurred while trying to use smooth lighting.",
-            Color.Orange
-        );
-        Main.NewText(
-            $"{prefix}Smooth lighting has been automatically disabled.",
-            Color.Orange
-        );
-    }
-
     private static bool ShouldTileShine(ushort type, short frameX)
     {
         // We could use the method from vanilla, but that's
@@ -383,7 +369,6 @@ internal sealed class SmoothLighting
             return;
         }
 
-        var caughtException = 0;
         var doGammaCorrection = LightingConfig.Instance.HiDefFeaturesEnabled();
         var blurLightMap = LightingConfig.Instance.UseLightMapBlurring;
         var doToneMap = LightingConfig.Instance.UseLightMapToneMapping();
@@ -405,18 +390,11 @@ internal sealed class SmoothLighting
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            Interlocked.Exchange(ref caughtException, 1);
                             break;
                         }
                     }
                 }
             );
-
-            if (caughtException == 1)
-            {
-                PrintException();
-                return;
-            }
         }
 
         var lightEngine = (LightingEngine)
@@ -425,20 +403,7 @@ internal sealed class SmoothLighting
 
         if (blurLightMap)
         {
-            BlurLightMap(
-                colors,
-                lightMasks,
-                width,
-                height,
-                lightMapTileArea,
-                ref caughtException
-            );
-
-            if (caughtException == 1)
-            {
-                PrintException();
-                return;
-            }
+            BlurLightMap(colors, lightMasks, width, height, lightMapTileArea);
 
             var offset = (width - 1) * height;
             for (var i = 0; i < height; ++i)
@@ -450,8 +415,7 @@ internal sealed class SmoothLighting
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    PrintException();
-                    return;
+                    break;
                 }
             }
 
@@ -466,8 +430,7 @@ internal sealed class SmoothLighting
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    PrintException();
-                    return;
+                    break;
                 }
             }
         }
@@ -495,18 +458,11 @@ internal sealed class SmoothLighting
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            Interlocked.Exchange(ref caughtException, 1);
                             break;
                         }
                     }
                 }
             );
-
-            if (caughtException == 1)
-            {
-                PrintException();
-                return;
-            }
         }
 
         if (doGammaCorrection)
@@ -530,18 +486,11 @@ internal sealed class SmoothLighting
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            Interlocked.Exchange(ref caughtException, 1);
                             break;
                         }
                     }
                 }
             );
-
-            if (caughtException == 1)
-            {
-                PrintException();
-                return;
-            }
 
             Array.Copy(lights, otherLights, length);
         }
@@ -577,18 +526,11 @@ internal sealed class SmoothLighting
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        Interlocked.Exchange(ref caughtException, 1);
                         break;
                     }
                 }
             }
         );
-
-        if (caughtException == 1)
-        {
-            PrintException();
-            return;
-        }
 
         Parallel.For(
             1,
@@ -635,18 +577,11 @@ internal sealed class SmoothLighting
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        Interlocked.Exchange(ref caughtException, 1);
                         break;
                     }
                 }
             }
         );
-
-        if (caughtException == 1)
-        {
-            PrintException();
-            return;
-        }
 
         _lightMapTileArea = lightMapTileArea;
 
@@ -658,12 +593,9 @@ internal sealed class SmoothLighting
         LightMaskMode[] lightMasks,
         int width,
         int height,
-        Rectangle lightMapTileArea,
-        ref int caughtException
+        Rectangle lightMapTileArea
     )
     {
-        var caught = caughtException;
-
         if (LightingConfig.Instance.UseEnhancedBlurring)
         {
             if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
@@ -777,7 +709,6 @@ internal sealed class SmoothLighting
                             }
                             catch (IndexOutOfRangeException)
                             {
-                                Interlocked.Exchange(ref caught, 1);
                                 break;
                             }
                         }
@@ -960,7 +891,6 @@ internal sealed class SmoothLighting
                             }
                             catch (IndexOutOfRangeException)
                             {
-                                Interlocked.Exchange(ref caught, 1);
                                 break;
                             }
                         }
@@ -1019,15 +949,12 @@ internal sealed class SmoothLighting
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            Interlocked.Exchange(ref caught, 1);
                             break;
                         }
                     }
                 }
             );
         }
-
-        caughtException = caught;
     }
 
     internal void CalculateSmoothLighting(bool cameraMode = false)
@@ -1134,8 +1061,6 @@ internal sealed class SmoothLighting
         ArrayUtils.MakeAtLeastSize(ref _finalLightsHiDef, length);
         _finalLights = null; // Save some memory
 
-        var caughtException = 0;
-
         var brightness = Lighting.GlobalBrightness;
         Parallel.For(
             clampedStart,
@@ -1164,19 +1089,13 @@ internal sealed class SmoothLighting
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        Interlocked.Exchange(ref caughtException, 1);
+                        break;
                     }
 
                     ++i;
                 }
             }
         );
-
-        if (caughtException == 1)
-        {
-            PrintException();
-            return;
-        }
 
         TextureUtils.MakeAtLeastSize(
             ref _colors,
@@ -1207,8 +1126,6 @@ internal sealed class SmoothLighting
         ArrayUtils.MakeAtLeastSize(ref _finalLights, length);
         _finalLightsHiDef = null; // Save some memory
 
-        var caughtException = 0;
-
         var brightness = Lighting.GlobalBrightness;
         Parallel.For(
             clampedStart,
@@ -1237,19 +1154,13 @@ internal sealed class SmoothLighting
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        Interlocked.Exchange(ref caughtException, 1);
+                        break;
                     }
 
                     ++i;
                 }
             }
         );
-
-        if (caughtException == 1)
-        {
-            PrintException();
-            return;
-        }
 
         TextureUtils.MakeAtLeastSize(
             ref _colors,
