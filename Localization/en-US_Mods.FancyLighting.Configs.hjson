@@ -390,6 +390,11 @@ LightingConfig: {
 
 	# Fancy Sky
 	
+	UseFancySun: {
+		Label: Fancy Sun
+		Tooltip: Use new sun and sky rendering
+	}
+
 	UseFancySkyColors: {
 		Label: Fancy Sky Colors
 		Tooltip:

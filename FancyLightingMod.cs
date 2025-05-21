@@ -144,7 +144,7 @@ public sealed class FancyLightingMod : Mod
 
         AddHooks();
 
-        FancySkyColors.Load();
+        FancySky.Load();
 
         LightsCompatibility.Load();
         NitrateCompatibility.Load();
@@ -183,7 +183,7 @@ public sealed class FancyLightingMod : Mod
 
             SettingsSystem.EnsureRenderTargets(true);
 
-            FancySkyColors.Unload();
+            FancySky.Unload();
 
             LightsCompatibility.Unload();
             NitrateCompatibility.Unload();
@@ -427,7 +427,14 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_DrawBG(On_Main.orig_DrawBG orig, Main self)
     {
-        orig(self);
+        if (LightingConfig.Instance.FancySunEnabled())
+        {
+            FancySky.DrawFancySun(orig, self);
+        }
+        else
+        {
+            orig(self);
+        }
 
         if (
             !LightingConfig.Instance.OverbrightOverrideBackground()
@@ -557,6 +564,15 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
+        if (
+            LightingConfig.Instance.FancySunEnabled()
+            && FancySky._drawingFancySky
+            && Main.dayTime
+        )
+        {
+            return;
+        }
+
         if (
             !LightingConfig.Instance.HiDefFeaturesEnabled()
             || !LightingConfig.Instance.OverbrightOverrideBackground()

@@ -83,6 +83,13 @@ internal static class ColorUtils
     public static void GammaToLinear(ref float x) => x = GammaToLinear(x);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3 GammaToLinear(Vector3 color)
+    {
+        GammaToLinear(ref color);
+        return color;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void GammaToLinear(ref Vector3 color)
     {
         GammaToLinear(ref color.X);
@@ -96,6 +103,13 @@ internal static class ColorUtils
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LinearToGamma(ref float x) => x = LinearToGamma(x);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3 LinearToGamma(Vector3 color)
+    {
+        LinearToGamma(ref color);
+        return color;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LinearToGamma(ref Vector3 color)

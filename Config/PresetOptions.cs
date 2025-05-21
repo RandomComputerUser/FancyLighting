@@ -46,6 +46,8 @@ internal record PresetOptions
 
     // Fancy Sky
 
+    public bool UseFancySun { get; init; } = DefaultOptions.UseFancySun;
+
     public bool UseFancySkyColors { get; init; } = DefaultOptions.UseFancySkyColors;
 
     public PresetOptions() { }
@@ -69,6 +71,7 @@ internal record PresetOptions
         FancyLightingEngineMode = config.FancyLightingEngineMode;
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
 
+        UseFancySun = config.UseFancySun;
         UseFancySkyColors = config.UseFancySkyColors;
     }
 
@@ -86,6 +89,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySun = false,
             UseFancySkyColors = false,
         };
 
@@ -103,6 +107,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySun = false,
             UseFancySkyColors = true,
         };
 
@@ -122,6 +127,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = false,
+            UseFancySun = true,
             UseFancySkyColors = true,
         };
 
@@ -139,6 +145,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
+            UseFancySun = true,
             UseFancySkyColors = true,
         };
 
@@ -156,6 +163,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.High,
             SimulateGlobalIllumination = true,
+            UseFancySun = true,
             UseFancySkyColors = true,
         };
 
