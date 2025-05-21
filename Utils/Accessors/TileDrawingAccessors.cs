@@ -34,4 +34,7 @@ internal static class TileDrawingAccessors
 
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DrawReverseVines")]
     public static extern void DrawReverseVines(TileDrawing obj);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DrawCustom")]
+    public static extern void DrawCustom(TileDrawing obj, bool solidLayer);
 }

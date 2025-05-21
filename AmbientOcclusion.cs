@@ -296,6 +296,7 @@ internal sealed class AmbientOcclusion
 
         // Reset special tile counts
         Main.instance.TilesRenderer.PreDrawTiles(false, false, true);
+        Main.instance.TilesRenderer.PreDrawTiles(true, false, true);
 
         return doDraw ? null : target;
     }

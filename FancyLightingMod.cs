@@ -597,7 +597,7 @@ public sealed class FancyLightingMod : Mod
     )
     {
         if (
-            intoRenderTargets
+            (solidLayer || intoRenderTargets)
             || _ambientOcclusionInstance._drawingTileEntities
             || !LightingConfig.Instance.SmoothLightingEnabled()
             || !LightingConfig.Instance.DrawOverbright()
@@ -630,6 +630,7 @@ public sealed class FancyLightingMod : Mod
         TileDrawingAccessors.DrawTrees(self);
         TileDrawingAccessors.DrawVines(self);
         TileDrawingAccessors.DrawReverseVines(self);
+        TileDrawingAccessors.DrawCustom(self, false);
 
         Main.spriteBatch.End();
     }
