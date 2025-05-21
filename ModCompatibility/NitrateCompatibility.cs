@@ -9,7 +9,10 @@ internal static class NitrateCompatibility
 
     internal static void Load()
     {
-        if (!ModLoader.HasMod("Nitrate"))
+        if (
+            !ModLoader.HasMod("Nitrate")
+            || LightingConfig.Instance?.UseSmoothLighting is not true
+        )
         {
             return;
         }

@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v0.9.19 (2025-05-20)**
+- The experimental tile renderer of Nitrate is now disabled only if smooth lighting is enabled when mods are loaded
