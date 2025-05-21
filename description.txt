@@ -17,3 +17,7 @@ Occasionally, after launching the game, this mod might not work. This can usuall
 If you are using full HDR rendering and experiencing graphical glitches with other mods, try enabling the settings labeled 'Mod Compatibility Fixes for Full HDRR' and 'Disable HDRR During Boss Fights and Events' in the Preferences config.
 
 Some tiles are tinted when being drawn. For example, pearlstone is tinted pink so that its in-game appearance is more pink than its texture. Smooth lighting supports all vanilla tinted tiles. Modded tinted tiles are not supported.
+
+Credits:
+- Rex
+- osaka_drift: ru-RU locale

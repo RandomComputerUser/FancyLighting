@@ -1,5 +1,5 @@
 displayName = Fancy Lighting
-author = RandomComputerUser
+author = Rex
 version = 0.9.19
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting

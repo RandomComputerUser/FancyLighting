@@ -21,3 +21,9 @@ If you are using full HDR rendering and experiencing graphical glitches with oth
 Some tiles are tinted when being drawn. For example, pearlstone is tinted pink so that its in-game appearance is more pink than its texture. Smooth lighting supports all vanilla tinted tiles. Modded tinted tiles are not supported.
 
 You may report issues, download old releases, and view the source code on [url=https://github.com/RandomComputerUser/FancyLighting]the GitHub repository[/url].
+
+[h1]Credits[/h1]
+[list]
+    [*]Rex
+    [*]osaka_drift: ru-RU locale
+[/list]
