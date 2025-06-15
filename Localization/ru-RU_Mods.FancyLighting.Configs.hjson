@@ -1,14 +1,16 @@
 PreferencesConfig: {
-	DisplayName: Preferences
+	DisplayName: Настройки
 
 	Headers: {
 		ToneMapping: Тональное отображение
 		SmoothLighting: Мягкое освещение
 		AmbientOcclusion: Затенение окружения
-		LightingEngine: Движок Fancy Lighting
-		SkyColor: Детализированное небо
+		FancyLightingEngine: Движок Fancy Lighting
+		FancySky: Детализированное небо
 	}
 
+	# General
+	
 	ThreadCount: {
 		Label: Количество ядер
 		Tooltip:
@@ -125,13 +127,13 @@ PreferencesConfig: {
 	}
 
 	UseGrayscaleLighting: {
-		// Label: Чёрно-белое освещение
-		/* Tooltip:
+		Label: Чёрно-белое освещение
+		Tooltip:
 			'''
 			Отображать свет в чёрно-белом
 
 			Включите чтобы убрать все оттенки из освещения
-			''' */
+			'''
 	}
 
 	RenderOnlyLight: {
@@ -234,8 +236,8 @@ LightingConfig: {
 	Headers: {
 		SmoothLighting: Мягкое освещение
 		AmbientOcclusion: Затенение окружения
-		LightingEngine: Движок Fancy Lighting
-		SkyColor: Детализированное небо
+		FancyLightingEngine: Движок Fancy Lighting
+		FancySky: Детализированное небо
 	}
 
 	# General
@@ -399,7 +401,7 @@ LightingConfig: {
 	# Fancy Sky
 	
 	UseFancySkyColors: {
-		Label: Fancy Sky Colors
+		Label: Детализированные цвета у неба
 		Tooltip:
 			'''
 			Используйте новые цвета неба
