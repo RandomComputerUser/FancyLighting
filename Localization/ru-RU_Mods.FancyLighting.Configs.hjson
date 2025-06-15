@@ -1,5 +1,5 @@
 PreferencesConfig: {
-	DisplayName: Настройки
+	DisplayName: Preferences
 
 	Headers: {
 		ToneMapping: Тональное отображение
@@ -9,8 +9,6 @@ PreferencesConfig: {
 		SkyColor: Детализированное небо
 	}
 
-	# General
-	
 	ThreadCount: {
 		Label: Количество ядер
 		Tooltip:
@@ -127,12 +125,12 @@ PreferencesConfig: {
 	}
 
 	UseGrayscaleLighting: {
-		// Label: Grayscale Lighting
+		// Label: Чёрно-белое освещение
 		/* Tooltip:
 			'''
-			Display light in grayscale
+			Отображать свет в чёрно-белом
 
-			Enable to remove all color from light
+			Включите чтобы убрать все оттенки из освещения
 			''' */
 	}
 
@@ -217,21 +215,16 @@ PreferencesConfig: {
 			'''
 	}
 
-	# Fancy Sky Colors
+	# Fancy Sky
 	
-	UseCustomSkyColors: {
-		Label: Детализированные цвета у неба
+	FancySkyColorsPreset: {
+		Label: Профиль цветов у неба
 		Tooltip:
 			'''
-			Используйте новые цвета для неба
+			Используемый набор цветов
 
-			В основном влияет на восходы и закаты
+			Детализированные цвета неба должны быть включены для работы данной настройки
 			'''
-	}
-
-	CustomSkyPreset: {
-		Label: Профиль цветов у неба
-		Tooltip: Используемый набор цветов
 	}
 }
 
@@ -402,6 +395,18 @@ LightingConfig: {
 			Когда включено, у непрямого освещения получаются менее тёмные тени
 			'''
 	}
+
+	# Fancy Sky
+	
+	UseFancySkyColors: {
+		Label: Fancy Sky Colors
+		Tooltip:
+			'''
+			Используйте новые цвета неба
+
+			В основном влияет на оттенки солнечных лучей во время восхода или заката
+			'''
+	}
 }
 
 LightingEngineMode: {
@@ -409,17 +414,6 @@ LightingEngineMode: {
 	Low.Label: Низкое качество
 	Medium.Label: Среднее качество
 	High.Label: Высокое качество
-}
-
-Preset: {
-	Tooltip: ""
-	CustomPreset.Label: Пользовательский режим
-	VanillaPreset.Label: Ванильный режим
-	MinimalPreset.Label: Очень низкое качество
-	LowPreset.Label: Низкое качество
-	MediumPreset.Label: Среднее качество
-	HighPreset.Label: Высокое качество
-	UltraPreset.Label: Ультра качество
 }
 
 RenderMode: {
@@ -430,10 +424,21 @@ RenderMode: {
 	EnhancedHdr.Label: Полный режим HDR
 }
 
+SettingsPreset: {
+	Tooltip: ""
+	CustomPreset.Label: Пользовательский режим
+	VanillaPreset.Label: Ванильный режим
+	MinimalPreset.Label: Очень низкое качество
+	LowPreset.Label: Низкое качество
+	MediumPreset.Label: Среднее качество
+	HighPreset.Label: Высокое качество
+	UltraPreset.Label: Ультра качество
+}
+
 SkyColorPreset: {
 	Tooltip: ""
-	Profile1.Label: Профиль 1
-	Profile2.Label: Профиль 2
-	Profile3.Label: Профиль 3
-	Profile4.Label: Профиль 4
+	Preset1.Label: Профиль 1
+	Preset2.Label: Профиль 2
+	Preset3.Label: Профиль 3
+	Preset4.Label: Профиль 4
 }
