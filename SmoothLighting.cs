@@ -369,11 +369,13 @@ internal sealed class SmoothLighting
             return;
         }
 
-        var doGammaCorrection = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var blurLightMap = LightingConfig.Instance.UseLightMapBlurring;
+        var doGrayscale = PreferencesConfig.Instance.UseGrayscaleLighting;
         var doToneMap = LightingConfig.Instance.UseLightMapToneMapping();
+        var colorProcessingNeeded = doToneMap || doGrayscale;
 
-        if (doGammaCorrection && !LightingConfig.Instance.FancyLightingEngineEnabled())
+        if (hiDef && !LightingConfig.Instance.FancyLightingEngineEnabled())
         {
             Parallel.For(
                 0,
@@ -435,37 +437,114 @@ internal sealed class SmoothLighting
             }
         }
 
-        if (doToneMap)
+        if (colorProcessingNeeded)
         {
+            var gammaConversionNeeded = !hiDef;
             var lights = blurLightMap ? _lights : colors;
 
-            Parallel.For(
-                0,
-                width,
-                SettingsSystem._parallelOptions,
-                (x) =>
-                {
-                    var i = height * x;
-                    for (var y = 0; y < height; ++y)
+            if (gammaConversionNeeded)
+            {
+                Parallel.For(
+                    0,
+                    width,
+                    SettingsSystem._parallelOptions,
+                    (x) =>
                     {
-                        try
+                        var i = height * x;
+                        for (var y = 0; y < height; ++y)
                         {
-                            ref var lightColor = ref lights[i++];
-
-                            ColorUtils.GammaToLinear(ref lightColor);
-                            ToneMapping.ToneMap(ref lightColor);
-                            ColorUtils.LinearToGamma(ref lightColor);
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            break;
+                            try
+                            {
+                                ref var lightColor = ref lights[i++];
+                                ColorUtils.GammaToLinear(ref lightColor);
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
                         }
                     }
-                }
-            );
+                );
+            }
+
+            if (doGrayscale)
+            {
+                Parallel.For(
+                    0,
+                    width,
+                    SettingsSystem._parallelOptions,
+                    (x) =>
+                    {
+                        var i = height * x;
+                        for (var y = 0; y < height; ++y)
+                        {
+                            try
+                            {
+                                ref var lightColor = ref lights[i++];
+                                var level = ColorUtils.Luma(lightColor);
+                                lightColor.X = lightColor.Y = lightColor.Z = level;
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
+
+            if (doToneMap)
+            {
+                Parallel.For(
+                    0,
+                    width,
+                    SettingsSystem._parallelOptions,
+                    (x) =>
+                    {
+                        var i = height * x;
+                        for (var y = 0; y < height; ++y)
+                        {
+                            try
+                            {
+                                ref var lightColor = ref lights[i++];
+                                ToneMapping.ToneMap(ref lightColor);
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
+
+            if (gammaConversionNeeded)
+            {
+                Parallel.For(
+                    0,
+                    width,
+                    SettingsSystem._parallelOptions,
+                    (x) =>
+                    {
+                        var i = height * x;
+                        for (var y = 0; y < height; ++y)
+                        {
+                            try
+                            {
+                                ref var lightColor = ref lights[i++];
+                                ColorUtils.LinearToGamma(ref lightColor);
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                );
+            }
         }
 
-        if (doGammaCorrection)
+        if (hiDef)
         {
             var lights = blurLightMap ? _lights : colors;
             var otherLights = blurLightMap ? colors : _lights;

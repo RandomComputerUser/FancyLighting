@@ -115,6 +115,9 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
     public bool DisableHdrDuringBossFights { get; set; }
 
+    [DefaultValue(DefaultOptions.UseGrayscaleLighting)]
+    public bool UseGrayscaleLighting { get; set; }
+
     [DefaultValue(DefaultOptions.RenderOnlyLight)]
     public bool RenderOnlyLight { get; set; }
 

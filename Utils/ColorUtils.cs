@@ -109,8 +109,12 @@ internal static class ColorUtils
     public static float Luminance(Vector3 color)
     {
         GammaToLinear(ref color);
-        return (0.2126f * color.X) + (0.7152f * color.Y) + (0.0722f * color.Z);
+        return Luma(color);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Luma(Vector3 color) =>
+        (0.2126f * color.X) + (0.7152f * color.Y) + (0.0722f * color.Z);
 
     public static float ApproximateLightAbsorption(Vector3 absorptionColor)
     {

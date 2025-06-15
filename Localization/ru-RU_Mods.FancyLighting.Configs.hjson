@@ -126,6 +126,16 @@ PreferencesConfig: {
 			'''
 	}
 
+	UseGrayscaleLighting: {
+		// Label: Grayscale Lighting
+		/* Tooltip:
+			'''
+			Display light in grayscale
+
+			Enable to remove all color from light
+			''' */
+	}
+
 	RenderOnlyLight: {
 		Label: (Отладка) Показывать цвета освещения
 		Tooltip: Показывает цвета освещения без блоков и текстур
