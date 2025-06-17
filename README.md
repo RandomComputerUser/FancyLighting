@@ -9,8 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.9.20 (2025-06-15)**
-- Added a setting to use grayscale lighting when using smooth lighting
-- Moved the fancy sky colors setting to the quality settings
-- Reordered the sky color presets
-- Updated some settings tooltips
+**v0.10.0 (2025-06-??)**
