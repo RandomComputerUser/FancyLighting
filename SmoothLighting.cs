@@ -406,35 +406,6 @@ internal sealed class SmoothLighting
         if (blurLightMap)
         {
             BlurLightMap(colors, lightMasks, width, height, lightMapTileArea);
-
-            var offset = (width - 1) * height;
-            for (var i = 0; i < height; ++i)
-            {
-                try
-                {
-                    _lights[i] = colors[i];
-                    _lights[i + offset] = colors[i + offset];
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    break;
-                }
-            }
-
-            var end = (width - 1) * height;
-            offset = height - 1;
-            for (var i = height; i < end; i += height)
-            {
-                try
-                {
-                    _lights[i] = colors[i];
-                    _lights[i + offset] = colors[i + offset];
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    break;
-                }
-            }
         }
 
         if (colorProcessingNeeded)
@@ -675,6 +646,16 @@ internal sealed class SmoothLighting
         Rectangle lightMapTileArea
     )
     {
+        if (width < 3 || height < 3)
+        {
+            Array.Copy(
+                colors,
+                _lights,
+                Math.Min(Math.Min(colors.Length, _lights.Length), width * height)
+            );
+            return;
+        }
+
         if (LightingConfig.Instance.UseEnhancedBlurring)
         {
             if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
@@ -1033,6 +1014,35 @@ internal sealed class SmoothLighting
                     }
                 }
             );
+        }
+
+        var offset = (width - 1) * height;
+        for (var i = 0; i < height; ++i)
+        {
+            try
+            {
+                _lights[i] = colors[i];
+                _lights[i + offset] = colors[i + offset];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                break;
+            }
+        }
+
+        var end = (width - 1) * height;
+        offset = height - 1;
+        for (var i = height; i < end; i += height)
+        {
+            try
+            {
+                _lights[i] = colors[i];
+                _lights[i + offset] = colors[i + offset];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                break;
+            }
         }
     }
 
