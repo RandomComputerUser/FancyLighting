@@ -144,6 +144,7 @@ public sealed class FancyLightingMod : Mod
 
         AddHooks();
 
+        FancySkyRendering.Load();
         FancySkyColors.Load();
 
         LightsCompatibility.Load();
@@ -183,6 +184,7 @@ public sealed class FancyLightingMod : Mod
 
             SettingsSystem.EnsureRenderTargets(true);
 
+            FancySkyRendering.Unload();
             FancySkyColors.Unload();
 
             LightsCompatibility.Unload();
@@ -557,6 +559,18 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
+        if (
+            LightingConfig.Instance.FancySkyRenderingEnabled()
+            && Main.dayTime
+            && !Main.gameMenu
+            && !(Main.remixWorld || WorldGen.remixWorldGen)
+            && !Main.eclipse
+        )
+        {
+            FancySkyRendering.DrawSun(sceneArea, sunColor, tempMushroomInfluence);
+            return;
+        }
+
         if (
             !LightingConfig.Instance.HiDefFeaturesEnabled()
             || !LightingConfig.Instance.OverbrightOverrideBackground()

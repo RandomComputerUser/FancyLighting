@@ -19,7 +19,8 @@ public static class FancySkyColors
         private set;
     }
 
-    private static void Initialize() =>
+    internal static void Load()
+    {
         Preset = new()
         {
             [SkyColorPreset.Preset1] = new SkyColors1(),
@@ -27,10 +28,6 @@ public static class FancySkyColors
             [SkyColorPreset.Preset3] = new SkyColors3(),
             [SkyColorPreset.Preset4] = new SkyColors4(),
         };
-
-    internal static void Load()
-    {
-        Initialize();
 
         var detourMethod = typeof(Main).GetMethod(
             "SetBackColor",
@@ -83,10 +80,11 @@ public static class FancySkyColors
             return;
         }
 
-        var hour = Main.dayTime
-            ? 4.5 + (Main.time / 3600.0)
-            : 12.0 + 7.5 + (Main.time / 3600.0);
-        ColorUtils.Assign(ref bgColor, 1f, CalculateSkyColor(hour));
+        ColorUtils.Assign(
+            ref bgColor,
+            1f,
+            CalculateSkyColor(GameTimeUtils.CalculateCurrentHour())
+        );
     }
 
     public static Vector3 CalculateSkyColor(double hour)

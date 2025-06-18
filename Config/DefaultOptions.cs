@@ -61,6 +61,7 @@ public static class DefaultOptions
     public const bool FancyLightingEngineNonSolidOpaque = false;
 
     // Fancy Sky
+    public const bool UseFancySkyRendering = true;
     public const bool UseFancySkyColors = true;
 
     // Fancy Sky Preferences

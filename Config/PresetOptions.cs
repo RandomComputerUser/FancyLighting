@@ -46,6 +46,8 @@ internal record PresetOptions
 
     // Fancy Sky
 
+    public bool UseFancySkyRendering { get; init; } = DefaultOptions.UseFancySkyRendering;
+
     public bool UseFancySkyColors { get; init; } = DefaultOptions.UseFancySkyColors;
 
     public PresetOptions() { }
@@ -69,6 +71,7 @@ internal record PresetOptions
         FancyLightingEngineMode = config.FancyLightingEngineMode;
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
 
+        UseFancySkyRendering = config.UseFancySkyRendering;
         UseFancySkyColors = config.UseFancySkyColors;
     }
 
@@ -86,6 +89,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySkyRendering = false,
             UseFancySkyColors = false,
         };
 
@@ -103,6 +107,7 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
+            UseFancySkyRendering = false,
             UseFancySkyColors = true,
         };
 
@@ -122,6 +127,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = false,
+            UseFancySkyRendering = true,
             UseFancySkyColors = true,
         };
 
@@ -139,6 +145,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
+            UseFancySkyRendering = true,
             UseFancySkyColors = true,
         };
 
@@ -156,6 +163,7 @@ internal record PresetOptions
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.High,
             SimulateGlobalIllumination = true,
+            UseFancySkyRendering = true,
             UseFancySkyColors = true,
         };
 

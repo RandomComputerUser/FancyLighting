@@ -400,6 +400,11 @@ LightingConfig: {
 
 	# Fancy Sky
 	
+	UseFancySkyRendering: {
+		// Label: Placeholder
+		// Tooltip: Test
+	}
+
 	UseFancySkyColors: {
 		Label: Детализированные цвета у неба
 		Tooltip:

@@ -16,6 +16,7 @@ public sealed class LightingConfig : ModConfig
         UseSmoothLighting
         || UseAmbientOcclusion
         || UseFancyLightingEngine
+        || UseFancySkyRendering
         || UseFancySkyColors;
 
     internal bool ModifyCameraModeRendering() =>
@@ -60,6 +61,9 @@ public sealed class LightingConfig : ModConfig
 
     // Fancy Sky
 
+    internal bool FancySkyRenderingEnabled() =>
+        UseFancySkyRendering && Lighting.UsingNewLighting;
+
     internal bool FancySkyColorsEnabled() =>
         UseFancySkyColors && Lighting.UsingNewLighting;
 
@@ -87,6 +91,7 @@ public sealed class LightingConfig : ModConfig
         _fancyLightingEngineMode = options.FancyLightingEngineMode;
         _simulateGlobalIllumination = options.SimulateGlobalIllumination;
 
+        _useFancySkyRendering = options.UseFancySkyRendering;
         _useFancySkyColors = options.UseFancySkyColors;
     }
 
@@ -329,6 +334,19 @@ public sealed class LightingConfig : ModConfig
     // Fancy Sky
 
     [Header("FancySky")]
+    [DefaultValue(DefaultOptions.UseFancySkyRendering)]
+    public bool UseFancySkyRendering
+    {
+        get => _useFancySkyRendering;
+        set
+        {
+            _useFancySkyRendering = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _useFancySkyRendering;
+
     [DefaultValue(DefaultOptions.UseFancySkyColors)]
     public bool UseFancySkyColors
     {

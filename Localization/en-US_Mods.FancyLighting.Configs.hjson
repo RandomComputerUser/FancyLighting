@@ -220,12 +220,12 @@ PreferencesConfig: {
 	# Fancy Sky
 	
 	FancySkyColorsPreset: {
-		Label: Sky Color Preset
+		Label: Sky Light Color Preset
 		Tooltip:
 			'''
-			Which set of sky colors is used
+			Which set of sky light colors is used
 
-			Fancy sky colors must be enabled for this setting to have any effect
+			Fancy sky lighting must be enabled for this setting to have any effect
 			'''
 	}
 }
@@ -400,11 +400,16 @@ LightingConfig: {
 
 	# Fancy Sky
 	
+	UseFancySkyRendering: {
+		Label: Placeholder
+		Tooltip: Test
+	}
+
 	UseFancySkyColors: {
-		Label: Fancy Sky Colors
+		Label: Fancy Sky Lighting
 		Tooltip:
 			'''
-			Use new sky colors
+			Use new colors for sky light
 
 			Primarily affects the color of sunlight during the early morning and evening
 			'''
