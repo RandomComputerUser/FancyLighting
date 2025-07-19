@@ -66,13 +66,23 @@ public static class FancySkyRendering
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
 
-        var sunCoords = CalculateSunCoords(hour);
-        var sunEffect = Math.Clamp(2f * (sunCoords.Y + 0.5f), 0f, 1f);
-        var darkSkyColor = skyColorMult * new Vector3(30f, 110f, 255f) / 255f;
-        var lightSkyColor = skyColorMult * new Vector3(195f, 220f, 255f) / 255f;
-        var coordMultY = -4f * target.Height / target.Width;
+        var sunCoords = 8f * CalculateSunCoords(hour);
+        var darkSkyColor = skyColorMult * new Vector3(20f, 110f, 255f) / 255f;
+        var lightSkyColor = skyColorMult * new Vector3(160f, 220f, 255f) / 255f;
+        var coordMultY = -16f * target.Height / target.Width;
+
         var horizonLevel =
-            (coordMultY * ((float)sceneArea.bgTopY / target.Height)) + 0.25f;
+            16f
+            * (
+                ((float)sceneArea.bgTopY / target.Width)
+                + (0.2f * target.Height / target.Width)
+            );
+        var sunEffect = Math.Max(
+            (float)(
+                1.0 - (1.0 / Math.Pow(8.5, 3.0) * Math.Pow(Math.Abs(hour - 12.0), 3.0))
+            ),
+            0f
+        );
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -128,24 +138,42 @@ public static class FancySkyRendering
 
         var hour = GameTimeUtils.CalculateCurrentHour();
         var sunCoords = CalculateSunCoords(hour);
-        var coordMult = target.Width / 4f;
+        var coordMult = target.Width / 2f;
         sunCoords.X = (coordMult * sunCoords.X) + (target.Width / 2f);
         sunCoords.Y = -(coordMult * sunCoords.Y) + (target.Height / 2f);
 
         var bloom = LightingConfig.Instance.BloomEnabled();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
 
-        var radius = bloom ? 16f : 20f;
-        var glowRadius = bloom ? 60f : 90f;
-        var glowIntensity = 1.25f;
-        var glowFadeMult = bloom ? 0.125f : 0.5f;
+        var radius = bloom ? 16f : 25f;
+        var glowRadius = bloom ? 28f : 95f;
+        var glowIntensity =
+            bloom ? ColorUtils.LinearToGamma(400f)
+            : hiDef ? 1.7f
+            : 1.2f;
 
         var brightness =
-            bloom ? ColorUtils.LinearToGamma(150f)
+            bloom ? ColorUtils.LinearToGamma(400f)
             : hiDef ? 1.5f
             : 1f;
         var color = new Vector4(new Vector3(brightness), 1f);
-        var glowColor = 0.6f * new Vector4(new Vector3(glowIntensity), 1f);
+        var glowColor = 0.8f * new Vector4(new Vector3(glowIntensity), 1f);
+        var fadeExponent = bloom ? 3f : 2f;
+
+        if (bloom)
+        {
+            color.Z *= 0.8f;
+            glowColor.Z *= 0.8f;
+        }
+        else if (hiDef)
+        {
+            color.Z *= 0.9f;
+            glowColor.Z *= 0.9f;
+        }
+        else
+        {
+            glowColor.Z *= 0.9f;
+        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -154,12 +182,38 @@ public static class FancySkyRendering
             DepthStencilState.None,
             RasterizerState.CullNone
         );
+
+        if (bloom)
+        {
+            var weakGlowIntensity = ColorUtils.LinearToGamma(1.5f);
+            var weakGlowColor = 0.8f * new Vector4(new Vector3(weakGlowIntensity), 1f);
+            var weakGlowRadius = 75f;
+            _sunShader
+                .SetParameter("SunColor", weakGlowColor)
+                .SetParameter("SunGlowColor", weakGlowColor)
+                .SetParameter("SunRadius", radius)
+                .SetParameter("SunGlowRadius", weakGlowRadius)
+                .SetParameter("SunGlowFadeExponent", 1.5f)
+                .Apply();
+            Main.spriteBatch.Draw(
+                _pixel,
+                sunCoords,
+                null,
+                Color.White,
+                0f,
+                new(0.5f),
+                2f * weakGlowRadius,
+                SpriteEffects.None,
+                0f
+            );
+        }
+
         _sunShader
             .SetParameter("SunColor", color)
             .SetParameter("SunGlowColor", glowColor)
             .SetParameter("SunRadius", radius)
             .SetParameter("SunGlowRadius", glowRadius)
-            .SetParameter("SunGlowFadeMult", glowFadeMult)
+            .SetParameter("SunGlowFadeExponent", fadeExponent)
             .Apply();
         Main.spriteBatch.Draw(
             _pixel,
@@ -189,6 +243,6 @@ public static class FancySkyRendering
     {
         hour %= 24.0;
         var angle = (0.061f * (12f - (float)hour)) + MathHelper.PiOver2;
-        return new(5f * MathF.Cos(angle), (5f * MathF.Sin(angle)) - 3.96f);
+        return new(2.5f * MathF.Cos(angle), (2.5f * MathF.Sin(angle)) - 1.98f);
     }
 }
