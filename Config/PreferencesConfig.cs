@@ -29,7 +29,7 @@ public sealed class PreferencesConfig : ModConfig
 
     internal float ExposureMult() => 0.8f * (Exposure / 100f);
 
-    internal float BloomLerp() => 0.003f * BloomStrength;
+    internal float BloomLerp() => 0.0025f * BloomStrength;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
