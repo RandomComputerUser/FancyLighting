@@ -41,7 +41,8 @@ internal sealed class SettingsSystem : ModSystem
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
-        PostProcessing.RecalculateHiDefSurfaceBrightness();
+        ColorUtils._lightGamma = PreferencesConfig.Instance?.LightGammaExponent() ?? 2.2f;
+        ColorUtils._lightReciprocalGamma = 1f / ColorUtils._lightGamma;
 
         var needsPostProcessing = NeedsPostProcessing();
         if (needsPostProcessing && !_prevNeedsPostProcessing)

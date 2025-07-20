@@ -197,9 +197,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            ColorUtils.GammaToLinear(ref _initialBrightnessCutoff);
-            ColorUtils.GammaToLinear(ref cutoff);
-            ColorUtils.GammaToLinear(ref basicWorkCutoff);
+            _initialBrightnessCutoff = MathF.Pow(_initialBrightnessCutoff, 2.2f);
+            cutoff = MathF.Pow(cutoff, 2.2f);
+            basicWorkCutoff = MathF.Pow(basicWorkCutoff, 2.2f);
         }
 
         _logBrightnessCutoff = MathF.Log(cutoff);
@@ -234,12 +234,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            ColorUtils.GammaToLinear(ref lightAirDecayBaseline);
-            ColorUtils.GammaToLinear(ref lightSolidDecayBaseline);
-            ColorUtils.GammaToLinear(ref lightWaterDecayBaseline);
-            ColorUtils.GammaToLinear(ref lightHoneyDecayBaseline);
+            ColorUtils.LightGammaToLinear(ref lightAirDecayBaseline);
+            ColorUtils.LightGammaToLinear(ref lightSolidDecayBaseline);
+            ColorUtils.LightGammaToLinear(ref lightWaterDecayBaseline);
+            ColorUtils.LightGammaToLinear(ref lightHoneyDecayBaseline);
 
-            ColorUtils.GammaToLinear(ref _lightLossExitingSolid);
+            ColorUtils.LightGammaToLinear(ref _lightLossExitingSolid);
         }
 
         var thresholdMultExponent = MathF.Sqrt(2) - 1;
@@ -351,7 +351,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 var i = height * x;
                 for (var y = 0; y < height; ++y)
                 {
-                    ColorUtils.GammaToLinear(ref colors[i++]);
+                    ColorUtils.LightGammaToLinear(ref colors[i++]);
                 }
             }
         );
@@ -567,7 +567,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            ColorUtils.GammaToLinear(ref giMult);
+            ColorUtils.LightGammaToLinear(ref giMult);
         }
 
         ArrayUtils.MakeAtLeastSize(ref _workingLightMaps[0], length);

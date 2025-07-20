@@ -11,7 +11,14 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal float GammaExponent() => Gamma / 100f;
+    internal float GammaExponent() =>
+        (
+            LightingConfig.Instance?.HiDefFeaturesEnabled() is true
+                ? PostProcessing.HiDefObjectGammaMult
+                : 1f
+        ) * (Gamma / 100f);
+
+    internal float LightGammaExponent() => Gamma / 100f;
 
     internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 

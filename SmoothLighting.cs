@@ -388,7 +388,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            ColorUtils.GammaToLinear(ref colors[i++]);
+                            ColorUtils.LightGammaToLinear(ref colors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -427,7 +427,7 @@ internal sealed class SmoothLighting
                             try
                             {
                                 ref var lightColor = ref lights[i++];
-                                ColorUtils.GammaToLinear(ref lightColor);
+                                ColorUtils.LightGammaToLinear(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -503,7 +503,7 @@ internal sealed class SmoothLighting
                             try
                             {
                                 ref var lightColor = ref lights[i++];
-                                ColorUtils.LinearToGamma(ref lightColor);
+                                ColorUtils.LightLinearToGamma(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -517,42 +517,33 @@ internal sealed class SmoothLighting
 
         if (hiDef)
         {
-            var baseReciprocalGamma = ColorUtils._reciprocalGamma;
-            try
-            {
-                ColorUtils._reciprocalGamma /= PostProcessing.HiDefObjectGammaMult;
+            var lights = blurLightMap ? _lights : colors;
+            var otherLights = blurLightMap ? colors : _lights;
 
-                var lights = blurLightMap ? _lights : colors;
-                var otherLights = blurLightMap ? colors : _lights;
-
-                Parallel.For(
-                    0,
-                    width,
-                    SettingsSystem._parallelOptions,
-                    (x) =>
+            Parallel.For(
+                0,
+                width,
+                SettingsSystem._parallelOptions,
+                (x) =>
+                {
+                    var i = height * x;
+                    for (var y = 0; y < height; ++y)
                     {
-                        var i = height * x;
-                        for (var y = 0; y < height; ++y)
+                        try
                         {
-                            try
-                            {
-                                ColorUtils.LinearToGamma(ref lights[i]);
-                                lights[i++] *= PostProcessing.HiDefBrightnessScale;
-                            }
-                            catch (IndexOutOfRangeException)
-                            {
-                                break;
-                            }
+                            // Converting to object gamma space, not light gamma space
+                            ColorUtils.LinearToGamma(ref lights[i]);
+                            lights[i++] *= PostProcessing.HiDefBrightnessScale;
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            break;
                         }
                     }
-                );
+                }
+            );
 
-                Array.Copy(lights, otherLights, length);
-            }
-            finally
-            {
-                ColorUtils._reciprocalGamma = baseReciprocalGamma;
-            }
+            Array.Copy(lights, otherLights, length);
         }
         else
         {

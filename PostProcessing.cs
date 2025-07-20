@@ -6,9 +6,9 @@ internal sealed class PostProcessing
 {
     // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
-    public static float HiDefBackgroundBrightnessMult { get; private set; }
+    internal const float HiDefBackgroundBrightnessMult = 1.5f;
 
-    // Increase gamma of tiles/objects compared to light
+    // Increase gamma for tiles/objects but not light in full HDR rendering
     internal const float HiDefObjectGammaMult = 1.1f;
 
     private readonly Texture2D _ditherNoise;
@@ -64,11 +64,6 @@ internal sealed class PostProcessing
         _blurRenderer.Unload();
     }
 
-    internal static void RecalculateHiDefSurfaceBrightness()
-    {
-        HiDefBackgroundBrightnessMult = 1.5f;
-    }
-
     internal static float CalculateHiDefBackgroundBrightness() =>
         HiDefBrightnessScale
         * HiDefBackgroundBrightnessMult
@@ -92,11 +87,6 @@ internal sealed class PostProcessing
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
-
-        if (hiDef)
-        {
-            gamma *= HiDefObjectGammaMult;
-        }
 
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
