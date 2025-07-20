@@ -8,6 +8,11 @@ internal static class TileUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNonSolid(int x, int y)
     {
+        if (x < 0 || y < 0 || x >= Main.tile.Width || y >= Main.tile.Height)
+        {
+            return false;
+        }
+
         var tile = Main.tile[x, y];
         if (!tile.HasTile)
         {

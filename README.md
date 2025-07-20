@@ -11,4 +11,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v0.10.0 (2025-06-??)**
 - Increased contrast when using full HDR rendering
-- Attempted to fix an uncommon crash caused by `SmoothLighting.BlurLightMap()`
+- Attempted to fix some rare crashes
