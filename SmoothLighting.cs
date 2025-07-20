@@ -517,32 +517,42 @@ internal sealed class SmoothLighting
 
         if (hiDef)
         {
-            var lights = blurLightMap ? _lights : colors;
-            var otherLights = blurLightMap ? colors : _lights;
+            var baseReciprocalGamma = ColorUtils._reciprocalGamma;
+            try
+            {
+                ColorUtils._reciprocalGamma /= PostProcessing.HiDefObjectGammaMult;
 
-            Parallel.For(
-                0,
-                width,
-                SettingsSystem._parallelOptions,
-                (x) =>
-                {
-                    var i = height * x;
-                    for (var y = 0; y < height; ++y)
+                var lights = blurLightMap ? _lights : colors;
+                var otherLights = blurLightMap ? colors : _lights;
+
+                Parallel.For(
+                    0,
+                    width,
+                    SettingsSystem._parallelOptions,
+                    (x) =>
                     {
-                        try
+                        var i = height * x;
+                        for (var y = 0; y < height; ++y)
                         {
-                            ColorUtils.LinearToGamma(ref lights[i]);
-                            lights[i++] *= PostProcessing.HiDefBrightnessScale;
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            break;
+                            try
+                            {
+                                ColorUtils.LinearToGamma(ref lights[i]);
+                                lights[i++] *= PostProcessing.HiDefBrightnessScale;
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
                         }
                     }
-                }
-            );
+                );
 
-            Array.Copy(lights, otherLights, length);
+                Array.Copy(lights, otherLights, length);
+            }
+            finally
+            {
+                ColorUtils._reciprocalGamma = baseReciprocalGamma;
+            }
         }
         else
         {

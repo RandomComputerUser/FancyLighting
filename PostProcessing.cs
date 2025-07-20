@@ -8,6 +8,9 @@ internal sealed class PostProcessing
     internal const float HiDefBrightnessScale = 0.5f;
     public static float HiDefBackgroundBrightnessMult { get; private set; }
 
+    // Increase gamma of tiles/objects compared to light
+    internal const float HiDefObjectGammaMult = 1.1f;
+
     private readonly Texture2D _ditherNoise;
 
     private Shader _gammaToLinearShader;
@@ -89,6 +92,11 @@ internal sealed class PostProcessing
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
+
+        if (hiDef)
+        {
+            gamma *= HiDefObjectGammaMult;
+        }
 
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
