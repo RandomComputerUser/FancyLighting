@@ -563,11 +563,16 @@ public sealed class FancyLightingMod : Mod
             LightingConfig.Instance.FancySkyRenderingEnabled()
             && Main.dayTime
             && !Main.gameMenu
-            && !(Main.remixWorld || WorldGen.remixWorldGen)
-            && !Main.eclipse
         )
         {
-            FancySkyRendering.DrawSun(sceneArea, sunColor, tempMushroomInfluence);
+            FancySkyRendering.DrawSun(
+                orig,
+                self,
+                sceneArea,
+                moonColor,
+                sunColor,
+                tempMushroomInfluence
+            );
             return;
         }
 

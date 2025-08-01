@@ -125,118 +125,34 @@ public static class FancySkyRendering
     }
 
     internal static void DrawSun(
+        On_Main.orig_DrawSunAndMoon orig,
+        Main self,
         Main.SceneArea sceneArea,
+        Color moonColor,
         Color sunColor,
         float tempMushroomInfluence
     )
     {
         var samplerState = MainGraphics.GetSamplerState();
-        var transformMatrix = MainGraphics.GetTransformMatrix();
+        var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
-
-        var hour = GameTimeUtils.CalculateCurrentHour();
-        var sunCoords = CalculateSunCoords(hour);
-        var coordMult = target.Width / 2f;
-        sunCoords.X = (coordMult * sunCoords.X) + (target.Width / 2f);
-        sunCoords.Y = -(coordMult * sunCoords.Y) + (target.Height / 2f);
-
-        var bloom = LightingConfig.Instance.BloomEnabled();
-        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
-
-        var radius = bloom ? 16f : 25f;
-        var glowRadius = bloom ? 28f : 95f;
-        var glowIntensity =
-            bloom ? ColorUtils.LinearToGamma(400f)
-            : hiDef ? 1.7f
-            : 1.2f;
-
-        var brightness =
-            bloom ? ColorUtils.LinearToGamma(400f)
-            : hiDef ? 1.5f
-            : 1f;
-        var color = new Vector4(new Vector3(brightness), 1f);
-        var glowColor = 0.8f * new Vector4(new Vector3(glowIntensity), 1f);
-        var fadeExponent = bloom ? 3f : 2f;
-
-        if (bloom)
-        {
-            color.Z *= 0.8f;
-            glowColor.Z *= 0.8f;
-        }
-        else if (hiDef)
-        {
-            color.Z *= 0.9f;
-            glowColor.Z *= 0.9f;
-        }
-        else
-        {
-            glowColor.Z *= 0.9f;
-        }
+        var gamma = PreferencesConfig.Instance.GammaExponent();
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
             BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-
-        if (bloom)
-        {
-            var weakGlowIntensity = ColorUtils.LinearToGamma(1.5f);
-            var weakGlowColor = 0.8f * new Vector4(new Vector3(weakGlowIntensity), 1f);
-            var weakGlowRadius = 75f;
-            _sunShader
-                .SetParameter("SunColor", weakGlowColor)
-                .SetParameter("SunGlowColor", weakGlowColor)
-                .SetParameter("SunRadius", radius)
-                .SetParameter("SunGlowRadius", weakGlowRadius)
-                .SetParameter("SunGlowFadeExponent", 1.5f)
-                .Apply();
-            Main.spriteBatch.Draw(
-                _pixel,
-                sunCoords,
-                null,
-                Color.White,
-                0f,
-                new(0.5f),
-                2f * weakGlowRadius,
-                SpriteEffects.None,
-                0f
-            );
-        }
-
-        _sunShader
-            .SetParameter("SunColor", color)
-            .SetParameter("SunGlowColor", glowColor)
-            .SetParameter("SunRadius", radius)
-            .SetParameter("SunGlowRadius", glowRadius)
-            .SetParameter("SunGlowFadeExponent", fadeExponent)
-            .Apply();
-        Main.spriteBatch.Draw(
-            _pixel,
-            sunCoords,
-            null,
-            Color.White,
-            0f,
-            new(0.5f),
-            2f * glowRadius,
-            SpriteEffects.None,
-            0f
-        );
-        Main.spriteBatch.End();
-
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
-            Main.Rasterizer,
+            FancyLightingMod._inCameraMode ? RasterizerState.CullNone : Main.Rasterizer,
             null,
-            transformMatrix
+            transform
         );
+        _sunShader
+            .SetParameter("Gamma", gamma)
+            .SetParameter("InverseGamma", 1f / gamma)
+            .Apply();
+        orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
     }
 
     public static Vector2 CalculateSunCoords(double hour)
