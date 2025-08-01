@@ -12,4 +12,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 **v0.10.0 (2025-06-??)**
 - Increased contrast when using full HDR rendering
 - Adjusted bloom strength
+- Slightly reduced the strength of simulated normal maps
 - Attempted to fix some rare crashes
