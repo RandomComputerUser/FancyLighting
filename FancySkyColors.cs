@@ -13,6 +13,8 @@ public static class FancySkyColors
 {
     private static ILHook _ilHook_SetBackColor;
 
+    private static Texture2D _profilesTexture;
+
     public static Dictionary<SkyColorPreset, ISimpleColorProfile> Preset
     {
         get;
@@ -23,10 +25,11 @@ public static class FancySkyColors
     {
         Preset = new()
         {
-            [SkyColorPreset.Preset1] = new SkyColors1(),
-            [SkyColorPreset.Preset2] = new SkyColors2(),
-            [SkyColorPreset.Preset3] = new SkyColors3(),
-            [SkyColorPreset.Preset4] = new SkyColors4(),
+            [SkyColorPreset.Preset1] = new SkyLightColors2(),
+            [SkyColorPreset.Preset2] = new SkyLightColors3(),
+            [SkyColorPreset.Preset3] = new SkyLightColors4(),
+            [SkyColorPreset.Preset4] = new SkyLightColors5(),
+            [SkyColorPreset.Preset5] = new SkyLightColors5(),
         };
 
         var detourMethod = typeof(Main).GetMethod(
@@ -49,6 +52,9 @@ public static class FancySkyColors
     internal static void Unload()
     {
         _ilHook_SetBackColor?.Dispose();
+
+        _profilesTexture?.Dispose();
+        _profilesTexture = null;
     }
 
     private static void _SetBackColor(ILContext context)
@@ -96,9 +102,88 @@ public static class FancySkyColors
 
         if (!foundProfile)
         {
-            return Vector3.One;
+            profile = Preset[SkyColorPreset.Preset1];
         }
 
         return profile.GetColor(hour);
+    }
+
+    internal static void DrawColorProfiles()
+    {
+        if (
+            PreferencesConfig.Instance?.ShowFancySkyColorGradients is not true
+            || Main.gameMenu
+            || Main.gamePaused
+            || Main.mapFullscreen
+        )
+        {
+            return;
+        }
+
+        if (_profilesTexture?.IsDisposed is not false)
+        {
+            _profilesTexture = CreateProfilesTexture();
+        }
+
+        const float ScaleY = 50f;
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(
+            _profilesTexture,
+            new Vector2(Main.screenWidth / 2f, Main.screenHeight / 2f),
+            null,
+            Color.White,
+            0f,
+            new Vector2(_profilesTexture.Width / 2f, _profilesTexture.Height / 2f),
+            new Vector2(1f, ScaleY),
+            SpriteEffects.None,
+            0f
+        );
+        Main.spriteBatch.End();
+    }
+
+    private static Texture2D CreateProfilesTexture()
+    {
+        var width = 24 * 60;
+        var height = (2 * 8) - 1;
+
+        var texture = new Texture2D(Main.graphics.GraphicsDevice, width, height);
+        var colors = new Color[width * height];
+
+        var i = 0;
+        foreach (
+            var colorProfile in (ISimpleColorProfile[])
+                [
+                    new SkyLightColors1(),
+                    new SkyLightColors2(),
+                    new SkyLightColors3(),
+                    new SkyLightColors4(),
+                    new SkyLightColors5(),
+                    new SkyColorsHigh(),
+                    new SkyColorsLow(),
+                    new SunColors(),
+                ]
+        )
+        {
+            for (var minute = 0; minute < width; ++minute)
+            {
+                var hour = minute / 60.0;
+                var colorVec = colorProfile.GetColor(hour);
+                ColorUtils.Convert(out Color color, colorVec);
+                colors[i++] = color;
+            }
+
+            i += width;
+        }
+
+        texture.SetData(colors);
+
+        return texture;
     }
 }

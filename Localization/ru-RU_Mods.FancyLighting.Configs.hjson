@@ -228,6 +228,16 @@ PreferencesConfig: {
 			Детализированные цвета неба должны быть включены для работы данной настройки
 			'''
 	}
+
+	ShowFancySkyColorGradients: {
+		// Label: (Debug) Show Fancy Sky Color Gradients
+		/* Tooltip:
+			'''
+			Show the color gradients used by fancy sky features
+
+			This obscures a large part of the screen
+			''' */
+	}
 }
 
 LightingConfig: {
@@ -448,4 +458,5 @@ SkyColorPreset: {
 	Preset2.Label: Профиль 2
 	Preset3.Label: Профиль 3
 	Preset4.Label: Профиль 4
+	Preset5.Label: Профиль 5
 }

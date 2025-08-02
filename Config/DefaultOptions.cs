@@ -66,4 +66,5 @@ public static class DefaultOptions
 
     // Fancy Sky Preferences
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
+    public const bool ShowFancySkyColorGradients = false;
 }

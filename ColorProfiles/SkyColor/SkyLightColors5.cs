@@ -1,10 +1,10 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyColors4 : ISimpleColorProfile
+public class SkyLightColors5 : ISimpleColorProfile
 {
     private readonly SkyColorProfile _profile;
 
-    public SkyColors4()
+    public SkyLightColors5()
     {
         // v0.4.0 - v0.5.5 default sky colors
 

@@ -2046,6 +2046,7 @@ public sealed class FancyLightingMod : Mod
         )
         {
             orig(self, gameTime);
+            FancySkyColors.DrawColorProfiles();
             return;
         }
 
@@ -2059,5 +2060,7 @@ public sealed class FancyLightingMod : Mod
         {
             BlendState.Additive.AlphaSourceBlend = originalAlphaSourceBlend;
         }
+
+        FancySkyColors.DrawColorProfiles();
     }
 }

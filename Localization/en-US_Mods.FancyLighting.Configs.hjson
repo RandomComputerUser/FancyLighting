@@ -228,6 +228,16 @@ PreferencesConfig: {
 			Fancy sky lighting must be enabled for this setting to have any effect
 			'''
 	}
+
+	ShowFancySkyColorGradients: {
+		Label: (Debug) Show Fancy Sky Color Gradients
+		Tooltip:
+			'''
+			Show the color gradients used by fancy sky features
+
+			This obscures a large part of the screen
+			'''
+	}
 }
 
 LightingConfig: {
@@ -448,4 +458,5 @@ SkyColorPreset: {
 	Preset2.Label: Preset 2
 	Preset3.Label: Preset 3
 	Preset4.Label: Preset 4
+	Preset5.Label: Preset 5
 }

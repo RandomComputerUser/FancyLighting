@@ -51,6 +51,15 @@ internal static class ColorUtils
     // XNA uses (byte)(x * 255f) for each component
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Convert(out Color color, Vector3 rgb)
+    {
+        var r = (byte)((255f * MathHelper.Clamp(rgb.X, 0f, 1f)) + 0.5f);
+        var g = (byte)((255f * MathHelper.Clamp(rgb.Y, 0f, 1f)) + 0.5f);
+        var b = (byte)((255f * MathHelper.Clamp(rgb.Z, 0f, 1f)) + 0.5f);
+        color = new(r, g, b, byte.MaxValue);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Assign(ref Color color, float brightness, Vector3 rgb)
     {
         color.R = (byte)((255f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);

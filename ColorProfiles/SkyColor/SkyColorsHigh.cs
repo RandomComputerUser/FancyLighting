@@ -1,13 +1,11 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyColors1 : ISimpleColorProfile
+public class SkyColorsHigh : ISimpleColorProfile
 {
     private readonly SkyColorProfile _profile;
 
-    public SkyColors1()
+    public SkyColorsHigh()
     {
-        // v0.8.5 - current default sky colors
-
         _profile = new(InterpolationMode.Cubic);
 
         var noonTime = 12.0;
