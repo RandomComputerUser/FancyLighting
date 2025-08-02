@@ -5,7 +5,7 @@
     [*]Smooth lighting
     [*]Ambient occlusion
     [*]Accurate shadows
-    [*]Fancy sky colors
+    [*]Improved sky rendering
     [*]HDR rendering (tone mapped to SDR)
     [*]Bloom
     [*]Simulated normal maps

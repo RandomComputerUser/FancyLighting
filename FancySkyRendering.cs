@@ -1,4 +1,6 @@
-﻿using ReLogic.Content;
+﻿using FancyLighting.ColorProfiles;
+using FancyLighting.ColorProfiles.SkyColor;
+using ReLogic.Content;
 
 namespace FancyLighting;
 
@@ -8,6 +10,10 @@ public static class FancySkyRendering
 
     private static Shader _skyShader;
     private static Shader _sunShader;
+
+    private static ISimpleColorProfile _highSkyColorProfile = new SkyColorsHigh();
+    private static ISimpleColorProfile _lowSkyColorProfile = new SkyColorsLow();
+    private static ISimpleColorProfile _sunColorProfile = new SunColors();
 
     internal static void Load()
     {
@@ -49,6 +55,7 @@ public static class FancySkyRendering
             !LightingConfig.Instance.FancySkyRenderingEnabled()
             || Main.gameMenu
             || artificial
+            || FancyLightingMod._inCameraMode
         )
         {
             orig(self, sceneArea, artificial);
@@ -66,11 +73,17 @@ public static class FancySkyRendering
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
 
-        var highSkyColor = skyColorMult * new Vector3(20f, 90f, 255f) / 255f;
-        var lowSkyColor = skyColorMult * new Vector3(140f, 210f, 255f) / 255f;
+        var highSkyColor = skyColorMult * _highSkyColorProfile.GetColor(hour);
+        var lowSkyColor = skyColorMult * _lowSkyColorProfile.GetColor(hour);
 
-        var highLevel = (sceneArea.bgTopY + (0.1f * target.Width)) / target.Height;
-        var lowLevel = highLevel + (0.2f * target.Width / target.Height);
+        var highLevel = (sceneArea.bgTopY + (0.06f * target.Width)) / target.Height;
+        var lowLevel = highLevel + (0.25f * target.Width / target.Height);
+
+        if (Main.LocalPlayer.gravDir < 0f)
+        {
+            (highSkyColor, lowSkyColor) = (lowSkyColor, highSkyColor);
+            (highLevel, lowLevel) = (1f - lowLevel, 1f - highLevel);
+        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -124,7 +137,14 @@ public static class FancySkyRendering
         Main.spriteBatch.End();
 
         // shift sun downward
-        transform.M42 += 50f;
+        transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;
+
+        if (!Main.eclipse)
+        {
+            var hour = GameTimeUtils.CalculateCurrentHour();
+            var sunColorVec = _sunColorProfile.GetColor(hour);
+            ColorUtils.Convert(out sunColor, sunColorVec);
+        }
 
         var gamma = PreferencesConfig.Instance.GammaExponent();
 

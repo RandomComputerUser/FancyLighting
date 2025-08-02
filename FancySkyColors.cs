@@ -25,10 +25,10 @@ public static class FancySkyColors
     {
         Preset = new()
         {
-            [SkyColorPreset.Preset1] = new SkyLightColors2(),
-            [SkyColorPreset.Preset2] = new SkyLightColors3(),
-            [SkyColorPreset.Preset3] = new SkyLightColors4(),
-            [SkyColorPreset.Preset4] = new SkyLightColors5(),
+            [SkyColorPreset.Preset1] = new SkyLightColors1(),
+            [SkyColorPreset.Preset2] = new SkyLightColors2(),
+            [SkyColorPreset.Preset3] = new SkyLightColors3(),
+            [SkyColorPreset.Preset4] = new SkyLightColors4(),
             [SkyColorPreset.Preset5] = new SkyLightColors5(),
         };
 

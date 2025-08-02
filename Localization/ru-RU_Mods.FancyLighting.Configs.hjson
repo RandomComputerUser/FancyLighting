@@ -411,8 +411,13 @@ LightingConfig: {
 	# Fancy Sky
 	
 	UseFancySkyRendering: {
-		// Label: Placeholder
-		// Tooltip: Test
+		// Label: Fancy Atmosphere
+		/* Tooltip:
+			'''
+			Use improved atmosphere and sun rendering
+
+			This feature is not compatible with camera mode
+			''' */
 	}
 
 	UseFancySkyColors: {

@@ -559,6 +559,12 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
+        if (_inCameraMode)
+        {
+            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+            return;
+        }
+
         if (
             LightingConfig.Instance.FancySkyRenderingEnabled()
             && Main.dayTime
@@ -579,7 +585,6 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.HiDefFeaturesEnabled()
             || !LightingConfig.Instance.OverbrightOverrideBackground()
-            || _inCameraMode // For some reason this affects the whole sky in camera mode
         )
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
