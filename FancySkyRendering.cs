@@ -66,23 +66,11 @@ public static class FancySkyRendering
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
 
-        var sunCoords = 8f * CalculateSunCoords(hour);
-        var darkSkyColor = skyColorMult * new Vector3(20f, 110f, 255f) / 255f;
-        var lightSkyColor = skyColorMult * new Vector3(160f, 220f, 255f) / 255f;
-        var coordMultY = -16f * target.Height / target.Width;
+        var highSkyColor = skyColorMult * new Vector3(20f, 90f, 255f) / 255f;
+        var lowSkyColor = skyColorMult * new Vector3(140f, 210f, 255f) / 255f;
 
-        var horizonLevel =
-            16f
-            * (
-                ((float)sceneArea.bgTopY / target.Width)
-                + (0.2f * target.Height / target.Width)
-            );
-        var sunEffect = Math.Max(
-            (float)(
-                1.0 - (1.0 / Math.Pow(8.5, 3.0) * Math.Pow(Math.Abs(hour - 12.0), 3.0))
-            ),
-            0f
-        );
+        var highLevel = (sceneArea.bgTopY + (0.1f * target.Width)) / target.Height;
+        var lowLevel = highLevel + (0.2f * target.Width / target.Height);
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -92,12 +80,10 @@ public static class FancySkyRendering
             RasterizerState.CullNone
         );
         _skyShader
-            .SetParameter("CoordMultY", coordMultY)
-            .SetParameter("HorizonLevel", horizonLevel)
-            .SetParameter("SunEffect", sunEffect)
-            .SetParameter("SunCoords", sunCoords)
-            .SetParameter("DarkSkyColor", darkSkyColor)
-            .SetParameter("LightSkyColor", lightSkyColor)
+            .SetParameter("HighSkyLevel", highLevel)
+            .SetParameter("LowSkyLevel", lowLevel)
+            .SetParameter("HighSkyColor", highSkyColor)
+            .SetParameter("LowSkyColor", lowSkyColor)
             .Apply();
         Main.spriteBatch.Draw(
             _pixel,
@@ -137,6 +123,9 @@ public static class FancySkyRendering
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
+        // shift sun downward
+        transform.M42 += 50f;
+
         var gamma = PreferencesConfig.Instance.GammaExponent();
 
         Main.spriteBatch.Begin(
@@ -153,12 +142,5 @@ public static class FancySkyRendering
             .SetParameter("InverseGamma", 1f / gamma)
             .Apply();
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
-    }
-
-    public static Vector2 CalculateSunCoords(double hour)
-    {
-        hour %= 24.0;
-        var angle = (0.061f * (12f - (float)hour)) + MathHelper.PiOver2;
-        return new(2.5f * MathF.Cos(angle), (2.5f * MathF.Sin(angle)) - 1.98f);
     }
 }
