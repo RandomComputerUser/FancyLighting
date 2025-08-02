@@ -6,7 +6,7 @@ public class SkyLightColors1 : ISimpleColorProfile
 
     public SkyLightColors1()
     {
-        // v0.10.0 - current default sky colors
+        // v1.0.0 - current default sky colors
 
         _profile = new(InterpolationMode.Cubic);
 

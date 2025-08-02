@@ -9,7 +9,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v0.10.0 (2025-08-??)**
+**v1.0.0 (2025-08-??)**
 - Added Fancy Atmosphere, which improves atmosphere and sun rendering
 - Increased contrast when using full HDR rendering
 - Adjusted bloom strength
