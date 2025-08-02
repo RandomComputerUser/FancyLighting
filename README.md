@@ -13,4 +13,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Increased contrast when using full HDR rendering
 - Adjusted bloom strength
 - Slightly reduced the strength of simulated normal maps
+- Increased the strength of ambient occlusion when not using HDR rendering
+- Slightly reduced the default ambient light proportion
 - Attempted to fix some rare crashes

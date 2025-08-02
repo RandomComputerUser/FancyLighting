@@ -408,10 +408,6 @@ internal sealed class AmbientOcclusion
             power *= PreferencesConfig.Instance.GammaExponent();
         }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
-        if (!LightingConfig.Instance.HiDefFeaturesEnabled())
-        {
-            mult = MathF.Pow(mult, 1.35f); // Crude approximation to try to make it look similar
-        }
 
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var passCount = Math.Clamp(radius, 1, 4);
