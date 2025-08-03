@@ -11,6 +11,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v1.0.0 (2025-08-??)**
 - Added Fancy Atmosphere, which improves atmosphere and sun rendering
+- Added a new default sky light color preset
 - Increased contrast when using full HDR rendering
 - Adjusted bloom strength
 - Slightly reduced the strength of simulated normal maps
