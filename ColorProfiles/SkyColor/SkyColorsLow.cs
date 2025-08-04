@@ -9,13 +9,13 @@ public class SkyColorsLow : ISimpleColorProfile
         _profile = new(InterpolationMode.Cubic);
 
         var noonTime = 12.0;
-        var sunriseTime = noonTime - 6.5;
-        var sunsetTime = noonTime + 6.5;
+        var sunriseTime = noonTime - 6.75;
+        var sunsetTime = noonTime + 6.75;
 
-        var nightColor = new Vector3(0.05f, 0.05f, 0.06f);
-        var nightColor2 = new Vector3(0.09f, 0.07f, 0.12f);
-        var nightColor1 = new Vector3(0.12f, 0.1f, 0.17f);
-        var sunriseSunsetColor = new Vector3(0.7f, 0.4f, 0.3f);
+        var nightColor = new Vector3(0.05f, 0.05f, 0.08f);
+        var nightColor2 = new Vector3(0.08f, 0.07f, 0.12f);
+        var nightColor1 = new Vector3(0.11f, 0.1f, 0.17f);
+        var sunriseSunsetColor = new Vector3(0.7f, 0.4f, 0.25f);
         var dayColor1 = new Vector3(0.8f, 0.65f, 0.5f);
         var dayColor2 = new Vector3(0.9f, 0.85f, 0.7f);
         var dayColor3 = new Vector3(0.7f, 0.825f, 0.9f);
@@ -24,10 +24,10 @@ public class SkyColorsLow : ISimpleColorProfile
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 1.801, nightColor),
-            (sunriseTime - 1.8, nightColor),
-            (sunriseTime - 1.35, nightColor2),
-            (sunriseTime - 0.9, nightColor1),
+            (sunriseTime - 2.251, nightColor),
+            (sunriseTime - 2.25, nightColor),
+            (sunriseTime - 1.5, nightColor2),
+            (sunriseTime - 1.0, nightColor1),
             (sunriseTime, sunriseSunsetColor),
             (sunriseTime + 0.6, dayColor1),
             (sunriseTime + 1.2, dayColor2),
@@ -41,10 +41,10 @@ public class SkyColorsLow : ISimpleColorProfile
             (sunsetTime - 1.2, dayColor2),
             (sunsetTime - 0.6, dayColor1),
             (sunsetTime, sunriseSunsetColor),
-            (sunsetTime + 0.9, nightColor1),
-            (sunsetTime + 1.35, nightColor2),
-            (sunsetTime + 1.8, nightColor),
-            (sunsetTime + 1.801, nightColor),
+            (sunsetTime + 1.0, nightColor1),
+            (sunsetTime + 1.5, nightColor2),
+            (sunsetTime + 2.25, nightColor),
+            (sunsetTime + 2.251, nightColor),
         ];
 
         foreach (var (hour, color) in colors)

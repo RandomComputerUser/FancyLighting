@@ -9,13 +9,13 @@ public class SunColors : ISimpleColorProfile
         _profile = new(InterpolationMode.Cubic);
 
         var noonTime = 12.0;
-        var sunriseTime = noonTime - 6.25;
-        var sunsetTime = noonTime + 6.25;
+        var sunriseTime = noonTime - 6.75;
+        var sunsetTime = noonTime + 6.75;
 
         var nightColor = new Vector3(1f, 0.6f, 0.4f);
-        var sunriseSunsetColor = new Vector3(1f, 0.8f, 0.6f);
-        var dayColor1 = new Vector3(1f, 0.9f, 0.75f);
-        var dayColor2 = new Vector3(1f, 0.98f, 0.9f);
+        var sunriseSunsetColor = new Vector3(1f, 0.8f, 0.55f);
+        var dayColor1 = new Vector3(1f, 0.94f, 0.8f);
+        var dayColor2 = new Vector3(1f, 0.97f, 0.9f);
         var dayColor = new Vector3(1f, 1f, 1f);
 
         (double hour, Vector3 color)[] colors =
