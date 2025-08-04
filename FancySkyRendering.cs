@@ -6,9 +6,10 @@ namespace FancyLighting;
 
 public static class FancySkyRendering
 {
-    private static Texture2D _pixel;
+    private static Texture2D _ditherNoise;
 
     private static Shader _skyShader;
+    private static Shader _skyDitheredShader;
     private static Shader _sunShader;
 
     private static ISimpleColorProfile _highSkyColorProfile = new SkyColorsHigh();
@@ -17,14 +18,18 @@ public static class FancySkyRendering
 
     internal static void Load()
     {
-        _pixel = ModContent
+        _ditherNoise = ModContent
             .Request<Texture2D>(
-                "FancyLighting/Effects/Pixel",
+                "FancyLighting/Effects/DitherNoise",
                 AssetRequestMode.ImmediateLoad
             )
             .Value;
 
         _skyShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sky");
+        _skyDitheredShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Sky",
+            "SkyDithered"
+        );
         _sunShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sun");
 
         AddHooks();
@@ -37,9 +42,10 @@ public static class FancySkyRendering
 
     internal static void Unload()
     {
-        _pixel?.Dispose();
-        _pixel = null;
+        _ditherNoise?.Dispose();
+        _ditherNoise = null;
         EffectLoader.UnloadEffect(ref _skyShader);
+        EffectLoader.UnloadEffect(ref _skyDitheredShader);
         EffectLoader.UnloadEffect(ref _sunShader);
     }
 
@@ -61,6 +67,11 @@ public static class FancySkyRendering
             orig(self, sceneArea, artificial);
             return;
         }
+
+        var doDithering =
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright()
+            && !LightingConfig.Instance.HiDefFeaturesEnabled();
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
@@ -88,24 +99,35 @@ public static class FancySkyRendering
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
             BlendState.Opaque,
-            SamplerState.PointClamp,
+            SamplerState.PointWrap,
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _skyShader
+
+        var scale = new Vector2(
+            (float)Main.screenWidth / _ditherNoise.Width,
+            (float)Main.screenHeight / _ditherNoise.Height
+        );
+
+        (
+            doDithering
+                ? _skyDitheredShader.SetParameter("DitherCoordMult", scale)
+                : _skyShader
+        )
             .SetParameter("HighSkyLevel", highLevel)
             .SetParameter("LowSkyLevel", lowLevel)
             .SetParameter("HighSkyColor", highSkyColor)
             .SetParameter("LowSkyColor", lowSkyColor)
             .Apply();
+
         Main.spriteBatch.Draw(
-            _pixel,
+            _ditherNoise,
             Vector2.Zero,
             null,
             Color.White,
             0f,
             Vector2.Zero,
-            new Vector2(Main.screenWidth, Main.screenHeight),
+            scale,
             SpriteEffects.None,
             0f
         );
