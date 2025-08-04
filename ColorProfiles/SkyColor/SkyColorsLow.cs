@@ -24,8 +24,8 @@ public class SkyColorsLow : ISimpleColorProfile
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 2.251, nightColor),
-            (sunriseTime - 2.25, nightColor),
+            (sunriseTime - 2.501, nightColor),
+            (sunriseTime - 2.5, nightColor),
             (sunriseTime - 1.5, nightColor2),
             (sunriseTime - 1.0, nightColor1),
             (sunriseTime, sunriseSunsetColor),
@@ -43,8 +43,8 @@ public class SkyColorsLow : ISimpleColorProfile
             (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 1.0, nightColor1),
             (sunsetTime + 1.5, nightColor2),
-            (sunsetTime + 2.25, nightColor),
-            (sunsetTime + 2.251, nightColor),
+            (sunsetTime + 2.5, nightColor),
+            (sunsetTime + 2.501, nightColor),
         ];
 
         foreach (var (hour, color) in colors)

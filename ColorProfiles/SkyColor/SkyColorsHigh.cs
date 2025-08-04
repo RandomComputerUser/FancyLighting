@@ -13,7 +13,8 @@ public class SkyColorsHigh : ISimpleColorProfile
         var sunsetTime = noonTime + 6.75;
 
         var nightColor = new Vector3(0.02f, 0.02f, 0.04f);
-        var nightColor1 = new Vector3(0.04f, 0.04f, 0.08f);
+        var nightColor2 = new Vector3(0.04f, 0.04f, 0.08f);
+        var nightColor1 = new Vector3(0.06f, 0.13f, 0.27f);
         var sunriseSunsetColor = new Vector3(0.07f, 0.18f, 0.4f);
         var dayColor1 = new Vector3(0.08f, 0.25f, 0.6f);
         var dayColor2 = new Vector3(0.09f, 0.32f, 0.9f);
@@ -22,9 +23,10 @@ public class SkyColorsHigh : ISimpleColorProfile
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 2.251, nightColor),
-            (sunriseTime - 2.25, nightColor),
-            (sunriseTime - 1.0, nightColor1),
+            (sunriseTime - 2.501, nightColor),
+            (sunriseTime - 2.5, nightColor),
+            (sunriseTime - 1.25, nightColor2),
+            (sunriseTime - 0.5, nightColor1),
             (sunriseTime, sunriseSunsetColor),
             (sunriseTime + 0.6, dayColor1),
             (sunriseTime + 1.2, dayColor2),
@@ -36,9 +38,10 @@ public class SkyColorsHigh : ISimpleColorProfile
             (sunsetTime - 1.2, dayColor2),
             (sunsetTime - 0.6, dayColor1),
             (sunsetTime, sunriseSunsetColor),
-            (sunsetTime + 1.0, nightColor1),
-            (sunsetTime + 2.25, nightColor),
-            (sunsetTime + 2.251, nightColor),
+            (sunsetTime + 0.5, nightColor1),
+            (sunsetTime + 1.25, nightColor2),
+            (sunsetTime + 2.5, nightColor),
+            (sunsetTime + 2.501, nightColor),
         ];
 
         foreach (var (hour, color) in colors)

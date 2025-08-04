@@ -132,7 +132,7 @@ public class SkyColorProfile : ISimpleColorProfile
                         + ((t3 - (2 * t2) + t) * m1)
                         + (((-2 * t3) + (3 * t2)) * color2)
                         + ((t3 - t2) * m2);
-                    return Vector3.Min(color, Vector3.One);
+                    return Vector3.Clamp(color, Vector3.Zero, Vector3.One);
                 }
             }
         }
