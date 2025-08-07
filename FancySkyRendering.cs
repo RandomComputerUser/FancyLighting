@@ -16,6 +16,8 @@ public static class FancySkyRendering
     private static ISimpleColorProfile _lowSkyColorProfile = new SkyColorsLow();
     private static ISimpleColorProfile _sunColorProfile = new SunColors();
 
+    private static bool _modifyStarDrawing = false;
+
     internal static void Load()
     {
         _ditherNoise = ModContent
@@ -38,6 +40,7 @@ public static class FancySkyRendering
     private static void AddHooks()
     {
         On_Main.DrawStarsInBackground += _Main_DrawStarsInBackground;
+        On_Main.DrawStar += _Main_DrawStar;
     }
 
     internal static void Unload()
@@ -57,13 +60,9 @@ public static class FancySkyRendering
         bool artificial
     )
     {
-        if (
-            !LightingConfig.Instance.FancySkyRenderingEnabled()
-            || Main.gameMenu
-            || artificial
-            || FancyLightingMod._inCameraMode
-        )
+        if (!SettingsSystem._fancyAtmosphereActive || artificial)
         {
+            _modifyStarDrawing = false;
             orig(self, sceneArea, artificial);
             return;
         }
@@ -142,7 +141,50 @@ public static class FancySkyRendering
             null,
             transformMatrix
         );
-        orig(self, sceneArea, artificial);
+
+        _modifyStarDrawing = true;
+        try
+        {
+            orig(self, sceneArea, artificial);
+        }
+        finally
+        {
+            _modifyStarDrawing = false;
+        }
+    }
+
+    private static void _Main_DrawStar(
+        On_Main.orig_DrawStar orig,
+        Main self,
+        ref Main.SceneArea sceneArea,
+        float starOpacity,
+        Color bgColorForStars,
+        int i,
+        Star theStar,
+        bool artificial,
+        bool foreground
+    )
+    {
+        if (_modifyStarDrawing)
+        {
+            // prevent stars from appearing during sunrise/sunset
+            var colorVec = bgColorForStars.ToVector3();
+            colorVec.X = MathF.Sqrt(colorVec.X);
+            colorVec.Y = MathF.Sqrt(colorVec.Y);
+            colorVec.Z = MathF.Sqrt(colorVec.Z);
+            ColorUtils.Convert(out bgColorForStars, colorVec);
+        }
+
+        orig(
+            self,
+            ref sceneArea,
+            starOpacity,
+            bgColorForStars,
+            i,
+            theStar,
+            artificial,
+            foreground
+        );
     }
 
     internal static void DrawSun(
