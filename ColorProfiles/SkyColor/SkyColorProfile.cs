@@ -88,6 +88,7 @@ public class SkyColorProfile : ISimpleColorProfile
     {
         hour %= 24.0;
 
+        var color = _colors[^1].color;
         for (var i = 1; i <= _colors.Count; ++i)
         {
             if (hour > HourColorAtIndex(i).hour)
@@ -109,7 +110,8 @@ public class SkyColorProfile : ISimpleColorProfile
                 {
                     // Linear interpolation
 
-                    return Vector3.Lerp(color1, color2, t);
+                    color = Vector3.Lerp(color1, color2, t);
+                    break;
                 }
 
                 case InterpolationMode.Cubic:
@@ -127,16 +129,18 @@ public class SkyColorProfile : ISimpleColorProfile
                     var t2 = t * t;
                     var t3 = t2 * t;
 
-                    var color =
+                    color =
                         (((2 * t3) - (3 * t2) + 1) * color1)
                         + ((t3 - (2 * t2) + t) * m1)
                         + (((-2 * t3) + (3 * t2)) * color2)
                         + ((t3 - t2) * m2);
-                    return Vector3.Clamp(color, Vector3.Zero, Vector3.One);
+                    break;
                 }
             }
+
+            break;
         }
 
-        return _colors[^1].color;
+        return Vector3.Clamp(color, Vector3.Zero, Vector3.One);
     }
 }
