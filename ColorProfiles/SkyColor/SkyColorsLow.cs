@@ -9,16 +9,16 @@ public class SkyColorsLow : ISimpleColorProfile
         _profile = new(InterpolationMode.Cubic);
 
         var noonTime = 12.0;
-        var sunriseTime = noonTime - 7.0;
-        var sunsetTime = noonTime + 7.0;
+        var sunriseTime = noonTime - (6.0 + (50.0 / 60.0));
+        var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
 
         var nightColor = new Vector3(0.05f, 0.05f, 0.08f);
         var nightColor2 = new Vector3(0.06f, 0.07f, 0.12f);
         var nightColor1 = new Vector3(0.09f, 0.1f, 0.22f);
-        var sunriseSunsetColor = new Vector3(0.73f, 0.42f, 0.3f);
-        var dayColor1 = new Vector3(0.8f, 0.7f, 0.5f);
+        var sunriseSunsetColor = new Vector3(0.7f, 0.4f, 0.27f);
+        var dayColor1 = new Vector3(0.8f, 0.65f, 0.45f);
         var dayColor2 = new Vector3(0.9f, 0.83f, 0.68f);
-        var dayColor3 = new Vector3(0.7f, 0.825f, 0.9f);
+        var dayColor3 = new Vector3(0.65f, 0.81f, 0.92f);
         var dayColor = new Vector3(0.55f, 0.8f, 1f);
 
         (double hour, Vector3 color)[] colors =
@@ -28,19 +28,19 @@ public class SkyColorsLow : ISimpleColorProfile
             (sunriseTime - 2.5, nightColor),
             (sunriseTime - 1.5, nightColor2),
             (sunriseTime - 1.0, nightColor1),
-            (sunriseTime + 0.1, sunriseSunsetColor),
-            (sunriseTime + 0.6, dayColor1),
-            (sunriseTime + 1.0, dayColor2),
-            (sunriseTime + 1.5, dayColor3),
+            (sunriseTime, sunriseSunsetColor),
+            (sunriseTime + 0.75, dayColor1),
+            (sunriseTime + 1.5, dayColor2),
+            (sunriseTime + 2.25, dayColor3),
             (sunriseTime + 3.0, dayColor),
             (sunriseTime + 3.001, dayColor),
             (noonTime, dayColor),
             (sunsetTime - 3.001, dayColor),
             (sunsetTime - 3.0, dayColor),
-            (sunsetTime - 1.5, dayColor3),
-            (sunsetTime - 1.0, dayColor2),
-            (sunsetTime - 0.6, dayColor1),
-            (sunsetTime - 0.1, sunriseSunsetColor),
+            (sunsetTime - 2.25, dayColor3),
+            (sunsetTime - 1.5, dayColor2),
+            (sunsetTime - 0.75, dayColor1),
+            (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 1.0, nightColor1),
             (sunsetTime + 1.5, nightColor2),
             (sunsetTime + 2.5, nightColor),

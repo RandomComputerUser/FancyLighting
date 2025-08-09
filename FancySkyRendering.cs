@@ -168,7 +168,7 @@ public static class FancySkyRendering
         if (_modifyStarDrawing)
         {
             // prevent stars from appearing during sunrise/sunset
-            var colorVec = bgColorForStars.ToVector3();
+            var colorVec = 1.25f * bgColorForStars.ToVector3();
             colorVec.X = MathF.Sqrt(colorVec.X);
             colorVec.Y = MathF.Sqrt(colorVec.Y);
             colorVec.Z = MathF.Sqrt(colorVec.Z);
