@@ -187,7 +187,7 @@ public static class FancySkyRendering
         );
     }
 
-    internal static void DrawSun(
+    internal static void DrawSunAndMoon(
         On_Main.orig_DrawSunAndMoon orig,
         Main self,
         Main.SceneArea sceneArea,
@@ -200,7 +200,7 @@ public static class FancySkyRendering
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        // shift sun downward
+        // shift sun/moon downward
         transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;
 
         if (!Main.eclipse)
@@ -210,10 +210,10 @@ public static class FancySkyRendering
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
-        var gamma = PreferencesConfig.Instance.GammaExponent();
+        var isDay = Main.dayTime;
 
         Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
+            isDay ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
@@ -221,10 +221,14 @@ public static class FancySkyRendering
             null,
             transform
         );
-        _sunShader
-            .SetParameter("Gamma", gamma)
-            .SetParameter("InverseGamma", 1f / gamma)
-            .Apply();
+        if (isDay)
+        {
+            var gamma = PreferencesConfig.Instance.GammaExponent();
+            _sunShader
+                .SetParameter("Gamma", gamma)
+                .SetParameter("InverseGamma", 1f / gamma)
+                .Apply();
+        }
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
     }
 }

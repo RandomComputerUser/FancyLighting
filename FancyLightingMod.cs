@@ -565,13 +565,9 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (
-            LightingConfig.Instance.FancySkyRenderingEnabled()
-            && Main.dayTime
-            && !Main.gameMenu
-        )
+        if (LightingConfig.Instance.FancySkyRenderingEnabled() && !Main.gameMenu)
         {
-            FancySkyRendering.DrawSun(
+            FancySkyRendering.DrawSunAndMoon(
                 orig,
                 self,
                 sceneArea,
