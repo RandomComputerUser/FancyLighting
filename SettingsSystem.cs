@@ -11,7 +11,6 @@ internal sealed class SettingsSystem : ModSystem
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
 
     internal static bool _hiDef;
-    internal static bool _fancyAtmosphereActive;
 
     private bool _prevNeedsPostProcessing = false;
     private bool _prevHdrDisabled = false;
@@ -40,10 +39,6 @@ internal sealed class SettingsSystem : ModSystem
         _parallelOptions.MaxDegreeOfParallelism =
             PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount;
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
-        _fancyAtmosphereActive =
-            LightingConfig.Instance?.FancySkyRenderingEnabled() is true
-            && !Main.gameMenu
-            && !FancyLightingMod._inCameraMode;
         ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         ColorUtils._lightGamma = PreferencesConfig.Instance?.LightGammaExponent() ?? 2.2f;

@@ -60,7 +60,11 @@ public static class FancySkyRendering
         bool artificial
     )
     {
-        if (!SettingsSystem._fancyAtmosphereActive || artificial)
+        if (
+            LightingConfig.Instance?.FancySkyRenderingEnabled() is not true
+            || FancyLightingMod._inCameraMode
+            || artificial
+        )
         {
             _modifyStarDrawing = false;
             orig(self, sceneArea, artificial);
@@ -87,6 +91,10 @@ public static class FancySkyRendering
         var lowSkyColor = skyColorMult * _lowSkyColorProfile.GetColor(hour);
 
         var highLevel = (sceneArea.bgTopY + (0.05f * target.Width)) / target.Height;
+        if (Main.gameMenu)
+        {
+            highLevel -= 0.02f * target.Width / target.Height;
+        }
         var lowLevel = highLevel + (0.3f * target.Width / target.Height);
 
         if (Main.LocalPlayer.gravDir < 0f)
@@ -196,12 +204,21 @@ public static class FancySkyRendering
         float tempMushroomInfluence
     )
     {
+        if (_sunShader is null)
+        {
+            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+            return;
+        }
+
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        // shift sun/moon downward
-        transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;
+        if (!Main.gameMenu)
+        {
+            // shift sun/moon downward
+            transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;
+        }
 
         if (!Main.eclipse)
         {
@@ -223,7 +240,7 @@ public static class FancySkyRendering
         );
         if (isDay)
         {
-            var gamma = PreferencesConfig.Instance.GammaExponent();
+            var gamma = Main.gameMenu ? 2.2f : PreferencesConfig.Instance.GammaExponent();
             _sunShader
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)

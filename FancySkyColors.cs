@@ -40,13 +40,20 @@ public static class FancySkyColors
         {
             try
             {
-                _ilHook_SetBackColor = new(detourMethod, _SetBackColor, true);
+                _ilHook_SetBackColor = new(detourMethod, IL_Main_SetBackColor, true);
             }
             catch (Exception)
             {
                 // Unable to add the hook
             }
         }
+
+        AddHooks();
+    }
+
+    private static void AddHooks()
+    {
+        On_Main.SetBackColor += _Main_SetBackColor;
     }
 
     internal static void Unload()
@@ -57,7 +64,26 @@ public static class FancySkyColors
         _profilesTexture = null;
     }
 
-    private static void _SetBackColor(ILContext context)
+    private static void _Main_SetBackColor(
+        On_Main.orig_SetBackColor orig,
+        Main.InfoToSetBackColor info,
+        out Color sunColor,
+        out Color moonColor
+    )
+    {
+        if (
+            LightingConfig.Instance?.FancySkyRenderingEnabled() is true
+            || LightingConfig.Instance?.FancySkyColorsEnabled() is true
+        )
+        {
+            // night color is normally overridden on main menu
+            info.isInGameMenuOrIsServer = false;
+        }
+
+        orig(info, out sunColor, out moonColor);
+    }
+
+    private static void IL_Main_SetBackColor(ILContext context)
     {
         var cursor = new ILCursor(context);
 
@@ -95,6 +121,74 @@ public static class FancySkyColors
 
     public static Vector3 CalculateSkyColor(double hour)
     {
+        if (
+            LightingConfig.Instance?.FancySkyColorsEnabled() is not true
+            || Preset is null
+        )
+        {
+            // This code is adapted from vanilla
+
+            var dayTime = hour is >= 4.5 and < 19.5;
+            var time =
+                3600.0
+                * (
+                    hour
+                    - (
+                        dayTime ? 4.5
+                        : hour < 12.0 ? -4.5
+                        : 19.5
+                    )
+                );
+
+            var color = Vector3.One;
+            float level;
+            if (dayTime)
+            {
+                if (time < 13500.0)
+                {
+                    level = (float)(time / 13500.0);
+                    color.X = (level * 230f) + 25f;
+                    color.Y = (level * 220f) + 35f;
+                    color.Z = (level * 220f) + 35f;
+                }
+                if (time > 45900.0)
+                {
+                    level = (float)(
+                        1.0 - (((time / 54000.0) - 0.85) * 6.666666666666667)
+                    );
+                    color.X = (level * 200f) + 35f;
+                    color.Y = (level * 85f) + 35f;
+                    color.Z = (level * 135f) + 35f;
+                }
+                else if (time > 37800.0)
+                {
+                    level = (float)(1.0 - (((time / 54000.0) - 0.7) * 6.666666666666667));
+                    color.X = (level * 20f) + 235f;
+                    color.Y = (level * 135f) + 120f;
+                    color.Z = (level * 85f) + 170f;
+                }
+            }
+            else
+            {
+                if (time < 16200.0)
+                {
+                    level = (float)(1.0 - (time / 16200.0));
+                    color.X = (level * 30f) + 5f;
+                    color.Y = (level * 30f) + 5f;
+                    color.Z = (level * 30f) + 5f;
+                }
+                else
+                {
+                    level = (float)(((time / 32400.0) - 0.5) * 2.0);
+                    color.X = (level * 20f) + 5f;
+                    color.Y = (level * 30f) + 5f;
+                    color.Z = (level * 30f) + 5f;
+                }
+            }
+
+            return color / 255f;
+        }
+
         var foundProfile = Preset.TryGetValue(
             PreferencesConfig.Instance.FancySkyColorsPreset,
             out var profile
