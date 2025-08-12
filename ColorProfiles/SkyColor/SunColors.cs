@@ -2,9 +2,11 @@
 
 public class SunColors : ISimpleColorProfile
 {
+    public static SunColors Instance { get; } = new();
+
     private readonly SkyColorProfile _profile;
 
-    public SunColors()
+    private SunColors()
     {
         _profile = new(InterpolationMode.Cubic);
 

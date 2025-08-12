@@ -25,11 +25,11 @@ public static class FancySkyColors
     {
         Preset = new()
         {
-            [SkyColorPreset.Preset1] = new SkyLightColors1(),
-            [SkyColorPreset.Preset2] = new SkyLightColors2(),
-            [SkyColorPreset.Preset3] = new SkyLightColors3(),
-            [SkyColorPreset.Preset4] = new SkyLightColors4(),
-            [SkyColorPreset.Preset5] = new SkyLightColors5(),
+            [SkyColorPreset.Preset1] = SkyLightColors1.Instance,
+            [SkyColorPreset.Preset2] = SkyLightColors2.Instance,
+            [SkyColorPreset.Preset3] = SkyLightColors3.Instance,
+            [SkyColorPreset.Preset4] = SkyLightColors4.Instance,
+            [SkyColorPreset.Preset5] = SkyLightColors5.Instance,
         };
 
         var detourMethod = typeof(Main).GetMethod(
@@ -126,67 +126,7 @@ public static class FancySkyColors
             || Preset is null
         )
         {
-            // This code is adapted from vanilla
-
-            var dayTime = hour is >= 4.5 and < 19.5;
-            var time =
-                3600.0
-                * (
-                    hour
-                    - (
-                        dayTime ? 4.5
-                        : hour < 12.0 ? -4.5
-                        : 19.5
-                    )
-                );
-
-            var color = Vector3.One;
-            float level;
-            if (dayTime)
-            {
-                if (time < 13500.0)
-                {
-                    level = (float)(time / 13500.0);
-                    color.X = (level * 230f) + 25f;
-                    color.Y = (level * 220f) + 35f;
-                    color.Z = (level * 220f) + 35f;
-                }
-                if (time > 45900.0)
-                {
-                    level = (float)(
-                        1.0 - (((time / 54000.0) - 0.85) * 6.666666666666667)
-                    );
-                    color.X = (level * 200f) + 35f;
-                    color.Y = (level * 85f) + 35f;
-                    color.Z = (level * 135f) + 35f;
-                }
-                else if (time > 37800.0)
-                {
-                    level = (float)(1.0 - (((time / 54000.0) - 0.7) * 6.666666666666667));
-                    color.X = (level * 20f) + 235f;
-                    color.Y = (level * 135f) + 120f;
-                    color.Z = (level * 85f) + 170f;
-                }
-            }
-            else
-            {
-                if (time < 16200.0)
-                {
-                    level = (float)(1.0 - (time / 16200.0));
-                    color.X = (level * 30f) + 5f;
-                    color.Y = (level * 30f) + 5f;
-                    color.Z = (level * 30f) + 5f;
-                }
-                else
-                {
-                    level = (float)(((time / 32400.0) - 0.5) * 2.0);
-                    color.X = (level * 20f) + 5f;
-                    color.Y = (level * 30f) + 5f;
-                    color.Z = (level * 30f) + 5f;
-                }
-            }
-
-            return color / 255f;
+            return VanillaSkyLightColors.Instance.GetColor(hour);
         }
 
         var foundProfile = Preset.TryGetValue(
@@ -196,7 +136,7 @@ public static class FancySkyColors
 
         if (!foundProfile)
         {
-            profile = Preset[SkyColorPreset.Preset1];
+            profile = VanillaSkyLightColors.Instance;
         }
 
         return profile.GetColor(hour);
@@ -245,7 +185,7 @@ public static class FancySkyColors
     private static Texture2D CreateProfilesTexture()
     {
         var width = 24 * 60;
-        var height = (2 * 8) - 1;
+        var height = (2 * 9) - 1;
 
         var texture = new Texture2D(Main.graphics.GraphicsDevice, width, height);
         var colors = new Color[width * height];
@@ -254,14 +194,15 @@ public static class FancySkyColors
         foreach (
             var colorProfile in (ISimpleColorProfile[])
                 [
-                    new SkyLightColors1(),
-                    new SkyLightColors2(),
-                    new SkyLightColors3(),
-                    new SkyLightColors4(),
-                    new SkyLightColors5(),
-                    new SkyColorsHigh(),
-                    new SkyColorsLow(),
-                    new SunColors(),
+                    VanillaSkyLightColors.Instance,
+                    SkyLightColors1.Instance,
+                    SkyLightColors2.Instance,
+                    SkyLightColors3.Instance,
+                    SkyLightColors4.Instance,
+                    SkyLightColors5.Instance,
+                    SkyColorsHigh.Instance,
+                    SkyColorsLow.Instance,
+                    SunColors.Instance,
                 ]
         )
         {

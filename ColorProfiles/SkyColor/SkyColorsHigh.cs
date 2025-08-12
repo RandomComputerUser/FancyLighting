@@ -2,9 +2,11 @@
 
 public class SkyColorsHigh : ISimpleColorProfile
 {
+    public static SkyColorsHigh Instance { get; } = new();
+
     private readonly SkyColorProfile _profile;
 
-    public SkyColorsHigh()
+    private SkyColorsHigh()
     {
         _profile = new(InterpolationMode.Cubic);
 

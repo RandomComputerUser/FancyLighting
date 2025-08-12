@@ -1,5 +1,4 @@
-﻿using FancyLighting.ColorProfiles;
-using FancyLighting.ColorProfiles.SkyColor;
+﻿using FancyLighting.ColorProfiles.SkyColor;
 using ReLogic.Content;
 
 namespace FancyLighting;
@@ -11,10 +10,6 @@ public static class FancySkyRendering
     private static Shader _skyShader;
     private static Shader _skyDitheredShader;
     private static Shader _sunShader;
-
-    private static ISimpleColorProfile _highSkyColorProfile = new SkyColorsHigh();
-    private static ISimpleColorProfile _lowSkyColorProfile = new SkyColorsLow();
-    private static ISimpleColorProfile _sunColorProfile = new SunColors();
 
     private static bool _modifyStarDrawing = false;
 
@@ -87,8 +82,8 @@ public static class FancySkyRendering
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
 
-        var highSkyColor = skyColorMult * _highSkyColorProfile.GetColor(hour);
-        var lowSkyColor = skyColorMult * _lowSkyColorProfile.GetColor(hour);
+        var highSkyColor = skyColorMult * SkyColorsHigh.Instance.GetColor(hour);
+        var lowSkyColor = skyColorMult * SkyColorsLow.Instance.GetColor(hour);
 
         var highLevel = (sceneArea.bgTopY + (0.05f * target.Width)) / target.Height;
         if (Main.gameMenu)
@@ -223,7 +218,7 @@ public static class FancySkyRendering
         if (!Main.eclipse)
         {
             var hour = GameTimeUtils.CalculateCurrentHour();
-            var sunColorVec = _sunColorProfile.GetColor(hour);
+            var sunColorVec = SunColors.Instance.GetColor(hour);
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 

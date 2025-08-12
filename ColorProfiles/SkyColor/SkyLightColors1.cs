@@ -2,9 +2,11 @@
 
 public class SkyLightColors1 : ISimpleColorProfile
 {
+    public static SkyLightColors1 Instance { get; } = new();
+
     private readonly SkyColorProfile _profile;
 
-    public SkyLightColors1()
+    private SkyLightColors1()
     {
         // v1.0.0 - current default sky colors
 
