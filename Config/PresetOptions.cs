@@ -101,7 +101,7 @@ internal record PresetOptions
             SimulateNormalMaps = false,
             UseEnhancedGlowMaskSupport = false,
             LightMapRenderMode = RenderMode.Bilinear,
-            UseAmbientOcclusion = false,
+            UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
             UseFancyLightingEngine = false,
@@ -126,7 +126,7 @@ internal record PresetOptions
             DoTileEntityAmbientOcclusion = true,
             UseFancyLightingEngine = true,
             FancyLightingEngineMode = LightingEngineMode.Medium,
-            SimulateGlobalIllumination = false,
+            SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
             UseFancySkyColors = true,
         };

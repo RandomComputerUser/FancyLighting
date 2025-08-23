@@ -450,7 +450,7 @@ SettingsPreset: {
 	Tooltip: ""
 	CustomPreset.Label: Custom
 	VanillaPreset.Label: Vanilla
-	MinimalPreset.Label: Minimal
+	MinimalPreset.Label: Basic
 	LowPreset.Label: Low
 	MediumPreset.Label: Medium
 	HighPreset.Label: High
