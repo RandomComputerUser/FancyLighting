@@ -230,13 +230,13 @@ PreferencesConfig: {
 	}
 
 	ShowFancySkyColorGradients: {
-		// Label: (Debug) Show Fancy Sky Color Gradients
-		/* Tooltip:
+		   Label: (Отладка) Градиенты цветов неба
+		   Tooltip:
 			'''
-			Show the color gradients used by fancy sky features
+			Показывает градиенты цветов, используемые для детализированного неба
 
-			This obscures a large part of the screen
-			''' */
+			Занимает большую часть экрана
+			''' 
 	}
 }
 
@@ -411,13 +411,13 @@ LightingConfig: {
 	# Fancy Sky
 	
 	UseFancySkyRendering: {
-		// Label: Fancy Atmosphere
-		/* Tooltip:
+		   Label: Детализированная атмосфера
+		   Tooltip:
 			'''
-			Use improved atmosphere and sun rendering
+			Используйте улучшенную атмосферу и отображение солнца
 
-			This feature is not compatible with camera mode
-			''' */
+			Эта функция несовместима с режимом камеры
+			''' 
 	}
 
 	UseFancySkyColors: {
