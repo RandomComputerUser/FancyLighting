@@ -8,7 +8,7 @@ public class SkyLightColors1 : ISimpleColorProfile
 
     private SkyLightColors1()
     {
-        // v1.0.0 - current default sky colors
+        // v1.0.1 - current default sky colors
 
         _profile = new(InterpolationMode.Cubic);
 
@@ -16,9 +16,9 @@ public class SkyLightColors1 : ISimpleColorProfile
         var sunriseTime = noonTime - (6.0 + (50.0 / 60.0));
         var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
 
-        var nightColor = new Vector3(0.03f, 0.03f, 0.08f);
-        var nightColor2 = new Vector3(0.1f, 0.09f, 0.15f);
-        var nightColor1 = new Vector3(0.23f, 0.21f, 0.3f);
+        var nightColor = new Vector3(0.04f, 0.04f, 0.05f);
+        var nightColor2 = new Vector3(0.1f, 0.09f, 0.13f);
+        var nightColor1 = new Vector3(0.24f, 0.22f, 0.28f);
         var sunriseSunsetColor = new Vector3(0.36f, 0.34f, 0.4f);
         var dayColor1 = new Vector3(0.72f, 0.63f, 0.48f);
         var dayColor2 = new Vector3(0.98f, 0.92f, 0.84f);

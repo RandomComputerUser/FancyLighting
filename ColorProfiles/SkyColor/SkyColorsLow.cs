@@ -14,10 +14,10 @@ public class SkyColorsLow : ISimpleColorProfile
         var sunriseTime = noonTime - (6.0 + (50.0 / 60.0));
         var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
 
-        var nightColor = new Vector3(0.05f, 0.05f, 0.08f);
+        var nightColor = new Vector3(0.04f, 0.04f, 0.06f);
         var nightColor2 = new Vector3(0.06f, 0.07f, 0.12f);
-        var nightColor1 = new Vector3(0.09f, 0.1f, 0.22f);
-        var sunriseSunsetColor = new Vector3(0.7f, 0.4f, 0.27f);
+        var nightColor1 = new Vector3(0.09f, 0.1f, 0.2f);
+        var sunriseSunsetColor = new Vector3(0.68f, 0.4f, 0.27f);
         var dayColor1 = new Vector3(0.8f, 0.65f, 0.45f);
         var dayColor2 = new Vector3(0.9f, 0.83f, 0.68f);
         var dayColor3 = new Vector3(0.65f, 0.81f, 0.92f);
