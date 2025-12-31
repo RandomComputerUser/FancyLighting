@@ -15,21 +15,23 @@ public class SkyColorsLow : ISimpleColorProfile
         var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
 
         var nightColor = new Vector3(0.04f, 0.04f, 0.06f);
-        var nightColor2 = new Vector3(0.06f, 0.07f, 0.12f);
-        var nightColor1 = new Vector3(0.09f, 0.1f, 0.2f);
-        var sunriseSunsetColor = new Vector3(0.68f, 0.4f, 0.27f);
+        var nightColor3 = new Vector3(0.05f, 0.06f, 0.12f);
+        var nightColor2 = new Vector3(0.07f, 0.09f, 0.2f);
+        var nightColor1 = new Vector3(0.4f, 0.3f, 0.27f);
+        var sunriseSunsetColor = new Vector3(0.7f, 0.48f, 0.33f);
         var dayColor1 = new Vector3(0.8f, 0.65f, 0.45f);
-        var dayColor2 = new Vector3(0.9f, 0.83f, 0.68f);
+        var dayColor2 = new Vector3(0.9f, 0.8f, 0.68f);
         var dayColor3 = new Vector3(0.65f, 0.81f, 0.92f);
-        var dayColor = new Vector3(0.55f, 0.8f, 1f);
+        var dayColor = new Vector3(0.55f, 0.82f, 1f);
 
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
             (sunriseTime - 2.501, nightColor),
             (sunriseTime - 2.5, nightColor),
-            (sunriseTime - 1.5, nightColor2),
-            (sunriseTime - 1.0, nightColor1),
+            (sunriseTime - 1.6, nightColor3),
+            (sunriseTime - 1.1, nightColor2),
+            (sunriseTime - 0.4, nightColor1),
             (sunriseTime, sunriseSunsetColor),
             (sunriseTime + 0.75, dayColor1),
             (sunriseTime + 1.5, dayColor2),
@@ -43,8 +45,9 @@ public class SkyColorsLow : ISimpleColorProfile
             (sunsetTime - 1.5, dayColor2),
             (sunsetTime - 0.75, dayColor1),
             (sunsetTime, sunriseSunsetColor),
-            (sunsetTime + 1.0, nightColor1),
-            (sunsetTime + 1.5, nightColor2),
+            (sunsetTime + 0.4, nightColor1),
+            (sunsetTime + 1.1, nightColor2),
+            (sunsetTime + 1.6, nightColor3),
             (sunsetTime + 2.5, nightColor),
             (sunsetTime + 2.501, nightColor),
         ];
