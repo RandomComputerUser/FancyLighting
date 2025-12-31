@@ -433,35 +433,111 @@ LightingConfig: {
 
 LightingEngineMode: {
 	Tooltip: ""
-	Low.Label: Low
-	Medium.Label: Medium
-	High.Label: High
+
+	Low: {
+		Label: Low
+		Tooltip: ""
+	}
+
+	Medium: {
+		Label: Medium
+		Tooltip: ""
+	}
+
+	High: {
+		Label: High
+		Tooltip: ""
+	}
 }
 
 RenderMode: {
 	Tooltip: ""
-	Bilinear.Label: Bilinear Upscaling
-	Bicubic.Label: Bicubic Upscaling
-	BicubicOverbright.Label: Basic HDR Rendering
-	EnhancedHdr.Label: Full HDR Rendering
+
+	Bilinear: {
+		Label: Bilinear Upscaling
+		Tooltip: ""
+	}
+
+	Bicubic: {
+		Label: Bicubic Upscaling
+		Tooltip: ""
+	}
+
+	BicubicOverbright: {
+		Label: Basic HDR Rendering
+		Tooltip: ""
+	}
+
+	EnhancedHdr: {
+		Label: Full HDR Rendering
+		Tooltip: ""
+	}
 }
 
 SettingsPreset: {
 	Tooltip: ""
-	CustomPreset.Label: Custom
-	VanillaPreset.Label: Vanilla
-	MinimalPreset.Label: Basic
-	LowPreset.Label: Low
-	MediumPreset.Label: Medium
-	HighPreset.Label: High
-	UltraPreset.Label: Ultra
+
+	CustomPreset: {
+		Label: Custom
+		Tooltip: ""
+	}
+
+	VanillaPreset: {
+		Label: Vanilla
+		Tooltip: ""
+	}
+
+	MinimalPreset: {
+		Label: Basic
+		Tooltip: ""
+	}
+
+	LowPreset: {
+		Label: Low
+		Tooltip: ""
+	}
+
+	MediumPreset: {
+		Label: Medium
+		Tooltip: ""
+	}
+
+	HighPreset: {
+		Label: High
+		Tooltip: ""
+	}
+
+	UltraPreset: {
+		Label: Ultra
+		Tooltip: ""
+	}
 }
 
 SkyColorPreset: {
 	Tooltip: ""
-	Preset1.Label: Preset 1
-	Preset2.Label: Preset 2
-	Preset3.Label: Preset 3
-	Preset4.Label: Preset 4
-	Preset5.Label: Preset 5
+
+	Preset1: {
+		Label: Preset 1
+		Tooltip: ""
+	}
+
+	Preset2: {
+		Label: Preset 2
+		Tooltip: ""
+	}
+
+	Preset3: {
+		Label: Preset 3
+		Tooltip: ""
+	}
+
+	Preset4: {
+		Label: Preset 4
+		Tooltip: ""
+	}
+
+	Preset5: {
+		Label: Preset 5
+		Tooltip: ""
+	}
 }

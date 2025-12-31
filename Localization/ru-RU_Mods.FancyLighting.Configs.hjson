@@ -433,35 +433,111 @@ LightingConfig: {
 
 LightingEngineMode: {
 	Tooltip: ""
-	Low.Label: Низкое качество
-	Medium.Label: Среднее качество
-	High.Label: Высокое качество
+
+	Low: {
+		Label: Низкое качество
+		// Tooltip: ""
+	}
+
+	Medium: {
+		Label: Среднее качество
+		// Tooltip: ""
+	}
+
+	High: {
+		Label: Высокое качество
+		// Tooltip: ""
+	}
 }
 
 RenderMode: {
 	Tooltip: ""
-	Bilinear.Label: Билинейная аппроксимация
-	Bicubic.Label: Бикубическая аппроксимация
-	BicubicOverbright.Label: Базовый режим HDR
-	EnhancedHdr.Label: Полный режим HDR
+
+	Bilinear: {
+		Label: Билинейная аппроксимация
+		// Tooltip: ""
+	}
+
+	Bicubic: {
+		Label: Бикубическая аппроксимация
+		// Tooltip: ""
+	}
+
+	BicubicOverbright: {
+		Label: Базовый режим HDR
+		// Tooltip: ""
+	}
+
+	EnhancedHdr: {
+		Label: Полный режим HDR
+		// Tooltip: ""
+	}
 }
 
 SettingsPreset: {
 	Tooltip: ""
-	CustomPreset.Label: Пользовательский режим
-	VanillaPreset.Label: Ванильный режим
-	MinimalPreset.Label: Очень низкое качество
-	LowPreset.Label: Низкое качество
-	MediumPreset.Label: Среднее качество
-	HighPreset.Label: Высокое качество
-	UltraPreset.Label: Ультра качество
+
+	CustomPreset: {
+		Label: Пользовательский режим
+		// Tooltip: ""
+	}
+
+	VanillaPreset: {
+		Label: Ванильный режим
+		// Tooltip: ""
+	}
+
+	MinimalPreset: {
+		Label: Очень низкое качество
+		// Tooltip: ""
+	}
+
+	LowPreset: {
+		Label: Низкое качество
+		// Tooltip: ""
+	}
+
+	MediumPreset: {
+		Label: Среднее качество
+		// Tooltip: ""
+	}
+
+	HighPreset: {
+		Label: Высокое качество
+		// Tooltip: ""
+	}
+
+	UltraPreset: {
+		Label: Ультра качество
+		// Tooltip: ""
+	}
 }
 
 SkyColorPreset: {
 	Tooltip: ""
-	Preset1.Label: Профиль 1
-	Preset2.Label: Профиль 2
-	Preset3.Label: Профиль 3
-	Preset4.Label: Профиль 4
-	Preset5.Label: Профиль 5
+
+	Preset1: {
+		Label: Профиль 1
+		// Tooltip: ""
+	}
+
+	Preset2: {
+		Label: Профиль 2
+		// Tooltip: ""
+	}
+
+	Preset3: {
+		Label: Профиль 3
+		// Tooltip: ""
+	}
+
+	Preset4: {
+		Label: Профиль 4
+		// Tooltip: ""
+	}
+
+	Preset5: {
+		Label: Профиль 5
+		// Tooltip: ""
+	}
 }
