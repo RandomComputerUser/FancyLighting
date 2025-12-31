@@ -9,7 +9,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ## Latest Version
 
-**v1.0.1 (2025-10-18)**
-- Tweaked Fancy Atmosphere
-- Tweaked Fancy Sky Light Color preset 1
-- Updated the mod icon
+**v1.0.2 (2025-12-??)**
