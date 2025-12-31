@@ -108,7 +108,6 @@ public sealed class LightingConfig : ModConfig
     // Serialize this last
     [JsonProperty(Order = 1000)]
     [DefaultValue(DefaultOptions.QualityPreset)]
-    [DrawTicks]
     public SettingsPreset QualityPreset
     {
         get => _qualityPreset;
@@ -207,7 +206,7 @@ public sealed class LightingConfig : ModConfig
     private bool _useEnhancedGlowMaskSupport;
 
     [DefaultValue(DefaultOptions.LightMapRenderMode)]
-    [DrawTicks]
+    [Dropdown]
     public RenderMode LightMapRenderMode
     {
         get => _lightMapRenderMode;
@@ -305,7 +304,7 @@ public sealed class LightingConfig : ModConfig
     private bool _fancyLightingEngineUseTemporal;
 
     [DefaultValue(DefaultOptions.FancyLightingEngineMode)]
-    [DrawTicks]
+    [Dropdown]
     public LightingEngineMode FancyLightingEngineMode
     {
         get => _fancyLightingEngineMode;

@@ -11,3 +11,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 **v1.0.2 (2025-12-??)**
 - Tweaked Fancy Atmosphere
+- Updated the configs to use dropdowns for some settings

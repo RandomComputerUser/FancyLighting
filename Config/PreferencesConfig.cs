@@ -180,7 +180,6 @@ public sealed class PreferencesConfig : ModConfig
 
     [Header("FancySky")]
     [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
-    [DrawTicks]
     public SkyColorPreset FancySkyColorsPreset { get; set; }
 
     [DefaultValue(DefaultOptions.ShowFancySkyColorGradients)]
