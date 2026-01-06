@@ -48,6 +48,8 @@ internal record PresetOptions
 
     public bool UseFancySkyRendering { get; init; } = DefaultOptions.UseFancySkyRendering;
 
+    public bool UseCrepuscularRays { get; init; } = DefaultOptions.UseCrepuscularRays;
+
     public bool UseFancySkyColors { get; init; } = DefaultOptions.UseFancySkyColors;
 
     public PresetOptions() { }
@@ -72,6 +74,7 @@ internal record PresetOptions
         SimulateGlobalIllumination = config.SimulateGlobalIllumination;
 
         UseFancySkyRendering = config.UseFancySkyRendering;
+        UseCrepuscularRays = config.UseCrepuscularRays;
         UseFancySkyColors = config.UseFancySkyColors;
     }
 
@@ -90,6 +93,7 @@ internal record PresetOptions
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
             UseFancySkyRendering = false,
+            UseCrepuscularRays = false,
             UseFancySkyColors = false,
         };
 
@@ -108,6 +112,7 @@ internal record PresetOptions
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
             UseFancySkyRendering = false,
+            UseCrepuscularRays = false,
             UseFancySkyColors = true,
         };
 
@@ -128,6 +133,7 @@ internal record PresetOptions
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
+            UseCrepuscularRays = false,
             UseFancySkyColors = true,
         };
 
@@ -146,6 +152,7 @@ internal record PresetOptions
             FancyLightingEngineMode = LightingEngineMode.Medium,
             SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
+            UseCrepuscularRays = false,
             UseFancySkyColors = true,
         };
 
@@ -164,6 +171,7 @@ internal record PresetOptions
             FancyLightingEngineMode = LightingEngineMode.High,
             SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
+            UseCrepuscularRays = true,
             UseFancySkyColors = true,
         };
 

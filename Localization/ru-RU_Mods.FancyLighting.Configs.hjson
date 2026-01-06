@@ -429,6 +429,11 @@ LightingConfig: {
 			В основном влияет на оттенки солнечных лучей во время восхода или заката
 			'''
 	}
+
+	UseCrepuscularRays: {
+		// Tooltip: ""
+		// Label: Use Crepuscular Rays
+	}
 }
 
 LightingEngineMode: {

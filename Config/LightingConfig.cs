@@ -92,6 +92,7 @@ public sealed class LightingConfig : ModConfig
         _simulateGlobalIllumination = options.SimulateGlobalIllumination;
 
         _useFancySkyRendering = options.UseFancySkyRendering;
+        _useCrepuscularRays = options.UseCrepuscularRays;
         _useFancySkyColors = options.UseFancySkyColors;
     }
 
@@ -345,6 +346,19 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _useFancySkyRendering;
+
+    [DefaultValue(DefaultOptions.UseCrepuscularRays)]
+    public bool UseCrepuscularRays
+    {
+        get => _useCrepuscularRays;
+        set
+        {
+            _useCrepuscularRays = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _useCrepuscularRays;
 
     [DefaultValue(DefaultOptions.UseFancySkyColors)]
     public bool UseFancySkyColors

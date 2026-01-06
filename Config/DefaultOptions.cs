@@ -62,6 +62,7 @@ public static class DefaultOptions
 
     // Fancy Sky
     public const bool UseFancySkyRendering = true;
+    public const bool UseCrepuscularRays = false;
     public const bool UseFancySkyColors = true;
 
     // Fancy Sky Preferences
