@@ -64,6 +64,15 @@ public sealed class LightingConfig : ModConfig
     internal bool FancySkyRenderingEnabled() =>
         UseFancySkyRendering && Lighting.UsingNewLighting;
 
+    internal bool CrepuscularRaysEnabled() =>
+        FancySkyRenderingEnabled() && UseCrepuscularRays;
+
+    internal bool CrepuscularRaysActive() =>
+        CrepuscularRaysEnabled()
+        && FancyLightingMod._doingFilterManagerCapture
+        && Main.dayTime
+        && Main.screenPosition.Y / 16f < Main.worldSurface + 2.0; // sun is not drawn otherwise
+
     internal bool FancySkyColorsEnabled() =>
         UseFancySkyColors && Lighting.UsingNewLighting;
 

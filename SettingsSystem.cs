@@ -105,6 +105,7 @@ internal sealed class SettingsSystem : ModSystem
                 LightingConfig.Instance.SmoothLightingEnabled()
                 && LightingConfig.Instance.DrawOverbright()
             )
+            || LightingConfig.Instance.UseCrepuscularRays
         );
 
     internal static bool HdrCompatibilityEnabled() =>

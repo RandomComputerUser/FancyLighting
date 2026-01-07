@@ -13,6 +13,7 @@ internal sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
+    private Shader _brightenShader;
     private Shader _gammaToLinearShader;
     private Shader _gammaToGammaDitherShader;
     private Shader _gammaToSrgbDitherShader;
@@ -30,6 +31,10 @@ internal sealed class PostProcessing
             )
             .Value;
 
+        _brightenShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "Brighten"
+        );
         _gammaToLinearShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToLinear"
@@ -55,6 +60,7 @@ internal sealed class PostProcessing
     public void Unload()
     {
         _ditherNoise?.Dispose();
+        EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
@@ -69,6 +75,9 @@ internal sealed class PostProcessing
         * HiDefBackgroundBrightnessMult
         * (0.88f * Lighting.GlobalBrightness);
 
+    internal void ApplyBrightenShader(float brightness) =>
+        _brightenShader.SetParameter("Exposure", brightness).Apply();
+
     internal void ApplyPostProcessing(
         RenderTarget2D target,
         RenderTarget2D tmpTarget,
@@ -79,8 +88,12 @@ internal sealed class PostProcessing
         var currTarget = target;
         var nextTarget = tmpTarget;
 
+        var skyTarget = FancySkyRendering._skyTarget;
+
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = LightingConfig.Instance.BloomEnabled();
+        var doCrepuscularRays =
+            LightingConfig.Instance.CrepuscularRaysActive() && skyTarget is not null;
         var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
         var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;
@@ -125,6 +138,64 @@ internal sealed class PostProcessing
 
             if (hiDef)
             {
+                if (doCrepuscularRays)
+                {
+                    if (separateBackground)
+                    {
+                        Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                        Main.spriteBatch.Begin(
+                            SpriteSortMode.Deferred,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,
+                            DepthStencilState.None,
+                            RasterizerState.CullNone
+                        );
+                        Main.spriteBatch.Draw(skyTarget, Vector2.Zero, Color.White);
+                        Main.spriteBatch.Draw(
+                            backgroundTarget,
+                            Vector2.Zero,
+                            Color.White
+                        );
+                        Main.spriteBatch.End();
+
+                        Main.graphics.GraphicsDevice.SetRenderTarget(backgroundTarget);
+                        Main.spriteBatch.Begin(
+                            SpriteSortMode.Deferred,
+                            BlendState.Opaque,
+                            SamplerState.PointClamp,
+                            DepthStencilState.None,
+                            RasterizerState.CullNone
+                        );
+                        Main.spriteBatch.Draw(nextTarget, Vector2.Zero, Color.White);
+                        Main.spriteBatch.End();
+                    }
+                    else
+                    {
+                        Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                        Main.spriteBatch.Begin(
+                            SpriteSortMode.Immediate,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,
+                            DepthStencilState.None,
+                            RasterizerState.CullNone
+                        );
+                        ApplyBrightenShader(CalculateHiDefBackgroundBrightness());
+                        Main.spriteBatch.Draw(skyTarget, Vector2.Zero, Color.White);
+                        Main.spriteBatch.End();
+                        Main.spriteBatch.Begin(
+                            SpriteSortMode.Immediate,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,
+                            DepthStencilState.None,
+                            RasterizerState.CullNone
+                        );
+                        Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+                        Main.spriteBatch.End();
+
+                        (currTarget, nextTarget) = (nextTarget, currTarget);
+                    }
+                }
+
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.spriteBatch.Begin(
@@ -164,7 +235,7 @@ internal sealed class PostProcessing
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
-            else if (separateBackground)
+            else if (separateBackground || doCrepuscularRays)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
@@ -175,12 +246,35 @@ internal sealed class PostProcessing
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
-                Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+                if (doCrepuscularRays)
+                {
+                    Main.spriteBatch.Draw(skyTarget, Vector2.Zero, Color.White);
+                }
+                if (separateBackground)
+                {
+                    Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+                }
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
+        }
+        else if (doCrepuscularRays)
+        {
+            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(skyTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
         }
 
         if (hiDef)

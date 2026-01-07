@@ -420,6 +420,16 @@ LightingConfig: {
 			'''
 	}
 
+	UseCrepuscularRays: {
+		// Label: Crepuscular Rays
+		/* Tooltip:
+			'''
+			Render crepuscular rays from the sun
+
+			Requires fancy atmosphere to be enabled
+			''' */
+	}
+
 	UseFancySkyColors: {
 		Label: Детализированные цвета у неба
 		Tooltip:
@@ -428,11 +438,6 @@ LightingConfig: {
 
 			В основном влияет на оттенки солнечных лучей во время восхода или заката
 			'''
-	}
-
-	UseCrepuscularRays: {
-		// Tooltip: ""
-		// Label: Use Crepuscular Rays
 	}
 }
 

@@ -5,6 +5,8 @@ namespace FancyLighting;
 
 public static class FancySkyRendering
 {
+    internal static RenderTarget2D _skyTarget;
+
     private static Texture2D _ditherNoise;
 
     private static Shader _skyShader;
@@ -40,6 +42,8 @@ public static class FancySkyRendering
 
     internal static void Unload()
     {
+        _skyTarget?.Dispose();
+        _skyTarget = null;
         _ditherNoise?.Dispose();
         _ditherNoise = null;
         EffectLoader.UnloadEffect(ref _skyShader);
@@ -229,7 +233,7 @@ public static class FancySkyRendering
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
-            FancyLightingMod._inCameraMode ? RasterizerState.CullNone : Main.Rasterizer,
+            Main.Rasterizer,
             null,
             transform
         );
@@ -242,5 +246,46 @@ public static class FancySkyRendering
                 .Apply();
         }
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+
+        if (!LightingConfig.Instance.CrepuscularRaysActive())
+        {
+            return;
+        }
+
+        Main.spriteBatch.End();
+
+        var screenTarget = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+
+        TextureUtils.MakeSize(
+            ref _skyTarget,
+            screenTarget.Width,
+            screenTarget.Height,
+            TextureUtils.ScreenFormat
+        );
+
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(_skyTarget);
+        Main.spriteBatch.Begin(
+            hiDef ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(screenTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
+        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            Main.Rasterizer,
+            null,
+            transform
+        );
     }
 }

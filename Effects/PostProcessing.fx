@@ -51,6 +51,12 @@ float3 ToneMapColor(float3 x)
     );
 }
 
+float4 Brighten(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
+{
+    color.rgb *= Exposure;
+    return color * tex2D(ScreenSampler, coords);
+}
+
 float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
@@ -102,7 +108,12 @@ float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
 }
 
 technique Technique1
-{   
+{
+    pass Brighten
+    {
+        PixelShader = compile ps_3_0 Brighten();
+    }
+
     pass GammaToLinear
     {
         PixelShader = compile ps_3_0 GammaToLinear();

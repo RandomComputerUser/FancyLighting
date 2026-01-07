@@ -16,7 +16,6 @@ float NormalMapStrength;
 float2 WorldCoordMult;
 float2 WorldCoordOffset;
 float2 DitherCoordMult;
-float BrightnessMult;
 float2 GlowCoordMult;
 float2 LightedGlowCoordMult;
 
@@ -431,12 +430,6 @@ float4 LightOnly(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     return color * tex2D(TextureSampler, coords).a;
 }
 
-float4 Brighten(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
-{
-    color.rgb *= BrightnessMult;
-    return color * tex2D(TextureSampler, coords);
-}
-
 float4 GlowMask(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 primary = tex2D(TextureSampler, coords);
@@ -588,11 +581,6 @@ technique Technique1
     pass LightOnly
     {
         PixelShader = compile ps_3_0 LightOnly();
-    }
-
-    pass Brighten
-    {
-        PixelShader = compile ps_3_0 Brighten();
     }
     
     pass GlowMask

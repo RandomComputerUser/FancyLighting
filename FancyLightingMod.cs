@@ -166,12 +166,10 @@ public sealed class FancyLightingMod : Mod
 
         Main.QueueMainThreadAction(() =>
         {
-            // Do not dispose _cameraModeTarget
-            // _cameraModeTarget comes from the Main class, so we don't own it
             _tmpTarget1?.Dispose();
             _tmpTarget2?.Dispose();
             _tmpTarget3?.Dispose();
-            _cameraModeTarget = null;
+            _cameraModeTarget = null; // don't dispose; we don't own this resource
             _cameraModeTmpTarget1?.Dispose();
             _cameraModeTmpTarget2?.Dispose();
             _backgroundTarget?.Dispose();
@@ -398,14 +396,13 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
-        _doingFilterManagerCapture = false;
-
         if (
             (!SettingsSystem.PostProcessingAllowed() && !_inCameraMode)
             || !SettingsSystem.NeedsPostProcessing()
         )
         {
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+            _doingFilterManagerCapture = false;
             return;
         }
 
@@ -423,6 +420,7 @@ public sealed class FancyLightingMod : Mod
         );
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+        _doingFilterManagerCapture = false;
     }
 
     // Separate background layer (so we don't apply overbright to it)
@@ -524,7 +522,7 @@ public sealed class FancyLightingMod : Mod
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _smoothLightingInstance.ApplyBrightenShader(
+            _postProcessingInstance.ApplyBrightenShader(
                 PostProcessing.CalculateHiDefBackgroundBrightness()
             );
             Main.spriteBatch.Draw(_cameraModeBackgroundTarget, Vector2.Zero, Color.White);
@@ -603,7 +601,7 @@ public sealed class FancyLightingMod : Mod
             null,
             transform
         );
-        _smoothLightingInstance.ApplyBrightenShader(sunMoonBrightness);
+        _postProcessingInstance.ApplyBrightenShader(sunMoonBrightness);
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
     }
 
@@ -1394,7 +1392,7 @@ public sealed class FancyLightingMod : Mod
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _smoothLightingInstance.ApplyBrightenShader(
+        _postProcessingInstance.ApplyBrightenShader(
             PostProcessing.CalculateHiDefBackgroundBrightness()
         );
         Main.spriteBatch.Draw(_backgroundTarget, Vector2.Zero, Color.White);

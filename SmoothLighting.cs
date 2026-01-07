@@ -51,7 +51,6 @@ internal sealed class SmoothLighting
     private Shader _overbrightMaxShader;
     private Shader _inverseOverbrightMaxHiDefShader;
     private Shader _lightOnlyShader;
-    private Shader _brightenShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
@@ -144,10 +143,6 @@ internal sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "LightOnly"
         );
-        _brightenShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "Brighten"
-        );
         _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "GlowMask"
@@ -183,7 +178,6 @@ internal sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _inverseOverbrightMaxHiDefShader);
         EffectLoader.UnloadEffect(ref _lightOnlyShader);
-        EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
     }
@@ -191,9 +185,6 @@ internal sealed class SmoothLighting
     internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
 
     internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
-
-    internal void ApplyBrightenShader(float brightness) =>
-        _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
     private static bool ShouldTileShine(ushort type, short frameX)
     {
