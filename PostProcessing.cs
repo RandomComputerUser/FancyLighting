@@ -13,6 +13,8 @@ internal sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
+    private RenderTarget2D _crepuscularRaysTarget;
+
     private Shader _brightenShader;
     private Shader _gammaToLinearShader;
     private Shader _gammaToGammaDitherShader;
@@ -60,6 +62,7 @@ internal sealed class PostProcessing
     public void Unload()
     {
         _ditherNoise?.Dispose();
+        _crepuscularRaysTarget?.Dispose();
         EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
@@ -90,6 +93,9 @@ internal sealed class PostProcessing
 
         var skyTarget = FancySkyRendering._skyTarget;
 
+        var doOverbright =
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = LightingConfig.Instance.BloomEnabled();
         var doCrepuscularRays =
@@ -101,10 +107,23 @@ internal sealed class PostProcessing
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
 
-        if (
-            LightingConfig.Instance.SmoothLightingEnabled()
-            && LightingConfig.Instance.DrawOverbright()
-        )
+        if (doCrepuscularRays)
+        {
+            TextureUtils.MakeSize(
+                ref _crepuscularRaysTarget,
+                nextTarget.Width,
+                nextTarget.Height,
+                TextureUtils.ScreenFormat
+            );
+            FancySkyRendering.DrawCrepuscularRays(
+                _crepuscularRaysTarget,
+                nextTarget,
+                currTarget,
+                doOverbright && separateBackground ? backgroundTarget : null
+            );
+        }
+
+        if (doOverbright)
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
             if (cameraMode)
@@ -272,6 +291,25 @@ internal sealed class PostProcessing
             );
             Main.spriteBatch.Draw(skyTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
+        }
+
+        if (doCrepuscularRays)
+        {
+            _blurRenderer.RenderBlur(_crepuscularRaysTarget, null, 1);
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Additive,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.Draw(_crepuscularRaysTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
 
             (currTarget, nextTarget) = (nextTarget, currTarget);

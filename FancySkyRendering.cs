@@ -13,7 +13,13 @@ public static class FancySkyRendering
     private static Shader _skyDitheredShader;
     private static Shader _sunShader;
 
+    private static Shader _lightShader;
+    private static Shader _sceneShader;
+    private static Shader _raysShader;
+
     private static bool _modifyStarDrawing = false;
+
+    private static Vector2 _sunPosition;
 
     internal static void Load()
     {
@@ -30,6 +36,19 @@ public static class FancySkyRendering
             "SkyDithered"
         );
         _sunShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sun");
+
+        _lightShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/CrepuscularRays",
+            "Light"
+        );
+        _sceneShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/CrepuscularRays",
+            "Scene"
+        );
+        _raysShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/CrepuscularRays",
+            "Rays"
+        );
 
         AddHooks();
     }
@@ -49,6 +68,9 @@ public static class FancySkyRendering
         EffectLoader.UnloadEffect(ref _skyShader);
         EffectLoader.UnloadEffect(ref _skyDitheredShader);
         EffectLoader.UnloadEffect(ref _sunShader);
+        EffectLoader.UnloadEffect(ref _lightShader);
+        EffectLoader.UnloadEffect(ref _sceneShader);
+        EffectLoader.UnloadEffect(ref _raysShader);
     }
 
     // Draw sky
@@ -209,6 +231,8 @@ public static class FancySkyRendering
             return;
         }
 
+        _sunPosition = CalculateSunPosition(Main.time, sceneArea);
+
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
@@ -287,5 +311,75 @@ public static class FancySkyRendering
             null,
             transform
         );
+    }
+
+    internal static void DrawCrepuscularRays(
+        RenderTarget2D outputTarget,
+        RenderTarget2D tmpTarget,
+        RenderTarget2D foregroundTarget1,
+        RenderTarget2D foregroundTarget2
+    )
+    {
+        var width = outputTarget.Width;
+        var height = outputTarget.Height;
+
+        var sunPosition = _sunPosition;
+        if (Main.LocalPlayer.gravDir < 0f)
+        {
+            sunPosition.Y = Main.screenHeight - sunPosition.Y;
+        }
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _lightShader
+            .SetParameter("Resolution", new Vector2(width, height))
+            .SetParameter("SunPosition", sunPosition)
+            .SetParameter("LightColor", new Vector3(1f, 0.8f, 0.5f))
+            .Apply();
+        Main.spriteBatch.Draw(foregroundTarget1, Vector2.Zero, Color.White);
+        _sceneShader.Apply();
+        Main.spriteBatch.Draw(foregroundTarget1, Vector2.Zero, Color.White);
+        if (foregroundTarget2 is not null)
+        {
+            Main.spriteBatch.Draw(foregroundTarget2, Vector2.Zero, Color.White);
+        }
+        Main.spriteBatch.End();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(outputTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        _raysShader
+            .SetParameter("SunPosition", sunPosition / new Vector2(width, height))
+            .Apply();
+        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+    }
+
+    private static Vector2 CalculateSunPosition(double time, Main.SceneArea sceneArea)
+    {
+        // TODO: Fix this
+        var x = time / 54000.0 * sceneArea.totalWidth;
+        var y =
+            sceneArea.bgTopY
+            + (
+                (
+                    time < 27000.0
+                        ? Math.Pow(1.0 - (time / 54000.0 * 2.0), 2.0)
+                        : Math.Pow(((time / 54000.0) - 0.5) * 2.0, 2.0)
+                ) * 250.0
+            )
+            + 180.0;
+        return new Vector2((float)x, (float)y) + sceneArea.SceneLocalScreenPositionOffset;
     }
 }

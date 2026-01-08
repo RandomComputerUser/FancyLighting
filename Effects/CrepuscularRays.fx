@@ -6,20 +6,17 @@ float2 Resolution;
 float2 SunPosition;
 float3 LightColor;
 
-float Gamma;
-float InverseGamma;
-
 float Density = 0.5;
 float Decay = 0.95;
 float Weight = 1.0;
-float Exposure = 0.15;
+float Exposure = 0.08;
 
 #define SAMPLE_COUNT 128
 
 float4 Light(float2 coords : TEXCOORD0) : COLOR0
 {
     coords *= Resolution;
-    float distance = min(length(coords - SunPosition), 1);
+    float distance = min(1.0 / 200 * length(coords - SunPosition), 1);
     return float4(LightColor / pow(distance, 2), 1);
 }
 
