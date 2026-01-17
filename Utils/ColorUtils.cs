@@ -9,8 +9,6 @@ internal static class ColorUtils
 
     internal static float _gamma;
     internal static float _reciprocalGamma;
-    internal static float _lightGamma;
-    internal static float _lightReciprocalGamma;
 
     internal static void Load()
     {
@@ -117,36 +115,6 @@ internal static class ColorUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float LightGammaToLinear(float x) =>
-        MathF.Pow(Math.Max(x, 0f), _lightGamma);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LightGammaToLinear(ref float x) => x = LightGammaToLinear(x);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LightGammaToLinear(ref Vector3 color)
-    {
-        LightGammaToLinear(ref color.X);
-        LightGammaToLinear(ref color.Y);
-        LightGammaToLinear(ref color.Z);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float LightLinearToGamma(float x) =>
-        MathF.Pow(Math.Max(x, 0f), _lightReciprocalGamma);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LightLinearToGamma(ref float x) => x = LightLinearToGamma(x);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void LightLinearToGamma(ref Vector3 color)
-    {
-        LightLinearToGamma(ref color.X);
-        LightLinearToGamma(ref color.Y);
-        LightLinearToGamma(ref color.Z);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Luma(Vector3 color) =>
         (0.2126f * color.X) + (0.7152f * color.Y) + (0.0722f * color.Z);
 
@@ -154,13 +122,13 @@ internal static class ColorUtils
     {
         const float AbsorptionDepth = 8; // arbitrarily chosen
 
-        LightGammaToLinear(ref absorptionColor);
+        GammaToLinear(ref absorptionColor);
 
         absorptionColor.X = MathF.Pow(absorptionColor.X, AbsorptionDepth);
         absorptionColor.Y = MathF.Pow(absorptionColor.Y, AbsorptionDepth);
         absorptionColor.Z = MathF.Pow(absorptionColor.Z, AbsorptionDepth);
 
         var accumulatedAbsorption = Luma(absorptionColor);
-        return MathF.Pow(LightLinearToGamma(accumulatedAbsorption), 1 / AbsorptionDepth);
+        return MathF.Pow(LinearToGamma(accumulatedAbsorption), 1 / AbsorptionDepth);
     }
 }

@@ -234,12 +234,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            ColorUtils.LightGammaToLinear(ref lightAirDecayBaseline);
-            ColorUtils.LightGammaToLinear(ref lightSolidDecayBaseline);
-            ColorUtils.LightGammaToLinear(ref lightWaterDecayBaseline);
-            ColorUtils.LightGammaToLinear(ref lightHoneyDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightAirDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightSolidDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightWaterDecayBaseline);
+            ColorUtils.GammaToLinear(ref lightHoneyDecayBaseline);
 
-            ColorUtils.LightGammaToLinear(ref _lightLossExitingSolid);
+            ColorUtils.GammaToLinear(ref _lightLossExitingSolid);
         }
 
         var thresholdMultExponent = MathF.Sqrt(2) - 1;
@@ -351,7 +351,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 var i = height * x;
                 for (var y = 0; y < height; ++y)
                 {
-                    ColorUtils.LightGammaToLinear(ref colors[i++]);
+                    ColorUtils.GammaToLinear(ref colors[i++]);
                 }
             }
         );
@@ -567,7 +567,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             PreferencesConfig.Instance.FancyLightingEngineGlobalIlluminationMultiplier();
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            ColorUtils.LightGammaToLinear(ref giMult);
+            ColorUtils.GammaToLinear(ref giMult);
         }
 
         ArrayUtils.MakeAtLeastSize(ref _workingLightMaps[0], length);

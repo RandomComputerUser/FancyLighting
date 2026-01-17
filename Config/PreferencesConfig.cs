@@ -11,14 +11,7 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal float GammaExponent() =>
-        (
-            LightingConfig.Instance?.HiDefFeaturesEnabled() is true
-                ? PostProcessing.HiDefObjectGammaMult
-                : 1f
-        ) * (Gamma / 100f);
-
-    internal float LightGammaExponent() => Gamma / 100f;
+    internal float GammaExponent() => Gamma / 100f;
 
     internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 
@@ -27,7 +20,7 @@ public sealed class PreferencesConfig : ModConfig
             ? 0.5f * NormalMapsIntensity
             : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
-    internal float ExposureMult() => 0.8f * (Exposure / 100f);
+    internal float ExposureMult() => Exposure / 100f;
 
     internal float BloomLerp() => 0.0025f * BloomStrength;
 

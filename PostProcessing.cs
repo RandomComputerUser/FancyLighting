@@ -8,9 +8,6 @@ internal sealed class PostProcessing
     internal const float HiDefBrightnessScale = 0.5f;
     internal const float HiDefBackgroundBrightnessMult = 1.5f;
 
-    // Increase gamma for tiles/objects but not light in full HDR rendering
-    internal const float HiDefObjectGammaMult = 1.1f;
-
     private readonly Texture2D _ditherNoise;
 
     private Shader _gammaToLinearShader;

@@ -388,7 +388,7 @@ internal sealed class SmoothLighting
                     {
                         try
                         {
-                            ColorUtils.LightGammaToLinear(ref colors[i++]);
+                            ColorUtils.GammaToLinear(ref colors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -427,7 +427,7 @@ internal sealed class SmoothLighting
                             try
                             {
                                 ref var lightColor = ref lights[i++];
-                                ColorUtils.LightGammaToLinear(ref lightColor);
+                                ColorUtils.GammaToLinear(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -503,7 +503,7 @@ internal sealed class SmoothLighting
                             try
                             {
                                 ref var lightColor = ref lights[i++];
-                                ColorUtils.LightLinearToGamma(ref lightColor);
+                                ColorUtils.LinearToGamma(ref lightColor);
                             }
                             catch (IndexOutOfRangeException)
                             {

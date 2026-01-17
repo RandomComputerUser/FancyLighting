@@ -7,6 +7,22 @@ float GammaRatio;
 float Exposure;
 float BloomStrength;
 
+// https://www.colour-science.org/apps/
+
+static const float3x3 P3ToAcescg =
+{
+    {0.735022, 0.211362, 0.053616},
+    {0.047736, 0.939409, 0.012855},
+    {0.003798, 0.038104, 0.958098}
+};
+
+static const float3x3 AcescgToSrgb =
+{
+    { 1.707255, -0.620035, -0.087220},
+    {-0.131157,  1.139101, -0.007944},
+    {-0.024550, -0.124805,  1.149354}
+};
+
 float3 LinearToSrgb(float3 color)
 {
     float3 lowPart = 12.92 * color;
@@ -41,11 +57,11 @@ float3 Dither(float3 color, float2 coords)
 
 float3 ToneMapColor(float3 x)
 {
-    float c1 = 1.46666666667;
-    float c2 = 0.363636363636;
-    float c3 = 256;
+    float c1 = 1.375;
+    float c2 = 0.563636363636;
+    float c3 = 4096;
     float c4 = 2;
-    float c5 = 2.33333333333;
+    float c5 = 3;
     return saturate(
         c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
     );
@@ -90,7 +106,9 @@ float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
 float4 ToneMap(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = mul(P3ToAcescg, color.rgb);
     color.rgb = ToneMapColor(color.rgb);
+    color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
     return color;
 }
 
