@@ -10,3 +10,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 **v1.1.0 (2026-01-??)**
+- Adjusted the overall appearance of full HDR rendering
