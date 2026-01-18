@@ -9,6 +9,7 @@ float BloomStrength;
 
 // https://www.colour-science.org/apps/
 
+// Use P3 primaries for increased saturation
 static const float3x3 P3ToAcescg =
 {
     {0.735022, 0.211362, 0.053616},

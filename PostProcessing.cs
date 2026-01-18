@@ -65,7 +65,7 @@ internal sealed class PostProcessing
     internal static float CalculateHiDefBackgroundBrightness() =>
         HiDefBrightnessScale
         * HiDefBackgroundBrightnessMult
-        * (0.88f * Lighting.GlobalBrightness);
+        * (0.9f * Lighting.GlobalBrightness);
 
     internal void ApplyPostProcessing(
         RenderTarget2D target,

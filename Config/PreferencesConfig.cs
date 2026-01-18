@@ -25,7 +25,7 @@ public sealed class PreferencesConfig : ModConfig
             ? 0.5f * NormalMapsIntensity
             : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
-    internal float ExposureMult() => 0.8f * (Exposure / 100f);
+    internal float ExposureMult() => 0.9f * (Exposure / 100f);
 
     internal float BloomLerp() => 0.0025f * BloomStrength;
 
