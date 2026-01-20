@@ -58,8 +58,8 @@ float3 Dither(float3 color, float2 coords)
 
 float3 ToneMapColor(float3 x)
 {
-    float c1 = 1.25;
-    float c2 = 2;
+    float c1 = 1.6;
+    float c2 = 3.0;
     return saturate(
         c1 * (x / (x + c2))
     );
