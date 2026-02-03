@@ -36,24 +36,13 @@ float3 LinearToSrgb(float3 color)
 // Also dark colors in sRGB are mapped linearly so there is no difference for dark colors
 float3 DitherNoise(float2 coords)
 {
-    return (
-        (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r - 0.5 / 255
-    ).xxx;
+    return 0;
 }
 
 // Input color should be in gamma 2.2
 float3 Dither(float3 color, float2 coords)
 {
-    float3 lo = (1.0 / 255) * floor(255 * color);
-    float3 hi = lo + 1.0 / 255;
-    float3 loLinear = pow(lo, 2.2);
-    float3 hiLinear = pow(hi, 2.2);
-
-    float3 t = (pow(color, 2.2) - loLinear) / (hiLinear - loLinear);
-    float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords).r;
-    float3 selector = step(t, rand);
-
-    return lerp(hi, lo, selector);
+    return color;
 }
 
 float3 ToneMapColor(float3 x)
@@ -104,10 +93,7 @@ float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
 float4 ToneMap(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = mul(P3ToAcescg, color.rgb);
-    color.rgb = ToneMapColor(color.rgb);
-    color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
-    return color;
+    return max(color, 0);
 }
 
 float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0

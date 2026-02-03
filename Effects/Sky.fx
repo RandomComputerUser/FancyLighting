@@ -14,12 +14,6 @@ float InverseGamma;
 // Not technically correct because it ignores gamma, but cheap and decent quality
 float4 Dithered(float4 color, float2 coords)
 {
-    float noise
-        = (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r
-        - 0.5 / 255;
-    
-    color.rgb += noise;
-    
     return color;
 }
 
