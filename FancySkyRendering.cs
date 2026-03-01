@@ -1,5 +1,4 @@
 ﻿using FancyLighting.ColorProfiles.SkyColor;
-using ReLogic.Content;
 
 namespace FancyLighting;
 
@@ -16,10 +15,7 @@ public static class FancySkyRendering
     internal static void Load()
     {
         _ditherNoise = ModContent
-            .Request<Texture2D>(
-                "FancyLighting/Effects/DitherNoise",
-                AssetRequestMode.ImmediateLoad
-            )
+            .Request<Texture2D>("FancyLighting/Effects/DitherNoise")
             .Value;
 
         _skyShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sky");

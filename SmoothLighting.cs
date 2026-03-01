@@ -1,6 +1,5 @@
 ﻿using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
-using ReLogic.Content;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 
@@ -66,10 +65,7 @@ internal sealed class SmoothLighting
         _tmpLights = null;
 
         _ditherNoise = ModContent
-            .Request<Texture2D>(
-                "FancyLighting/Effects/DitherNoise",
-                AssetRequestMode.ImmediateLoad
-            )
+            .Request<Texture2D>("FancyLighting/Effects/DitherNoise")
             .Value;
 
         _bicubicFilteringShader = EffectLoader.LoadEffect(
