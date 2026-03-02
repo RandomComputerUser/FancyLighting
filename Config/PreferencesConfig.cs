@@ -111,6 +111,9 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int BloomStrength { get; set; }
 
+    [DefaultValue(DefaultOptions.ToneMappingOperator)]
+    public ToneMappingPreset ToneMappingOperator { get; set; }
+
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }
 

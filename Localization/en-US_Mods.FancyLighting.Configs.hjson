@@ -75,10 +75,10 @@ PreferencesConfig: {
 		Label: Exposure (Full HDRR) (%)
 		Tooltip:
 			'''
-			The exposure used when tone mapping the scene from HDR to SDR
+			The exposure used when tone mapping the HDR image
 
-			Higher values result in a brighter image
-			Full HDR rendering must be in use for this setting to have any effect
+			Higher values result in a brighter final image
+			Full HDR rendering must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -101,6 +101,18 @@ PreferencesConfig: {
 
 			Higher values result in a brighter glow around bright objects
 			Bloom must be enabled for this setting to have any effect
+			'''
+	}
+
+	ToneMappingOperator: {
+		Label: Tone Mapping Operator (Full HDRR)
+		Tooltip:
+			'''
+			Which tone mapping operator is used
+
+			Affects how colors appear in the final image
+			The "Linear" option also disables dithering
+			Full HDR rendering must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -540,4 +552,23 @@ SkyColorPreset: {
 		Label: Preset 5
 		Tooltip: ""
 	}
+}
+
+ToneMappingPreset: {
+	Preset1: {
+		Label: TMO 1
+		Tooltip: ""
+	}
+
+	Preset2: {
+		Label: TMO 2
+		Tooltip: ""
+	}
+
+	Linear: {
+		Label: Linear
+		Tooltip: ""
+	}
+
+	Tooltip: ""
 }

@@ -56,15 +56,6 @@ float3 Dither(float3 color, float2 coords)
     return lerp(hi, lo, selector);
 }
 
-float3 ToneMapColor(float3 x)
-{
-    float c1 = 1.6;
-    float c2 = 3.0;
-    return saturate(
-        c1 * (x / (x + c2))
-    );
-}
-
 float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
@@ -101,12 +92,54 @@ float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
     );
 }
 
-float4 ToneMap(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+
+    return float4(pow(color.rgb, GammaRatio), color.a);
+}
+
+float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    
+    return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), color.a);
+}
+
+float3 ToneMapColor1(float3 x)
+{
+    float c1 = 1.6;
+    float c2 = 3.0;
+    return saturate(
+        c1 * (x / (x + c2))
+    );
+}
+
+float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = mul(P3ToAcescg, color.rgb);
-    color.rgb = ToneMapColor(color.rgb);
+    color.rgb = ToneMapColor1(color.rgb);
     color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
+    return color;
+}
+
+float3 ToneMapColor2(float3 x)
+{
+    float c1 = 1.46666666667;
+    float c2 = 0.363636363636;
+    float c3 = 256;
+    float c4 = 2;
+    float c5 = 2.33333333333;
+    return saturate(
+        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
+    );
+}
+
+float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColor2(color.rgb);
     return color;
 }
 
@@ -133,10 +166,25 @@ technique Technique1
     {
         PixelShader = compile ps_3_0 GammaToSrgbDither();
     }
-    
-    pass ToneMap
+
+    pass GammaToGammaNoDither
     {
-        PixelShader = compile ps_3_0 ToneMap();
+        PixelShader = compile ps_3_0 GammaToGammaNoDither();
+    }
+    
+    pass GammaToSrgbNoDither
+    {
+        PixelShader = compile ps_3_0 GammaToSrgbNoDither();
+    }
+    
+    pass ToneMap1
+    {
+        PixelShader = compile ps_3_0 ToneMap1();
+    }
+    
+    pass ToneMap2
+    {
+        PixelShader = compile ps_3_0 ToneMap2();
     }
     
     pass BloomComposite

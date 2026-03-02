@@ -1,4 +1,6 @@
-﻿namespace FancyLighting;
+﻿using FancyLighting.Config.Enums;
+
+namespace FancyLighting;
 
 internal sealed class PostProcessing
 {
@@ -12,7 +14,10 @@ internal sealed class PostProcessing
     private Shader _gammaToLinearShader;
     private Shader _gammaToGammaDitherShader;
     private Shader _gammaToSrgbDitherShader;
-    private Shader _toneMapShader;
+    private Shader _gammaToGammaNoDitherShader;
+    private Shader _gammaToSrgbNoDitherShader;
+    private Shader _toneMap1Shader;
+    private Shader _toneMap2Shader;
     private Shader _bloomCompositeShader;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
@@ -35,9 +40,21 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "GammaToSrgbDither"
         );
-        _toneMapShader = EffectLoader.LoadEffect(
+        _gammaToGammaNoDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "ToneMap"
+            "GammaToGammaNoDither"
+        );
+        _gammaToSrgbNoDitherShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToSrgbNoDither"
+        );
+        _toneMap1Shader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMap1"
+        );
+        _toneMap2Shader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMap2"
         );
         _bloomCompositeShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
@@ -51,7 +68,10 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
-        EffectLoader.UnloadEffect(ref _toneMapShader);
+        EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherShader);
+        EffectLoader.UnloadEffect(ref _toneMap1Shader);
+        EffectLoader.UnloadEffect(ref _toneMap2Shader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
 
         _blurRenderer.Unload();
@@ -80,6 +100,8 @@ internal sealed class PostProcessing
         var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
         var srgb = PreferencesConfig.Instance.UseSrgb;
         var gamma = PreferencesConfig.Instance.GammaExponent();
+        var tmo = PreferencesConfig.Instance.ToneMappingOperator;
+        var disableDither = tmo is ToneMappingPreset.Linear;
 
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
@@ -131,6 +153,10 @@ internal sealed class PostProcessing
                 var exposure = 1f / HiDefBrightnessScale;
                 exposure = MathF.Pow(exposure, gamma);
                 exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
+                if (tmo is ToneMappingPreset.Preset2)
+                {
+                    exposure *= 0.8f;
+                }
 
                 if (separateBackground)
                 {
@@ -220,7 +246,17 @@ internal sealed class PostProcessing
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _toneMapShader.Apply();
+
+            switch (tmo)
+            {
+                case ToneMappingPreset.Preset1:
+                    _toneMap1Shader.Apply();
+                    break;
+                case ToneMappingPreset.Preset2:
+                    _toneMap2Shader.Apply();
+                    break;
+            }
+
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
 
@@ -244,7 +280,13 @@ internal sealed class PostProcessing
                 gamma /= 2.2f;
             }
 
-            var shader = useSrgb ? _gammaToSrgbDitherShader : _gammaToGammaDitherShader;
+            var shader = useSrgb
+                ? disableDither
+                    ? _gammaToSrgbNoDitherShader
+                    : _gammaToSrgbDitherShader
+                : disableDither
+                    ? _gammaToGammaNoDitherShader
+                    : _gammaToGammaDitherShader;
             shader
                 .SetParameter(
                     "DitherCoordMult",
@@ -256,8 +298,12 @@ internal sealed class PostProcessing
                 .SetParameter("GammaRatio", gamma)
                 .Apply();
 
-            Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
-            Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
+            if (!disableDither)
+            {
+                Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
+                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
+            }
+
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
 
