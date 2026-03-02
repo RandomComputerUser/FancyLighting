@@ -357,6 +357,9 @@ public sealed class FancyLightingMod : Mod
         ref VertexColors colors
     )
     {
+        // Only needed if LiquidSlopeFix is set to false in tModLoader
+        // Otherwise this function never runs
+
         if (_makePartialLiquidTranslucent)
         {
             colors.TopLeftColor.A = Math.Min(colors.TopLeftColor.A, (byte)254);
