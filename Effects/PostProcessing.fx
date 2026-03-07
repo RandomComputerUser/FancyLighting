@@ -9,12 +9,13 @@ float BloomStrength;
 
 // https://www.colour-science.org/apps/
 
-// Use P3 primaries for increased saturation
-static const float3x3 P3ToAcescg =
+// Custom color space I made up
+// Slightly more saturated than sRGB
+static const float3x3 RgbToAcescg =
 {
-    {0.735022, 0.211362, 0.053616},
-    {0.047736, 0.939409, 0.012855},
-    {0.003798, 0.038104, 0.958098}
+    {0.65, 0.30, 0.05},
+    {0.05, 0.94, 0.01},
+    {0.01, 0.05, 0.94}
 };
 
 static const float3x3 AcescgToSrgb =
@@ -118,7 +119,7 @@ float3 ToneMapColor1(float3 x)
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = mul(P3ToAcescg, color.rgb);
+    color.rgb = mul(RgbToAcescg, color.rgb);
     color.rgb = ToneMapColor1(color.rgb);
     color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
     return color;
