@@ -81,12 +81,12 @@ public static class FancySkyRendering
         var highSkyColor = skyColorMult * SkyColorsHigh.Instance.GetColor(hour);
         var lowSkyColor = skyColorMult * SkyColorsLow.Instance.GetColor(hour);
 
-        var highLevel = (sceneArea.bgTopY + (0.04f * target.Width)) / target.Height;
+        var highLevel = (sceneArea.bgTopY + (0.05f * target.Width)) / target.Height;
         if (Main.gameMenu)
         {
             highLevel -= 0.02f * target.Width / target.Height;
         }
-        var lowLevel = highLevel + (0.32f * target.Width / target.Height);
+        var lowLevel = highLevel + (0.33f * target.Width / target.Height);
 
         if (Main.LocalPlayer.gravDir < 0f)
         {

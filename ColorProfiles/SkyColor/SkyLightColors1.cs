@@ -8,7 +8,7 @@ public class SkyLightColors1 : ISimpleColorProfile
 
     private SkyLightColors1()
     {
-        // v1.0.1 - current default sky colors
+        // v1.1.0 - current default sky colors
 
         _profile = new(InterpolationMode.Cubic);
 
@@ -18,7 +18,7 @@ public class SkyLightColors1 : ISimpleColorProfile
 
         var nightColor = new Vector3(0.04f, 0.04f, 0.05f);
         var nightColor2 = new Vector3(0.1f, 0.09f, 0.13f);
-        var nightColor1 = new Vector3(0.24f, 0.22f, 0.28f);
+        var nightColor1 = new Vector3(0.2f, 0.18f, 0.22f);
         var sunriseSunsetColor = new Vector3(0.36f, 0.34f, 0.4f);
         var dayColor1 = new Vector3(0.72f, 0.63f, 0.48f);
         var dayColor2 = new Vector3(0.98f, 0.92f, 0.84f);
@@ -27,9 +27,9 @@ public class SkyLightColors1 : ISimpleColorProfile
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 2.501, nightColor),
-            (sunriseTime - 2.5, nightColor),
-            (sunriseTime - 1.25, nightColor2),
+            (sunriseTime - 2.001, nightColor),
+            (sunriseTime - 2.0, nightColor),
+            (sunriseTime - 1.0, nightColor2),
             (sunriseTime - 0.5, nightColor1),
             (sunriseTime, sunriseSunsetColor),
             (sunriseTime + 0.75, dayColor1),
@@ -43,9 +43,9 @@ public class SkyLightColors1 : ISimpleColorProfile
             (sunsetTime - 0.75, dayColor1),
             (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 0.5, nightColor1),
-            (sunsetTime + 1.25, nightColor2),
-            (sunsetTime + 2.5, nightColor),
-            (sunsetTime + 2.501, nightColor),
+            (sunsetTime + 1.0, nightColor2),
+            (sunsetTime + 2.0, nightColor),
+            (sunsetTime + 2.001, nightColor),
         ];
 
         foreach (var (hour, color) in colors)
