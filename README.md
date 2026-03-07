@@ -12,4 +12,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 **v1.1.0 (2026-03-??)**
 - Added a new default tone mapping operator for full HDR rendering
 - Added a linear tone mapping operator that may be used with add-ons to achieve HDR output
+- Added a setting to switch between tone mapping operators
 - Increased the base exposure when using full HDR rendering
