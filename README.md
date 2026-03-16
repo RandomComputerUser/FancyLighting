@@ -16,4 +16,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Increased the base exposure used with full HDR rendering
 - Adjusted how gamma works when using full HDR rendering
 - Tweaked the colors and appearance of Fancy Atmosphere
-- Tweaked sky light color preset 1
+- Tweaked sky light color Preset 1 (now called "Natural")
+- Updated some config tooltips and labels

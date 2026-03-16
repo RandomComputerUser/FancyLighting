@@ -556,12 +556,12 @@ SkyColorPreset: {
 
 ToneMappingPreset: {
 	Preset1: {
-		// Label: TMO 1
+		// Label: Vibrant
 		// Tooltip: ""
 	}
 
 	Preset2: {
-		// Label: TMO 2
+		// Label: Filmic Neutral
 		// Tooltip: ""
 	}
 

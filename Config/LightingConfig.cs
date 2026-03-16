@@ -108,6 +108,7 @@ public sealed class LightingConfig : ModConfig
     // Serialize this last
     [JsonProperty(Order = 1000)]
     [DefaultValue(DefaultOptions.QualityPreset)]
+    [Dropdown]
     public SettingsPreset QualityPreset
     {
         get => _qualityPreset;

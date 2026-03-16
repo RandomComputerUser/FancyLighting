@@ -15,7 +15,7 @@ PreferencesConfig: {
 		Label: Thread Count
 		Tooltip:
 			'''
-			How many threads smooth lighting and the fancy lighting engine use
+			How many threads Smooth Lighting and the Fancy Lighting Engine use
 
 			Higher values typically improve performance with diminishing returns
 			Values greater than the number of CPU hardware threads may reduce performance
@@ -159,7 +159,7 @@ PreferencesConfig: {
 		Label: Ambient Occlusion Radius
 		Tooltip:
 			'''
-			The radius of blur used in ambient occlusion
+			The radius of blur used in Ambient Occlusion
 
 			Higher values result in larger ambient occlusion shadows
 			'''
@@ -169,7 +169,7 @@ PreferencesConfig: {
 		Label: Ambient Occlusion Exponent (%)
 		Tooltip:
 			'''
-			How strongly light is affected by ambient occlusion
+			How strongly light is affected by Ambient Occlusion
 
 			Higher values result in larger, darker ambient occlusion shadows
 			'''
@@ -179,7 +179,7 @@ PreferencesConfig: {
 		Label: Ambient Light Proportion (%)
 		Tooltip:
 			'''
-			The proportion of light affected by ambient occlusion
+			The proportion of light affected by Ambient Occlusion
 
 			Higher values result in darker ambient occlusion shadows
 			'''
@@ -237,7 +237,9 @@ PreferencesConfig: {
 			'''
 			Which set of sky light colors is used
 
-			Fancy sky lighting must be enabled for this setting to have any effect
+			Has the largest effect around sunrise and sunset
+			Fancy Atmosphere is intended to be used with the Natural preset
+			Fancy Sky Lighting must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -245,7 +247,7 @@ PreferencesConfig: {
 		Label: (Debug) Show Fancy Sky Color Gradients
 		Tooltip:
 			'''
-			Show the color gradients used by fancy sky features
+			Show the color gradients used by Fancy Sky
 
 			This obscures a large part of the screen
 			'''
@@ -385,7 +387,7 @@ LightingConfig: {
 		Label: Fancy Lighting Engine
 		Tooltip:
 			'''
-			Use a new lighting engine
+			Use a more advanced lighting engine
 
 			Spreads light more realistically with pronounced shadows
 			Has a larger performance impact the more light sources there are in the scene
@@ -397,7 +399,7 @@ LightingConfig: {
 		Label: Temporal Optimization
 		Tooltip:
 			'''
-			Use temporal optimization with the fancy lighting engine
+			Use temporal optimization with the Fancy Lighting Engine
 
 			Adjusts the lighting quality level using data from the previous lighting update
 			Improves lighting performance in more intensely lit areas
@@ -438,7 +440,7 @@ LightingConfig: {
 			'''
 			Use new colors for sky light
 
-			Primarily affects the color of sunlight during the early morning and evening
+			Primarily affects the color of sunlight around sunrise and sunset
 			'''
 	}
 }
@@ -466,22 +468,22 @@ RenderMode: {
 	Tooltip: ""
 
 	Bilinear: {
-		Label: Bilinear Upscaling
+		Label: Bilinear
 		Tooltip: ""
 	}
 
 	Bicubic: {
-		Label: Bicubic Upscaling
+		Label: Bicubic
 		Tooltip: ""
 	}
 
 	BicubicOverbright: {
-		Label: Basic HDR Rendering
+		Label: Basic HDRR
 		Tooltip: ""
 	}
 
 	EnhancedHdr: {
-		Label: Full HDR Rendering
+		Label: Full HDRR
 		Tooltip: ""
 	}
 }
@@ -529,39 +531,39 @@ SkyColorPreset: {
 	Tooltip: ""
 
 	Preset1: {
-		Label: Preset 1
+		Label: Natural
 		Tooltip: ""
 	}
 
 	Preset2: {
-		Label: Preset 2
+		Label: Reddish
 		Tooltip: ""
 	}
 
 	Preset3: {
-		Label: Preset 3
+		Label: Darker
 		Tooltip: ""
 	}
 
 	Preset4: {
-		Label: Preset 4
+		Label: Orangish
 		Tooltip: ""
 	}
 
 	Preset5: {
-		Label: Preset 5
+		Label: Warmer
 		Tooltip: ""
 	}
 }
 
 ToneMappingPreset: {
 	Preset1: {
-		Label: TMO 1
+		Label: Vibrant
 		Tooltip: ""
 	}
 
 	Preset2: {
-		Label: TMO 2
+		Label: Filmic Neutral
 		Tooltip: ""
 	}
 
