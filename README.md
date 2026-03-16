@@ -13,6 +13,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added a new default tone mapping operator for full HDR rendering
 - Added a linear tone mapping operator that may be used with add-ons to achieve HDR output
 - Added a setting to switch between tone mapping operators
-- Increased the base exposure for full HDR rendering
-- Adjusted the appearance of Fancy Atmosphere and sky light color preset 1 during twilight
-- Made minor tweaks to Fancy Atmosphere
+- Increased the base exposure used with full HDR rendering
+- Adjusted how gamma works when using full HDR rendering
+- Tweaked the colors and appearance of Fancy Atmosphere
+- Tweaked sky light color preset 1
