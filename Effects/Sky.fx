@@ -11,6 +11,13 @@ float3 LowSkyColor;
 float Gamma;
 float InverseGamma;
 
+float4 Smootherstep(float min, float max, float x)
+{
+    float t = (x - min) / (max - min);
+    t = clamp(t, 0, 1);
+    return (t * t * t) * (t * (6 * t - 15) + 10);
+}
+
 // Not technically correct because it ignores gamma, but cheap and decent quality
 float4 Dithered(float4 color, float2 coords)
 {
@@ -25,8 +32,8 @@ float4 Dithered(float4 color, float2 coords)
 
 float4 CalculateSkyColor(float2 coords)
 {
-    float t = smoothstep(HighSkyLevel, LowSkyLevel, coords.y);
-    return float4(lerp(HighSkyColor, LowSkyColor, t), 1);
+    float t = Smootherstep(HighSkyLevel, LowSkyLevel, coords.y);
+    return float4(pow(lerp(HighSkyColor, LowSkyColor, t), InverseGamma), 1);
 }
 
 float4 Sky(float2 coords : TEXCOORD0) : COLOR0

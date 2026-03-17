@@ -12,6 +12,10 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
+    private const float FadeBegin = 0.12f;
+    private const float FadeHeight = 0.22f;
+    private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
+
     internal static void Load()
     {
         _ditherNoise = ModContent
@@ -66,6 +70,7 @@ public static class FancySkyRendering
             LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
             && !LightingConfig.Instance.HiDefFeaturesEnabled();
+        var gamma = Main.gameMenu ? 2.2f : PreferencesConfig.Instance.GammaExponent();
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
@@ -80,13 +85,23 @@ public static class FancySkyRendering
 
         var highSkyColor = skyColorMult * SkyColorsHigh.Instance.GetColor(hour);
         var lowSkyColor = skyColorMult * SkyColorsLow.Instance.GetColor(hour);
+        highSkyColor.X = MathF.Pow(highSkyColor.X, gamma);
+        highSkyColor.Y = MathF.Pow(highSkyColor.Y, gamma);
+        highSkyColor.Z = MathF.Pow(highSkyColor.Z, gamma);
+        lowSkyColor.X = MathF.Pow(lowSkyColor.X, gamma);
+        lowSkyColor.Y = MathF.Pow(lowSkyColor.Y, gamma);
+        lowSkyColor.Z = MathF.Pow(lowSkyColor.Z, gamma);
 
-        var highLevel = (sceneArea.bgTopY + (0.05f * target.Width)) / target.Height;
+        var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
         if (Main.gameMenu)
         {
             highLevel -= 0.02f * target.Width / target.Height;
         }
-        var lowLevel = highLevel + (0.33f * target.Width / target.Height);
+        var lowLevel = highLevel + (FadeHeight * target.Width / target.Height);
+
+        var midLevel = (highLevel + lowLevel) / 2f;
+        highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
+        lowLevel = midLevel + (FadeHeightMult * (lowLevel - midLevel));
 
         if (Main.LocalPlayer.gravDir < 0f)
         {
@@ -116,6 +131,7 @@ public static class FancySkyRendering
             .SetParameter("LowSkyLevel", lowLevel)
             .SetParameter("HighSkyColor", highSkyColor)
             .SetParameter("LowSkyColor", lowSkyColor)
+            .SetParameter("InverseGamma", 1f / gamma)
             .Apply();
 
         Main.spriteBatch.Draw(
