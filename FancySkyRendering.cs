@@ -13,7 +13,7 @@ public static class FancySkyRendering
     private static bool _modifyStarDrawing = false;
 
     private const float FadeBegin = 0.12f;
-    private const float FadeHeight = 0.22f;
+    private const float FadeHeight = 0.24f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
 
     internal static void Load()
