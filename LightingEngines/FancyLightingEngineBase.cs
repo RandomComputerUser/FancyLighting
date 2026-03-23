@@ -415,6 +415,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         LightingAction lightingAction
     )
     {
+        PerfTracker.StartTiming("Fancy Lighting Engine (Direct Lighting)");
+
         var taskCount = SettingsSystem._parallelOptions.MaxDegreeOfParallelism;
 
         if (countTemporalData)
@@ -508,6 +510,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 _temporalData += _workingTemporalData[i];
             }
         }
+
+        PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
     }
 
     private static void MaxArraysIntoFirst(Vec3[] arr1, Vec3[] arr2, int begin, int end)
@@ -561,6 +565,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         int passCount
     )
     {
+        PerfTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
+
         var length = width * height;
 
         var giMult =
@@ -860,6 +866,8 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 }
             }
         );
+
+        PerfTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

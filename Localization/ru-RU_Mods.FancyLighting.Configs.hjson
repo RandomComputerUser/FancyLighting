@@ -229,6 +229,11 @@ PreferencesConfig: {
 			'''
 	}
 
+	TrackFancyLightingEnginePerf: {
+		// Label: (Debug) Measure Performance
+		// Tooltip: Measure and display the amount of time consumed by the Fancy Lighting Engine
+	}
+
 	# Fancy Sky
 	
 	FancySkyColorsPreset: {

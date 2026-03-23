@@ -177,6 +177,9 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FancyLightingEngineNonSolidOpaque)]
     public bool FancyLightingEngineNonSolidOpaque { get; set; }
 
+    [DefaultValue(DefaultOptions.TrackFancyLightingEnginePerf)]
+    public bool TrackFancyLightingEnginePerf { get; set; }
+
     // Fancy Sky
 
     [Header("FancySky")]
