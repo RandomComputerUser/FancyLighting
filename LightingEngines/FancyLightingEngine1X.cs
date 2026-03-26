@@ -5,6 +5,8 @@ namespace FancyLighting.LightingEngines;
 
 internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 {
+    private const int GlobalIlluminationPassCount = 4;
+
     private readonly record struct LightSpread(
         int DistanceToTop,
         int DistanceToRight,
@@ -202,7 +204,13 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
         if (LightingConfig.Instance.SimulateGlobalIllumination)
         {
-            SimulateGlobalIllumination(colors, colors, width, height, 4);
+            SimulateGlobalIllumination(
+                colors,
+                colors,
+                width,
+                height,
+                GlobalIlluminationPassCount
+            );
         }
     }
 
@@ -292,7 +300,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             {
                 ProcessQuadrant(
                     lightMap,
-                    ref workingLights,
+                    workingLights,
                     circle,
                     color,
                     index,
@@ -307,7 +315,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             {
                 ProcessQuadrant(
                     lightMap,
-                    ref workingLights,
+                    workingLights,
                     circle,
                     color,
                     index,
@@ -322,7 +330,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             {
                 ProcessQuadrant(
                     lightMap,
-                    ref workingLights,
+                    workingLights,
                     circle,
                     color,
                     index,
@@ -337,7 +345,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
             {
                 ProcessQuadrant(
                     lightMap,
-                    ref workingLights,
+                    workingLights,
                     circle,
                     color,
                     index,
@@ -367,7 +375,7 @@ internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
 
     private void ProcessQuadrant(
         Vec3[] lightMap,
-        scoped ref Span<float> workingLights,
+        Span<float> workingLights,
         int[] circle,
         Vec3 color,
         int index,

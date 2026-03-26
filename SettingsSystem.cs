@@ -36,8 +36,10 @@ internal sealed class SettingsSystem : ModSystem
             }
         }
 
-        _parallelOptions.MaxDegreeOfParallelism =
-            PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount;
+        _parallelOptions.MaxDegreeOfParallelism = Math.Max(
+            PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount,
+            1
+        );
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;

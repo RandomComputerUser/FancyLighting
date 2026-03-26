@@ -32,7 +32,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected float[][] _lightMask;
 
-    private Task[] _tasks;
+    private Action[] _actions;
     private Vec3[][] _workingLightMaps;
     private int[] _workingTemporalData;
 
@@ -358,11 +358,11 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void InitializeTaskVariables(int lightMapSize)
     {
-        var taskCount = PreferencesConfig.Instance.ThreadCount;
+        var taskCount = SettingsSystem._parallelOptions.MaxDegreeOfParallelism;
 
-        if (_tasks is null)
+        if (_actions is null)
         {
-            _tasks = new Task[taskCount];
+            _actions = new Action[taskCount];
             _workingLightMaps = new Vec3[taskCount][];
             _workingTemporalData = new int[taskCount];
 
@@ -371,9 +371,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 _workingLightMaps[i] = new Vec3[lightMapSize];
             }
         }
-        else if (_tasks.Length != taskCount)
+        else if (_actions.Length != taskCount)
         {
-            _tasks = new Task[taskCount];
+            _actions = new Action[taskCount];
             _workingTemporalData = new int[taskCount];
 
             var workingLightMaps = new Vec3[taskCount][];
@@ -439,19 +439,19 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             CopyVec3Array(workingLightMap, destination, 0, lightMapSize);
             _temporalData = workingTemporalData;
 
+            PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
+
             return;
         }
 
         const int IndexIncrement = 32;
 
-        var taskIndex = -1;
         var lightIndex = -IndexIncrement;
         for (var i = 0; i < taskCount; ++i)
         {
-            _tasks[i] = Task.Factory.StartNew(() =>
+            var index = i;
+            _actions[i] = () =>
             {
-                var index = Interlocked.Increment(ref taskIndex);
-
                 var workingLightMap = _workingLightMaps[index];
                 ref var workingTemporalData = ref _workingTemporalData[index];
 
@@ -472,10 +472,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                         Math.Min(lightMapSize, i + IndexIncrement)
                     );
                 }
-            });
+            };
         }
 
-        Task.WaitAll(_tasks);
+        Parallel.Invoke(SettingsSystem._parallelOptions, _actions);
 
         const int ChunkSize = 64;
 
@@ -580,21 +580,21 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         var lights = _workingLightMaps[0];
         CopyVec3Array(source, lights, 0, length);
 
-        var lightMasks = _lightMask;
-        var solidDecay = _lightSolidDecay;
-
         Parallel.For(
             0,
             width,
             SettingsSystem._parallelOptions,
             (i) =>
             {
+                var lightMasks = _lightMask;
+                var solidDecay = _lightSolidDecay;
+
                 var endIndex = height * (i + 1);
                 for (var j = height * i; j < endIndex; ++j)
                 {
                     ref var giLight = ref lights[j];
 
-                    if (lightMasks[j] == solidDecay || lightMasks[j] == solidDecay)
+                    if (lightMasks[j] == solidDecay)
                     {
                         giLight = Vec3.Zero;
                         continue;
@@ -617,6 +617,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var endIndex = height * (i + 1);
                     for (var j = (height * i) + 1; j < endIndex; ++j)
                     {
@@ -638,6 +641,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var endIndex = height * i;
                     for (var j = (height * (i + 1)) - 1; --j >= endIndex; )
                     {
@@ -659,6 +665,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var endIndex = i + length;
                     for (var j = i + height; j < endIndex; j += height)
                     {
@@ -680,6 +689,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var endIndex = i;
                     for (var j = i + (width * (height - 1)); (j -= height) >= endIndex; )
                     {
@@ -701,6 +713,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var inc = height + 1;
                     var startIndex = i < height ? i : height * (i - height + 1);
                     var endIndex = Math.Min(
@@ -737,6 +752,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var inc = -height - 1;
                     var startIndex =
                         (length - 1) - (i < height ? i : height * (i - height + 1));
@@ -774,6 +792,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var inc = -height + 1;
                     var startIndex =
                         ((width - 1) * height)
@@ -812,6 +833,9 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var lightMasks = _lightMask;
+                    var solidDecay = _lightSolidDecay;
+
                     var inc = height - 1;
                     var startIndex =
                         (height - 1) + (i < height ? -i : height * (i - height + 1));
