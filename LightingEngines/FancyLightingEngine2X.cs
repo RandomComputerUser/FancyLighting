@@ -261,7 +261,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
             colors,
             length,
             _countTemporal,
-            (Vec3[] lightMap, ref int temporalData, int begin, int end) =>
+            (Vec3[] lightMap, ref long temporalData, int begin, int end) =>
             {
                 for (var i = begin; i < end; ++i)
                 {
@@ -285,7 +285,7 @@ internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
     private void ProcessLight(
         Vec3[] lightMap,
         Vector3[] colors,
-        ref int temporalData,
+        ref long temporalData,
         int index,
         int width,
         int height

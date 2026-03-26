@@ -8,7 +8,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 {
     protected int[][] _circles;
     protected Rectangle _lightMapArea;
-    private long _temporalData = 0;
+    private long _temporalData;
 
     protected const int MaxLightRange = 64;
     protected const int DistanceTicks = 64;
@@ -34,7 +34,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     private Action[] _actions;
     private Vec3[][] _workingLightMaps;
-    private int[] _workingTemporalData;
 
     public void Unload() { }
 
@@ -50,7 +49,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected delegate void LightingAction(
         Vec3[] workingLightMap,
-        ref int workingTemporalData,
+        ref long workingTemporalData,
         int begin,
         int end
     );
@@ -364,7 +363,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         {
             _actions = new Action[taskCount];
             _workingLightMaps = new Vec3[taskCount][];
-            _workingTemporalData = new int[taskCount];
 
             for (var i = 0; i < taskCount; ++i)
             {
@@ -374,7 +372,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         else if (_actions.Length != taskCount)
         {
             _actions = new Action[taskCount];
-            _workingTemporalData = new int[taskCount];
 
             var workingLightMaps = new Vec3[taskCount][];
             var numToCopy = Math.Min(_workingLightMaps.Length, taskCount);
@@ -421,23 +418,18 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (countTemporalData)
         {
-            for (var i = 0; i < taskCount; ++i)
-            {
-                _workingTemporalData[i] = 0;
-            }
+            _temporalData = 0;
         }
 
         if (taskCount <= 1)
         {
             var workingLightMap = _workingLightMaps[0];
-            ref var workingTemporalData = ref _workingTemporalData[0];
 
             CopyVec3Array(initialLightMapValue, workingLightMap, 0, lightMapSize);
 
-            lightingAction(workingLightMap, ref workingTemporalData, 0, lightMapSize);
+            lightingAction(workingLightMap, ref _temporalData, 0, lightMapSize);
 
             CopyVec3Array(workingLightMap, destination, 0, lightMapSize);
-            _temporalData = workingTemporalData;
 
             PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
 
@@ -453,7 +445,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             _actions[i] = () =>
             {
                 var workingLightMap = _workingLightMaps[index];
-                ref var workingTemporalData = ref _workingTemporalData[index];
+                var temporalData = 0L;
 
                 CopyVec3Array(initialLightMapValue, workingLightMap, 0, lightMapSize);
 
@@ -467,10 +459,15 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
                     lightingAction(
                         workingLightMap,
-                        ref workingTemporalData,
+                        ref temporalData,
                         i,
                         Math.Min(lightMapSize, i + IndexIncrement)
                     );
+                }
+
+                if (countTemporalData)
+                {
+                    Interlocked.Add(ref _temporalData, temporalData);
                 }
             };
         }
@@ -501,15 +498,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 CopyVec3Array(_workingLightMaps[0], destination, begin, end);
             }
         );
-
-        if (countTemporalData)
-        {
-            _temporalData = 0;
-            for (var i = 0; i < taskCount; ++i)
-            {
-                _temporalData += _workingTemporalData[i];
-            }
-        }
 
         PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
     }
