@@ -7,7 +7,7 @@ namespace FancyLighting.LightingEngines;
 
 internal sealed class FancyLightingEngine2X : FancyLightingEngineBase
 {
-    private const int GlobalIlluminationPassCount = 3;
+    private const int GlobalIlluminationPassCount = 2;
 
     private readonly record struct LightSpread(
         int DistanceToTop,

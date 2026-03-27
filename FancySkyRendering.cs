@@ -12,6 +12,7 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
+    private const float SkyBrightness = 1.6f;
     private const float FadeBegin = 0.12f;
     private const float FadeHeight = 0.24f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
@@ -91,8 +92,8 @@ public static class FancySkyRendering
         lowSkyColor.X = MathF.Pow(lowSkyColor.X, gamma);
         lowSkyColor.Y = MathF.Pow(lowSkyColor.Y, gamma);
         lowSkyColor.Z = MathF.Pow(lowSkyColor.Z, gamma);
-        highSkyColor *= 1.6f;
-        lowSkyColor *= 1.6f;
+        highSkyColor *= SkyBrightness;
+        lowSkyColor *= SkyBrightness;
 
         var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
         if (Main.gameMenu)
