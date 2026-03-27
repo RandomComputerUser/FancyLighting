@@ -18,5 +18,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Improved how Fancy Atmosphere is rendered
 - Tweaked the colors used by Fancy Atmosphere
 - Tweaked sky light color Preset 1 (now called "Natural")
-- Improved global illumination
+- Improved and optimized global illumination
+- Replaced some dropdowns in the config with sliders
 - Updated some config tooltips and labels
