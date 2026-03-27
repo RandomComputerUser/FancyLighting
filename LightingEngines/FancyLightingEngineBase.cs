@@ -436,9 +436,16 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
             lightingAction(workingLightMap, ref _temporalData, 0, length);
 
-            CopyVec3Array(workingLightMap, destination, 0, length);
-
             PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
+
+            if (doGi)
+            {
+                PerfTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
+                SimulateGlobalIllumination(width, height, giPassCount);
+                PerfTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
+            }
+
+            CopyVec3Array(_workingLightMaps[0], destination, 0, length);
 
             return;
         }
@@ -514,11 +521,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         if (doGi)
         {
             PerfTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
-
             SimulateGlobalIllumination(width, height, giPassCount);
-            CopyVec3Array(_workingLightMaps[0], destination, 0, length);
-
             PerfTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
+
+            CopyVec3Array(_workingLightMaps[0], destination, 0, length);
         }
     }
 
