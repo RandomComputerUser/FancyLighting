@@ -6,7 +6,7 @@ namespace FancyLighting.LightingEngines;
 
 internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
 {
-    private const int GlobalIlluminationPassCount = 6;
+    private const int GlobalIlluminationPassCount = 4;
 
     private readonly record struct LightSpread(
         int DistanceToTop,
@@ -323,17 +323,20 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
         }
 
         var length = width * height;
+        var doGi = LightingConfig.Instance.SimulateGlobalIllumination;
 
-        ArrayUtils.MakeAtLeastSize(ref _lightMask, length);
+        ArrayUtils.MakeAtLeastSize(ref _lightMasks, length);
 
         UpdateLightMasks(lightMasks, width, height);
-        InitializeTaskVariables(length);
+        InitializeTaskVariables(length, doGi);
 
         _countTemporal = LightingConfig.Instance.FancyLightingEngineUseTemporal;
         RunLightingPass(
             colors,
             colors,
-            length,
+            width,
+            height,
+            doGi ? GlobalIlluminationPassCount : 0,
             _countTemporal,
             (Vec3[] lightMap, ref long temporalData, int begin, int end) =>
             {
@@ -343,17 +346,6 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
                 }
             }
         );
-
-        if (LightingConfig.Instance.SimulateGlobalIllumination)
-        {
-            SimulateGlobalIllumination(
-                colors,
-                colors,
-                width,
-                height,
-                GlobalIlluminationPassCount
-            );
-        }
     }
 
     private void ProcessLight(
@@ -376,7 +368,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
             return;
         }
 
-        color *= _lightMask[index][DistanceTicks];
+        color *= _lightMasks[index][DistanceTicks];
 
         CalculateLightSourceValues(
             colors,
@@ -528,7 +520,7 @@ internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
     )
     {
         // Performance optimization
-        var lightMask = _lightMask;
+        var lightMask = _lightMasks;
         var solidDecay = _lightSolidDecay;
         var lightLoss = _lightLossExitingSolid;
         var lightSpread = _lightSpread;
