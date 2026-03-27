@@ -91,6 +91,8 @@ public static class FancySkyRendering
         lowSkyColor.X = MathF.Pow(lowSkyColor.X, gamma);
         lowSkyColor.Y = MathF.Pow(lowSkyColor.Y, gamma);
         lowSkyColor.Z = MathF.Pow(lowSkyColor.Z, gamma);
+        highSkyColor *= 1.6f;
+        lowSkyColor *= 1.6f;
 
         var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
         if (Main.gameMenu)
