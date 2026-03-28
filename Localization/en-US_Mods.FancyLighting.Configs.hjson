@@ -24,14 +24,15 @@ PreferencesConfig: {
 	}
 
 	Gamma: {
-		Label: Content Gamma (%)
+		Label: Gamma (%)
 		Tooltip:
 			'''
-			The gamma value used by light and texture colors
+			The gamma of the final image
 
-			The final image is converted to a display gamma of 2.2 regardless of this setting
-			Higher values increase the contrast between bright and dark areas
+			Higher values result in a brighter image with decreased contrast
 			A value of 220% corresponds to a gamma of 2.2
+			Recommended to set to the gamma of the display
+			If the display gamma is unknown, adjust according to preference
 			'''
 	}
 
@@ -39,10 +40,11 @@ PreferencesConfig: {
 		Label: sRGB Output
 		Tooltip:
 			'''
-			Whether to output colors in sRGB instead of gamma 2.2
+			Use the sRGB tone curve in the final image
 
-			Enable if dark colors are desaturated and too bright
-			Recommended to enable when using Windows 11 HDR
+			Makes dark colors darker and more saturated
+			When enabled, this setting overrides the gamma setting
+			Recommended to enable if using HDR in Windows 11 or if the image is washed out
 			'''
 	}
 
@@ -75,9 +77,9 @@ PreferencesConfig: {
 		Label: Exposure (Full HDRR) (%)
 		Tooltip:
 			'''
-			The exposure used when tone mapping the HDR image
+			The exposure used when tone mapping the image from HDR
 
-			Higher values result in a brighter final image
+			Higher values result in a brighter image
 			Full HDR rendering must be enabled for this setting to have any effect
 			'''
 	}
@@ -111,7 +113,7 @@ PreferencesConfig: {
 			Which tone mapping operator is used
 
 			Affects how colors appear in the final image
-			The "Linear" option also disables dithering
+			The Linear tone mapping operator also disables dithering
 			Full HDR rendering must be enabled for this setting to have any effect
 			'''
 	}

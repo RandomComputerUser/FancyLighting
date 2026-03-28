@@ -7,14 +7,16 @@ internal sealed class PostProcessing
     // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
     internal const float HiDefBackgroundBrightnessMult = 1.5f;
-    internal const float HiDefGammaMult = 2.4f / 2.2f;
+
+    internal const float DefaultGamma = 2.2f;
+    private const float HiDefGamma = 2.4f;
 
     private readonly Texture2D _ditherNoise;
 
     private Shader _gammaToLinearShader;
     private Shader _gammaToGammaDitherShader;
-    private Shader _gammaToSrgbDitherShader;
     private Shader _gammaToGammaNoDitherShader;
+    private Shader _gammaToSrgbDitherShader;
     private Shader _gammaToSrgbNoDitherShader;
     private Shader _toneMap1Shader;
     private Shader _toneMap2Shader;
@@ -36,13 +38,13 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "GammaToGammaDither"
         );
-        _gammaToSrgbDitherShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgbDither"
-        );
         _gammaToGammaNoDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToGammaNoDither"
+        );
+        _gammaToSrgbDitherShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToSrgbDither"
         );
         _gammaToSrgbNoDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
@@ -67,8 +69,8 @@ internal sealed class PostProcessing
         _ditherNoise?.Dispose();
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherShader);
         EffectLoader.UnloadEffect(ref _toneMap1Shader);
         EffectLoader.UnloadEffect(ref _toneMap2Shader);
@@ -76,6 +78,11 @@ internal sealed class PostProcessing
 
         _blurRenderer.Unload();
     }
+
+    internal static float ContentGamma() =>
+        LightingConfig.Instance?.HiDefFeaturesEnabled() is true
+            ? HiDefGamma
+            : DefaultGamma;
 
     internal static float CalculateHiDefBackgroundBrightness() =>
         HiDefBrightnessScale
@@ -97,9 +104,12 @@ internal sealed class PostProcessing
         var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
         var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;
-        var customGamma = PreferencesConfig.Instance.UseCustomGamma() || hiDef;
-        var srgb = PreferencesConfig.Instance.UseSrgb;
-        var gamma = PreferencesConfig.Instance.GammaExponent();
+        var gameCameraMode = FancyLightingMod._isGameInCameraMode;
+        var customGamma =
+            (!gameCameraMode && PreferencesConfig.Instance.UseCustomGamma()) || hiDef;
+        var srgb = !gameCameraMode && PreferencesConfig.Instance.UseSrgb;
+        var gamma = ContentGamma();
+
         var tmo = PreferencesConfig.Instance.ToneMappingOperator;
         var disableDither = tmo is ToneMappingPreset.Linear;
 
@@ -274,13 +284,15 @@ internal sealed class PostProcessing
                 RasterizerState.CullNone
             );
 
-            var useSrgb = PreferencesConfig.Instance.UseSrgb;
-            if (!useSrgb)
+            var outputGamma = gameCameraMode
+                ? DefaultGamma
+                : PreferencesConfig.Instance.OutputGamma();
+            if (!srgb)
             {
-                gamma /= 2.2f;
+                gamma /= outputGamma;
             }
 
-            var shader = useSrgb
+            var shader = srgb
                 ? disableDither
                     ? _gammaToSrgbNoDitherShader
                     : _gammaToSrgbDitherShader
@@ -296,6 +308,7 @@ internal sealed class PostProcessing
                     )
                 ) // Multiply by -1 so that it's different from the dithering in smooth lighting
                 .SetParameter("GammaRatio", gamma)
+                .SetParameter("OutputGamma", outputGamma)
                 .Apply();
 
             if (!disableDither)

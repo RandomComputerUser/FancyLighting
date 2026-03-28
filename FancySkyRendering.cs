@@ -71,7 +71,9 @@ public static class FancySkyRendering
             LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
             && !LightingConfig.Instance.HiDefFeaturesEnabled();
-        var gamma = Main.gameMenu ? 2.2f : PreferencesConfig.Instance.GammaExponent();
+        var gamma = Main.gameMenu
+            ? PostProcessing.DefaultGamma
+            : PostProcessing.ContentGamma();
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
@@ -250,7 +252,9 @@ public static class FancySkyRendering
         );
         if (isDay)
         {
-            var gamma = Main.gameMenu ? 2.2f : PreferencesConfig.Instance.GammaExponent();
+            var gamma = Main.gameMenu
+                ? PostProcessing.DefaultGamma
+                : PostProcessing.ContentGamma();
             _sunShader
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)

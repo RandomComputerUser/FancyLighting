@@ -18,6 +18,7 @@ public sealed class FancyLightingMod : Mod
     private static bool _overrideLightColor;
     private static bool _useBlack;
     internal static bool _inCameraMode;
+    internal static bool _isGameInCameraMode;
     private static bool _cameraModeDrawBackground;
     private static bool _disableLightColorOverride;
     private static bool _preventDust;
@@ -1586,6 +1587,7 @@ public sealed class FancyLightingMod : Mod
         _field_filterFrameBuffer2.SetValue(self, target);
 
         _inCameraMode = LightingConfig.Instance.ModifyCameraModeRendering();
+        _isGameInCameraMode = true;
         try
         {
             orig(self);
@@ -1593,6 +1595,7 @@ public sealed class FancyLightingMod : Mod
         finally
         {
             _inCameraMode = false;
+            _isGameInCameraMode = false;
             _cameraModeTarget = null;
         }
     }

@@ -196,9 +196,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            _initialBrightnessCutoff = MathF.Pow(_initialBrightnessCutoff, 2.2f);
-            cutoff = MathF.Pow(cutoff, 2.2f);
-            basicWorkCutoff = MathF.Pow(basicWorkCutoff, 2.2f);
+            _initialBrightnessCutoff = MathF.Pow(
+                _initialBrightnessCutoff,
+                PostProcessing.DefaultGamma
+            );
+            cutoff = MathF.Pow(cutoff, PostProcessing.DefaultGamma);
+            basicWorkCutoff = MathF.Pow(basicWorkCutoff, PostProcessing.DefaultGamma);
         }
 
         _logBrightnessCutoff = MathF.Log(cutoff);

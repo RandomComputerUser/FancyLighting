@@ -111,7 +111,7 @@ PreferencesConfig: {
 			Which tone mapping operator is used
 
 			Affects how colors appear in the final image
-			The "Linear" option also disables dithering
+			The Linear tone mapping operator also disables dithering
 			Full HDR rendering must be enabled for this setting to have any effect
 			''' */
 	}

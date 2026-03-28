@@ -4,6 +4,7 @@ sampler BloomBlurSampler : register(s4);
 
 float2 DitherCoordMult;
 float GammaRatio;
+float OutputGamma;
 float Exposure;
 float BloomStrength;
 
@@ -40,15 +41,15 @@ float3 DitherNoise(float2 coords)
     ).xxx;
 }
 
-// Input color should be in gamma 2.2
+// Input color should be in output gamma
 float3 Dither(float3 color, float2 coords)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
     float3 hi = lo + 1.0 / 255;
-    float3 loLinear = pow(lo, 2.2);
-    float3 hiLinear = pow(hi, 2.2);
+    float3 loLinear = pow(lo, OutputGamma);
+    float3 hiLinear = pow(hi, OutputGamma);
 
-    float3 t = (pow(color, 2.2) - loLinear) / (hiLinear - loLinear);
+    float3 t = (pow(color, OutputGamma) - loLinear) / (hiLinear - loLinear);
     float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords).r;
     float3 selector = step(t, rand);
 
@@ -79,6 +80,13 @@ float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
     );
 }
 
+float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+
+    return float4(pow(color.rgb, GammaRatio), color.a);
+}
+
 float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
@@ -89,13 +97,6 @@ float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
         ) + DitherNoise(coords),
         color.a
     );
-}
-
-float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-
-    return float4(pow(color.rgb, GammaRatio), color.a);
 }
 
 float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
@@ -160,15 +161,15 @@ technique Technique1
     {
         PixelShader = compile ps_3_0 GammaToGammaDither();
     }
-    
-    pass GammaToSrgbDither
-    {
-        PixelShader = compile ps_3_0 GammaToSrgbDither();
-    }
 
     pass GammaToGammaNoDither
     {
         PixelShader = compile ps_3_0 GammaToGammaNoDither();
+    }
+    
+    pass GammaToSrgbDither
+    {
+        PixelShader = compile ps_3_0 GammaToSrgbDither();
     }
     
     pass GammaToSrgbNoDither

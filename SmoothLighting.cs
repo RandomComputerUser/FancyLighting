@@ -1622,7 +1622,7 @@ internal sealed class SmoothLighting
                         ? _overbrightAmbientOcclusionShader
                         : _overbrightShader;
 
-        var gamma = PreferencesConfig.Instance.GammaExponent();
+        var gamma = PostProcessing.ContentGamma();
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
         var overbrightMult = doOverbright
             ? hiDef

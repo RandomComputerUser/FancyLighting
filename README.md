@@ -22,6 +22,9 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Changed the default quality preset to Medium (from Low)
 - Removed the Basic preset
 - Downgraded some settings in the Low and Medium presets (Medium is still better than Low was before)
+- The gamma setting now adjusts output gamma (instead of content gamma)
+- Gamma and sRGB output no longer affect camera mode
+- Increased the range of the gamma setting to 140–300 (from 160–280)
 - Increased the maximum normal maps strength to 15 (from 12)
 - Increased the maximum bloom strength to 20 (from 15)
 - Full HDRR exposure can now be adjusted in increments of 5 (instead of 10)

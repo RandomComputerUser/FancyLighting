@@ -41,12 +41,12 @@ internal sealed class SettingsSystem : ModSystem
             1
         );
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
-        ColorUtils._gamma = PreferencesConfig.Instance?.GammaExponent() ?? 2.2f;
+        ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerfTracker.Enabled =
             PreferencesConfig.Instance?.TrackFancyLightingEnginePerf ?? false;
 
-        var needsPostProcessing = NeedsPostProcessing();
+        var needsPostProcessing = NeedsPostProcessing(true);
         if (needsPostProcessing && !_prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw += DoNothing;
@@ -97,12 +97,17 @@ internal sealed class SettingsSystem : ModSystem
 
     private static bool IsEventOccurring() => Main.invasionProgressNearInvasion;
 
-    internal static bool NeedsPostProcessing() =>
+    internal static bool NeedsPostProcessing(bool force = false) =>
         PreferencesConfig.Instance is not null
         && LightingConfig.Instance is not null
         && (
-            PreferencesConfig.Instance.UseCustomGamma()
-            || PreferencesConfig.Instance.UseSrgb
+            (
+                (force || !FancyLightingMod._isGameInCameraMode)
+                && (
+                    PreferencesConfig.Instance.UseCustomGamma()
+                    || PreferencesConfig.Instance.UseSrgb
+                )
+            )
             || (
                 LightingConfig.Instance.SmoothLightingEnabled()
                 && LightingConfig.Instance.DrawOverbright()

@@ -405,7 +405,7 @@ internal sealed class AmbientOcclusion
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
-            power *= PreferencesConfig.Instance.GammaExponent();
+            power *= PostProcessing.ContentGamma();
         }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
 

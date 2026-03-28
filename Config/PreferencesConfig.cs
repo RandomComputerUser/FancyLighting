@@ -11,12 +11,7 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal float GammaExponent() =>
-        (
-            LightingConfig.Instance?.HiDefFeaturesEnabled() is true
-                ? PostProcessing.HiDefGammaMult
-                : 1f
-        ) * (Gamma / 100f);
+    internal float OutputGamma() => Gamma / 100f;
 
     internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 
@@ -67,7 +62,7 @@ public sealed class PreferencesConfig : ModConfig
     // Tone Mapping
 
     [Header("ToneMapping")]
-    [Range(160, 280)]
+    [Range(140, 300)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.Gamma)]
     [Slider]
