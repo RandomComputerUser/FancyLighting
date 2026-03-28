@@ -429,6 +429,7 @@ LightingConfig: {
 			Use a basic form of global illumination
 
 			When enabled, indirect lighting makes shadows less dark
+			Typically makes torches more effective in caves
 			'''
 	}
 

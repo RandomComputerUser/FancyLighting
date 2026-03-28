@@ -71,7 +71,6 @@ public sealed class PreferencesConfig : ModConfig
     [Increment(10)]
     [DefaultValue(DefaultOptions.Gamma)]
     [Slider]
-    [DrawTicks]
     public int Gamma { get; set; }
 
     [DefaultValue(DefaultOptions.UseSrgb)]
@@ -80,21 +79,19 @@ public sealed class PreferencesConfig : ModConfig
     // Smooth Lighting
 
     [Header("SmoothLighting")]
-    [Range(1, 12)]
+    [Range(1, 15)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.NormalMapsIntensity)]
     [Slider]
-    [DrawTicks]
     public int NormalMapsIntensity { get; set; }
 
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
 
     [Range(50, 150)]
-    [Increment(10)]
+    [Increment(5)]
     [DefaultValue(DefaultOptions.Exposure)]
     [Slider]
-    [DrawTicks]
     public int Exposure { get; set; }
 
     [Range(1, 5)]
@@ -104,11 +101,10 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int BloomRadius { get; set; }
 
-    [Range(1, 15)]
+    [Range(1, 20)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
-    [DrawTicks]
     public int BloomStrength { get; set; }
 
     [DefaultValue(DefaultOptions.ToneMappingOperator)]
@@ -140,14 +136,12 @@ public sealed class PreferencesConfig : ModConfig
     [Increment(25)]
     [DefaultValue(DefaultOptions.AmbientOcclusionIntensity)]
     [Slider]
-    [DrawTicks]
     public int AmbientOcclusionIntensity { get; set; }
 
     [Range(5, 100)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.AmbientLightProportion)]
     [Slider]
-    [DrawTicks]
     public int AmbientLightProportion { get; set; }
 
     // Fancy Lighting Engine
@@ -157,21 +151,18 @@ public sealed class PreferencesConfig : ModConfig
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightLoss)]
     [Slider]
-    [DrawTicks]
     public int FancyLightingEngineLightLoss { get; set; }
 
     [Range(50, 200)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.FancyLightingEngineLightAbsorption)]
     [Slider]
-    [DrawTicks]
     public int FancyLightingEngineLightAbsorption { get; set; }
 
     [Range(5, 95)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.FancyLightingEngineGlobalIlluminationMult)]
     [Slider]
-    [DrawTicks]
     public int FancyLightingEngineIndirectBrightness { get; set; }
 
     [DefaultValue(DefaultOptions.FancyLightingEngineNonSolidOpaque)]
