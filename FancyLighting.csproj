@@ -4,7 +4,7 @@
     <AssemblyName>FancyLighting</AssemblyName>
     <LangVersion>latest</LangVersion>
     <Title>Fancy Lighting</Title>
-    <Authors>RandomComputerUser</Authors>
+    <Authors>Rex Berry</Authors>
     <AssemblyVersion>1.1.0</AssemblyVersion>
     <Version>1.1.0</Version>
   </PropertyGroup>
