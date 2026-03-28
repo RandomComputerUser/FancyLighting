@@ -509,11 +509,6 @@ SettingsPreset: {
 		// Tooltip: ""
 	}
 
-	MinimalPreset: {
-		Label: Очень низкое качество
-		// Tooltip: ""
-	}
-
 	LowPreset: {
 		Label: Низкое качество
 		// Tooltip: ""

@@ -4,7 +4,7 @@ namespace FancyLighting.Config;
 
 public static class DefaultOptions
 {
-    public const SettingsPreset QualityPreset = SettingsPreset.LowPreset;
+    public const SettingsPreset QualityPreset = SettingsPreset.MediumPreset;
 
     // General Preferences
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
@@ -21,10 +21,10 @@ public static class DefaultOptions
     // Smooth Lighting
     public const bool UseSmoothLighting = true;
     public const bool UseLightMapBlurring = true;
-    public const bool UseEnhancedBlurring = false;
+    public const bool UseEnhancedBlurring = true;
     public const bool SimulateNormalMaps = false;
     public const bool UseEnhancedGlowMaskSupport = false;
-    public const RenderMode LightMapRenderMode = RenderMode.Bilinear;
+    public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
     public const bool HdrBloom = true;
 
     // Smooth Lighting Preferences
@@ -53,7 +53,7 @@ public static class DefaultOptions
     public const bool UseFancyLightingEngine = true;
     public const bool FancyLightingEngineUseTemporal = true;
     public const LightingEngineMode FancyLightingEngineMode = LightingEngineMode.Low;
-    public const bool SimulateGlobalIllumination = false;
+    public const bool SimulateGlobalIllumination = true;
 
     // Fancy Lighting Engine Preferences
     public const int FancyLightingEngineLightLoss = 50;

@@ -511,11 +511,6 @@ SettingsPreset: {
 		Tooltip: ""
 	}
 
-	MinimalPreset: {
-		Label: Basic
-		Tooltip: ""
-	}
-
 	LowPreset: {
 		Label: Low
 		Tooltip: ""

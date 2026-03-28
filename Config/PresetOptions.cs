@@ -93,7 +93,7 @@ internal record PresetOptions
             UseFancySkyColors = false,
         };
 
-    public static readonly PresetOptions MinimalPresetOptions =
+    public static readonly PresetOptions LowPresetOptions =
         new()
         {
             UseSmoothLighting = true,
@@ -107,29 +107,11 @@ internal record PresetOptions
             UseFancyLightingEngine = false,
             FancyLightingEngineMode = LightingEngineMode.Low,
             SimulateGlobalIllumination = false,
-            UseFancySkyRendering = false,
-            UseFancySkyColors = true,
-        };
-
-    public static readonly PresetOptions LowPresetOptions = new();
-
-    public static readonly PresetOptions MediumPresetOptions =
-        new()
-        {
-            UseSmoothLighting = true,
-            UseEnhancedBlurring = true,
-            SimulateNormalMaps = false,
-            UseEnhancedGlowMaskSupport = false,
-            LightMapRenderMode = RenderMode.Bicubic,
-            UseAmbientOcclusion = true,
-            DoNonSolidAmbientOcclusion = true,
-            DoTileEntityAmbientOcclusion = true,
-            UseFancyLightingEngine = true,
-            FancyLightingEngineMode = LightingEngineMode.Medium,
-            SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
             UseFancySkyColors = true,
         };
+
+    public static readonly PresetOptions MediumPresetOptions = new();
 
     public static readonly PresetOptions HighPresetOptions =
         new()
@@ -171,7 +153,6 @@ internal record PresetOptions
         new()
         {
             [VanillaPresetOptions] = SettingsPreset.VanillaPreset,
-            [MinimalPresetOptions] = SettingsPreset.MinimalPreset,
             [LowPresetOptions] = SettingsPreset.LowPreset,
             [MediumPresetOptions] = SettingsPreset.MediumPreset,
             [HighPresetOptions] = SettingsPreset.HighPreset,
