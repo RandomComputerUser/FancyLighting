@@ -10,11 +10,12 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 ## Latest Version
 
 ### v1.1.0 (2026-03-??)
-- Added a new default tone mapping operator for full HDR rendering
-- Added a linear tone mapping operator that may be used with add-ons to achieve HDR output
-- Added a setting to switch between tone mapping operators
+- Added a setting to switch between various tone mapping operators (TMOs) for full HDR rendering
+- Added the Vibrant TMO, which is the new default TMO 
+- The old TMO is now called Filmic Neutral and is available as another option
+- Added the Linear TMO, which may be used with add-ons to achieve HDR output
 - Increased the base exposure used with full HDR rendering
-- Adjusted how gamma works when using full HDR rendering
+- Slightly increased the contrast of lighting when using full HDR rendering
 - Improved how Fancy Atmosphere is rendered
 - Tweaked the colors used by Fancy Atmosphere
 - Tweaked sky light color Preset 1 (now called "Natural")
