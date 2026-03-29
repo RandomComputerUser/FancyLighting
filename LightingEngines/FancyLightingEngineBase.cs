@@ -531,7 +531,17 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             SimulateGlobalIllumination(width, height, giPassCount);
             PerformanceTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
 
-            CopyVec3Array(_workingLightMaps[0], destination, 0, length);
+            Parallel.For(
+                0,
+                ((length - 1) / ChunkSize) + 1,
+                SettingsSystem._parallelOptions,
+                (i) =>
+                {
+                    var begin = ChunkSize * i;
+                    var end = Math.Min(length, begin + ChunkSize);
+                    CopyVec3Array(_workingLightMaps[0], destination, begin, end);
+                }
+            );
         }
     }
 
