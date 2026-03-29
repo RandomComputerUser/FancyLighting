@@ -571,7 +571,7 @@ ToneMappingPreset: {
 	}
 
 	Preset2: {
-		Label: Filmic Neutral
+		Label: Filmic
 		Tooltip: ""
 	}
 
