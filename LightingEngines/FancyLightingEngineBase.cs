@@ -125,7 +125,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         _lightWaterDecay = new float[DistanceTicks + 2];
         _lightHoneyDecay = new float[DistanceTicks + 2];
         _lightNonSolidDecay = new float[DistanceTicks + 2];
-        for (var exponent = 0; exponent <= DistanceTicks; ++exponent)
+        for (var exponent = 0; exponent < DistanceTicks + 2; ++exponent)
         {
             _lightAirDecay[exponent] =
                 _lightSolidDecay[exponent] =
@@ -134,14 +134,6 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                 _lightNonSolidDecay[exponent] =
                     1f;
         }
-
-        // Last element is for diagonal decay (used in GI)
-        _lightAirDecay[^1] =
-            _lightSolidDecay[^1] =
-            _lightWaterDecay[^1] =
-            _lightHoneyDecay[^1] =
-            _lightNonSolidDecay[^1] =
-                1f;
     }
 
     protected void ComputeCircles()
@@ -283,6 +275,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
         }
 
+        // Last element is for diagonal decay (used in GI)
         decay[^1] = MathF.Exp(MathF.Sqrt(2) * logBaseline);
     }
 
@@ -525,24 +518,26 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
         PerformanceTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
 
-        if (doGi)
+        if (!doGi)
         {
-            PerformanceTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
-            SimulateGlobalIllumination(width, height, giPassCount);
-            PerformanceTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
-
-            Parallel.For(
-                0,
-                ((length - 1) / ChunkSize) + 1,
-                SettingsSystem._parallelOptions,
-                (i) =>
-                {
-                    var begin = ChunkSize * i;
-                    var end = Math.Min(length, begin + ChunkSize);
-                    CopyVec3Array(_workingLightMaps[0], destination, begin, end);
-                }
-            );
+            return;
         }
+
+        PerformanceTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
+        SimulateGlobalIllumination(width, height, giPassCount);
+        PerformanceTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
+
+        Parallel.For(
+            0,
+            ((length - 1) / ChunkSize) + 1,
+            SettingsSystem._parallelOptions,
+            (i) =>
+            {
+                var begin = ChunkSize * i;
+                var end = Math.Min(length, begin + ChunkSize);
+                CopyVec3Array(_workingLightMaps[0], destination, begin, end);
+            }
+        );
     }
 
     private static void MaxArraysIntoFirst(Vec3[] arr1, Vec3[] arr2, int begin, int end)
@@ -620,13 +615,10 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                     var endIndex = height * (i + 1);
                     for (var j = height * i; j < endIndex; ++j)
                     {
-                        if (lightMasks[j] == solidDecay)
-                        {
-                            dst[j] = Vec3.Zero;
-                            continue;
-                        }
-
-                        dst[j] = Vec3.Multiply(giMult, src[j]);
+                        dst[j] =
+                            (lightMasks[j] == solidDecay)
+                                ? Vec3.Zero
+                                : Vec3.Multiply(giMult, src[j]);
                     }
                 }
             );
@@ -643,26 +635,17 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             {
                 var prevMask = lightMasks[beginIndex];
                 var light = dst[beginIndex] = src[beginIndex];
-                var j = beginIndex;
-                while (j != endIndex)
+                for (var j = beginIndex; j != endIndex; )
                 {
                     j += inc;
 
                     var mask = lightMasks[j];
-                    if (mask != solidDecay && prevMask == solidDecay)
-                    {
-                        light = src[j];
-                    }
-                    else
-                    {
-                        light = Vec3.Max(
-                            src[j],
-                            Vec3.Multiply(prevMask[DistanceTicks], light)
-                        );
-                    }
-
+                    var preventSpread = mask != solidDecay && prevMask == solidDecay;
                     prevMask = mask;
-                    dst[j] = light;
+
+                    dst[j] = light = preventSpread
+                        ? src[j]
+                        : Vec3.Max(src[j], Vec3.Multiply(prevMask[DistanceTicks], light));
                 }
             }
 
@@ -681,14 +664,12 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             {
                 var prevMask = lightMasks[beginIndex];
                 var light = Vec3.Max(src1[beginIndex], src2[beginIndex]);
-                var j = beginIndex;
-                while (j != endIndex)
+                for (var j = beginIndex; j != endIndex; )
                 {
                     j += inc;
 
                     var mask = lightMasks[j];
-                    var srcLight = Vec3.Max(src1[j], src2[j]);
-                    if (
+                    var preventSpread =
                         mask != solidDecay
                         && (
                             prevMask == solidDecay
@@ -696,20 +677,16 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
                                 lightMasks[j + diff1] == solidDecay
                                 && lightMasks[j + diff2] == solidDecay
                             )
-                        )
-                    )
-                    {
-                        light = srcLight;
-                    }
-                    else
-                    {
-                        light = Vec3.Max(
+                        );
+                    prevMask = mask;
+
+                    var srcLight = Vec3.Max(src1[j], src2[j]);
+                    light = preventSpread
+                        ? srcLight
+                        : Vec3.Max(
                             srcLight,
                             Vec3.Multiply(prevMask[DistanceTicks + 1], light)
                         );
-                    }
-
-                    prevMask = mask;
                     ref var dstLight = ref dst[j];
                     dstLight = Vec3.Max(dstLight, light);
                 }
