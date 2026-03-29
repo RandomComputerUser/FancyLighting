@@ -230,12 +230,12 @@ PreferencesConfig: {
 	}
 
 	TrackFancyLightingEnginePerf: {
-		// Label: (Debug) Measure Performance
+		// Label: (Debug) Monitor Performance
 		/* Tooltip:
 			'''
-			Measure and display the amount of time consumed by the Fancy Lighting Engine
+			Measure and display the amount of time consumed by the lighting engine
 
-			If the Fancy Lighting Engine is disabled, the vanilla lighting engine is timed
+			Works with both the Fancy Lighting Engine and the vanilla lighting engine
 			''' */
 	}
 

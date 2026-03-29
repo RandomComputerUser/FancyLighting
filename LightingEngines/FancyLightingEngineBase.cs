@@ -420,7 +420,7 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
         LightingAction lightingAction
     )
     {
-        PerfTracker.StartTiming("Fancy Lighting Engine (Direct Lighting)");
+        PerformanceTracker.StartTiming("Fancy Lighting Engine (Direct Lighting)");
 
         var taskCount = SettingsSystem._parallelOptions.MaxDegreeOfParallelism;
         var length = width * height;
@@ -439,13 +439,17 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
 
             lightingAction(workingLightMap, ref _temporalData, 0, length);
 
-            PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
+            PerformanceTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
 
             if (doGi)
             {
-                PerfTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
+                PerformanceTracker.StartTiming(
+                    "Fancy Lighting Engine (Indirect Lighting)"
+                );
                 SimulateGlobalIllumination(width, height, giPassCount);
-                PerfTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
+                PerformanceTracker.StopTiming(
+                    "Fancy Lighting Engine (Indirect Lighting)"
+                );
             }
 
             CopyVec3Array(_workingLightMaps[0], destination, 0, length);
@@ -519,13 +523,13 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
             }
         );
 
-        PerfTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
+        PerformanceTracker.StopTiming("Fancy Lighting Engine (Direct Lighting)");
 
         if (doGi)
         {
-            PerfTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
+            PerformanceTracker.StartTiming("Fancy Lighting Engine (Indirect Lighting)");
             SimulateGlobalIllumination(width, height, giPassCount);
-            PerfTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
+            PerformanceTracker.StopTiming("Fancy Lighting Engine (Indirect Lighting)");
 
             CopyVec3Array(_workingLightMaps[0], destination, 0, length);
         }

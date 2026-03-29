@@ -2,7 +2,7 @@
 
 namespace FancyLighting.Utils;
 
-internal static class PerfTracker
+internal static class PerformanceTracker
 {
     private record StatTracker
     {
@@ -25,8 +25,8 @@ internal static class PerfTracker
 
         public double StandardDeviation()
         {
-            var ex2 = SumSquares / SampleSize;
             var ex = Sum / SampleSize;
+            var ex2 = SumSquares / SampleSize;
             var variance = ((double)SampleSize / (SampleSize - 1)) * (ex2 - (ex * ex));
             return Math.Sqrt(variance);
         }

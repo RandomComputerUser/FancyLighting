@@ -43,7 +43,7 @@ internal sealed class SettingsSystem : ModSystem
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
-        PerfTracker.Enabled =
+        PerformanceTracker.Enabled =
             PreferencesConfig.Instance?.TrackFancyLightingEnginePerf ?? false;
 
         var needsPostProcessing = NeedsPostProcessing(true);

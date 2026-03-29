@@ -1455,7 +1455,7 @@ public sealed class FancyLightingMod : Mod
 
         if (LightingConfig.Instance.FancyLightingEngineEnabled())
         {
-            PerfTracker.StartTiming("Fancy Lighting Engine");
+            PerformanceTracker.StartTiming("Fancy Lighting Engine");
             _fancyLightingEngineInstance.SpreadLight(
                 self,
                 colors,
@@ -1463,13 +1463,13 @@ public sealed class FancyLightingMod : Mod
                 self.Width,
                 self.Height
             );
-            PerfTracker.StopTiming("Fancy Lighting Engine");
+            PerformanceTracker.StopTiming("Fancy Lighting Engine");
         }
         else
         {
-            PerfTracker.StartTiming("Vanilla Lighting Engine");
+            PerformanceTracker.StartTiming("Vanilla Lighting Engine");
             orig(self);
-            PerfTracker.StopTiming("Vanilla Lighting Engine");
+            PerformanceTracker.StopTiming("Vanilla Lighting Engine");
         }
 
         if (LightingConfig.Instance.SmoothLightingEnabled())
