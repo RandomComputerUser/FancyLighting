@@ -237,7 +237,7 @@ float find_gamut_intersection(float2 ab, float L1, float C1, float L0)
 	return t;
 }
 
-float3 gamut_clip_adaptive_L0_L_cusp(float3 rgb, float alpha = 0.05f)
+float3 gamut_clip_adaptive_L0_0_5(float3 rgb, float alpha = 0.05f)
 {
 	if (rgb.r < 1 && rgb.g < 1 && rgb.b < 1 && rgb.r > 0 && rgb.g > 0 && rgb.b > 0)
 		return rgb;
@@ -249,14 +249,9 @@ float3 gamut_clip_adaptive_L0_L_cusp(float3 rgb, float alpha = 0.05f)
 	float C = max(eps, sqrt(dot(lab.yz, lab.yz)));
 	float2 ab_ = lab.yz / C;
 
-	// The cusp is computed here and in find_gamut_intersection, an optimized solution would only compute it once.
-	float2 cusp = find_cusp(ab_);
-
-	float Ld = L - cusp.x;
-	float k = 2.f * (Ld > 0 ? 1.f - cusp.x : cusp.x);
-
-	float e1 = 0.5f*k + abs(Ld) + alpha * C/k;
-	float L0 = cusp.x + 0.5f * (sign(Ld) * (e1 - sqrt(e1 * e1 - 2.f * k * abs(Ld))));
+	float Ld = L - 0.5f;
+	float e1 = 0.5f + abs(Ld) + alpha * C;
+	float L0 = 0.5f*(1.f + sign(Ld)*(e1 - sqrt(e1*e1 - 2.f *abs(Ld))));
 
 	float t = find_gamut_intersection(ab_, L, C, L0);
 	float L_clipped = L0 * (1.f - t) + t * L;
@@ -267,7 +262,7 @@ float3 gamut_clip_adaptive_L0_L_cusp(float3 rgb, float alpha = 0.05f)
 
 float3 GamutClipLinearSrgb(float3 x)
 {
-	return saturate(gamut_clip_adaptive_L0_L_cusp(x, 0.5f));
+	return saturate(gamut_clip_adaptive_L0_0_5(x, 0.5f));
 }
 
 /* END Gamut Clipping *******************************************************************/
