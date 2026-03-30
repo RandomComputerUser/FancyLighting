@@ -14,7 +14,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added the Vibrant TMO, which is the new default TMO 
 - The old TMO is now called Filmic and is available as another option
 - Added the Linear TMO, which may be used with add-ons to achieve HDR output
-- Increased the base exposure used with full HDR rendering
 - Slightly increased the contrast of lighting when using full HDR rendering
 - Improved how Fancy Atmosphere is rendered
 - Tweaked the colors used by Fancy Atmosphere

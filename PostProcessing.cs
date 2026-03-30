@@ -165,7 +165,7 @@ internal sealed class PostProcessing
                 exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
                 if (tmo is ToneMappingPreset.Preset2)
                 {
-                    exposure *= 0.9f;
+                    exposure *= 0.8f;
                 }
 
                 if (separateBackground)

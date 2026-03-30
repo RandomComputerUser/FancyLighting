@@ -110,7 +110,7 @@ float3 ToneMapColor1(float3 x)
 {
     float c1 = 1.6;
     float c2 = 3.0;
-    return c1 * (x / (x + c2));
+    return saturate(c1 * (x / (x + c2)));
 }
 
 float SaturationCurve(float x)
@@ -137,7 +137,7 @@ float3 MakeVibrant(float3 x)
 	
 	float mult = targetSaturation / saturation;
 	x = maxComponent - mult * (maxComponent - x);
-	return saturate(x);
+	return max(x, 0);
 }
 
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
