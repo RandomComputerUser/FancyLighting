@@ -133,6 +133,11 @@ float3 MakeVibrant(float3 x)
 	
 	float minComponent = min(x.r, min(x.g, x.b));
 	float saturation = 1 - minComponent / maxComponent;
+	if (saturation <= 0)
+	{
+	    return x;
+	}
+	
 	float targetSaturation = SaturationCurve(saturation);
 	
 	float mult = targetSaturation / saturation;
