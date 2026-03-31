@@ -108,15 +108,15 @@ float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColor1(float3 x)
 {
-    float c1 = 1.6;
-    float c2 = 3.0;
+    const float c1 = 1.6;
+    const float c2 = 3.0;
     return saturate(c1 * (x / (x + c2)));
 }
 
 float SaturationCurve(float x)
 {
-    float c1 = 1.5;
-    float c2 = 2.0;
+    const float c1 = 1.5;
+    const float c2 = 2.0;
     x = 1 - x;
     return saturate(
         1 - c1 * (1 - 1 / (c2 * x + 1)) * x
@@ -156,11 +156,11 @@ float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColor2(float3 x)
 {
-    float c1 = 1.46666666667;
-    float c2 = 0.363636363636;
-    float c3 = 256;
-    float c4 = 2;
-    float c5 = 2.33333333333;
+    const float c1 = 1.46666666667;
+    const float c2 = 0.363636363636;
+    const float c3 = 256;
+    const float c4 = 2;
+    const float c5 = 2.33333333333;
     return saturate(
         c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
     );

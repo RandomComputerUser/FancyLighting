@@ -56,7 +56,6 @@ float4 Sun(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     float brightest = max(max(baseColor.r, baseColor.g), baseColor.b);
     baseColor.rgb = lerp(baseColor.rgb, brightest.xxx, 0.5);
     
-    
     baseColor.rgb = pow(baseColor.rgb, InverseGamma);
     return color * baseColor;
 }
