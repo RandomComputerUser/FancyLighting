@@ -56,6 +56,11 @@ float3 Dither(float3 color, float2 coords)
     return lerp(hi, lo, selector);
 }
 
+float Luminance(float3 color)
+{
+    return dot(color, float3(0.2126, 0.7152, 0.0722));
+}
+
 float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
@@ -108,19 +113,21 @@ float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColor1(float3 x)
 {
-    const float c1 = 1.6;
-    const float c2 = 3.0;
+    const float c1 = 1.8;
+    const float c2 = 4.0;
     return saturate(c1 * (x / (x + c2)));
 }
 
 float SaturationCurve(float x)
 {
-    const float c1 = 1.5;
-    const float c2 = 2.0;
-    x = 1 - x;
-    return saturate(
-        1 - c1 * (1 - 1 / (c2 * x + 1)) * x
-    );
+    const float c1 = -1.5;
+    const float c2 = 2;
+    const float c3 = 0.5625;
+    const float c4 = 1;
+    const float c5 = -0.25;
+    const float c6 = -5;
+    x = c1 + c2 * sqrt(c3 + c4 * x);
+    return saturate(c5 * x * (c6 + x));
 }
 
 float3 MakeVibrant(float3 x)
@@ -141,8 +148,9 @@ float3 MakeVibrant(float3 x)
 	float targetSaturation = SaturationCurve(saturation);
 	
 	float mult = targetSaturation / saturation;
-	x = maxComponent - mult * (maxComponent - x);
-	return max(x, 0);
+	float3 result = maxComponent - mult * (maxComponent - x);
+    result *= Luminance(x) / Luminance(result);
+	return saturate(result);
 }
 
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
