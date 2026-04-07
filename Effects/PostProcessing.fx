@@ -8,8 +8,8 @@ float OutputGamma;
 float Exposure;
 float BloomStrength;
 
-float4 SaturationBoostParams1;
-float2 SaturationBoostParams2;
+float4 VibranceBoostParams1;
+float2 VibranceBoostParams2;
 
 // https://www.colour-science.org/apps/
 
@@ -158,10 +158,10 @@ float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
 
 float SaturationCurve(float x)
 {
-    x = SaturationBoostParams1.x + SaturationBoostParams1.y * sqrt(
-        SaturationBoostParams1.z + SaturationBoostParams1.w * x
+    x = VibranceBoostParams1.x + VibranceBoostParams1.y * sqrt(
+        VibranceBoostParams1.z + VibranceBoostParams1.w * x
     );
-    return saturate(SaturationBoostParams2.x * x * (SaturationBoostParams2.y + x));
+    return saturate(VibranceBoostParams2.x * x * (VibranceBoostParams2.y + x));
 }
 
 float3 MakeVibrant(float3 x)
@@ -190,14 +190,14 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
-float4 SaturationBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = saturate(MakeVibrant(color.rgb));
     return color;
 }
 
-float4 SaturationBoostUnclamped(float2 coords : TEXCOORD0) : COLOR0
+float4 VibranceBoostUnclamped(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(MakeVibrant(color.rgb), 0);
@@ -246,13 +246,13 @@ technique Technique1
         PixelShader = compile ps_3_0 ToneMap2();
     }
     
-    pass SaturationBoost
+    pass VibranceBoost
     {
-        PixelShader = compile ps_3_0 SaturationBoost();
+        PixelShader = compile ps_3_0 VibranceBoost();
     }
     
-    pass SaturationBoostUnclamped
+    pass VibranceBoostUnclamped
     {
-        PixelShader = compile ps_3_0 SaturationBoostUnclamped();
+        PixelShader = compile ps_3_0 VibranceBoostUnclamped();
     }
 }

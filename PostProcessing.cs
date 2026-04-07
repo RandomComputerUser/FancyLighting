@@ -21,8 +21,8 @@ internal sealed class PostProcessing
     private Shader _bloomCompositeShader;
     private Shader _toneMap1Shader;
     private Shader _toneMap2Shader;
-    private Shader _saturationBoostShader;
-    private Shader _saturationBoostUnclampedShader;
+    private Shader _vibranceBoostShader;
+    private Shader _vibranceBoostUnclampedShader;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
@@ -64,13 +64,13 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "ToneMap2"
         );
-        _saturationBoostShader = EffectLoader.LoadEffect(
+        _vibranceBoostShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "SaturationBoost"
+            "VibranceBoost"
         );
-        _saturationBoostUnclampedShader = EffectLoader.LoadEffect(
+        _vibranceBoostUnclampedShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "SaturationBoostUnclamped"
+            "VibranceBoostUnclamped"
         );
     }
 
@@ -85,8 +85,8 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
         EffectLoader.UnloadEffect(ref _toneMap1Shader);
         EffectLoader.UnloadEffect(ref _toneMap2Shader);
-        EffectLoader.UnloadEffect(ref _saturationBoostShader);
-        EffectLoader.UnloadEffect(ref _saturationBoostUnclampedShader);
+        EffectLoader.UnloadEffect(ref _vibranceBoostShader);
+        EffectLoader.UnloadEffect(ref _vibranceBoostUnclampedShader);
 
         _blurRenderer.Unload();
     }
@@ -101,7 +101,7 @@ internal sealed class PostProcessing
         * HiDefBackgroundBrightnessMult
         * (0.9f * Lighting.GlobalBrightness);
 
-    private static (Vector4, Vector2) CalculateSaturationBoostParameters(double boost)
+    private static (Vector4, Vector2) CalculateVibranceBoostParameters(double boost)
     {
         boost *= 4.0;
         var c1 = (boost - 1.0) / (2.0 * boost);
@@ -297,17 +297,17 @@ internal sealed class PostProcessing
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
 
-            if (PreferencesConfig.Instance.SaturationBoost != 0)
+            if (PreferencesConfig.Instance.VibranceBoost != 0)
             {
-                var saturationBoostShader = tmo switch
+                var vibranceBoostShader = tmo switch
                 {
-                    ToneMappingPreset.Linear => _saturationBoostUnclampedShader,
-                    _ => _saturationBoostShader,
+                    ToneMappingPreset.Linear => _vibranceBoostUnclampedShader,
+                    _ => _vibranceBoostShader,
                 };
 
-                var (params1, params2) = CalculateSaturationBoostParameters(
+                var (params1, params2) = CalculateVibranceBoostParameters(
                     Math.Clamp(
-                        PreferencesConfig.Instance.SaturationIncrease(),
+                        PreferencesConfig.Instance.VibranceIncrease(),
                         -0.249,
                         0.249
                     )
@@ -321,9 +321,9 @@ internal sealed class PostProcessing
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
-                saturationBoostShader
-                    .SetParameter("SaturationBoostParams1", params1)
-                    .SetParameter("SaturationBoostParams2", params2)
+                vibranceBoostShader
+                    .SetParameter("VibranceBoostParams1", params1)
+                    .SetParameter("VibranceBoostParams2", params2)
                     .Apply();
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();

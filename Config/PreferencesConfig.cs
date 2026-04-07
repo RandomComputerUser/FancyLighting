@@ -24,7 +24,7 @@ public sealed class PreferencesConfig : ModConfig
 
     internal float BloomLerp() => 0.0025f * BloomStrength;
 
-    internal double SaturationIncrease() => SaturationBoost / 80.0;
+    internal double VibranceIncrease() => VibranceBoost / 80.0;
 
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
@@ -106,9 +106,9 @@ public sealed class PreferencesConfig : ModConfig
     public ToneMappingPreset ToneMappingOperator { get; set; }
 
     [Range(-10, 10)]
-    [DefaultValue(DefaultOptions.SaturationBoost)]
+    [DefaultValue(DefaultOptions.VibranceBoost)]
     [Slider]
-    public int SaturationBoost { get; set; }
+    public int VibranceBoost { get; set; }
 
     [Range(1, 5)]
     [DefaultValue(DefaultOptions.BloomRadius)]
