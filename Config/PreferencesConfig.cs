@@ -24,6 +24,8 @@ public sealed class PreferencesConfig : ModConfig
 
     internal float BloomLerp() => 0.0025f * BloomStrength;
 
+    internal double SaturationIncrease() => SaturationBoost / 80.0;
+
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
@@ -75,7 +77,6 @@ public sealed class PreferencesConfig : ModConfig
 
     [Header("SmoothLighting")]
     [Range(1, 15)]
-    [Increment(1)]
     [DefaultValue(DefaultOptions.NormalMapsIntensity)]
     [Slider]
     public int NormalMapsIntensity { get; set; }
@@ -90,20 +91,23 @@ public sealed class PreferencesConfig : ModConfig
     public int Exposure { get; set; }
 
     [Range(1, 5)]
-    [Increment(1)]
     [DefaultValue(DefaultOptions.BloomRadius)]
     [Slider]
     [DrawTicks]
     public int BloomRadius { get; set; }
 
     [Range(1, 20)]
-    [Increment(1)]
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
     public int BloomStrength { get; set; }
 
     [DefaultValue(DefaultOptions.ToneMappingOperator)]
     public ToneMappingPreset ToneMappingOperator { get; set; }
+
+    [Range(-10, 10)]
+    [DefaultValue(DefaultOptions.SaturationBoost)]
+    [Slider]
+    public int SaturationBoost { get; set; }
 
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }
@@ -121,7 +125,6 @@ public sealed class PreferencesConfig : ModConfig
 
     [Header("AmbientOcclusion")]
     [Range(1, 4)]
-    [Increment(1)]
     [DefaultValue(DefaultOptions.AmbientOcclusionRadius)]
     [Slider]
     [DrawTicks]

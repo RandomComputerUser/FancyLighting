@@ -18,9 +18,11 @@ internal sealed class PostProcessing
     private Shader _gammaToGammaNoDitherShader;
     private Shader _gammaToSrgbDitherShader;
     private Shader _gammaToSrgbNoDitherShader;
+    private Shader _bloomCompositeShader;
     private Shader _toneMap1Shader;
     private Shader _toneMap2Shader;
-    private Shader _bloomCompositeShader;
+    private Shader _saturationBoostShader;
+    private Shader _saturationBoostUnclampedShader;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
@@ -50,6 +52,10 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "GammaToSrgbNoDither"
         );
+        _bloomCompositeShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "BloomComposite"
+        );
         _toneMap1Shader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "ToneMap1"
@@ -58,9 +64,13 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "ToneMap2"
         );
-        _bloomCompositeShader = EffectLoader.LoadEffect(
+        _saturationBoostShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "BloomComposite"
+            "SaturationBoost"
+        );
+        _saturationBoostUnclampedShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "SaturationBoostUnclamped"
         );
     }
 
@@ -72,9 +82,11 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherShader);
+        EffectLoader.UnloadEffect(ref _bloomCompositeShader);
         EffectLoader.UnloadEffect(ref _toneMap1Shader);
         EffectLoader.UnloadEffect(ref _toneMap2Shader);
-        EffectLoader.UnloadEffect(ref _bloomCompositeShader);
+        EffectLoader.UnloadEffect(ref _saturationBoostShader);
+        EffectLoader.UnloadEffect(ref _saturationBoostUnclampedShader);
 
         _blurRenderer.Unload();
     }
@@ -88,6 +100,21 @@ internal sealed class PostProcessing
         HiDefBrightnessScale
         * HiDefBackgroundBrightnessMult
         * (0.9f * Lighting.GlobalBrightness);
+
+    private static (Vector4, Vector2) CalculateSaturationBoostParameters(double boost)
+    {
+        boost *= 4.0;
+        var c1 = (boost - 1.0) / (2.0 * boost);
+        var c2 = 1.0 / (2.0 * boost);
+        var c3 = (boost - 1.0) * (boost - 1.0);
+        var c4 = 4.0 * boost;
+        var c5 = -boost;
+        var c6 = -1.0 - (1.0 / boost);
+        return (
+            new((float)c1, (float)c2, (float)c3, (float)c4),
+            new((float)c5, (float)c6)
+        );
+    }
 
     internal void ApplyPostProcessing(
         RenderTarget2D target,
@@ -163,10 +190,11 @@ internal sealed class PostProcessing
                 var exposure = 1f / HiDefBrightnessScale;
                 exposure = MathF.Pow(exposure, gamma);
                 exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
-                if (tmo is ToneMappingPreset.Preset2)
+                exposure *= tmo switch
                 {
-                    exposure *= 0.8f;
-                }
+                    ToneMappingPreset.Preset2 => 0.8f,
+                    _ => 1f,
+                };
 
                 if (separateBackground)
                 {
@@ -248,6 +276,13 @@ internal sealed class PostProcessing
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
 
+            var toneMappingShader = tmo switch
+            {
+                ToneMappingPreset.Preset1 => _toneMap1Shader,
+                ToneMappingPreset.Preset2 => _toneMap2Shader,
+                _ => null,
+            };
+
             Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
@@ -256,21 +291,45 @@ internal sealed class PostProcessing
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-
-            switch (tmo)
-            {
-                case ToneMappingPreset.Preset1:
-                    _toneMap1Shader.Apply();
-                    break;
-                case ToneMappingPreset.Preset2:
-                    _toneMap2Shader.Apply();
-                    break;
-            }
-
+            toneMappingShader?.Apply();
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
+
+            if (PreferencesConfig.Instance.SaturationBoost != 0)
+            {
+                var saturationBoostShader = tmo switch
+                {
+                    ToneMappingPreset.Linear => _saturationBoostUnclampedShader,
+                    _ => _saturationBoostShader,
+                };
+
+                var (params1, params2) = CalculateSaturationBoostParameters(
+                    Math.Clamp(
+                        PreferencesConfig.Instance.SaturationIncrease(),
+                        -0.249,
+                        0.249
+                    )
+                );
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Immediate,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                saturationBoostShader
+                    .SetParameter("SaturationBoostParams1", params1)
+                    .SetParameter("SaturationBoostParams2", params2)
+                    .Apply();
+                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                (currTarget, nextTarget) = (nextTarget, currTarget);
+            }
         }
 
         if (customGamma || srgb)

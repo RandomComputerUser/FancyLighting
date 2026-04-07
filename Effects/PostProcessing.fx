@@ -8,6 +8,9 @@ float OutputGamma;
 float Exposure;
 float BloomStrength;
 
+float4 SaturationBoostParams1;
+float2 SaturationBoostParams2;
+
 // https://www.colour-science.org/apps/
 
 static const float3x3 SrgbToAcescg =
@@ -111,6 +114,13 @@ float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
     return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), color.a);
 }
 
+float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    float4 bloomColor = tex2D(BloomBlurSampler, coords);
+    return lerp(color, bloomColor, BloomStrength);
+}
+
 float3 ToneMapColor1(float3 x)
 {
     const float c1 = 1.8;
@@ -118,47 +128,12 @@ float3 ToneMapColor1(float3 x)
     return saturate(c1 * (x / (x + c2)));
 }
 
-float SaturationCurve(float x)
-{
-    const float c1 = -1.5;
-    const float c2 = 2;
-    const float c3 = 0.5625;
-    const float c4 = 1;
-    const float c5 = -0.25;
-    const float c6 = -5;
-    x = c1 + c2 * sqrt(c3 + c4 * x);
-    return saturate(c5 * x * (c6 + x));
-}
-
-float3 MakeVibrant(float3 x)
-{
-	float maxComponent = max(x.r, max(x.g, x.b));
-	if (maxComponent <= 0)
-	{
-	    return x;
-	}
-	
-	float minComponent = min(x.r, min(x.g, x.b));
-	float saturation = 1 - minComponent / maxComponent;
-	if (saturation <= 0)
-	{
-	    return x;
-	}
-	
-	float targetSaturation = SaturationCurve(saturation);
-	
-	float mult = targetSaturation / saturation;
-	float3 result = maxComponent - mult * (maxComponent - x);
-    result *= Luminance(x) / Luminance(result);
-	return saturate(result);
-}
-
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = mul(SrgbToAcescg, color.rgb);
     color.rgb = ToneMapColor1(color.rgb);
-    color.rgb = MakeVibrant(saturate(mul(AcescgToSrgb, color.rgb)));
+    color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
     return color;
 }
 
@@ -181,11 +156,52 @@ float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
+float SaturationCurve(float x)
+{
+    x = SaturationBoostParams1.x + SaturationBoostParams1.y * sqrt(
+        SaturationBoostParams1.z + SaturationBoostParams1.w * x
+    );
+    return saturate(SaturationBoostParams2.x * x * (SaturationBoostParams2.y + x));
+}
+
+float3 MakeVibrant(float3 x)
+{
+	float maxComponent = pow(max(x.r, max(x.g, x.b)), 1 / 2.2);
+	if (maxComponent <= 0)
+	{
+	    return x;
+	}
+	
+	float minComponent = pow(min(x.r, min(x.g, x.b)), 1 / 2.2);
+	float saturation = 1 - minComponent / maxComponent;
+	if (saturation <= 0)
+	{
+	    return x;
+	}
+	
+	float targetSaturation = SaturationCurve(saturation);
+	
+	float mult = targetSaturation / saturation;
+	float3 result = pow(
+	    max(maxComponent - mult * (maxComponent - pow(x, 1 / 2.2)), 0.0), 
+	    2.2
+	);
+    result *= Luminance(x) / Luminance(result);
+	return result;
+}
+
+float4 SaturationBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    float4 bloomColor = tex2D(BloomBlurSampler, coords);
-    return lerp(color, bloomColor, BloomStrength);
+    color.rgb = saturate(MakeVibrant(color.rgb));
+    return color;
+}
+
+float4 SaturationBoostUnclamped(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = max(MakeVibrant(color.rgb), 0);
+    return color;
 }
 
 technique Technique1
@@ -215,6 +231,11 @@ technique Technique1
         PixelShader = compile ps_3_0 GammaToSrgbNoDither();
     }
     
+    pass BloomComposite
+    {
+        PixelShader = compile ps_3_0 BloomComposite();
+    }
+    
     pass ToneMap1
     {
         PixelShader = compile ps_3_0 ToneMap1();
@@ -225,8 +246,13 @@ technique Technique1
         PixelShader = compile ps_3_0 ToneMap2();
     }
     
-    pass BloomComposite
+    pass SaturationBoost
     {
-        PixelShader = compile ps_3_0 BloomComposite();
+        PixelShader = compile ps_3_0 SaturationBoost();
+    }
+    
+    pass SaturationBoostUnclamped
+    {
+        PixelShader = compile ps_3_0 SaturationBoostUnclamped();
     }
 }

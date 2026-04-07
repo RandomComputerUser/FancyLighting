@@ -11,9 +11,10 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 ### v1.1.0 (2026-03-??)
 - Added a setting to switch between various tone mapping operators (TMOs) for full HDR rendering
-- Added the Vibrant TMO, which is the new default TMO 
+- Added the Bright TMO, which is the new default TMO 
 - The old TMO is now called Filmic and is available as another option
 - Added the Linear TMO, which may be used with add-ons to achieve HDR output
+- Added a setting to control color vibrance when using full HDR rendering, which is now boosted by default
 - Slightly increased the contrast of lighting when using full HDR rendering
 - Improved how Fancy Atmosphere is rendered
 - Tweaked the colors used by Fancy Atmosphere

@@ -34,6 +34,7 @@ public static class DefaultOptions
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Preset1;
+    public const int SaturationBoost = 3;
     public const bool UseHdrCompatibilityFixes = false;
     public const bool DisableHdrDuringBossFights = false;
     public const bool UseGrayscaleLighting = false;

@@ -112,8 +112,19 @@ PreferencesConfig: {
 			'''
 			Which tone mapping operator is used
 
-			Affects how colors appear in the final image
+			Affects the overall appearance of lighting in the final image
 			The Linear tone mapping operator also disables dithering
+			Full HDR rendering must be enabled for this setting to have any effect
+			'''
+	}
+
+	SaturationBoost: {
+		Label: Color Vibrance (Full HDRR)
+		Tooltip:
+			'''
+			How much to boost the vibrance of colors
+
+			A value of 0 leaves colors unchanged
 			Full HDR rendering must be enabled for this setting to have any effect
 			'''
 	}
@@ -566,7 +577,7 @@ SkyColorPreset: {
 
 ToneMappingPreset: {
 	Preset1: {
-		Label: Vibrant
+		Label: Bright
 		Tooltip: ""
 	}
 
