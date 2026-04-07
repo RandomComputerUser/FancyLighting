@@ -121,41 +121,6 @@ float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
     return lerp(color, bloomColor, BloomStrength);
 }
 
-float3 ToneMapColor1(float3 x)
-{
-    const float c1 = 1.8;
-    const float c2 = 4.0;
-    return saturate(c1 * (x / (x + c2)));
-}
-
-float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = mul(SrgbToAcescg, color.rgb);
-    color.rgb = ToneMapColor1(color.rgb);
-    color.rgb = saturate(mul(AcescgToSrgb, color.rgb));
-    return color;
-}
-
-float3 ToneMapColor2(float3 x)
-{
-    const float c1 = 1.46666666667;
-    const float c2 = 0.363636363636;
-    const float c3 = 256;
-    const float c4 = 2;
-    const float c5 = 2.33333333333;
-    return saturate(
-        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
-    );
-}
-
-float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor2(color.rgb);
-    return color;
-}
-
 float SaturationCurve(float x)
 {
     x = VibranceBoostParams1.x + VibranceBoostParams1.y * sqrt(
@@ -190,14 +155,58 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
-float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float3 ToneMapColor1(float3 x)
+{
+    const float c1 = 1.8;
+    const float c2 = 4.0;
+    x = mul(SrgbToAcescg, x);
+    x = saturate(c1 * (x / (x + c2)));
+    return saturate(mul(AcescgToSrgb, x));
+}
+
+float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColor1(color.rgb);
+    return color;
+}
+
+float4 ToneMap1VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColor1(color.rgb);
     color.rgb = saturate(MakeVibrant(color.rgb));
     return color;
 }
 
-float4 VibranceBoostUnclamped(float2 coords : TEXCOORD0) : COLOR0
+float3 ToneMapColor2(float3 x)
+{
+    const float c1 = 1.46666666667;
+    const float c2 = 0.363636363636;
+    const float c3 = 256;
+    const float c4 = 2;
+    const float c5 = 2.33333333333;
+    return saturate(
+        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
+    );
+}
+
+float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColor2(color.rgb);
+    return color;
+}
+
+float4 ToneMap2VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColor2(color.rgb);
+    color.rgb = saturate(MakeVibrant(color.rgb));
+    return color;
+}
+
+float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(MakeVibrant(color.rgb), 0);
@@ -241,18 +250,23 @@ technique Technique1
         PixelShader = compile ps_3_0 ToneMap1();
     }
     
+    pass ToneMap1VibranceBoost
+    {
+        PixelShader = compile ps_3_0 ToneMap1VibranceBoost();
+    }
+    
     pass ToneMap2
     {
         PixelShader = compile ps_3_0 ToneMap2();
     }
     
+    pass ToneMap2VibranceBoost
+    {
+        PixelShader = compile ps_3_0 ToneMap2VibranceBoost();
+    }
+    
     pass VibranceBoost
     {
         PixelShader = compile ps_3_0 VibranceBoost();
-    }
-    
-    pass VibranceBoostUnclamped
-    {
-        PixelShader = compile ps_3_0 VibranceBoostUnclamped();
     }
 }

@@ -20,9 +20,10 @@ internal sealed class PostProcessing
     private Shader _gammaToSrgbNoDitherShader;
     private Shader _bloomCompositeShader;
     private Shader _toneMap1Shader;
+    private Shader _toneMap1VibranceBoostShader;
     private Shader _toneMap2Shader;
+    private Shader _toneMap2VibranceBoostShader;
     private Shader _vibranceBoostShader;
-    private Shader _vibranceBoostUnclampedShader;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
@@ -60,17 +61,21 @@ internal sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "ToneMap1"
         );
+        _toneMap1VibranceBoostShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMap1VibranceBoost"
+        );
         _toneMap2Shader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "ToneMap2"
         );
+        _toneMap2VibranceBoostShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMap2VibranceBoost"
+        );
         _vibranceBoostShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "VibranceBoost"
-        );
-        _vibranceBoostUnclampedShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "VibranceBoostUnclamped"
         );
     }
 
@@ -84,9 +89,10 @@ internal sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherShader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
         EffectLoader.UnloadEffect(ref _toneMap1Shader);
+        EffectLoader.UnloadEffect(ref _toneMap1VibranceBoostShader);
         EffectLoader.UnloadEffect(ref _toneMap2Shader);
+        EffectLoader.UnloadEffect(ref _toneMap2VibranceBoostShader);
         EffectLoader.UnloadEffect(ref _vibranceBoostShader);
-        EffectLoader.UnloadEffect(ref _vibranceBoostUnclampedShader);
 
         _blurRenderer.Unload();
     }
@@ -276,32 +282,22 @@ internal sealed class PostProcessing
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
 
-            var toneMappingShader = tmo switch
+            Shader toneMappingShader;
+            if (PreferencesConfig.Instance.VibranceBoost == 0)
             {
-                ToneMappingPreset.Preset1 => _toneMap1Shader,
-                ToneMappingPreset.Preset2 => _toneMap2Shader,
-                _ => null,
-            };
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            toneMappingShader?.Apply();
-            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            (currTarget, nextTarget) = (nextTarget, currTarget);
-
-            if (PreferencesConfig.Instance.VibranceBoost != 0)
-            {
-                var vibranceBoostShader = tmo switch
+                toneMappingShader = tmo switch
                 {
-                    ToneMappingPreset.Linear => _vibranceBoostUnclampedShader,
+                    ToneMappingPreset.Preset1 => _toneMap1Shader,
+                    ToneMappingPreset.Preset2 => _toneMap2Shader,
+                    _ => null,
+                };
+            }
+            else
+            {
+                toneMappingShader = tmo switch
+                {
+                    ToneMappingPreset.Preset1 => _toneMap1VibranceBoostShader,
+                    ToneMappingPreset.Preset2 => _toneMap2VibranceBoostShader,
                     _ => _vibranceBoostShader,
                 };
 
@@ -313,6 +309,13 @@ internal sealed class PostProcessing
                     )
                 );
 
+                toneMappingShader
+                    .SetParameter("VibranceBoostParams1", params1)
+                    .SetParameter("VibranceBoostParams2", params2);
+            }
+
+            if (toneMappingShader is not null)
+            {
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.spriteBatch.Begin(
                     SpriteSortMode.Immediate,
@@ -321,10 +324,7 @@ internal sealed class PostProcessing
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
-                vibranceBoostShader
-                    .SetParameter("VibranceBoostParams1", params1)
-                    .SetParameter("VibranceBoostParams2", params2)
-                    .Apply();
+                toneMappingShader.Apply();
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
 
