@@ -105,7 +105,7 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.ToneMappingOperator)]
     public ToneMappingPreset ToneMappingOperator { get; set; }
 
-    [Range(-10, 10)]
+    [Range(0, 10)]
     [DefaultValue(DefaultOptions.VibranceBoost)]
     [Slider]
     public int VibranceBoost { get; set; }

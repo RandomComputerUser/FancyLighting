@@ -124,7 +124,7 @@ PreferencesConfig: {
 	}
 
 	VibranceBoost: {
-		Label: Color Vibrance
+		Label: Vibrance Boost
 		Tooltip:
 			'''
 			How much to boost the vibrance of colors
