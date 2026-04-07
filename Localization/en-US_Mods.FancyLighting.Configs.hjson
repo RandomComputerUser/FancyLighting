@@ -4,6 +4,7 @@ PreferencesConfig: {
 	Headers: {
 		ToneMapping: Tone Mapping
 		SmoothLighting: Smooth Lighting
+		FullHdrRendering: Full HDR Rendering
 		AmbientOcclusion: Ambient Occlusion
 		FancyLightingEngine: Fancy Lighting Engine
 		FancySky: Fancy Sky
@@ -73,14 +74,62 @@ PreferencesConfig: {
 			'''
 	}
 
+	DisableHdrDuringBossFights: {
+		Label: Disable HDRR During Boss Fights and Events
+		Tooltip:
+			'''
+			Disable HDR rendering during boss fights and events
+
+			May prevent visual issues with some modded boss fights
+			Affects bosses with a boss health bar and events with a progress bar
+			'''
+	}
+
+	UseGrayscaleLighting: {
+		Label: Grayscale Lighting
+		Tooltip:
+			'''
+			Display light in grayscale
+
+			Enable to remove all color from light
+			'''
+	}
+
+	RenderOnlyLight: {
+		Label: (Debug) Show Light Colors
+		Tooltip: Display light colors directly without tile and wall textures
+	}
+
+	# Full HDR Rendering
+	
 	Exposure: {
-		Label: Exposure (Full HDRR) (%)
+		Label: Exposure (%)
 		Tooltip:
 			'''
 			The exposure used when tone mapping the image from HDR
 
 			Higher values result in a brighter image
-			Full HDR rendering must be enabled for this setting to have any effect
+			'''
+	}
+
+	ToneMappingOperator: {
+		Label: Tone Mapping Operator
+		Tooltip:
+			'''
+			Which tone mapping operator is used
+
+			Affects the overall appearance of lighting in the final image
+			The Linear tone mapping operator also disables dithering
+			'''
+	}
+
+	SaturationBoost: {
+		Label: Color Vibrance
+		Tooltip:
+			'''
+			How much to boost the vibrance of colors
+
+			A value of 0 leaves colors unchanged
 			'''
 	}
 
@@ -106,31 +155,8 @@ PreferencesConfig: {
 			'''
 	}
 
-	ToneMappingOperator: {
-		Label: Tone Mapping Operator (Full HDRR)
-		Tooltip:
-			'''
-			Which tone mapping operator is used
-
-			Affects the overall appearance of lighting in the final image
-			The Linear tone mapping operator also disables dithering
-			Full HDR rendering must be enabled for this setting to have any effect
-			'''
-	}
-
-	SaturationBoost: {
-		Label: Color Vibrance (Full HDRR)
-		Tooltip:
-			'''
-			How much to boost the vibrance of colors
-
-			A value of 0 leaves colors unchanged
-			Full HDR rendering must be enabled for this setting to have any effect
-			'''
-	}
-
 	UseHdrCompatibilityFixes: {
-		Label: Mod Compatibility Fixes for Full HDRR
+		Label: Full HDRR Mod Compatibility Fixes
 		Tooltip:
 			'''
 			Enable fixes that may improve mod compatibility when using full HDR rendering
@@ -138,32 +164,6 @@ PreferencesConfig: {
 			May prevent some visual issues when using other mods
 			Has a small impact on visuals and performance
 			'''
-	}
-
-	DisableHdrDuringBossFights: {
-		Label: Disable HDRR During Boss Fights and Events
-		Tooltip:
-			'''
-			Disable HDR rendering during boss fights and events
-
-			May prevent visual issues with some modded boss fights
-			Affects bosses with a boss health bar and events with a progress bar
-			'''
-	}
-
-	UseGrayscaleLighting: {
-		Label: Grayscale Lighting
-		Tooltip:
-			'''
-			Display light in grayscale
-
-			Enable to remove all color from light
-			'''
-	}
-
-	RenderOnlyLight: {
-		Label: (Debug) Show Light Colors
-		Tooltip: Display light colors directly without tile and wall textures
 	}
 
 	# Ambient Occlusion

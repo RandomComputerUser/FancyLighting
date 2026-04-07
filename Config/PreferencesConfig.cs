@@ -84,11 +84,31 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
 
+    [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
+    public bool DisableHdrDuringBossFights { get; set; }
+
+    [DefaultValue(DefaultOptions.UseGrayscaleLighting)]
+    public bool UseGrayscaleLighting { get; set; }
+
+    [DefaultValue(DefaultOptions.RenderOnlyLight)]
+    public bool RenderOnlyLight { get; set; }
+
+    // Full HDR Rendering
+
+    [Header("FullHdrRendering")]
     [Range(50, 150)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.Exposure)]
     [Slider]
     public int Exposure { get; set; }
+
+    [DefaultValue(DefaultOptions.ToneMappingOperator)]
+    public ToneMappingPreset ToneMappingOperator { get; set; }
+
+    [Range(-10, 10)]
+    [DefaultValue(DefaultOptions.SaturationBoost)]
+    [Slider]
+    public int SaturationBoost { get; set; }
 
     [Range(1, 5)]
     [DefaultValue(DefaultOptions.BloomRadius)]
@@ -101,25 +121,8 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     public int BloomStrength { get; set; }
 
-    [DefaultValue(DefaultOptions.ToneMappingOperator)]
-    public ToneMappingPreset ToneMappingOperator { get; set; }
-
-    [Range(-10, 10)]
-    [DefaultValue(DefaultOptions.SaturationBoost)]
-    [Slider]
-    public int SaturationBoost { get; set; }
-
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }
-
-    [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
-    public bool DisableHdrDuringBossFights { get; set; }
-
-    [DefaultValue(DefaultOptions.UseGrayscaleLighting)]
-    public bool UseGrayscaleLighting { get; set; }
-
-    [DefaultValue(DefaultOptions.RenderOnlyLight)]
-    public bool RenderOnlyLight { get; set; }
 
     // Ambient Occlusion
 

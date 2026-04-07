@@ -4,6 +4,7 @@ PreferencesConfig: {
 	Headers: {
 		ToneMapping: Тональное отображение
 		SmoothLighting: Мягкое освещение
+		// FullHdrRendering: Full HDR Rendering
 		AmbientOcclusion: Затенение окружения
 		FancyLightingEngine: Движок Fancy Lighting
 		FancySky: Детализированное небо
@@ -71,73 +72,6 @@ PreferencesConfig: {
 			'''
 	}
 
-	Exposure: {
-		Label: Экспозиция (Full HDRR) (%)
-		Tooltip:
-			'''
-			Экспозиция используется при смене динамического диапазона с HDR на SDR
-
-			Высокие значения обычно делают изображение светлее
-			Режим HDR должен быть включен для работы данной настройки
-			'''
-	}
-
-	BloomRadius: {
-		Label: Радиус свечения
-		Tooltip:
-			'''
-			Радиус эффектов свечения
-
-			Высокие значение делают свечение вокруг ярких объектов больше
-			Свечение должно быть включено для работы данной настройки
-			'''
-	}
-
-	BloomStrength: {
-		Label: Сила отображения свечения
-		Tooltip:
-			'''
-			Сила эффектов свечения
-
-			Высокие значение делают свечение вокруг ярких объектов ярче
-			Свечение должно быть включено для работы данной настройки
-			'''
-	}
-
-	ToneMappingOperator: {
-		// Label: Tone Mapping Operator (Full HDRR)
-		/* Tooltip:
-			'''
-			Which tone mapping operator is used
-
-			Affects the overall appearance of lighting in the final image
-			The Linear tone mapping operator also disables dithering
-			Full HDR rendering must be enabled for this setting to have any effect
-			''' */
-	}
-
-	SaturationBoost: {
-		// Label: Color Vibrance (Full HDRR)
-		/* Tooltip:
-			'''
-			How much to boost the vibrance of colors
-
-			A value of 0 leaves colors unchanged
-			Full HDR rendering must be enabled for this setting to have any effect
-			''' */
-	}
-
-	UseHdrCompatibilityFixes: {
-		Label: Исправления для совместимостью с HDR
-		Tooltip:
-			'''
-			Включите исправления, которые могут помочь с совместимостью мода и режима HDR
-
-			Может избавить от некоторых проблем с отображением, связанных с другими модами
-			Слабо влияет на качество отображения и производительность
-			'''
-	}
-
 	DisableHdrDuringBossFights: {
 		Label: Выключать HDR во время битв с боссами или событий
 		Tooltip:
@@ -162,6 +96,73 @@ PreferencesConfig: {
 	RenderOnlyLight: {
 		Label: (Отладка) Показывать цвета освещения
 		Tooltip: Показывает цвета освещения без блоков и текстур
+	}
+
+	# Full HDR Rendering
+	
+	Exposure: {
+		Label: Экспозиция (Full HDRR) (%)
+		Tooltip:
+			'''
+			Экспозиция используется при смене динамического диапазона с HDR на SDR
+
+			Высокие значения обычно делают изображение светлее
+			Режим HDR должен быть включен для работы данной настройки
+			'''
+	}
+
+	ToneMappingOperator: {
+		// Label: Tone Mapping Operator
+		/* Tooltip:
+			'''
+			Which tone mapping operator is used
+
+			Affects the overall appearance of lighting in the final image
+			The Linear tone mapping operator also disables dithering
+			''' */
+	}
+
+	SaturationBoost: {
+		// Label: Color Vibrance
+		/* Tooltip:
+			'''
+			How much to boost the vibrance of colors
+
+			A value of 0 leaves colors unchanged
+			''' */
+	}
+
+	BloomRadius: {
+		Label: Радиус свечения
+		Tooltip:
+			'''
+			Радиус эффектов свечения
+
+			Высокие значение делают свечение вокруг ярких объектов больше
+			Свечение должно быть включено для работы данной настройки
+			'''
+	}
+
+	BloomStrength: {
+		Label: Сила отображения свечения
+		Tooltip:
+			'''
+			Сила эффектов свечения
+
+			Высокие значение делают свечение вокруг ярких объектов ярче
+			Свечение должно быть включено для работы данной настройки
+			'''
+	}
+
+	UseHdrCompatibilityFixes: {
+		Label: Исправления для совместимостью с HDR
+		Tooltip:
+			'''
+			Включите исправления, которые могут помочь с совместимостью мода и режима HDR
+
+			Может избавить от некоторых проблем с отображением, связанных с другими модами
+			Слабо влияет на качество отображения и производительность
+			'''
 	}
 
 	# Ambient Occlusion

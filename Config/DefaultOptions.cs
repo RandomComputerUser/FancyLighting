@@ -30,15 +30,17 @@ public static class DefaultOptions
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 4;
     public const bool FineNormalMaps = false;
-    public const int Exposure = 100;
-    public const int BloomRadius = 5;
-    public const int BloomStrength = 6;
-    public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Preset1;
-    public const int SaturationBoost = 3;
-    public const bool UseHdrCompatibilityFixes = false;
     public const bool DisableHdrDuringBossFights = false;
     public const bool UseGrayscaleLighting = false;
     public const bool RenderOnlyLight = false;
+
+    // Full HDR Rendering Preferences
+    public const int Exposure = 100;
+    public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Preset1;
+    public const int SaturationBoost = 3;
+    public const int BloomRadius = 5;
+    public const int BloomStrength = 6;
+    public const bool UseHdrCompatibilityFixes = false;
 
     // Ambient Occlusion
     public const bool UseAmbientOcclusion = true;

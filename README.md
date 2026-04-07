@@ -29,5 +29,6 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Increased the maximum normal maps strength to 15 (from 12)
 - Increased the maximum bloom strength to 20 (from 15)
 - Full HDRR exposure can now be adjusted in increments of 5 (instead of 10)
+- Rearranged some settings in the config
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
