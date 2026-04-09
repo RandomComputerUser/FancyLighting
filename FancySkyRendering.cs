@@ -12,7 +12,9 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
-    private const float SkyBrightness = 1.6f;
+    private const float SkyBrightness = 1.4f;
+    private const float SkyBrightnessHiDef = 1.6f;
+
     private const float FadeBegin = 0.12f;
     private const float FadeHeight = 0.24f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
@@ -67,10 +69,10 @@ public static class FancySkyRendering
             return;
         }
 
+        var doOverbright = LightingConfig.Instance.DrawOverbright();
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doDithering =
-            LightingConfig.Instance.SmoothLightingEnabled()
-            && LightingConfig.Instance.DrawOverbright()
-            && !LightingConfig.Instance.HiDefFeaturesEnabled();
+            LightingConfig.Instance.SmoothLightingEnabled() && doOverbright && !hiDef;
         var gamma = Main.gameMenu
             ? PostProcessing.DefaultGamma
             : PostProcessing.ContentGamma();
@@ -85,6 +87,7 @@ public static class FancySkyRendering
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
+        var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
 
         var highSkyColor = skyColorMult * SkyColorsHigh.Instance.GetColor(hour);
         var lowSkyColor = skyColorMult * SkyColorsLow.Instance.GetColor(hour);
@@ -94,8 +97,8 @@ public static class FancySkyRendering
         lowSkyColor.X = MathF.Pow(lowSkyColor.X, gamma);
         lowSkyColor.Y = MathF.Pow(lowSkyColor.Y, gamma);
         lowSkyColor.Z = MathF.Pow(lowSkyColor.Z, gamma);
-        highSkyColor *= SkyBrightness;
-        lowSkyColor *= SkyBrightness;
+        highSkyColor *= skyBrightness;
+        lowSkyColor *= skyBrightness;
 
         var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
         if (Main.gameMenu)
