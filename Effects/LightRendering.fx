@@ -441,7 +441,6 @@ float4 GlowMask(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 primary = tex2D(TextureSampler, coords);
     float4 glow = tex2D(GlowSampler, GlowCoordMult * coords);
-    float4 selector = glow;
     float4 bright = max(primary, glow);
     
     return float4(
