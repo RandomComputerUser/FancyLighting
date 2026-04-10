@@ -1,7 +1,6 @@
 ﻿using FancyLighting.Utils.Accessors;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Terraria.Graphics.Light;
-using Terraria.ID;
 
 namespace FancyLighting;
 
@@ -191,150 +190,31 @@ internal sealed class SmoothLighting
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
-    private static bool ShouldTileShine(ushort type, short frameX)
-    {
-        // We could use the method from vanilla, but that's
-        //   private and using reflection to get a delegate
-        //   might reduce performance
-
-        // This code is adapted from vanilla
-
-        if ((Main.shimmerAlpha > 0f && Main.tileSolid[type]) || type == TileID.Stalactite)
-        {
-            return true;
-        }
-
-        if (!Main.tileShine2[type])
-        {
-            return false;
-        }
-
-        switch (type)
-        {
-            case TileID.Containers:
-            case TileID.FakeContainers:
-                if (frameX >= 36)
-                {
-                    return frameX < 178;
-                }
-
-                return false;
-
-            case TileID.Containers2:
-            case TileID.FakeContainers2:
-                if (frameX >= 144)
-                {
-                    return frameX < 178;
-                }
-
-                return false;
-        }
-
-        return true;
-    }
-
     private static void TileShine(ref Vector3 color, Tile tile)
     {
-        // Method from vanilla limits brightness to 1f,
-        //   which we don't want
-
-        // This code is adapted from vanilla
-
         var type = tile.TileType;
         var frameX = tile.TileFrameX;
-
-        if (!ShouldTileShine(type, frameX))
+        if (!TileDrawingAccessors.ShouldTileShine(null, type, frameX))
         {
             return;
         }
 
-        float brightness;
-
-        switch (type)
+        var shimmerAlphaTmp = Main.shimmerAlpha;
+        Main.shimmerAlpha = 0f;
+        Main.shine(ref color, type);
+        Main.shimmerAlpha = shimmerAlphaTmp;
+        if (shimmerAlphaTmp > 0f)
         {
-            case TileID.Ebonstone:
-                color.X *= 0.95f;
-                color.Y *= 0.85f;
-                color.Z *= 1.1f;
-                break;
-
-            case TileID.Pearlstone:
-                color.X *= 1.1f;
-                color.Z *= 1.2f;
-                break;
-
-            case TileID.SnowBlock:
-            case TileID.IceBlock:
-                color.X *= 1.1f;
-                color.Y *= 1.12f;
-                color.Z *= 1.15f;
-                break;
-
-            case TileID.CorruptIce:
-                color.X *= 1.05f;
-                color.Y *= 1.1f;
-                color.Z *= 1.15f;
-                break;
-
-            case TileID.HallowedIce:
-                color.X *= 1.1f;
-                color.Y *= 1.1f;
-                color.Z *= 1.2f;
-                break;
-
-            case TileID.ExposedGems:
-                color.X *= 1.5f;
-                color.Y *= 1.5f;
-                color.Z *= 1.5f;
-                break;
-
-            case TileID.SmallPiles:
-            case TileID.LargePiles:
-                color.X *= 1.3f;
-                color.Y *= 1.3f;
-                color.Z *= 1.3f;
-                break;
-
-            case TileID.Crimtane:
-                brightness = 0.3f + (Main.mouseTextColor * (1f / 300f));
-                color.X *= 1.3f * brightness;
-                return;
-
-            case TileID.Chlorophyte:
-                brightness = 0.3f + (Main.mouseTextColor * (1f / 300f));
-                color.Y *= 1.5f * brightness;
-                color.Z *= 1.1f * brightness;
-                break;
-
-            case TileID.AmethystGemspark:
-            case TileID.TopazGemspark:
-            case TileID.SapphireGemspark:
-            case TileID.EmeraldGemspark:
-            case TileID.RubyGemspark:
-            case TileID.DiamondGemspark:
-            case TileID.AmberGemspark:
-                color.X += 100f / 255f;
-                color.Y += 100f / 255f;
-                color.Z += 100f / 255f;
-                break;
-
-            default:
-                if (Main.tileShine2[type])
-                {
-                    color.X *= 1.6f;
-                    color.Y *= 1.6f;
-                    color.Z *= 1.6f;
-                }
-
-                break;
-        }
-
-        var shimmer = Main.shimmerAlpha;
-        if (shimmer > 0f)
-        {
-            var tmp = 1f - shimmer;
-            color.X *= tmp + (1.2f * shimmer);
-            color.Z *= tmp + (1.6f * shimmer);
+            // This code is adapted from vanilla
+            // The vanilla Main.shine() function limits each component to a max of 1
+            // We don't want that
+            ref var shimmerShine = ref MainAccessors.shimmerShine(null);
+            shimmerShine.X = 1.2f;
+            shimmerShine.Y = 1f;
+            shimmerShine.Z = 1.6f;
+            color.X = MathUtils.Lerp(color.X, color.X * shimmerShine.X, shimmerAlphaTmp);
+            color.Y = MathUtils.Lerp(color.Y, color.Y * shimmerShine.Y, shimmerAlphaTmp);
+            color.Z = MathUtils.Lerp(color.Z, color.Z * shimmerShine.Z, shimmerAlphaTmp);
         }
     }
 
@@ -605,21 +485,13 @@ internal sealed class SmoothLighting
                             || _hasLight[i + height + 1]
                         )
                         {
-                            whiteLight.X = 1f;
-                            whiteLight.Y = 1f;
-                            whiteLight.Z = 1f;
-                            blackLight.X = 1f / 255;
-                            blackLight.Y = 1f / 255;
-                            blackLight.Z = 1f / 255;
+                            whiteLight.X = whiteLight.Y = whiteLight.Z = 1f;
+                            blackLight.X = blackLight.Y = blackLight.Z = 1f / 255;
                         }
                         else
                         {
-                            whiteLight.X = 0f;
-                            whiteLight.Y = 0f;
-                            whiteLight.Z = 0f;
-                            blackLight.X = 0f;
-                            blackLight.Y = 0f;
-                            blackLight.Z = 0f;
+                            whiteLight.X = whiteLight.Y = whiteLight.Z = 0f;
+                            blackLight.X = blackLight.Y = blackLight.Z = 0f;
                         }
                     }
                     catch (IndexOutOfRangeException)

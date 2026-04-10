@@ -1,4 +1,6 @@
-﻿namespace FancyLighting.Utils;
+﻿using System.Runtime.CompilerServices;
+
+namespace FancyLighting.Utils;
 
 internal static class MathUtils
 {
@@ -25,5 +27,6 @@ internal static class MathUtils
         return big * Math.Sqrt(1.0 + (ratio * ratio));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Lerp(float x, float y, float t) => ((1 - t) * x) + (t * y);
 }

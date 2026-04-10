@@ -33,7 +33,7 @@ public class VanillaSkyLightColors : ISimpleColorProfile
                 color.Y = (level * 220f) + 35f;
                 color.Z = (level * 220f) + 35f;
             }
-            if (time > 45900.0)
+            else if (time > 45900.0)
             {
                 level = (float)(1.0 - (((time / 54000.0) - 0.85) * 6.666666666666667));
                 color.X = (level * 200f) + 35f;
