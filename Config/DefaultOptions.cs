@@ -39,7 +39,7 @@ public static class DefaultOptions
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Preset1;
     public const int VibranceBoost = 3;
     public const int BloomRadius = 5;
-    public const int BloomStrength = 6;
+    public const int BloomStrength = 8;
     public const bool UseHdrCompatibilityFixes = false;
 
     // Ambient Occlusion

@@ -50,7 +50,7 @@ float4 Sun(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     float4 baseColor = tex2D(TextureSampler, coords);
     baseColor.rgb = pow(baseColor.rgb, Gamma);
-    baseColor.rgb += 160 * pow(baseColor.rgb, 8);
+    baseColor.rgb += 120 * pow(baseColor.rgb, 8);
     
     // Desaturate
     float brightest = max(max(baseColor.r, baseColor.g), baseColor.b);
