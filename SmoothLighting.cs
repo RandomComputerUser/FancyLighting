@@ -190,7 +190,7 @@ internal sealed class SmoothLighting
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
-    private static void TileShine(ref Vector3 color, Tile tile)
+    private static void TileShine(ref Vector3 color, Tile tile, float shimmerAlpha)
     {
         var type = tile.TileType;
         var frameX = tile.TileFrameX;
@@ -199,22 +199,17 @@ internal sealed class SmoothLighting
             return;
         }
 
-        var shimmerAlphaTmp = Main.shimmerAlpha;
-        Main.shimmerAlpha = 0f;
         Main.shine(ref color, type);
-        Main.shimmerAlpha = shimmerAlphaTmp;
-        if (shimmerAlphaTmp > 0f)
+        if (shimmerAlpha > 0f)
         {
             // This code is adapted from vanilla
             // The vanilla Main.shine() function limits each component to a max of 1
             // We don't want that
-            ref var shimmerShine = ref MainAccessors.shimmerShine(null);
-            shimmerShine.X = 1.2f;
-            shimmerShine.Y = 1f;
-            shimmerShine.Z = 1.6f;
-            color.X = MathUtils.Lerp(color.X, color.X * shimmerShine.X, shimmerAlphaTmp);
-            color.Y = MathUtils.Lerp(color.Y, color.Y * shimmerShine.Y, shimmerAlphaTmp);
-            color.Z = MathUtils.Lerp(color.Z, color.Z * shimmerShine.Z, shimmerAlphaTmp);
+            var shimmerShine = MainAccessors.shimmerShine(null);
+            var inverseShimmerAlpha = 1f - shimmerAlpha;
+            color.X *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.X);
+            color.Y *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.Y);
+            color.Z *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.Z);
         }
     }
 
@@ -1020,6 +1015,8 @@ internal sealed class SmoothLighting
         _finalLights = null; // Save some memory
 
         var brightness = Lighting.GlobalBrightness;
+        var shimmerAlpha = Main.shimmerAlpha;
+        Main.shimmerAlpha = 0f;
         Parallel.For(
             clampedStart,
             clampedEnd,
@@ -1042,7 +1039,7 @@ internal sealed class SmoothLighting
                             lightColor.Z = Math.Max(lightColor.Z, 1f);
                         }
 
-                        TileShine(ref lightColor, tile);
+                        TileShine(ref lightColor, tile, shimmerAlpha);
                         ColorUtils.Assign(ref _finalLightsHiDef[i], lightColor);
                     }
                     catch (IndexOutOfRangeException)
@@ -1054,6 +1051,7 @@ internal sealed class SmoothLighting
                 }
             }
         );
+        Main.shimmerAlpha = shimmerAlpha;
 
         TextureUtils.MakeAtLeastSize(
             ref _colors,
@@ -1085,6 +1083,8 @@ internal sealed class SmoothLighting
         _finalLightsHiDef = null; // Save some memory
 
         var brightness = Lighting.GlobalBrightness;
+        var shimmerAlpha = Main.shimmerAlpha;
+        Main.shimmerAlpha = 0f;
         Parallel.For(
             clampedStart,
             clampedEnd,
@@ -1107,7 +1107,7 @@ internal sealed class SmoothLighting
                             lightColor.Z = Math.Max(lightColor.Z, 1f);
                         }
 
-                        TileShine(ref lightColor, tile);
+                        TileShine(ref lightColor, tile, shimmerAlpha);
                         ColorUtils.Assign(ref _finalLights[i], 1f, lightColor);
                     }
                     catch (IndexOutOfRangeException)
@@ -1119,6 +1119,7 @@ internal sealed class SmoothLighting
                 }
             }
         );
+        Main.shimmerAlpha = shimmerAlpha;
 
         TextureUtils.MakeAtLeastSize(
             ref _colors,
