@@ -34,3 +34,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Rearranged some settings in the config
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
+- Fixed a bug causing extra gore to spawn with Smooth Lighting enabled
+- Fixed some uncommon graphical glitches
