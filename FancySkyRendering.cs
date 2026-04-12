@@ -19,6 +19,15 @@ public static class FancySkyRendering
     private const float FadeHeight = 0.24f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
 
+    public delegate void SkyColorModifier(
+        ref Vector3 highSkyColor,
+        ref Vector3 lowSkyColor,
+        ref Vector3 skyColorMult
+    );
+
+    // Meant for other mods to use
+    public static event SkyColorModifier ModifySkyColors;
+
     internal static void Load()
     {
         _ditherNoise = ModContent
@@ -84,13 +93,19 @@ public static class FancySkyRendering
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
 
         var hour = GameTimeUtils.CalculateCurrentHour();
+        // skyColorMult is the effect the current biome has on the color of sky light
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
         var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
 
-        var highSkyColor = skyColorMult * SkyColorsHigh.Instance.GetColor(hour);
-        var lowSkyColor = skyColorMult * SkyColorsLow.Instance.GetColor(hour);
+        var highSkyColor = SkyColorsHigh.Instance.GetColor(hour);
+        var lowSkyColor = SkyColorsLow.Instance.GetColor(hour);
+
+        ModifySkyColors?.Invoke(ref highSkyColor, ref lowSkyColor, ref skyColorMult);
+
+        highSkyColor *= skyColorMult;
+        lowSkyColor *= skyColorMult;
         highSkyColor.X = MathF.Pow(highSkyColor.X, gamma);
         highSkyColor.Y = MathF.Pow(highSkyColor.Y, gamma);
         highSkyColor.Z = MathF.Pow(highSkyColor.Z, gamma);
