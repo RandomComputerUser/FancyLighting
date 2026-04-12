@@ -52,6 +52,7 @@ internal sealed class AmbientOcclusion
     public void Unload()
     {
         _blurTarget?.Dispose();
+        _drawTarget?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _tileEntityTarget?.Dispose();
@@ -142,7 +143,7 @@ internal sealed class AmbientOcclusion
             ref _blurTarget,
             screenTarget.Width,
             screenTarget.Height,
-            SurfaceFormat.Alpha8
+            SurfaceFormat.Color // SurfaceFormat.Alpha8 is not supported
         );
         TextureUtils.MakeSize(
             ref _cameraModeTarget1,

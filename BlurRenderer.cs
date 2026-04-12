@@ -117,7 +117,9 @@ internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
             src.Width,
             src.Height,
             passCount,
-            alphaOnly ? SurfaceFormat.Alpha8 : TextureUtils.ScreenFormat
+            alphaOnly
+                ? SurfaceFormat.Color // SurfaceFormat.Alpha8 is not supported
+                : TextureUtils.ScreenFormat
         );
         InitShaders();
 
