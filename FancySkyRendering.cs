@@ -12,8 +12,8 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
-    private const float SkyBrightness = 1.4f;
-    private const float SkyBrightnessHiDef = 1.6f;
+    private const float SkyBrightness = 1.3f;
+    private const float SkyBrightnessHiDef = 1.5f;
 
     private const float FadeBegin = 0.12f;
     private const float FadeHeight = 0.24f;
