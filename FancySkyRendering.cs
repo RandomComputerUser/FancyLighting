@@ -95,7 +95,8 @@ public static class FancySkyRendering
         var hour = GameTimeUtils.CalculateCurrentHour();
         // skyColorMult is the effect the current biome has on the color of sky light
         var skyColorMult =
-            Main.ColorOfTheSkies.ToVector3() / FancySkyColors.CalculateSkyColor(hour);
+            Main.ColorOfTheSkies.ToVector3()
+            / new Color(FancySkyColors.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
         var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
 
