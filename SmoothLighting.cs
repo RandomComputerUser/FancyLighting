@@ -1322,6 +1322,8 @@ internal sealed class SmoothLighting
         }
         else
         {
+            MainGraphics.ResetSavedTextures();
+
             if (lightedGlow is null)
             {
                 _glowMaskShader
@@ -1352,13 +1354,12 @@ internal sealed class SmoothLighting
                         )
                     )
                     .Apply();
-                Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
-                Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+                MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
             }
 
-            Main.graphics.GraphicsDevice.Textures[4] = glow;
-            Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+            MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
             Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
+            MainGraphics.RestoreSavedTextures();
         }
         Main.spriteBatch.End();
     }
@@ -1530,13 +1531,11 @@ internal sealed class SmoothLighting
                     - (worldCoordMult * new Vector2(0.5f))
             );
 
-        Main.graphics.GraphicsDevice.Textures[4] = worldTarget;
-        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
-
+        MainGraphics.ResetSavedTextures();
+        MainGraphics.SetTexture(4, worldTarget, SamplerState.PointClamp);
         if (doAmbientOcclusion)
         {
-            Main.graphics.GraphicsDevice.Textures[5] = ambientOcclusionTarget;
-            Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+            MainGraphics.SetTexture(5, ambientOcclusionTarget, SamplerState.PointClamp);
         }
 
         if (doDithering)
@@ -1550,8 +1549,7 @@ internal sealed class SmoothLighting
                     )
                 )
                 .Apply();
-            Main.graphics.GraphicsDevice.Textures[6] = _ditherNoise;
-            Main.graphics.GraphicsDevice.SamplerStates[6] = SamplerState.PointWrap;
+            MainGraphics.SetTexture(6, _ditherNoise, SamplerState.PointWrap);
         }
 
         shader.Apply();
@@ -1567,6 +1565,7 @@ internal sealed class SmoothLighting
             0f
         );
         Main.spriteBatch.End();
+        MainGraphics.RestoreSavedTextures();
 
         if (!doOverbright && !lightOnly)
         {
@@ -1595,6 +1594,8 @@ internal sealed class SmoothLighting
             DepthStencilState.None,
             RasterizerState.CullNone
         );
+
+        MainGraphics.ResetSavedTextures();
 
         if (lightedGlow is null)
         {
@@ -1626,13 +1627,12 @@ internal sealed class SmoothLighting
                     )
                 )
                 .Apply();
-            Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
-            Main.graphics.GraphicsDevice.SamplerStates[5] = SamplerState.PointClamp;
+            MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
         }
 
-        Main.graphics.GraphicsDevice.Textures[4] = glow;
-        Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+        MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
         Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
+        MainGraphics.RestoreSavedTextures();
     }
 }

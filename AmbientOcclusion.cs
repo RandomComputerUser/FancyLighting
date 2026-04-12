@@ -252,6 +252,8 @@ internal sealed class AmbientOcclusion
             }
             else
             {
+                MainGraphics.ResetSavedTextures();
+
                 if (lightedGlow is null)
                 {
                     _glowMaskShader
@@ -282,14 +284,12 @@ internal sealed class AmbientOcclusion
                             )
                         )
                         .Apply();
-                    Main.graphics.GraphicsDevice.Textures[5] = lightedGlow;
-                    Main.graphics.GraphicsDevice.SamplerStates[5] =
-                        SamplerState.PointClamp;
+                    MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
                 }
 
-                Main.graphics.GraphicsDevice.Textures[4] = glow;
-                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointClamp;
+                MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
                 Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                MainGraphics.RestoreSavedTextures();
             }
             Main.spriteBatch.End();
         }

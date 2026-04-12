@@ -273,11 +273,12 @@ internal sealed class PostProcessing
                     .SetParameter("BloomStrength", bloomStrength)
                     .Apply();
 
-                Main.graphics.GraphicsDevice.Textures[4] = bloomTarget;
-                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.LinearClamp;
+                MainGraphics.ResetSavedTextures();
+                MainGraphics.SetTexture(4, bloomTarget, SamplerState.LinearClamp);
 
                 Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
+                MainGraphics.RestoreSavedTextures();
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
@@ -370,14 +371,15 @@ internal sealed class PostProcessing
                 .SetParameter("OutputGamma", outputGamma)
                 .Apply();
 
+            MainGraphics.ResetSavedTextures();
             if (!disableDither)
             {
-                Main.graphics.GraphicsDevice.Textures[4] = _ditherNoise;
-                Main.graphics.GraphicsDevice.SamplerStates[4] = SamplerState.PointWrap;
+                MainGraphics.SetTexture(4, _ditherNoise, SamplerState.PointWrap);
             }
 
             Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
+            MainGraphics.RestoreSavedTextures();
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
         }

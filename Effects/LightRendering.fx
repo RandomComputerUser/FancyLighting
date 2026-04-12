@@ -441,11 +441,11 @@ float4 GlowMask(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 primary = tex2D(TextureSampler, coords);
     float4 glow = tex2D(GlowSampler, GlowCoordMult * coords);
-    float4 bright = max(primary, glow);
+    float3 bright = max(primary.rgb, glow.rgb);
     
     return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, glow.rgb)),
-        bright.a
+        lerp(primary.rgb, bright, step(2.0 / 255, glow.rgb)),
+        primary.a
     );
 }
 
@@ -454,11 +454,11 @@ float4 EnhancedGlowMask(float2 coords : TEXCOORD0) : COLOR0
     float4 primary = tex2D(TextureSampler, coords);
     float4 selector = tex2D(GlowSampler, GlowCoordMult * coords);
     float4 glow = tex2D(LightedGlowSampler, LightedGlowCoordMult * coords);
-    float4 bright = max(primary, glow);
+    float3 bright = max(primary.rgb, glow.rgb);
     
     return float4(
-        lerp(primary.rgb, bright.rgb, step(2.0 / 255, selector.rgb)),
-        bright.a
+        lerp(primary.rgb, bright, step(2.0 / 255, selector.rgb)),
+        primary.a
     );
 }
 

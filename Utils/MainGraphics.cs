@@ -4,6 +4,12 @@ namespace FancyLighting.Utils;
 
 internal static class MainGraphics
 {
+    private static Stack<(
+        int slot,
+        Texture texture,
+        SamplerState samplerState
+    )> _savedTextures = new();
+
     public static RenderTarget2D GetRenderTarget()
     {
         var renderTargets = Main.graphics.GraphicsDevice.GetRenderTargets();
@@ -19,4 +25,30 @@ internal static class MainGraphics
 
     public static Matrix GetTransformMatrix() =>
         SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+
+    internal static void ResetSavedTextures() => _savedTextures.Clear();
+
+    internal static void SetTexture(int slot, Texture texture, SamplerState samplerState)
+    {
+        _savedTextures.Push(
+            (
+                slot,
+                Main.graphics.GraphicsDevice.Textures[slot],
+                Main.graphics.GraphicsDevice.SamplerStates[slot]
+            )
+        );
+
+        Main.graphics.GraphicsDevice.Textures[slot] = texture;
+        Main.graphics.GraphicsDevice.SamplerStates[slot] = samplerState;
+    }
+
+    internal static void RestoreSavedTextures()
+    {
+        while (_savedTextures.TryPop(out var textureInfo))
+        {
+            Main.graphics.GraphicsDevice.Textures[textureInfo.slot] = textureInfo.texture;
+            Main.graphics.GraphicsDevice.SamplerStates[textureInfo.slot] =
+                textureInfo.samplerState;
+        }
+    }
 }
