@@ -19,7 +19,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Slightly increased the contrast of lighting when using full HDR rendering
 - Made Fancy Atmosphere brighter and more colorful
 - Tweaked the sky colors used by Fancy Atmosphere
-- Decreased the brightness of the sun in Fancy Atmosphere
+- Tweaked the appearance of the sun in Fancy Atmosphere
 - Tweaked sky light color Preset 1 (now called "Natural")
 - Improved and optimized global illumination
 - The gamma setting now adjusts output gamma (instead of content gamma)
@@ -35,4 +35,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
 - Fixed a bug causing extra gore to spawn with Smooth Lighting enabled
+- Fixed some potential graphical glitches caused by Fancy Atmosphere
 - Fixed some uncommon graphical glitches

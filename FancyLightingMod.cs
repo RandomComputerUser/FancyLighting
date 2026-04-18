@@ -628,6 +628,7 @@ public sealed class FancyLightingMod : Mod
 
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
+        var rasterizerState = _inCameraMode ? RasterizerState.CullNone : Main.Rasterizer;
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
@@ -638,12 +639,22 @@ public sealed class FancyLightingMod : Mod
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
-            _inCameraMode ? RasterizerState.CullNone : Main.Rasterizer,
+            rasterizerState,
             null,
             transform
         );
         _smoothLightingInstance.ApplyBrightenShader(sunMoonBrightness);
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+        Main.spriteBatch.End();
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            rasterizerState,
+            null,
+            transform
+        );
     }
 
     // Tile entities

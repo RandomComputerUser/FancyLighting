@@ -39,7 +39,7 @@ public static class FancySkyRendering
             "FancyLighting/Effects/Sky",
             "SkyDithered"
         );
-        _sunShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sun");
+        _sunShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sun", true);
 
         AddHooks();
     }
@@ -79,7 +79,7 @@ public static class FancySkyRendering
         }
 
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
         var doDithering =
             LightingConfig.Instance.SmoothLightingEnabled() && doOverbright && !hiDef;
         var gamma = Main.gameMenu
@@ -243,6 +243,10 @@ public static class FancySkyRendering
 
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
+        var origTransform = transform;
+        var rasterizerState = FancyLightingMod._inCameraMode
+            ? RasterizerState.CullNone
+            : Main.Rasterizer;
         Main.spriteBatch.End();
 
         if (!Main.gameMenu)
@@ -265,7 +269,7 @@ public static class FancySkyRendering
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
-            FancyLightingMod._inCameraMode ? RasterizerState.CullNone : Main.Rasterizer,
+            rasterizerState,
             null,
             transform
         );
@@ -280,5 +284,15 @@ public static class FancySkyRendering
                 .Apply();
         }
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+        Main.spriteBatch.End();
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            samplerState,
+            DepthStencilState.None,
+            rasterizerState,
+            null,
+            origTransform
+        );
     }
 }

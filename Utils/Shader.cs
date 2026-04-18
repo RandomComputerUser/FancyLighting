@@ -8,7 +8,9 @@ internal class Shader
     private EffectPass _hiDefShader;
 
     protected EffectPass EffectPass =>
-        _hiDefShader is not null && LightingConfig.Instance.HiDefFeaturesEnabled()
+        _hiDefShader is not null
+        && LightingConfig.Instance.HiDefFeaturesEnabled()
+        && !Main.gameMenu
             ? _hiDefShader
             : _shader;
 
