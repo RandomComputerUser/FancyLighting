@@ -17,7 +17,9 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added a setting to boost color vibrance when using full HDR rendering
 - Color vibrance is now boosted by default when using full HDR rendering
 - Slightly increased the contrast of lighting when using full HDR rendering
-- Made Fancy Atmosphere brighter and more colorful
+- Made Fancy Atmosphere more colorful
+- Added a setting to boost sky brightness when Fancy Atmosphere is enabled
+- Sky brightness is now boosted by default when using Fancy Atmosphere
 - Fancy Atmosphere is now (mostly) compatible with camera mode
 - Tweaked the sky colors used by Fancy Atmosphere
 - Tweaked the appearance of the sun in Fancy Atmosphere

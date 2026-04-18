@@ -39,6 +39,8 @@ public sealed class PreferencesConfig : ModConfig
     internal float FancyLightingEngineGlobalIlluminationMultiplier() =>
         FancyLightingEngineIndirectBrightness / 100f;
 
+    internal float SkyBrightness() => SkyBrightnessBoost / 5f;
+
     public override void OnChanged()
     {
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
@@ -175,6 +177,11 @@ public sealed class PreferencesConfig : ModConfig
     // Fancy Sky
 
     [Header("FancySky")]
+    [Range(0, 10)]
+    [DefaultValue(DefaultOptions.SkyBrightnessBoost)]
+    [Slider]
+    public int SkyBrightnessBoost { get; set; }
+
     [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
     public SkyColorPreset FancySkyColorsPreset { get; set; }
 

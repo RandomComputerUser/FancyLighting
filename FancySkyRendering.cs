@@ -12,7 +12,7 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
-    private const float SkyBrightness = 1.3f;
+    private const float SkyBrightness = 1.4f;
     private const float SkyBrightnessHiDef = 1.5f;
 
     private const float FadeBegin = 0.12f;
@@ -98,6 +98,11 @@ public static class FancySkyRendering
             / new Color(FancySkyColors.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
         var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
+        skyBrightness = Math.Clamp(
+            MathUtils.Lerp(1f, skyBrightness, PreferencesConfig.Instance.SkyBrightness()),
+            0f,
+            10f
+        );
 
         var highSkyColor = SkyColorsHigh.Instance.GetColor(hour);
         var lowSkyColor = SkyColorsLow.Instance.GetColor(hour);

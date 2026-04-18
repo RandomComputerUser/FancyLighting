@@ -70,6 +70,7 @@ public static class DefaultOptions
     public const bool UseFancySkyColors = true;
 
     // Fancy Sky Preferences
+    public const int SkyBrightnessBoost = 5;
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
     public const bool ShowFancySkyColorGradients = false;
 }

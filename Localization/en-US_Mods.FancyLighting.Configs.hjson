@@ -254,6 +254,16 @@ PreferencesConfig: {
 
 	# Fancy Sky
 	
+	SkyBrightnessBoost: {
+		Label: Sky Brightness Boost
+		Tooltip:
+			'''
+			How much to boost the brightness of the sky
+
+			Fancy Atmosphere must be enabled for this setting to have any effect
+			'''
+	}
+
 	FancySkyColorsPreset: {
 		Label: Sky Light Color Preset
 		Tooltip:
