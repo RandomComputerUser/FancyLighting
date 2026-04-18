@@ -454,7 +454,7 @@ LightingConfig: {
 			'''
 			Use improved atmosphere and sun rendering
 
-			This feature is not compatible with camera mode
+			May cause issues when taking large snapshots using camera mode
 			'''
 	}
 

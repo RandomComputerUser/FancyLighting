@@ -67,11 +67,7 @@ public static class FancySkyRendering
         bool artificial
     )
     {
-        if (
-            LightingConfig.Instance?.FancySkyRenderingEnabled() is not true
-            || FancyLightingMod._inCameraMode
-            || artificial
-        )
+        if (LightingConfig.Instance?.FancySkyRenderingEnabled() is not true || artificial)
         {
             _modifyStarDrawing = false;
             orig(self, sceneArea, artificial);
@@ -88,6 +84,9 @@ public static class FancySkyRendering
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
+        var rasterizerState = FancyLightingMod._inCameraMode
+            ? RasterizerState.CullNone
+            : Main.Rasterizer;
         Main.spriteBatch.End();
 
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
@@ -176,7 +175,7 @@ public static class FancySkyRendering
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
-            Main.Rasterizer,
+            rasterizerState,
             null,
             transformMatrix
         );
@@ -249,7 +248,7 @@ public static class FancySkyRendering
             : Main.Rasterizer;
         Main.spriteBatch.End();
 
-        if (!Main.gameMenu)
+        if (!Main.gameMenu && !FancyLightingMod._inCameraMode)
         {
             // shift sun/moon downward
             transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;

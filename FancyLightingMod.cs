@@ -598,12 +598,6 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
-        if (_inCameraMode)
-        {
-            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
-            return;
-        }
-
         if (LightingConfig.Instance.FancySkyRenderingEnabled())
         {
             FancySkyRendering.DrawSunAndMoon(
