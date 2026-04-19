@@ -1,4 +1,5 @@
 ﻿using FancyLighting.Config.Enums;
+using ReLogic.Content;
 
 namespace FancyLighting;
 
@@ -30,7 +31,10 @@ internal sealed class PostProcessing
     public PostProcessing()
     {
         _ditherNoise = ModContent
-            .Request<Texture2D>("FancyLighting/Effects/DitherNoise")
+            .Request<Texture2D>(
+                "FancyLighting/Effects/DitherNoise",
+                AssetRequestMode.ImmediateLoad
+            )
             .Value;
 
         _gammaToLinearShader = EffectLoader.LoadEffect(

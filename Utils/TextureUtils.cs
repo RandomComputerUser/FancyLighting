@@ -10,7 +10,7 @@ internal static class TextureUtils
     public static SurfaceFormat LightMapFormat =>
         LightingConfig.Instance.DrawOverbright()
             ? SurfaceFormat.HalfVector4
-            : SurfaceFormat.Color;
+            : SurfaceFormat.Rgba1010102;
 
     public static void MakeSize(
         ref RenderTarget2D target,

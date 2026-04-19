@@ -25,6 +25,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Tweaked the appearance of the sun in Fancy Atmosphere
 - Tweaked sky light color Preset 1 (now called "Natural")
 - Improved and optimized global illumination
+- Slightly improved the quality of the bicubic render mode
 - The gamma setting now adjusts output gamma (instead of content gamma)
 - Gamma and sRGB output no longer affect camera mode
 - Increased the range of the gamma setting to 140–300 (from 160–280)
