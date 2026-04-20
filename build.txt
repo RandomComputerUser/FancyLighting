@@ -10,3 +10,5 @@ hideResources = false
 includeSource = true
 
 includePDB = true
+
+sortBefore = CalamityMod, Lights, Nitrate, SpiritReforged

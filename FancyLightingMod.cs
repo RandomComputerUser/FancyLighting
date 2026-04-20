@@ -149,6 +149,7 @@ public sealed class FancyLightingMod : Mod
         FancySkyRendering.Load();
         FancySkyColors.Load();
 
+        CalamityModCompatibility.Load();
         LightsCompatibility.Load();
         NitrateCompatibility.Load();
         SpiritReforgedCompatibility.Load();
@@ -189,6 +190,7 @@ public sealed class FancyLightingMod : Mod
             FancySkyRendering.Unload();
             FancySkyColors.Unload();
 
+            CalamityModCompatibility.Unload();
             LightsCompatibility.Unload();
             NitrateCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();

@@ -96,7 +96,7 @@ public static class FancySkyColors
 
         cursor.GotoNext(
             MoveType.After,
-            (instruction) =>
+            instruction =>
                 instruction.OpCode == OpCodes.Call
                 && (instruction.Operand as MethodReference)?.Name is "ModifyNightColor"
         );

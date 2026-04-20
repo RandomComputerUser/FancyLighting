@@ -41,3 +41,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Fixed a bug causing extra gore to spawn with Smooth Lighting enabled
 - Fixed some potential graphical glitches caused by Fancy Atmosphere
 - Fixed some uncommon graphical glitches
+- Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
