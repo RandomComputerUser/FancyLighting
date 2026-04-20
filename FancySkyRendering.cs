@@ -127,7 +127,7 @@ public static class FancySkyRendering
         var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
         if (Main.gameMenu)
         {
-            highLevel -= 0.02f * target.Width / target.Height;
+            highLevel -= 0.04f * target.Width / target.Height;
         }
         var lowLevel = highLevel + (FadeHeight * target.Width / target.Height);
 

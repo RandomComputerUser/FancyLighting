@@ -14,9 +14,9 @@ public class SunColors : ISimpleColorProfile
         var sunriseTime = noonTime - (6.0 + (50.0 / 60.0));
         var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
 
-        var nightColor = new Vector3(1f, 0.8f, 0.57f);
-        var sunriseSunsetColor = new Vector3(1f, 0.86f, 0.70f);
-        var dayColor1 = new Vector3(1f, 0.92f, 0.83f);
+        var nightColor = new Vector3(1f, 0.77f, 0.45f);
+        var sunriseSunsetColor = new Vector3(1f, 0.84f, 0.62f);
+        var dayColor1 = new Vector3(1f, 0.91f, 0.76f);
         var dayColor2 = new Vector3(1f, 0.97f, 0.93f);
         var dayColor = new Vector3(1f, 1f, 1f);
 
