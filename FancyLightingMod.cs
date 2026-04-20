@@ -717,7 +717,13 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (
+            !LightingConfig.Instance.SmoothLightingEnabled()
+            || (
+                SpiritReforgedCompatibility._disableCustomLiquidRendering
+                && !PreferencesConfig.Instance.RenderOnlyLight
+            )
+        )
         {
             orig(self);
             return;
@@ -858,6 +864,10 @@ public sealed class FancyLightingMod : Mod
             || !LightingConfig.Instance.SmoothLightingEnabled()
             || _disableLightColorOverride
             || UseBlackLights
+            || (
+                SpiritReforgedCompatibility._disableCustomLiquidRendering
+                && !PreferencesConfig.Instance.RenderOnlyLight
+            )
         )
         {
             orig(self, isBackground);
@@ -1653,7 +1663,14 @@ public sealed class FancyLightingMod : Mod
         bool drawSinglePassLiquids
     )
     {
-        if (!_inCameraMode || !LightingConfig.Instance.SmoothLightingEnabled())
+        if (
+            !_inCameraMode
+            || !LightingConfig.Instance.SmoothLightingEnabled()
+            || (
+                SpiritReforgedCompatibility._disableCustomLiquidRendering
+                && !PreferencesConfig.Instance.RenderOnlyLight
+            )
+        )
         {
             orig(self, bg, Style, Alpha, drawSinglePassLiquids);
             return;
