@@ -13,8 +13,8 @@ public static class FancySkyRendering
 
     private static bool _modifyStarDrawing = false;
 
-    private const float SkyBrightness = 1.3f;
-    private const float SkyBrightnessHiDef = 1.5f;
+    private const float SkyBrightness = 1.25f;
+    private const float SkyBrightnessHiDef = 1.3f;
 
     private const float FadeBegin = 0.12f;
     private const float FadeHeight = 0.24f;
@@ -215,7 +215,7 @@ public static class FancySkyRendering
         if (_modifyStarDrawing)
         {
             // prevent stars from appearing during sunrise/sunset
-            var colorVec = 1.25f * bgColorForStars.ToVector3();
+            var colorVec = 1.3f * bgColorForStars.ToVector3();
             colorVec.X = MathF.Sqrt(colorVec.X);
             colorVec.Y = MathF.Sqrt(colorVec.Y);
             colorVec.Z = MathF.Sqrt(colorVec.Z);
