@@ -168,7 +168,7 @@ PreferencesConfig: {
 		// Label: Depth of Field
 		/* Tooltip:
 			'''
-			Render a depth of field effect
+			Render depth of field blur
 
 			Applies a bokeh-like blur to the background
 			''' */
