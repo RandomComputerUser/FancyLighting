@@ -112,6 +112,9 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     public int VibranceBoost { get; set; }
 
+    [DefaultValue(DefaultOptions.HdrBloom)]
+    public bool HdrBloom { get; set; }
+
     [Range(1, 5)]
     [DefaultValue(DefaultOptions.BloomRadius)]
     [Slider]

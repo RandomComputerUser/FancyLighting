@@ -133,6 +133,16 @@ PreferencesConfig: {
 			'''
 	}
 
+	HdrBloom: {
+		Label: Bloom
+		Tooltip:
+			'''
+			Render bloom
+
+			Adds a soft glow around bright objects
+			'''
+	}
+
 	BloomRadius: {
 		Label: Bloom Radius
 		Tooltip:
@@ -369,16 +379,6 @@ LightingConfig: {
 			'''
 	}
 
-	HdrBloom: {
-		Label: Bloom (Full HDRR)
-		Tooltip:
-			'''
-			Render bloom when using full HDR rendering
-
-			Adds a soft glow around bright objects
-			'''
-	}
-
 	# Ambient Occlusion
 	
 	UseAmbientOcclusion: {
@@ -586,6 +586,8 @@ SkyColorPreset: {
 }
 
 ToneMappingPreset: {
+	Tooltip: ""
+
 	Preset1: {
 		Label: Bright
 		Tooltip: ""
@@ -600,6 +602,4 @@ ToneMappingPreset: {
 		Label: Linear
 		Tooltip: ""
 	}
-
-	Tooltip: ""
 }

@@ -47,8 +47,6 @@ public sealed class LightingConfig : ModConfig
         && LightMapRenderMode is RenderMode.EnhancedHdr
         && !SettingsSystem.HdrDisabled();
 
-    internal bool BloomEnabled() => HiDefFeaturesEnabled() && HdrBloom;
-
     // Ambient Occlusion
 
     internal bool AmbientOcclusionEnabled() =>
@@ -80,7 +78,6 @@ public sealed class LightingConfig : ModConfig
         _simulateNormalMaps = options.SimulateNormalMaps;
         _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _lightMapRenderMode = options.LightMapRenderMode;
-        _hdrBloom = options.HdrBloom;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
@@ -221,19 +218,6 @@ public sealed class LightingConfig : ModConfig
     }
 
     private RenderMode _lightMapRenderMode;
-
-    [DefaultValue(DefaultOptions.HdrBloom)]
-    public bool HdrBloom
-    {
-        get => _hdrBloom;
-        set
-        {
-            _hdrBloom = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _hdrBloom;
 
     // Ambient Occlusion
 

@@ -132,6 +132,16 @@ PreferencesConfig: {
 			''' */
 	}
 
+	HdrBloom: {
+		Label: Свечение
+		Tooltip:
+			'''
+			Вычислять свечение при использовании HDR
+
+			Добавляет мягкое свечение вокруг ярких объектов
+			'''
+	}
+
 	BloomRadius: {
 		Label: Радиус свечения
 		Tooltip:
@@ -366,16 +376,6 @@ LightingConfig: {
 			'''
 	}
 
-	HdrBloom: {
-		Label: Свечение (Full HDRR)
-		Tooltip:
-			'''
-			Вычислять свечение при использовании HDR
-
-			Добавляет мягкое свечение вокруг ярких объектов
-			'''
-	}
-
 	# Ambient Occlusion
 	
 	UseAmbientOcclusion: {
@@ -480,17 +480,17 @@ LightingEngineMode: {
 
 	Low: {
 		Label: Низкое качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Medium: {
 		Label: Среднее качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	High: {
 		Label: Высокое качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 }
 
@@ -499,22 +499,22 @@ RenderMode: {
 
 	Bilinear: {
 		Label: Билинейная аппроксимация
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Bicubic: {
 		Label: Бикубическая аппроксимация
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	BicubicOverbright: {
 		Label: Базовый режим HDR
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	EnhancedHdr: {
 		Label: Полный режим HDR
-		// Tooltip: ""
+		Tooltip: ""
 	}
 }
 
@@ -523,32 +523,32 @@ SettingsPreset: {
 
 	CustomPreset: {
 		Label: Пользовательский режим
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	VanillaPreset: {
 		Label: Ванильный режим
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	LowPreset: {
 		Label: Низкое качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	MediumPreset: {
 		Label: Среднее качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	HighPreset: {
 		Label: Высокое качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	UltraPreset: {
 		Label: Ультра качество
-		// Tooltip: ""
+		Tooltip: ""
 	}
 }
 
@@ -557,45 +557,45 @@ SkyColorPreset: {
 
 	Preset1: {
 		Label: Профиль 1
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Preset2: {
 		Label: Профиль 2
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Preset3: {
 		Label: Профиль 3
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Preset4: {
 		Label: Профиль 4
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Preset5: {
 		Label: Профиль 5
-		// Tooltip: ""
+		Tooltip: ""
 	}
 }
 
 ToneMappingPreset: {
+	Tooltip: ""
+
 	Preset1: {
 		// Label: Bright
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Preset2: {
 		// Label: Filmic
-		// Tooltip: ""
+		Tooltip: ""
 	}
 
 	Linear: {
 		// Label: Linear
-		// Tooltip: ""
+		Tooltip: ""
 	}
-
-	// Tooltip: ""
 }

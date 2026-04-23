@@ -137,7 +137,7 @@ internal sealed class PostProcessing
         var nextTarget = tmpTarget;
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
-        var doBloom = LightingConfig.Instance.BloomEnabled();
+        var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
         var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
         var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;

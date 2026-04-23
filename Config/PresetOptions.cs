@@ -18,8 +18,6 @@ internal record PresetOptions
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
 
-    public bool HdrBloom { get; init; } = DefaultOptions.HdrBloom;
-
     // Ambient Occlusion
 
     public bool UseAmbientOcclusion { get; init; } = DefaultOptions.UseAmbientOcclusion;
@@ -60,7 +58,6 @@ internal record PresetOptions
         SimulateNormalMaps = config.SimulateNormalMaps;
         UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
         LightMapRenderMode = config.LightMapRenderMode;
-        HdrBloom = config.HdrBloom;
 
         UseAmbientOcclusion = config.UseAmbientOcclusion;
         DoNonSolidAmbientOcclusion = config.DoNonSolidAmbientOcclusion;

@@ -25,7 +25,6 @@ public static class DefaultOptions
     public const bool SimulateNormalMaps = false;
     public const bool UseEnhancedGlowMaskSupport = false;
     public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
-    public const bool HdrBloom = true;
 
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 4;
@@ -38,6 +37,7 @@ public static class DefaultOptions
     public const int Exposure = 100;
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Preset1;
     public const int VibranceBoost = 2;
+    public const bool HdrBloom = true;
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
     public const bool UseHdrCompatibilityFixes = false;
