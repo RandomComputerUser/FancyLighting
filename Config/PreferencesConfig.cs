@@ -26,6 +26,8 @@ public sealed class PreferencesConfig : ModConfig
 
     internal double VibranceIncrease() => VibranceBoost / 80.0;
 
+    internal bool DepthOfFieldEnabled() => DepthOfField && !UseHdrCompatibilityFixes;
+
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
@@ -125,6 +127,15 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
     public int BloomStrength { get; set; }
+
+    [DefaultValue(DefaultOptions.DepthOfField)]
+    public bool DepthOfField { get; set; }
+
+    [Range(1, 5)]
+    [DefaultValue(DefaultOptions.DepthOfFieldRadius)]
+    [Slider]
+    [DrawTicks]
+    public int DepthOfFieldRadius { get; set; }
 
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }

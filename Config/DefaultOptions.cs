@@ -40,6 +40,8 @@ public static class DefaultOptions
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
+    public const bool DepthOfField = false;
+    public const int DepthOfFieldRadius = 2;
     public const bool UseHdrCompatibilityFixes = false;
 
     // Ambient Occlusion

@@ -16,6 +16,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Added the Linear TMO, which may be used with add-ons to achieve HDR output
 - Added a setting to boost color vibrance when using full HDR rendering
 - Color vibrance is now boosted by default when using full HDR rendering
+- Added a setting to enable depth of field when using full HDR rendering
 - Slightly increased the contrast of lighting when using full HDR rendering
 - Made Fancy Atmosphere more colorful
 - Added a setting to boost sky brightness when Fancy Atmosphere is enabled

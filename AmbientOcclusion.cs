@@ -412,7 +412,7 @@ internal sealed class AmbientOcclusion
 
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var passCount = Math.Clamp(radius, 1, 4);
-        var blurTarget = _blurRenderer.RenderBlur(target, null, passCount);
+        var blurTarget = _blurRenderer.RenderBlur(target, null, passCount, false);
 
         Main.graphics.GraphicsDevice.SetRenderTarget(target);
         Main.spriteBatch.Begin(

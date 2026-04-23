@@ -138,6 +138,7 @@ internal sealed class PostProcessing
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
+        var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfFieldEnabled();
         var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
         var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;
@@ -219,6 +220,31 @@ internal sealed class PostProcessing
                         .SetParameter("GammaRatio", gamma)
                         .Apply();
                     Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+
+                    if (doDepthOfField)
+                    {
+                        Main.spriteBatch.End();
+
+                        var passCount = Math.Clamp(
+                            PreferencesConfig.Instance.DepthOfFieldRadius,
+                            1,
+                            5
+                        );
+                        _blurRenderer.RenderBlur(
+                            nextTarget,
+                            nextTarget,
+                            passCount,
+                            false
+                        );
+
+                        Main.spriteBatch.Begin(
+                            SpriteSortMode.Immediate,
+                            BlendState.AlphaBlend,
+                            SamplerState.PointClamp,
+                            DepthStencilState.None,
+                            RasterizerState.CullNone
+                        );
+                    }
                 }
 
                 _gammaToLinearShader
@@ -263,7 +289,12 @@ internal sealed class PostProcessing
                     1f
                 );
 
-                var bloomTarget = _blurRenderer.RenderBlur(currTarget, null, passCount);
+                var bloomTarget = _blurRenderer.RenderBlur(
+                    currTarget,
+                    null,
+                    passCount,
+                    true
+                );
 
                 Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
                 Main.spriteBatch.Begin(

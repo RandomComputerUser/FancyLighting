@@ -164,6 +164,26 @@ PreferencesConfig: {
 			'''
 	}
 
+	DepthOfField: {
+		// Label: Depth of Field
+		/* Tooltip:
+			'''
+			Render a depth of field effect
+
+			Applies a bokeh-like blur to the background
+			''' */
+	}
+
+	DepthOfFieldRadius: {
+		// Label: Depth of Field Blur Radius
+		/* Tooltip:
+			'''
+			The radius of the blur used in the depth of field effect
+
+			Depth of field must be enabled for this setting to have any effect
+			''' */
+	}
+
 	UseHdrCompatibilityFixes: {
 		Label: Исправления для совместимостью с HDR
 		Tooltip:

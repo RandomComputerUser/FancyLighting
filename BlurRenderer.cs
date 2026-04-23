@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting;
 
-internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
+internal class BlurRenderer(bool alphaOnly, bool allowAdditiveBlend)
 {
     private static Shader _blurDownsampleShader;
     private static Shader _blurUpsampleShader;
@@ -85,7 +85,7 @@ internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
                 format,
                 DepthFormat.None,
                 0,
-                useAdditiveBlend
+                allowAdditiveBlend
                     ? RenderTargetUsage.PreserveContents
                     : RenderTargetUsage.PlatformContents
             );
@@ -110,9 +110,12 @@ internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
     public RenderTarget2D RenderBlur(
         RenderTarget2D src,
         RenderTarget2D dst,
-        int passCount
+        int passCount,
+        bool additiveBlend
     )
     {
+        additiveBlend = additiveBlend && allowAdditiveBlend;
+
         EnsureBlurTargets(
             src.Width,
             src.Height,
@@ -123,7 +126,7 @@ internal class BlurRenderer(bool alphaOnly, bool useAdditiveBlend)
         );
         InitShaders();
 
-        var upsampleBlend = useAdditiveBlend ? _trueAdditiveBlend : BlendState.Opaque;
+        var upsampleBlend = additiveBlend ? _trueAdditiveBlend : BlendState.Opaque;
         var skipFinalUpsample = dst is null;
         var downsampleShader = alphaOnly
             ? _blurDownsampleAlphaShader

@@ -275,7 +275,7 @@ public static class FancySkyRendering
         Main.spriteBatch.Begin(
             isDay ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
-            samplerState,
+            SamplerState.LinearClamp,
             DepthStencilState.None,
             rasterizerState,
             null,
