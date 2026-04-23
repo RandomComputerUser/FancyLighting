@@ -26,8 +26,6 @@ public sealed class PreferencesConfig : ModConfig
 
     internal double VibranceIncrease() => VibranceBoost / 80.0;
 
-    internal bool DepthOfFieldEnabled() => DepthOfField && !UseHdrCompatibilityFixes;
-
     internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;

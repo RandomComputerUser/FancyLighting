@@ -115,6 +115,7 @@ internal class BlurRenderer(bool alphaOnly, bool allowAdditiveBlend)
     )
     {
         additiveBlend = additiveBlend && allowAdditiveBlend;
+        passCount = Math.Clamp(passCount, 1, 5);
 
         EnsureBlurTargets(
             src.Width,

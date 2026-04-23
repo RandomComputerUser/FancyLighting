@@ -111,6 +111,15 @@ internal sealed class PostProcessing
         * HiDefBackgroundBrightnessMult
         * (0.9f * Lighting.GlobalBrightness);
 
+    internal void ApplyGammaShader(float exposure, float gamma) =>
+        _gammaToLinearShader
+            .SetParameter("Exposure", exposure)
+            .SetParameter("GammaRatio", gamma)
+            .Apply();
+
+    internal RenderTarget2D Blur(RenderTarget2D src, RenderTarget2D dst, int radius) =>
+        _blurRenderer.RenderBlur(src, dst, radius, false);
+
     private static (Vector4, Vector2) CalculateVibranceBoostParameters(double boost)
     {
         boost *= 4.0;
@@ -138,7 +147,7 @@ internal sealed class PostProcessing
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
-        var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfFieldEnabled();
+        var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfField;
         var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
         var separateBackground = backgroundTarget is not null && !hdrCompat;
         var cameraMode = FancyLightingMod._inCameraMode;
@@ -225,15 +234,10 @@ internal sealed class PostProcessing
                     {
                         Main.spriteBatch.End();
 
-                        var passCount = Math.Clamp(
-                            PreferencesConfig.Instance.DepthOfFieldRadius,
-                            1,
-                            5
-                        );
                         _blurRenderer.RenderBlur(
                             nextTarget,
                             nextTarget,
-                            passCount,
+                            PreferencesConfig.Instance.DepthOfFieldRadius,
                             false
                         );
 
@@ -282,7 +286,6 @@ internal sealed class PostProcessing
             {
                 // https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
 
-                var passCount = Math.Clamp(PreferencesConfig.Instance.BloomRadius, 1, 5);
                 var bloomStrength = Math.Clamp(
                     PreferencesConfig.Instance.BloomLerp(),
                     0f,
@@ -292,7 +295,7 @@ internal sealed class PostProcessing
                 var bloomTarget = _blurRenderer.RenderBlur(
                     currTarget,
                     null,
-                    passCount,
+                    PreferencesConfig.Instance.BloomRadius,
                     true
                 );
 

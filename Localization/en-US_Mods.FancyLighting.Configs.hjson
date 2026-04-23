@@ -193,7 +193,6 @@ PreferencesConfig: {
 
 			May prevent some visual issues when using other mods
 			Has a small impact on visuals and performance
-			This setting disables depth of field
 			'''
 	}
 
