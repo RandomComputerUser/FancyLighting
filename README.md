@@ -23,7 +23,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Fancy Atmosphere is now (mostly) compatible with camera mode
 - Tweaked the sky colors used by Fancy Atmosphere
 - Tweaked the appearance of the sun in Fancy Atmosphere
-- Tweaked sky light color Preset 1 (now called "Natural")
+- Tweaked sky light color Preset 1 (now called “Natural”)
 - Improved and optimized global illumination
 - Slightly improved the quality of the bicubic render mode
 - The gamma setting now adjusts output gamma (instead of content gamma)
