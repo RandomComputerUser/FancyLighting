@@ -19,7 +19,31 @@ float4 ExtractInverseMultipliedAlpha(float2 coords : TEXCOORD0) : COLOR0
 float4 ToneMapping(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = tex2D(OccluderSampler, coords).a;
-    brightness = 1 - BlurMult * (1 - pow(brightness, BlurPower));
+    brightness = pow((1 - BlurMult) + BlurMult * pow(brightness, BlurPower), 1 / 2.2);
+
+    return float4(0, 0, 0, brightness);
+}
+
+float4 ToneMappingHiDef(float2 coords : TEXCOORD0) : COLOR0
+{
+    float brightness = tex2D(OccluderSampler, coords).a;
+    brightness = (1 - BlurMult) + BlurMult * pow(brightness, BlurPower);
+
+    return float4(0, 0, 0, brightness);
+}
+
+float4 ToneMappingSimple(float2 coords : TEXCOORD0) : COLOR0
+{
+    float brightness = tex2D(OccluderSampler, coords).a;
+    brightness = pow((1 - BlurMult) + BlurMult * brightness, 1 / 2.2);
+
+    return float4(0, 0, 0, brightness);
+}
+
+float4 ToneMappingSimpleHiDef(float2 coords : TEXCOORD0) : COLOR0
+{
+    float brightness = tex2D(OccluderSampler, coords).a;
+    brightness = (1 - BlurMult) + BlurMult * brightness;
 
     return float4(0, 0, 0, brightness);
 }
@@ -39,5 +63,20 @@ technique Technique1
     pass ToneMapping
     {
         PixelShader = compile ps_3_0 ToneMapping();
+    }
+
+    pass ToneMappingHiDef
+    {
+        PixelShader = compile ps_3_0 ToneMappingHiDef();
+    }
+
+    pass ToneMappingSimple
+    {
+        PixelShader = compile ps_3_0 ToneMappingSimple();
+    }
+
+    pass ToneMappingSimpleHiDef
+    {
+        PixelShader = compile ps_3_0 ToneMappingSimpleHiDef();
     }
 }

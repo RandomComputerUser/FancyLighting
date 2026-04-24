@@ -18,6 +18,7 @@ internal sealed class AmbientOcclusion
     private Shader _extractInverseAlphaShader;
     private Shader _extractInverseMultipliedAlphaShader;
     private Shader _toneMappingShader;
+    private Shader _toneMappingSimpleShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
@@ -35,7 +36,13 @@ internal sealed class AmbientOcclusion
         );
         _toneMappingShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
-            "ToneMapping"
+            "ToneMapping",
+            true
+        );
+        _toneMappingSimpleShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/AmbientOcclusion",
+            "ToneMappingSimple",
+            true
         );
         _glowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
@@ -59,6 +66,7 @@ internal sealed class AmbientOcclusion
         EffectLoader.UnloadEffect(ref _extractInverseAlphaShader);
         EffectLoader.UnloadEffect(ref _extractInverseMultipliedAlphaShader);
         EffectLoader.UnloadEffect(ref _toneMappingShader);
+        EffectLoader.UnloadEffect(ref _toneMappingSimpleShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
 
@@ -403,15 +411,13 @@ internal sealed class AmbientOcclusion
             Main.spriteBatch.End();
         }
 
+        var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
-        if (LightingConfig.Instance.HiDefFeaturesEnabled())
-        {
-            power *= PostProcessing.ContentGamma();
-        }
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
 
-        var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var blurTarget = _blurRenderer.RenderBlur(target, null, radius, false);
+
+        var shader = power == 1f ? _toneMappingSimpleShader : _toneMappingShader;
 
         Main.graphics.GraphicsDevice.SetRenderTarget(target);
         Main.spriteBatch.Begin(
@@ -421,10 +427,7 @@ internal sealed class AmbientOcclusion
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _toneMappingShader
-            .SetParameter("BlurPower", power)
-            .SetParameter("BlurMult", mult)
-            .Apply();
+        shader.SetParameter("BlurPower", power).SetParameter("BlurMult", mult).Apply();
         Main.spriteBatch.Draw(
             blurTarget,
             Vector2.Zero,
