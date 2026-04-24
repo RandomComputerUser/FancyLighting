@@ -48,3 +48,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Fixed some uncommon graphical glitches
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
+- Made more classes and methods public

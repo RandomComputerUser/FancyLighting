@@ -3,7 +3,7 @@ using Vec3 = System.Numerics.Vector3;
 
 namespace FancyLighting.LightingEngines;
 
-internal sealed class FancyLightingEngine1X : FancyLightingEngineBase
+public sealed class FancyLightingEngine1X : FancyLightingEngineBase
 {
     private const int GlobalIlluminationPassCount = 1;
 

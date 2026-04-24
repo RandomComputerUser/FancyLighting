@@ -5,7 +5,7 @@ using Terraria.Graphics.Light;
 
 namespace FancyLighting;
 
-internal sealed class SmoothLighting
+public sealed class SmoothLighting
 {
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
@@ -54,7 +54,7 @@ internal sealed class SmoothLighting
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
-    public SmoothLighting()
+    internal SmoothLighting()
     {
         _lightMapTileArea = new(0, 0, 0, 0);
 
@@ -157,7 +157,7 @@ internal sealed class SmoothLighting
         );
     }
 
-    public void Unload()
+    internal void Unload()
     {
         _drawTarget?.Dispose();
         _colors?.Dispose();

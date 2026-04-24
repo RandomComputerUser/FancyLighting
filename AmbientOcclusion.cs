@@ -2,7 +2,7 @@
 
 namespace FancyLighting;
 
-internal sealed class AmbientOcclusion
+public sealed class AmbientOcclusion
 {
     private RenderTarget2D _blurTarget;
 
@@ -24,7 +24,7 @@ internal sealed class AmbientOcclusion
 
     private readonly BlurRenderer _blurRenderer = new(true, false);
 
-    public AmbientOcclusion()
+    internal AmbientOcclusion()
     {
         _extractInverseAlphaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
@@ -56,7 +56,7 @@ internal sealed class AmbientOcclusion
         _drawingTileEntities = false;
     }
 
-    public void Unload()
+    internal void Unload()
     {
         _blurTarget?.Dispose();
         _drawTarget?.Dispose();

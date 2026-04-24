@@ -11,35 +11,35 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    internal float OutputGamma() => Gamma / 100f;
+    public float OutputGamma() => Gamma / 100f;
 
-    internal bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
+    public bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 
-    internal float NormalMapsMultiplier() =>
+    public float NormalMapsMultiplier() =>
         NormalMapsIntensity <= 5
             ? 0.5f * NormalMapsIntensity
             : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
 
-    internal float ExposureMult() => Exposure / 100f;
+    public float ExposureMult() => Exposure / 100f;
 
-    internal float BloomLerp() => 0.0025f * BloomStrength;
+    public float BloomLerp() => 0.0025f * BloomStrength;
 
-    internal double VibranceIncrease() => VibranceBoost / 80.0;
+    public double VibranceIncrease() => VibranceBoost / 80.0;
 
-    internal float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
+    public float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
-    internal float AmbientOcclusionMult() => AmbientLightProportion / 100f;
+    public float AmbientOcclusionMult() => AmbientLightProportion / 100f;
 
-    internal float FancyLightingEngineExitMultiplier() =>
+    public float FancyLightingEngineExitMultiplier() =>
         1f - (FancyLightingEngineLightLoss / 100f);
 
-    internal float FancyLightingEngineAbsorptionExponent() =>
+    public float FancyLightingEngineAbsorptionExponent() =>
         FancyLightingEngineLightAbsorption / 100f;
 
-    internal float FancyLightingEngineGlobalIlluminationMultiplier() =>
+    public float FancyLightingEngineGlobalIlluminationMultiplier() =>
         FancyLightingEngineIndirectBrightness / 100f;
 
-    internal float SkyBrightness() => SkyBrightnessBoost / 5f;
+    public float SkyBrightness() => SkyBrightnessBoost / 5f;
 
     public override void OnChanged()
     {

@@ -4,7 +4,7 @@ using Vec4 = System.Numerics.Vector4;
 
 namespace FancyLighting.LightingEngines;
 
-internal sealed class FancyLightingEngine4X : FancyLightingEngineBase
+public sealed class FancyLightingEngine4X : FancyLightingEngineBase
 {
     private const int GlobalIlluminationPassCount = 4;
 

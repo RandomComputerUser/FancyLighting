@@ -4,10 +4,10 @@ using Vec3 = System.Numerics.Vector3;
 
 namespace FancyLighting.LightingEngines;
 
-internal abstract class FancyLightingEngineBase : ICustomLightingEngine
+public abstract class FancyLightingEngineBase : ICustomLightingEngine
 {
-    protected int[][] _circles;
-    protected Rectangle _lightMapArea;
+    private protected int[][] _circles;
+    private Rectangle _lightMapArea;
     private long _temporalData;
 
     protected const int MaxLightRange = 64;
@@ -16,21 +16,21 @@ internal abstract class FancyLightingEngineBase : ICustomLightingEngine
     private const float MaxDecayMult = 0.95f;
     private const float LowLightLevel = 0.03f;
 
-    protected float _initialBrightnessCutoff;
-    protected float _logBrightnessCutoff;
-    protected float _logBasicWorkCutoff;
+    private protected float _initialBrightnessCutoff;
+    private float _logBrightnessCutoff;
+    private float _logBasicWorkCutoff;
 
-    protected float _thresholdMult;
-    protected float _reciprocalLogSlowestDecay;
-    protected float _lightLossExitingSolid;
+    private float _thresholdMult;
+    private float _reciprocalLogSlowestDecay;
+    private protected float _lightLossExitingSolid;
 
     private float[] _lightAirDecay;
-    protected float[] _lightSolidDecay;
+    private protected float[] _lightSolidDecay;
     private float[] _lightWaterDecay;
     private float[] _lightHoneyDecay;
     private float[] _lightNonSolidDecay;
 
-    protected float[][] _lightMasks;
+    private protected float[][] _lightMasks;
 
     private Action[] _actions;
     private Vec3[][] _workingLightMaps;

@@ -12,58 +12,56 @@ public sealed class LightingConfig : ModConfig
     // Handled automatically by tModLoader
     public static LightingConfig Instance;
 
-    internal bool NeedsColorLightMode() =>
+    public bool NeedsColorLightMode() =>
         UseSmoothLighting
         || UseAmbientOcclusion
         || UseFancyLightingEngine
         || UseFancySkyRendering
         || UseFancySkyColors;
 
-    internal bool ModifyCameraModeRendering() =>
+    public bool ModifyCameraModeRendering() =>
         SmoothLightingEnabled() || AmbientOcclusionEnabled();
 
     // Smooth Lighting
 
-    internal bool SmoothLightingEnabled() =>
-        UseSmoothLighting && Lighting.UsingNewLighting;
+    public bool SmoothLightingEnabled() => UseSmoothLighting && Lighting.UsingNewLighting;
 
-    internal bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
+    public bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
-    internal bool UseLightMapToneMapping() =>
+    public bool UseLightMapToneMapping() =>
         LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
 
-    internal bool DrawOverbright() =>
+    public bool DrawOverbright() =>
         LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr
         && !SettingsSystem.HdrDisabled();
 
-    internal bool OverbrightOverrideBackground() =>
+    public bool OverbrightOverrideBackground() =>
         SmoothLightingEnabled()
         && DrawOverbright()
         && SettingsSystem.PostProcessingAllowed()
         && FancyLightingMod._doingFilterManagerCapture;
 
-    internal bool HiDefFeaturesEnabled() =>
+    public bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled()
         && LightMapRenderMode is RenderMode.EnhancedHdr
         && !SettingsSystem.HdrDisabled();
 
     // Ambient Occlusion
 
-    internal bool AmbientOcclusionEnabled() =>
+    public bool AmbientOcclusionEnabled() =>
         UseAmbientOcclusion && Lighting.UsingNewLighting;
 
     // Fancy Lighting Engine
 
-    internal bool FancyLightingEngineEnabled() =>
+    public bool FancyLightingEngineEnabled() =>
         UseFancyLightingEngine && Lighting.UsingNewLighting;
 
     // Fancy Sky
 
-    internal bool FancySkyRenderingEnabled() =>
+    public bool FancySkyRenderingEnabled() =>
         UseFancySkyRendering && Lighting.UsingNewLighting;
 
-    internal bool FancySkyColorsEnabled() =>
-        UseFancySkyColors && Lighting.UsingNewLighting;
+    public bool FancySkyColorsEnabled() => UseFancySkyColors && Lighting.UsingNewLighting;
 
     public override void OnChanged()
     {

@@ -3,7 +3,7 @@ using ReLogic.Content;
 
 namespace FancyLighting;
 
-internal sealed class PostProcessing
+public sealed class PostProcessing
 {
     // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
@@ -29,7 +29,7 @@ internal sealed class PostProcessing
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
-    public PostProcessing()
+    internal PostProcessing()
     {
         _ditherNoise = ModContent
             .Request<Texture2D>(
@@ -84,7 +84,7 @@ internal sealed class PostProcessing
         );
     }
 
-    public void Unload()
+    internal void Unload()
     {
         _ditherNoise?.Dispose();
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
