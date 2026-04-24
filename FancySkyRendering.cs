@@ -20,14 +20,22 @@ public static class FancySkyRendering
     private const float FadeHeight = 0.24f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
 
+    /// <summary>
+    /// Modify the colors of the sky used in Fancy Atmosphere.
+    /// </summary>
+    /// <param name="highSkyColor">The color of the high part of the sky.</param>
+    /// <param name="lowSkyColor">The color of the low part of the sky.</param>
+    /// <param name="skyColorMult">A color multiplier applied to the entire sky. Typically this changes based on the biome.</param>
     public delegate void SkyColorModifier(
         ref Vector3 highSkyColor,
         ref Vector3 lowSkyColor,
         ref Vector3 skyColorMult
     );
 
-    // Meant for other mods to use
-    public static event SkyColorModifier ModifySkyColors;
+    /// <summary>
+    /// This event is invoked before the sky is drawn.
+    /// </summary>
+    public static event SkyColorModifier PreDrawSky;
 
     internal static void Load()
     {
@@ -96,7 +104,6 @@ public static class FancySkyRendering
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
 
         var hour = GameTimeUtils.CalculateCurrentHour();
-        // skyColorMult is the effect the current biome has on the color of sky light
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3()
             / new Color(FancySkyColors.CalculateSkyColor(hour)).ToVector3();
@@ -111,7 +118,7 @@ public static class FancySkyRendering
         var highSkyColor = SkyColorsHigh.Instance.GetColor(hour);
         var lowSkyColor = SkyColorsLow.Instance.GetColor(hour);
 
-        ModifySkyColors?.Invoke(ref highSkyColor, ref lowSkyColor, ref skyColorMult);
+        PreDrawSky?.Invoke(ref highSkyColor, ref lowSkyColor, ref skyColorMult);
 
         highSkyColor *= skyColorMult;
         lowSkyColor *= skyColorMult;
