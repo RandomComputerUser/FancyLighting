@@ -28,6 +28,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Improved and optimized global illumination
 - Improved ambient occlusion, making it subtler
 - Increased the default ambient light proportion to 90% (from 60%) to partly compensate for the previous change
+- Decreased the default normal maps strength to 3 (from 4)
 - Slightly improved the quality of the bicubic render mode
 - The gamma setting now adjusts output gamma (instead of content gamma)
 - Gamma and sRGB output no longer affect camera mode

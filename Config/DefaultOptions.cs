@@ -27,7 +27,7 @@ public static class DefaultOptions
     public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
 
     // Smooth Lighting Preferences
-    public const int NormalMapsIntensity = 4;
+    public const int NormalMapsIntensity = 3;
     public const bool FineNormalMaps = false;
     public const bool DisableHdrDuringBossFights = false;
     public const bool UseGrayscaleLighting = false;
