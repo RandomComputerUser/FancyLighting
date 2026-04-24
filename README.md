@@ -49,3 +49,5 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
 - Made more classes and methods public
+- Added a new event `PreDrawSky` in the FancySkyRendering class for other mods to use
+- Added a new event `PostUpdateLightMap` in the SmoothLighting class for other mods to use

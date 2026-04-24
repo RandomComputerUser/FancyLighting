@@ -64,6 +64,7 @@ public static class FancySkyRendering
 
     internal static void Unload()
     {
+        PreDrawSky = null;
         _ditherNoise?.Dispose();
         _ditherNoise = null;
         EffectLoader.UnloadEffect(ref _skyShader);

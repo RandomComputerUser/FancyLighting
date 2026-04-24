@@ -54,6 +54,24 @@ public sealed class SmoothLighting
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
+    /// <summary>
+    /// Handle an update to the light map.
+    /// </summary>
+    /// <param name="lightMapTexture">The texture used to sample the light map.</param>
+    /// <param name="samplingTransformation">A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling <paramref name="lightMapTexture"></paramref>.</param>
+    /// <param name="lightMapArea">The area of the world covered by the light map, measured in tiles.</param>
+    /// <remarks>The dimensions of <paramref name="lightMapTexture"></paramref> may be larger than the actual light map.</remarks>
+    public delegate void LightMapUpdateHandler(
+        Texture2D lightMapTexture,
+        Matrix samplingTransformation,
+        Rectangle lightMapArea
+    );
+
+    /// <summary>
+    /// This event is invoked after the light map is updated.
+    /// </summary>
+    public static event LightMapUpdateHandler PostUpdateLightMap;
+
     internal SmoothLighting()
     {
         _lightMapTileArea = new(0, 0, 0, 0);
@@ -159,6 +177,7 @@ public sealed class SmoothLighting
 
     internal void Unload()
     {
+        PostUpdateLightMap = null;
         _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
@@ -969,7 +988,10 @@ public sealed class SmoothLighting
             return;
         }
 
-        if (LightingConfig.Instance.DrawOverbright())
+        var doOverbright = LightingConfig.Instance.DrawOverbright();
+        var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
+
+        if (doOverbright)
         {
             CalculateSmoothLightingHdr(
                 xmin,
@@ -998,7 +1020,34 @@ public sealed class SmoothLighting
             );
         }
 
-        _smoothLightingHiResComplete = false;
+        var invokeEvent = !cameraMode && PostUpdateLightMap != null;
+
+        if (doBicubicUpscaling && invokeEvent)
+        {
+            RenderHiResLighting(_colors);
+            _smoothLightingHiResComplete = true;
+        }
+        else
+        {
+            _smoothLightingHiResComplete = false;
+        }
+
+        if (!invokeEvent)
+        {
+            return;
+        }
+
+        var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
+        var scale = doBicubicUpscaling ? 0.25f : 1f;
+
+        var transformation = Matrix.Identity;
+        transformation.Right = new(0f, 1f / (16f * scale * lightMapTexture.Height), 0f);
+        transformation.Up = new(1f / (16f * scale * lightMapTexture.Width), 0f, 0f);
+        var origin = 16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y);
+        var translation = -Vector2.Transform(origin, transformation);
+        transformation.Translation = new Vector3(translation.X, translation.Y, 0f);
+
+        PostUpdateLightMap?.Invoke(lightMapTexture, transformation, _lightMapTileArea);
     }
 
     private void CalculateSmoothLightingHdr(
