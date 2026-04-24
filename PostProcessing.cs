@@ -8,6 +8,7 @@ internal sealed class PostProcessing
     // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
     internal const float HiDefBackgroundBrightnessMult = 1.5f;
+    private const float UnderworldBackgroundBrightnessMult = 1.2f;
 
     internal const float DefaultGamma = 2.2f;
     private const float HiDefGamma = 2.4f;
@@ -109,7 +110,16 @@ internal sealed class PostProcessing
     internal static float CalculateHiDefBackgroundBrightness() =>
         HiDefBrightnessScale
         * HiDefBackgroundBrightnessMult
+        * (
+            InUnderworld() && !FancyLightingMod._inCameraMode
+                ? UnderworldBackgroundBrightnessMult
+                : 1f
+        )
         * (0.9f * Lighting.GlobalBrightness);
+
+    // This code is taken from vanilla Main.DrawUnderworldBackground()
+    private static bool InUnderworld() =>
+        Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
     internal void ApplyGammaShader(float exposure, float gamma) =>
         _gammaToLinearShader

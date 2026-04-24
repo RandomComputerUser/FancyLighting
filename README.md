@@ -25,6 +25,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Tweaked the sky colors used by Fancy Atmosphere
 - Tweaked the appearance of the sun in Fancy Atmosphere
 - Tweaked sky light color Preset 1 (now called “Natural”)
+- Made the underworld background slightly brighter when using full HDR rendering
 - Improved and optimized global illumination
 - Improved ambient occlusion, making it subtler
 - Increased the default ambient light proportion to 90% (from 60%) to partly compensate for the previous change
