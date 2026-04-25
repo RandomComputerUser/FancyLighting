@@ -41,7 +41,7 @@ public static class DefaultOptions
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
     public const bool DepthOfField = false;
-    public const int DepthOfFieldRadius = 1;
+    public const int DepthOfFieldRadius = 2;
     public const bool UseHdrCompatibilityFixes = false;
 
     // Ambient Occlusion
