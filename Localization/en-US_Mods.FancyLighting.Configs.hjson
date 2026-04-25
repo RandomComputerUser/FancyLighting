@@ -461,8 +461,13 @@ LightingConfig: {
 	}
 
 	FancyLightingEngineMode: {
-		Label: Shadow Accuracy
-		Tooltip: How accurate shadows are
+		Label: Lighting Quality
+		Tooltip:
+			'''
+			The quality of the light spreading algorithm
+
+			Primarily affects shadow accuracy
+			'''
 	}
 
 	SimulateGlobalIllumination: {
@@ -503,17 +508,17 @@ LightingEngineMode: {
 	Tooltip: ""
 
 	Low: {
-		Label: Low
-		Tooltip: ""
-	}
-
-	Medium: {
 		Label: Medium
 		Tooltip: ""
 	}
 
-	High: {
+	Medium: {
 		Label: High
+		Tooltip: ""
+	}
+
+	High: {
+		Label: Ultra
 		Tooltip: ""
 	}
 }

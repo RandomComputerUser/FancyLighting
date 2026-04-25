@@ -6,7 +6,7 @@ namespace FancyLighting.LightingEngines;
 
 public sealed class FancyLightingEngine2XVec : FancyLightingEngineVecDecay
 {
-    private const int GlobalIlluminationPassCount = 2;
+    private const int GlobalIlluminationPassCount = 3;
 
     private readonly record struct LightSpread(
         int DistanceToTop,

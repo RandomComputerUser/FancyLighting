@@ -28,6 +28,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Tweaked sky light color Preset 1 (now called “Natural”)
 - Made the underworld background slightly brighter when using full HDR rendering
 - Improved and optimized global illumination
+- Improved how water absorbs light when the Fancy Lighting Engine is set to the highest quality
 - Improved ambient occlusion, making it subtler
 - Increased the default ambient light proportion to 90% (from 60%) to partly compensate for the previous change
 - Decreased the default normal maps strength to 3 (from 4)
