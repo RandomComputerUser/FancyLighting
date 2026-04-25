@@ -48,15 +48,17 @@ float4 SkyDithered(float2 coords : TEXCOORD0) : COLOR0
 
 float4 Sun(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
+    const float brightness = 1.15;
+
     float4 baseColor = tex2D(TextureSampler, coords);
     baseColor.rgb = pow(baseColor.rgb, Gamma);
-    baseColor.rgb += 120 * pow(baseColor.rgb, 16);
+    baseColor.rgb += (120 / brightness) * pow(baseColor.rgb, 12);
     
     // Desaturate
     float brightest = max(max(baseColor.r, baseColor.g), baseColor.b);
     baseColor.rgb = lerp(baseColor.rgb, brightest.xxx, 0.45);
     
-    baseColor.rgb = pow(baseColor.rgb, InverseGamma);
+    baseColor.rgb = pow(brightness * baseColor.rgb, InverseGamma);
     return color * baseColor;
 }
 
@@ -66,7 +68,7 @@ float4 SunHiDef(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 
     float4 baseColor = tex2D(TextureSampler, coords);
     baseColor.rgb = pow(baseColor.rgb, Gamma);
-    baseColor.rgb += (140 / brightness) * pow(baseColor.rgb, 16);
+    baseColor.rgb += (160 / brightness) * pow(baseColor.rgb, 12);
     
     // Desaturate
     float brightest = max(max(baseColor.r, baseColor.g), baseColor.b);
