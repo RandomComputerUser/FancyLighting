@@ -277,12 +277,15 @@ public sealed class SmoothLighting
                 SettingsSystem._parallelOptions,
                 (x) =>
                 {
-                    var i = height * x;
-                    for (var y = 0; y < height; ++y)
+                    var myHeight = height;
+                    var myColors = colors;
+
+                    var i = myHeight * x;
+                    for (var y = 0; y < myHeight; ++y)
                     {
                         try
                         {
-                            ColorUtils.GammaToLinear(ref colors[i++]);
+                            ColorUtils.GammaToLinear(ref myColors[i++]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -315,13 +318,15 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
-                        var i = height * x;
-                        for (var y = 0; y < height; ++y)
+                        var myHeight = height;
+                        var myLights = lights;
+
+                        var i = myHeight * x;
+                        for (var y = 0; y < myHeight; ++y)
                         {
                             try
                             {
-                                ref var lightColor = ref lights[i++];
-                                ColorUtils.GammaToLinear(ref lightColor);
+                                ColorUtils.GammaToLinear(ref myLights[i++]);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -340,12 +345,15 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
-                        var i = height * x;
-                        for (var y = 0; y < height; ++y)
+                        var myHeight = height;
+                        var myLights = lights;
+
+                        var i = myHeight * x;
+                        for (var y = 0; y < myHeight; ++y)
                         {
                             try
                             {
-                                ref var lightColor = ref lights[i++];
+                                ref var lightColor = ref myLights[i++];
                                 var level = ColorUtils.Luma(lightColor);
                                 lightColor.X = lightColor.Y = lightColor.Z = level;
                             }
@@ -366,13 +374,15 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
-                        var i = height * x;
-                        for (var y = 0; y < height; ++y)
+                        var myHeight = height;
+                        var myLights = lights;
+
+                        var i = myHeight * x;
+                        for (var y = 0; y < myHeight; ++y)
                         {
                             try
                             {
-                                ref var lightColor = ref lights[i++];
-                                ToneMapping.ToneMap(ref lightColor);
+                                ToneMapping.ToneMap(ref myLights[i++]);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -391,13 +401,15 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
-                        var i = height * x;
-                        for (var y = 0; y < height; ++y)
+                        var myHeight = height;
+                        var myLights = lights;
+
+                        var i = myHeight * x;
+                        for (var y = 0; y < myHeight; ++y)
                         {
                             try
                             {
-                                ref var lightColor = ref lights[i++];
-                                ColorUtils.LinearToGamma(ref lightColor);
+                                ColorUtils.LinearToGamma(ref myLights[i++]);
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -420,14 +432,21 @@ public sealed class SmoothLighting
                 SettingsSystem._parallelOptions,
                 (x) =>
                 {
-                    var i = height * x;
-                    for (var y = 0; y < height; ++y)
+                    var myHeight = height;
+                    var myLights = lights;
+
+                    var i = myHeight * x;
+                    for (var y = 0; y < myHeight; ++y)
                     {
                         try
                         {
-                            // Converting to object gamma space, not light gamma space
-                            ColorUtils.LinearToGamma(ref lights[i]);
-                            lights[i++] *= PostProcessing.HiDefBrightnessScale;
+                            ref var lightColor = ref myLights[i++];
+                            ColorUtils.LinearToGamma(ref lightColor);
+                            Vector3.Multiply(
+                                ref lightColor,
+                                PostProcessing.HiDefBrightnessScale,
+                                out lightColor
+                            );
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -459,15 +478,19 @@ public sealed class SmoothLighting
             SettingsSystem._parallelOptions,
             (x) =>
             {
+                var lights = _lights;
+                var hasLight = _hasLight;
+                var myLow = low;
+
                 var i = height * x;
                 var end = i + height;
                 while (i < end)
                 {
                     try
                     {
-                        ref var color = ref _lights[i];
-                        _hasLight[i++] =
-                            color.X >= low || color.Y >= low || color.Z >= low;
+                        ref var color = ref lights[i];
+                        hasLight[i++] =
+                            color.X >= myLow || color.Y >= myLow || color.Z >= myLow;
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -483,24 +506,29 @@ public sealed class SmoothLighting
             SettingsSystem._parallelOptions,
             (x) =>
             {
-                var i = height * x;
-                for (var y = 1; y < height - 1; ++y)
+                var myHeight = height;
+                var whiteLights = _whiteLights;
+                var blackLights = _blackLights;
+                var hasLight = _hasLight;
+
+                var i = myHeight * x;
+                for (var y = 1; y < myHeight - 1; ++y)
                 {
                     try
                     {
-                        ref var whiteLight = ref _whiteLights[++i];
-                        ref var blackLight = ref _blackLights[i];
+                        ref var whiteLight = ref whiteLights[++i];
+                        ref var blackLight = ref blackLights[i];
 
                         if (
-                            _hasLight[i]
-                            || _hasLight[i - 1]
-                            || _hasLight[i + 1]
-                            || _hasLight[i - height]
-                            || _hasLight[i - height - 1]
-                            || _hasLight[i - height + 1]
-                            || _hasLight[i + height]
-                            || _hasLight[i + height - 1]
-                            || _hasLight[i + height + 1]
+                            hasLight[i]
+                            || hasLight[i - 1]
+                            || hasLight[i + 1]
+                            || hasLight[i - height]
+                            || hasLight[i - height - 1]
+                            || hasLight[i - height + 1]
+                            || hasLight[i + height]
+                            || hasLight[i + height - 1]
+                            || hasLight[i + height + 1]
                         )
                         {
                             whiteLight.X = whiteLight.Y = whiteLight.Z = 1f;
@@ -553,28 +581,35 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
-                        var i = height * x;
-                        for (var y = 1; y < height - 1; ++y)
+                        var myHeight = height;
+                        var myLightMasks = lightMasks;
+                        var myColors = colors;
+                        var lights = _lights;
+
+                        var i = myHeight * x;
+                        for (var y = 1; y < myHeight - 1; ++y)
                         {
                             ++i;
 
                             try
                             {
-                                var mask = lightMasks[i];
+                                var mask = myLightMasks[i];
 
                                 var upperLeftMult =
-                                    lightMasks[i - height - 1] == mask ? 1f : 0f;
-                                var leftMult = lightMasks[i - height] == mask ? 2f : 0f;
+                                    myLightMasks[i - myHeight - 1] == mask ? 1f : 0f;
+                                var leftMult =
+                                    myLightMasks[i - myHeight] == mask ? 2f : 0f;
                                 var lowerLeftMult =
-                                    lightMasks[i - height + 1] == mask ? 1f : 0f;
-                                var upperMult = lightMasks[i - 1] == mask ? 2f : 0f;
+                                    myLightMasks[i - myHeight + 1] == mask ? 1f : 0f;
+                                var upperMult = myLightMasks[i - 1] == mask ? 2f : 0f;
                                 var middleMult = mask is LightMaskMode.Solid ? 12f : 4f;
-                                var lowerMult = lightMasks[i + 1] == mask ? 2f : 0f;
+                                var lowerMult = myLightMasks[i + 1] == mask ? 2f : 0f;
                                 var upperRightMult =
-                                    lightMasks[i + height - 1] == mask ? 1f : 0f;
-                                var rightMult = lightMasks[i + height] == mask ? 2f : 0f;
+                                    myLightMasks[i + myHeight - 1] == mask ? 1f : 0f;
+                                var rightMult =
+                                    myLightMasks[i + myHeight] == mask ? 2f : 0f;
                                 var lowerRightMult =
-                                    lightMasks[i + height + 1] == mask ? 1f : 0f;
+                                    myLightMasks[i + myHeight + 1] == mask ? 1f : 0f;
 
                                 var mult =
                                     1f
@@ -584,17 +619,17 @@ public sealed class SmoothLighting
                                         + (upperRightMult + rightMult + lowerRightMult)
                                     );
 
-                                ref var light = ref _lights[i];
+                                ref var light = ref lights[i];
 
-                                ref var upperLeft = ref colors[i - height - 1];
-                                ref var left = ref colors[i - height];
-                                ref var lowerLeft = ref colors[i - height + 1];
-                                ref var upper = ref colors[i - 1];
-                                ref var middle = ref colors[i];
-                                ref var lower = ref colors[i + 1];
-                                ref var upperRight = ref colors[i + height - 1];
-                                ref var right = ref colors[i + height];
-                                ref var lowerRight = ref colors[i + height + 1];
+                                ref var upperLeft = ref myColors[i - myHeight - 1];
+                                ref var left = ref myColors[i - myHeight];
+                                ref var lowerLeft = ref myColors[i - myHeight + 1];
+                                ref var upper = ref myColors[i - 1];
+                                ref var middle = ref myColors[i];
+                                ref var lower = ref myColors[i + 1];
+                                ref var upperRight = ref myColors[i + myHeight - 1];
+                                ref var right = ref myColors[i + myHeight];
+                                ref var lowerRight = ref myColors[i + myHeight + 1];
 
                                 // Faster to do it separately for each component
                                 light.X =
@@ -670,22 +705,27 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
+                        var myHeight = height;
+                        var myLightMasks = lightMasks;
+                        var myColors = colors;
+                        var lights = _lights;
+
                         var tileX = x + lightMapTileArea.X;
                         var tileY = lightMapTileArea.Y;
-                        var i = height * x;
-                        for (var y = 1; y < height - 1; ++y)
+                        var i = myHeight * x;
+                        for (var y = 1; y < myHeight - 1; ++y)
                         {
                             ++i;
                             ++tileY;
 
                             try
                             {
-                                var mask = lightMasks[i];
+                                var mask = myLightMasks[i];
                                 var isSolid = mask is LightMaskMode.Solid;
                                 var isNonSolid = TileUtils.IsNonSolid(tileX, tileY);
 
                                 var upperLeftMult =
-                                    lightMasks[i - height - 1] == mask
+                                    myLightMasks[i - myHeight - 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX - 1, tileY - 1)
@@ -694,7 +734,7 @@ public sealed class SmoothLighting
                                         ? 1f
                                         : 0f;
                                 var leftMult =
-                                    lightMasks[i - height] == mask
+                                    myLightMasks[i - myHeight] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX - 1, tileY)
@@ -703,7 +743,7 @@ public sealed class SmoothLighting
                                         ? 2f
                                         : 0f;
                                 var lowerLeftMult =
-                                    lightMasks[i - height + 1] == mask
+                                    myLightMasks[i - myHeight + 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX - 1, tileY + 1)
@@ -712,7 +752,7 @@ public sealed class SmoothLighting
                                         ? 1f
                                         : 0f;
                                 var upperMult =
-                                    lightMasks[i - 1] == mask
+                                    myLightMasks[i - 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX, tileY - 1)
@@ -722,7 +762,7 @@ public sealed class SmoothLighting
                                         : 0f;
                                 var middleMult = isSolid && !isNonSolid ? 12f : 4f;
                                 var lowerMult =
-                                    lightMasks[i + 1] == mask
+                                    myLightMasks[i + 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX, tileY + 1)
@@ -731,7 +771,7 @@ public sealed class SmoothLighting
                                         ? 2f
                                         : 0f;
                                 var upperRightMult =
-                                    lightMasks[i + height - 1] == mask
+                                    myLightMasks[i + myHeight - 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX + 1, tileY - 1)
@@ -740,7 +780,7 @@ public sealed class SmoothLighting
                                         ? 1f
                                         : 0f;
                                 var rightMult =
-                                    lightMasks[i + height] == mask
+                                    myLightMasks[i + myHeight] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX + 1, tileY)
@@ -749,7 +789,7 @@ public sealed class SmoothLighting
                                         ? 2f
                                         : 0f;
                                 var lowerRightMult =
-                                    lightMasks[i + height + 1] == mask
+                                    myLightMasks[i + myHeight + 1] == mask
                                     && (
                                         !isSolid
                                         || TileUtils.IsNonSolid(tileX + 1, tileY + 1)
@@ -766,17 +806,17 @@ public sealed class SmoothLighting
                                         + (upperRightMult + rightMult + lowerRightMult)
                                     );
 
-                                ref var light = ref _lights[i];
+                                ref var light = ref lights[i];
 
-                                ref var upperLeft = ref colors[i - height - 1];
-                                ref var left = ref colors[i - height];
-                                ref var lowerLeft = ref colors[i - height + 1];
-                                ref var upper = ref colors[i - 1];
-                                ref var middle = ref colors[i];
-                                ref var lower = ref colors[i + 1];
-                                ref var upperRight = ref colors[i + height - 1];
-                                ref var right = ref colors[i + height];
-                                ref var lowerRight = ref colors[i + height + 1];
+                                ref var upperLeft = ref myColors[i - myHeight - 1];
+                                ref var left = ref myColors[i - myHeight];
+                                ref var lowerLeft = ref myColors[i - myHeight + 1];
+                                ref var upper = ref myColors[i - 1];
+                                ref var middle = ref myColors[i];
+                                ref var lower = ref myColors[i + 1];
+                                ref var upperRight = ref myColors[i + myHeight - 1];
+                                ref var right = ref myColors[i + myHeight];
+                                ref var lowerRight = ref myColors[i + myHeight + 1];
 
                                 // Faster to do it separately for each component
                                 light.X =
@@ -853,24 +893,28 @@ public sealed class SmoothLighting
                 SettingsSystem._parallelOptions,
                 (x) =>
                 {
-                    var i = height * x;
-                    for (var y = 1; y < height - 1; ++y)
+                    var myHeight = height;
+                    var myColors = colors;
+                    var lights = _lights;
+
+                    var i = myHeight * x;
+                    for (var y = 1; y < myHeight - 1; ++y)
                     {
                         ++i;
 
                         try
                         {
-                            ref var light = ref _lights[i];
+                            ref var light = ref lights[i];
 
-                            ref var upperLeft = ref colors[i - height - 1];
-                            ref var left = ref colors[i - height];
-                            ref var lowerLeft = ref colors[i - height + 1];
-                            ref var upper = ref colors[i - 1];
-                            ref var middle = ref colors[i];
-                            ref var lower = ref colors[i + 1];
-                            ref var upperRight = ref colors[i + height - 1];
-                            ref var right = ref colors[i + height];
-                            ref var lowerRight = ref colors[i + height + 1];
+                            ref var upperLeft = ref myColors[i - myHeight - 1];
+                            ref var left = ref myColors[i - myHeight];
+                            ref var lowerLeft = ref myColors[i - myHeight + 1];
+                            ref var upper = ref myColors[i - 1];
+                            ref var middle = ref myColors[i];
+                            ref var lower = ref myColors[i + 1];
+                            ref var upperRight = ref myColors[i + myHeight - 1];
+                            ref var right = ref myColors[i + myHeight];
+                            ref var lowerRight = ref myColors[i + myHeight + 1];
 
                             // Faster to do it separately for each component
                             light.X =
@@ -1076,13 +1120,19 @@ public sealed class SmoothLighting
             SettingsSystem._parallelOptions,
             (x1) =>
             {
+                var myClampedYmax = clampedYmax;
+                var lights = _lights;
+                var myBrightness = brightness;
+                var myShimmerAlpha = shimmerAlpha;
+                var finalLightsHiDef = _finalLightsHiDef;
+
                 var i = (height * x1) + offset;
                 var x = x1 + xmin;
-                for (var y = clampedYmin; y < clampedYmax; ++y)
+                for (var y = clampedYmin; y < myClampedYmax; ++y)
                 {
                     try
                     {
-                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+                        Vector3.Multiply(ref lights[i], myBrightness, out var lightColor);
                         var tile = Main.tile[x, y];
 
                         if (TileUtils.HasShimmer(tile))
@@ -1092,15 +1142,13 @@ public sealed class SmoothLighting
                             lightColor.Z = Math.Max(lightColor.Z, 1f);
                         }
 
-                        TileShine(ref lightColor, tile, shimmerAlpha);
-                        ColorUtils.Assign(ref _finalLightsHiDef[i], lightColor);
+                        TileShine(ref lightColor, tile, myShimmerAlpha);
+                        ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
                     }
                     catch (IndexOutOfRangeException)
                     {
                         break;
                     }
-
-                    ++i;
                 }
             }
         );
@@ -1144,13 +1192,19 @@ public sealed class SmoothLighting
             SettingsSystem._parallelOptions,
             (x1) =>
             {
+                var myClampedYmax = clampedYmax;
+                var lights = _lights;
+                var myBrightness = brightness;
+                var myShimmerAlpha = shimmerAlpha;
+                var finalLights = _finalLights;
+
                 var i = (height * x1) + offset;
                 var x = x1 + xmin;
-                for (var y = clampedYmin; y < clampedYmax; ++y)
+                for (var y = clampedYmin; y < myClampedYmax; ++y)
                 {
                     try
                     {
-                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+                        Vector3.Multiply(ref lights[i], myBrightness, out var lightColor);
                         var tile = Main.tile[x, y];
 
                         if (TileUtils.HasShimmer(tile))
@@ -1160,15 +1214,13 @@ public sealed class SmoothLighting
                             lightColor.Z = Math.Max(lightColor.Z, 1f);
                         }
 
-                        TileShine(ref lightColor, tile, shimmerAlpha);
-                        ColorUtils.Assign(ref _finalLights[i], 1f, lightColor);
+                        TileShine(ref lightColor, tile, myShimmerAlpha);
+                        ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
                     }
                     catch (IndexOutOfRangeException)
                     {
                         break;
                     }
-
-                    ++i;
                 }
             }
         );
