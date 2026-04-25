@@ -51,6 +51,9 @@ public abstract class FancyLightingEngineFloatDecay : FancyLightingEngineBase
             MaxDecayMult
         );
 
+        // The vanilla lighting engine randomly multiplies the water decay by 0.98 or 0.99
+        lightWaterDecayBaseline *= (float)Math.Sqrt(0.98 * 0.99);
+
         _lightLossExitingSolid =
             PreferencesConfig.Instance.FancyLightingEngineExitMultiplier();
         if (LightingConfig.Instance.SimulateGlobalIllumination)

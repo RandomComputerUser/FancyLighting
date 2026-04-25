@@ -120,7 +120,7 @@ internal static class ColorUtils
 
     public static float ApproximateLightAbsorption(Vector3 absorptionColor)
     {
-        const float AbsorptionDepth = 8; // arbitrarily chosen
+        const float AbsorptionDepth = 10; // arbitrarily chosen
 
         GammaToLinear(ref absorptionColor);
 

@@ -290,7 +290,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 );
             }
 
-            CopyVec3Array(_workingLightMaps[0], destination, 0, length);
+            CopyVec3Array(workingLightMap, destination, 0, length);
 
             return;
         }
