@@ -281,6 +281,8 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
     {
+        ArrayUtils.MakeAtLeastSize(ref _lightMasks, width * height);
+
         if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
         {
             Parallel.For(
@@ -289,10 +291,13 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var paramLightMasks = lightMasks;
+                    var myLightMasks = _lightMasks;
+
                     var endIndex = height * (i + 1);
                     for (var j = height * i; j < endIndex; ++j)
                     {
-                        _lightMasks[j] = lightMasks[j] switch
+                        myLightMasks[j] = paramLightMasks[j] switch
                         {
                             LightMaskMode.Solid => _lightSolidDecay,
                             LightMaskMode.Water => _lightWaterDecay,
@@ -311,12 +316,15 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var paramLightMasks = lightMasks;
+                    var myLightMasks = _lightMasks;
+
                     var endIndex = height * (i + 1);
                     var x = i + _lightMapArea.X;
                     var y = _lightMapArea.Y;
                     for (var j = height * i; j < endIndex; ++j)
                     {
-                        _lightMasks[j] = lightMasks[j] switch
+                        myLightMasks[j] = paramLightMasks[j] switch
                         {
                             LightMaskMode.Solid => TileUtils.IsNonSolid(x, y)
                                 ? _lightNonSolidDecay
@@ -343,10 +351,13 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
             SettingsSystem._parallelOptions,
             (x) =>
             {
-                var i = height * x;
-                for (var y = 0; y < height; ++y)
+                var myHeight = height;
+                var myColors = colors;
+
+                var i = myHeight * x;
+                for (var y = 0; y < myHeight; ++y)
                 {
-                    ColorUtils.GammaToLinear(ref colors[i++]);
+                    ColorUtils.GammaToLinear(ref myColors[i++]);
                 }
             }
         );

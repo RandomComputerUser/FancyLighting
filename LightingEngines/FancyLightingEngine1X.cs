@@ -183,8 +183,6 @@ public sealed class FancyLightingEngine1X : FancyLightingEngineBase
         var length = width * height;
         var doGi = LightingConfig.Instance.SimulateGlobalIllumination;
 
-        ArrayUtils.MakeAtLeastSize(ref _lightMasks, length);
-
         UpdateLightMasks(lightMasks, width, height);
         InitializeTaskVariables(length, doGi);
 
