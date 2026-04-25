@@ -9,8 +9,8 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
     private const int GlobalIlluminationPassCount = 4;
 
     private readonly record struct LightSpread(
-        int DistanceToTop,
-        int DistanceToRight,
+        short DistanceToTop,
+        short DistanceToRight,
         Vec4 LightFromLeft,
         Vec4 LightFromBottom,
         Vec4 TopFromLeftX,
@@ -40,7 +40,7 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
     public FancyLightingEngine4X()
     {
         ComputeLightSpread(out _lightSpread);
-        InitializeDecayArrays();
+        InitializeDecayArray();
         ComputeCircles();
     }
 
@@ -137,8 +137,8 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
         double bottomDistanceError
     )
     {
-        static int DoubleToIndex(double x) =>
-            Math.Clamp((int)Math.Round(DistanceTicks * x), 0, DistanceTicks);
+        static short DoubleToIndex(double x) =>
+            (short)Math.Clamp((int)Math.Round(DistanceTicks * x), 0, DistanceTicks);
 
         var distance = MathUtils.Hypot(col, row);
         var distanceToTop = MathUtils.Hypot(col, row + 1) - distance;
@@ -325,8 +325,6 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
         var length = width * height;
         var doGi = LightingConfig.Instance.SimulateGlobalIllumination;
 
-        ArrayUtils.MakeAtLeastSize(ref _lightMasks, length);
-
         UpdateLightMasks(lightMasks, width, height);
         InitializeTaskVariables(length, doGi);
 
@@ -368,7 +366,7 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
             return;
         }
 
-        color *= _lightMasks[index][DistanceTicks];
+        color *= _lightDecay[_lightMasks[index] + DistanceTicks];
 
         CalculateLightSourceValues(
             colors,
@@ -520,8 +518,8 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
     )
     {
         // Performance optimization
-        var lightMask = _lightMasks;
-        var solidDecay = _lightSolidDecay;
+        var lightDecay = _lightDecay;
+        var lightMasks = _lightMasks;
         var lightLoss = _lightLossExitingSolid;
         var lightSpread = _lightSpread;
 
@@ -529,25 +527,27 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
             workingLights[0] = new(1f);
             var i = index + verticalChange;
             var value = 1f;
-            var prevMask = lightMask[i];
-            workingLights[1] = new(prevMask[lightSpread[1].DistanceToRight]);
+            var prevMask = lightMasks[i];
+            workingLights[1] = new(lightDecay[prevMask + lightSpread[1].DistanceToRight]);
             for (var y = 2; y <= verticalDistance; ++y)
             {
                 i += verticalChange;
 
-                var mask = lightMask[i];
-                if (prevMask == solidDecay && mask != solidDecay)
+                var mask = lightMasks[i];
+                if (prevMask == LightSolidMask && mask != LightSolidMask)
                 {
-                    value *= lightLoss * prevMask[DistanceTicks];
+                    value *= lightLoss * lightDecay[prevMask + DistanceTicks];
                 }
                 else
                 {
-                    value *= prevMask[DistanceTicks];
+                    value *= lightDecay[prevMask + DistanceTicks];
                 }
 
                 prevMask = mask;
 
-                workingLights[y] = new(value * mask[lightSpread[y].DistanceToRight]);
+                workingLights[y] = new(
+                    value * lightDecay[mask + lightSpread[y].DistanceToRight]
+                );
             }
         }
 
@@ -556,7 +556,7 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
             var i = index + (horizontalChange * x);
             var j = (MaxLightRange + 1) * x;
 
-            var mask = lightMask[i];
+            var mask = lightMasks[i];
 
             Vec4 verticalLight;
             {
@@ -564,15 +564,16 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
 
                 if (
                     x > 1
-                    && mask != solidDecay
-                    && lightMask[i - horizontalChange] == solidDecay
+                    && mask != LightSolidMask
+                    && lightMasks[i - horizontalChange] == LightSolidMask
                 )
                 {
                     horizontalLight *= lightLoss;
                 }
 
-                verticalLight = horizontalLight * mask[lightSpread[j].DistanceToTop];
-                horizontalLight *= mask[DistanceTicks];
+                verticalLight =
+                    horizontalLight * lightDecay[mask + lightSpread[j].DistanceToTop];
+                horizontalLight *= lightDecay[mask + DistanceTicks];
             }
 
             var edge = Math.Min(verticalDistance, circle[x]);
@@ -582,15 +583,15 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
                 ref var horizontalLightRef = ref workingLights[y];
                 var horizontalLight = horizontalLightRef;
 
-                mask = lightMask[i += verticalChange];
-                if (mask != solidDecay)
+                mask = lightMasks[i += verticalChange];
+                if (mask != LightSolidMask)
                 {
-                    if (prevMask == solidDecay)
+                    if (prevMask == LightSolidMask)
                     {
                         verticalLight *= lightLoss;
                     }
 
-                    if (lightMask[i - horizontalChange] == solidDecay)
+                    if (lightMasks[i - horizontalChange] == LightSolidMask)
                     {
                         horizontalLight *= lightLoss;
                     }
@@ -632,7 +633,7 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
                                 + (verticalLight.W * spread.RightFromBottomW)
                             )
                         )
-                    ) * mask[spread.DistanceToRight];
+                    ) * lightDecay[mask + spread.DistanceToRight];
                 verticalLight =
                     (
                         (
@@ -655,7 +656,7 @@ public sealed class FancyLightingEngine4X : FancyLightingEngineBase
                                 + (verticalLight.W * spread.TopFromBottomW)
                             )
                         )
-                    ) * mask[spread.DistanceToTop];
+                    ) * lightDecay[mask + spread.DistanceToTop];
             }
         }
     }

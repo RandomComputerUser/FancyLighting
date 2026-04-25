@@ -6,7 +6,7 @@ namespace FancyLighting.LightingEngines;
 
 public abstract class FancyLightingEngineBase : ICustomLightingEngine
 {
-    private protected int[][] _circles;
+    protected int[][] _circles;
     private Rectangle _lightMapArea;
     private long _temporalData;
 
@@ -16,21 +16,23 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
     private const float MaxDecayMult = 0.95f;
     private const float LowLightLevel = 0.03f;
 
-    private protected float _initialBrightnessCutoff;
+    protected float _initialBrightnessCutoff;
     private float _logBrightnessCutoff;
     private float _logBasicWorkCutoff;
 
     private float _thresholdMult;
     private float _reciprocalLogSlowestDecay;
-    private protected float _lightLossExitingSolid;
+    protected float _lightLossExitingSolid;
 
-    private float[] _lightAirDecay;
-    private protected float[] _lightSolidDecay;
-    private float[] _lightWaterDecay;
-    private float[] _lightHoneyDecay;
-    private float[] _lightNonSolidDecay;
+    protected float[] _lightDecay;
 
-    private protected float[][] _lightMasks;
+    protected const short LightSolidMask = 0;
+    private const short LightAirMask = DistanceTicks + 2;
+    private const short LightWaterMask = 2 * (DistanceTicks + 2);
+    private const short LightHoneyMask = 3 * (DistanceTicks + 2);
+    private const short LightNonSolidMask = 4 * (DistanceTicks + 2);
+
+    protected short[] _lightMasks;
 
     private Action[] _actions;
     private Vec3[][] _workingLightMaps;
@@ -118,21 +120,12 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
         }
     }
 
-    protected void InitializeDecayArrays()
+    protected void InitializeDecayArray()
     {
-        _lightAirDecay = new float[DistanceTicks + 2];
-        _lightSolidDecay = new float[DistanceTicks + 2];
-        _lightWaterDecay = new float[DistanceTicks + 2];
-        _lightHoneyDecay = new float[DistanceTicks + 2];
-        _lightNonSolidDecay = new float[DistanceTicks + 2];
-        for (var exponent = 0; exponent < DistanceTicks + 2; ++exponent)
+        _lightDecay = new float[5 * (DistanceTicks + 2)];
+        for (var i = 0; i < _lightDecay.Length; ++i)
         {
-            _lightAirDecay[exponent] =
-                _lightSolidDecay[exponent] =
-                _lightWaterDecay[exponent] =
-                _lightHoneyDecay[exponent] =
-                _lightNonSolidDecay[exponent] =
-                    1f;
+            _lightDecay[i] = 1f;
         }
     }
 
@@ -247,40 +240,51 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
         _thresholdMult = MathF.Exp(thresholdMultExponent * logSlowestDecay);
         _reciprocalLogSlowestDecay = 1f / logSlowestDecay;
 
-        UpdateDecay(_lightAirDecay, lightAirDecayBaseline);
-        UpdateDecay(_lightSolidDecay, lightSolidDecayBaseline);
-        UpdateDecay(_lightWaterDecay, lightWaterDecayBaseline);
-        UpdateDecay(_lightHoneyDecay, lightHoneyDecayBaseline);
+        UpdateDecay(LightSolidMask, lightSolidDecayBaseline);
+        UpdateDecay(LightAirMask, lightAirDecayBaseline);
+        UpdateDecay(LightWaterMask, lightWaterDecayBaseline);
+        UpdateDecay(LightHoneyMask, lightHoneyDecayBaseline);
 
         if (
             !PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque
-            && _lightNonSolidDecay[DistanceTicks] != _lightSolidDecay[DistanceTicks]
+            && _lightDecay[LightNonSolidMask + DistanceTicks]
+                != _lightDecay[LightSolidMask + DistanceTicks]
         )
         {
-            Array.Copy(_lightSolidDecay, _lightNonSolidDecay, _lightSolidDecay.Length);
+            Array.Copy(
+                _lightDecay,
+                LightSolidMask,
+                _lightDecay,
+                LightNonSolidMask,
+                DistanceTicks + 2
+            );
         }
     }
 
-    private static void UpdateDecay(float[] decay, float baseline)
+    private void UpdateDecay(int lightMask, float baseline)
     {
-        if (baseline == decay[DistanceTicks])
+        if (baseline == _lightDecay[lightMask + DistanceTicks])
         {
             return;
         }
 
         var logBaseline = MathF.Log(baseline);
         const float ExponentMult = 1f / DistanceTicks;
-        for (var i = 0; i < decay.Length; ++i)
+        for (var i = 0; i <= DistanceTicks; ++i)
         {
-            decay[i] = MathF.Exp(ExponentMult * i * logBaseline);
+            _lightDecay[lightMask + i] = MathF.Exp(ExponentMult * i * logBaseline);
         }
 
         // Last element is for diagonal decay (used in GI)
-        decay[^1] = MathF.Exp(MathF.Sqrt(2) * logBaseline);
+        _lightDecay[lightMask + (DistanceTicks + 1)] = MathF.Exp(
+            MathF.Sqrt(2) * logBaseline
+        );
     }
 
     protected void UpdateLightMasks(LightMaskMode[] lightMasks, int width, int height)
     {
+        ArrayUtils.MakeAtLeastSize(ref _lightMasks, width * height);
+
         if (PreferencesConfig.Instance.FancyLightingEngineNonSolidOpaque)
         {
             Parallel.For(
@@ -289,15 +293,18 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var paramLightMasks = lightMasks;
+                    var myLightMasks = _lightMasks;
+
                     var endIndex = height * (i + 1);
                     for (var j = height * i; j < endIndex; ++j)
                     {
-                        _lightMasks[j] = lightMasks[j] switch
+                        myLightMasks[j] = paramLightMasks[j] switch
                         {
-                            LightMaskMode.Solid => _lightSolidDecay,
-                            LightMaskMode.Water => _lightWaterDecay,
-                            LightMaskMode.Honey => _lightHoneyDecay,
-                            _ => _lightAirDecay,
+                            LightMaskMode.Solid => LightSolidMask,
+                            LightMaskMode.Water => LightWaterMask,
+                            LightMaskMode.Honey => LightHoneyMask,
+                            _ => LightAirMask,
                         };
                     }
                 }
@@ -311,19 +318,22 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 SettingsSystem._parallelOptions,
                 (i) =>
                 {
+                    var paramLightMasks = lightMasks;
+                    var myLightMasks = _lightMasks;
+
                     var endIndex = height * (i + 1);
                     var x = i + _lightMapArea.X;
                     var y = _lightMapArea.Y;
                     for (var j = height * i; j < endIndex; ++j)
                     {
-                        _lightMasks[j] = lightMasks[j] switch
+                        myLightMasks[j] = paramLightMasks[j] switch
                         {
                             LightMaskMode.Solid => TileUtils.IsNonSolid(x, y)
-                                ? _lightNonSolidDecay
-                                : _lightSolidDecay,
-                            LightMaskMode.Water => _lightWaterDecay,
-                            LightMaskMode.Honey => _lightHoneyDecay,
-                            _ => _lightAirDecay,
+                                ? LightNonSolidMask
+                                : LightSolidMask,
+                            LightMaskMode.Water => LightWaterMask,
+                            LightMaskMode.Honey => LightHoneyMask,
+                            _ => LightAirMask,
                         };
                         ++y;
                     }
@@ -610,13 +620,12 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                     var src = lights;
                     var dst = downLights;
                     var lightMasks = _lightMasks;
-                    var solidDecay = _lightSolidDecay;
 
                     var endIndex = height * (i + 1);
                     for (var j = height * i; j < endIndex; ++j)
                     {
                         dst[j] =
-                            (lightMasks[j] == solidDecay)
+                            (lightMasks[j] == LightSolidMask)
                                 ? Vec3.Zero
                                 : Vec3.Multiply(giMult, src[j]);
                     }
@@ -626,8 +635,8 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
             static void RunAxialSpread(
                 Vec3[] src,
                 Vec3[] dst,
-                float[][] lightMasks,
-                float[] solidDecay,
+                short[] lightMasks,
+                float[] lightDecay,
                 int beginIndex,
                 int endIndex,
                 int inc
@@ -640,12 +649,16 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                     j += inc;
 
                     var mask = lightMasks[j];
-                    var preventSpread = mask != solidDecay && prevMask == solidDecay;
+                    var preventSpread =
+                        mask != LightSolidMask && prevMask == LightSolidMask;
                     prevMask = mask;
 
                     dst[j] = light = preventSpread
                         ? src[j]
-                        : Vec3.Max(src[j], Vec3.Multiply(prevMask[DistanceTicks], light));
+                        : Vec3.Max(
+                            src[j],
+                            Vec3.Multiply(lightDecay[prevMask + DistanceTicks], light)
+                        );
                 }
             }
 
@@ -653,8 +666,8 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                 Vec3[] src1,
                 Vec3[] src2,
                 Vec3[] dst,
-                float[][] lightMasks,
-                float[] solidDecay,
+                short[] lightMasks,
+                float[] lightDecay,
                 int beginIndex,
                 int endIndex,
                 int inc,
@@ -670,12 +683,12 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
 
                     var mask = lightMasks[j];
                     var preventSpread =
-                        mask != solidDecay
+                        mask != LightSolidMask
                         && (
-                            prevMask == solidDecay
+                            prevMask == LightSolidMask
                             || (
-                                lightMasks[j + diff1] == solidDecay
-                                && lightMasks[j + diff2] == solidDecay
+                                lightMasks[j + diff1] == LightSolidMask
+                                && lightMasks[j + diff2] == LightSolidMask
                             )
                         );
                     prevMask = mask;
@@ -685,7 +698,10 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         ? srcLight
                         : Vec3.Max(
                             srcLight,
-                            Vec3.Multiply(prevMask[DistanceTicks + 1], light)
+                            Vec3.Multiply(
+                                lightDecay[prevMask + (DistanceTicks + 1)],
+                                light
+                            )
                         );
                     ref var dstLight = ref dst[j];
                     dstLight = Vec3.Max(dstLight, light);
@@ -703,7 +719,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         downLights,
                         leftLights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         i + (height * (width - 1)),
                         i,
                         -height
@@ -721,7 +737,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         downLights,
                         upLights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         (height * (i + 1)) - 1,
                         height * i,
                         -1
@@ -739,7 +755,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         downLights,
                         rightLights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         i,
                         i + (height * (width - 1)),
                         height
@@ -757,7 +773,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         downLights,
                         downLights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         height * i,
                         (height * (i + 1)) - 1,
                         1
@@ -777,7 +793,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         upLights,
                         lights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         Math.Min(
                             (height * (i + height)) - 1,
                             -i + ((height + 1) * (width - 1))
@@ -801,7 +817,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         rightLights,
                         lights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         Math.Max((height * (i + 1)) - 1, i + height - 1),
                         Math.Min(height * (i + height - 1), i + ((height - 1) * width)),
                         height - 1,
@@ -822,7 +838,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         downLights,
                         lights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         Math.Max(height * i, -i),
                         Math.Min(
                             (height * (i + height)) - 1,
@@ -846,7 +862,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
                         leftLights,
                         lights,
                         _lightMasks,
-                        _lightSolidDecay,
+                        _lightDecay,
                         Math.Min(height * (i + height - 1), i + ((height - 1) * width)),
                         Math.Max((height * (i + 1)) - 1, i + height - 1),
                         -height + 1,
@@ -883,22 +899,50 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
         rightDistance = width - 1 - x;
 
         var threshold = _thresholdMult * color;
+        var lightDecay = _lightDecay;
+        var lightMasks = _lightMasks;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool LessThanThreshold(int otherIndex)
+        static bool LessThanThreshold(
+            float[] lightDecay,
+            short[] lightMasks,
+            Vector3[] colors,
+            int otherIndex,
+            in Vec3 threshold
+        )
         {
             ref var otherColorRef = ref colors[otherIndex];
             var otherColor = new Vec3(otherColorRef.X, otherColorRef.Y, otherColorRef.Z);
-            otherColor *= _lightMasks[otherIndex][DistanceTicks];
+            otherColor *= lightDecay[lightMasks[otherIndex] + DistanceTicks];
             return otherColor.X < threshold.X
                 || otherColor.Y < threshold.Y
                 || otherColor.Z < threshold.Z;
         }
 
-        doUp = upDistance > 0 && LessThanThreshold(index - 1);
-        doDown = downDistance > 0 && LessThanThreshold(index + 1);
-        doLeft = leftDistance > 0 && LessThanThreshold(index - height);
-        doRight = rightDistance > 0 && LessThanThreshold(index + height);
+        doUp =
+            upDistance > 0
+            && LessThanThreshold(lightDecay, lightMasks, colors, index - 1, in threshold);
+        doDown =
+            downDistance > 0
+            && LessThanThreshold(lightDecay, lightMasks, colors, index + 1, in threshold);
+        doLeft =
+            leftDistance > 0
+            && LessThanThreshold(
+                lightDecay,
+                lightMasks,
+                colors,
+                index - height,
+                in threshold
+            );
+        doRight =
+            rightDistance > 0
+            && LessThanThreshold(
+                lightDecay,
+                lightMasks,
+                colors,
+                index + height,
+                in threshold
+            );
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -928,8 +972,8 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
     )
     {
         // Performance optimization
+        var lightDecay = _lightDecay;
         var lightMask = _lightMasks;
-        var solidDecay = _lightSolidDecay;
         var lightLoss = _lightLossExitingSolid;
 
         index += indexChange;
@@ -947,13 +991,13 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
             }
 
             var mask = lightMask[index];
-            if (prevMask == solidDecay && mask != solidDecay)
+            if (prevMask == LightSolidMask && mask != LightSolidMask)
             {
-                color *= lightLoss * prevMask[DistanceTicks];
+                color *= lightLoss * lightDecay[prevMask + DistanceTicks];
             }
             else
             {
-                color *= prevMask[DistanceTicks];
+                color *= lightDecay[prevMask + DistanceTicks];
             }
 
             prevMask = mask;
