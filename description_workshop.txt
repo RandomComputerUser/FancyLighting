@@ -1,28 +1,30 @@
-﻿Fancy Lighting improves the quality of lighting by adding a new lighting engine and various shaders.
+﻿Fancy Lighting improves the game's lighting and graphics!
 
-[h3]Features[/h3]
+[h2]Features[/h2]
 [list]
     [*]Smooth lighting
     [*]Ambient occlusion
     [*]Accurate shadows
     [*]Improved sky rendering
-    [*]HDR rendering (tone mapped to SDR)
-    [*]Bloom
     [*]Simulated normal maps
+    [*]HDR rendering (tone mapped to SDR)
+    [*]Bloom and depth of field
     [*]Camera mode compatibility
 [/list]
 
 For the best performance, try lowering the in-game resolution to either 1920x1080 or 1920x1200 depending on the aspect ratio of your display.
 
-Occasionally, after launching the game, this mod might not work. This can usually be fixed by restarting the game.
+[h2]Troubleshooting[/h2]
+
+[b]If you enter a world with this mod disabled and then later enable this mod, there may be graphical glitches. It is recommended to have this mod enabled before entering any worlds after launching tModLoader.[/b]
 
 If you are using full HDR rendering and experiencing graphical glitches with other mods, try enabling the settings labeled 'Full HDRR Mod Compatibility Fixes' and 'Disable HDRR During Boss Fights and Events' in the Preferences config.
 
-Some tiles are tinted when being drawn. For example, pearlstone is tinted pink so that its in-game appearance is more pink than its texture. Smooth lighting supports all vanilla tinted tiles. Modded tinted tiles may not be supported.
+[h2]GitHub[/h2]
 
 You may report issues, download old releases, and view the source code on [url=https://github.com/RandomComputerUser/FancyLighting]the GitHub repository[/url].
 
-[h1]Credits[/h1]
+[h2]Credits[/h2]
 [list]
     [*]Rex
     [*]osaka_drift: ru-RU locale
