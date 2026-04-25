@@ -231,10 +231,10 @@ public sealed class FancyLightingMod : Mod
                 break;
 
             case LightingEngineMode.High:
-                if (_fancyLightingEngineInstance is not FancyLightingEngine4X)
+                if (_fancyLightingEngineInstance is not FancyLightingEngine2XVec)
                 {
                     _fancyLightingEngineInstance?.Unload();
-                    _fancyLightingEngineInstance = new FancyLightingEngine4X();
+                    _fancyLightingEngineInstance = new FancyLightingEngine2XVec();
                 }
 
                 break;

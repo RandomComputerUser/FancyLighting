@@ -5,7 +5,7 @@ using Vec4 = System.Numerics.Vector4;
 
 namespace FancyLighting.LightingEngines;
 
-public sealed class FancyLightingEngine2X : FancyLightingEngineBase
+public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 {
     private const int GlobalIlluminationPassCount = 2;
 
