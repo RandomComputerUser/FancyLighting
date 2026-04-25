@@ -11,8 +11,6 @@ public static class FancySkyRendering
     private static Shader _skyDitheredShader;
     private static Shader _sunShader;
 
-    private static bool _modifyStarDrawing = false;
-
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
 
@@ -59,7 +57,6 @@ public static class FancySkyRendering
     private static void AddHooks()
     {
         On_Main.DrawStarsInBackground += _Main_DrawStarsInBackground;
-        On_Main.DrawStar += _Main_DrawStar;
     }
 
     internal static void Unload()
@@ -82,7 +79,6 @@ public static class FancySkyRendering
     {
         if (LightingConfig.Instance?.FancySkyRenderingEnabled() is not true || artificial)
         {
-            _modifyStarDrawing = false;
             orig(self, sceneArea, artificial);
             return;
         }
@@ -188,7 +184,7 @@ public static class FancySkyRendering
         Main.spriteBatch.End();
 
         Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
+            SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
@@ -197,49 +193,19 @@ public static class FancySkyRendering
             transformMatrix
         );
 
-        _modifyStarDrawing = true;
+        var colorOfTheSkies = Main.ColorOfTheSkies;
         try
         {
+            // prevent stars from appearing during sunrise/sunset
+            var colorOfTheSkiesVec = colorOfTheSkies.ToVector3();
+            colorOfTheSkiesVec *= 2f;
+            ColorUtils.Convert(out Main.ColorOfTheSkies, colorOfTheSkiesVec);
             orig(self, sceneArea, artificial);
         }
         finally
         {
-            _modifyStarDrawing = false;
+            Main.ColorOfTheSkies = colorOfTheSkies;
         }
-    }
-
-    private static void _Main_DrawStar(
-        On_Main.orig_DrawStar orig,
-        Main self,
-        ref Main.SceneArea sceneArea,
-        float starOpacity,
-        Color bgColorForStars,
-        int i,
-        Star theStar,
-        bool artificial,
-        bool foreground
-    )
-    {
-        if (_modifyStarDrawing)
-        {
-            // prevent stars from appearing during sunrise/sunset
-            var colorVec = 1.3f * bgColorForStars.ToVector3();
-            colorVec.X = MathF.Sqrt(colorVec.X);
-            colorVec.Y = MathF.Sqrt(colorVec.Y);
-            colorVec.Z = MathF.Sqrt(colorVec.Z);
-            ColorUtils.Convert(out bgColorForStars, colorVec);
-        }
-
-        orig(
-            self,
-            ref sceneArea,
-            starOpacity,
-            bgColorForStars,
-            i,
-            theStar,
-            artificial,
-            foreground
-        );
     }
 
     internal static void DrawSunAndMoon(

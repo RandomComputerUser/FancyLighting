@@ -24,6 +24,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Fancy Atmosphere is now (mostly) compatible with camera mode
 - Tweaked the sky colors used by Fancy Atmosphere
 - Tweaked the appearance of the sun in Fancy Atmosphere
+- Increased the brightness of stars in Fancy Atmosphere (previously they were much darker than in vanilla)
 - Tweaked sky light color Preset 1 (now called “Natural”)
 - Made the underworld background slightly brighter when using full HDR rendering
 - Improved and optimized global illumination
