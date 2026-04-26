@@ -55,3 +55,4 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made more classes and methods public
 - Added a new event `PreDrawSky` in the FancySkyRendering class for other mods to use
 - Added a new event `PostUpdateLightMap` in the SmoothLighting class for other mods to use
+- Updated the mod icon and description
