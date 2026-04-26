@@ -144,11 +144,6 @@ public sealed class FancyLightingMod : Mod
         SetFancyLightingEngineInstance();
         _postProcessingInstance = new();
 
-        AddHooks();
-
-        FancySkyRendering.Load();
-        FancySkyColors.Load();
-
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
         NitrateCompatibility.Load();
@@ -202,7 +197,10 @@ public sealed class FancyLightingMod : Mod
     public override void PostSetupContent()
     {
         // MonoMod hooks that are added later get run earlier
-        AddPriorityHooks();
+        AddHooks();
+
+        FancySkyRendering.Load();
+        FancySkyColors.Load();
     }
 
     private void SetFancyLightingEngineInstance()
@@ -289,7 +287,8 @@ public sealed class FancyLightingMod : Mod
         On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
         On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
         On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
-        // Camera mode hooks added below
+
+        // Camera mode hooks
         // For some reason the order in which these are added matters to ensure that camera mode works
         // Maybe DrawCapture needs to be added last
         On_CaptureCamera.DrawTick += _CaptureCamera_DrawTick;
@@ -297,11 +296,8 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawWalls += _Main_DrawWalls;
         On_Main.DrawTiles += _Main_DrawTiles;
         On_Main.DrawCapture += _Main_DrawCapture;
-        On_Main.DoDraw += _Main_DoDraw;
-    }
 
-    private void AddPriorityHooks()
-    {
+        On_Main.DoDraw += _Main_DoDraw;
         On_FilterManager.BeginCapture += _FilterManager_BeginCapture;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_Main.DrawBlack += _Main_DrawBlack;
