@@ -29,7 +29,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made the underworld background slightly brighter when using full HDR rendering
 - Improved and optimized global illumination
 - Improved how water absorbs light when using the Fancy Lighting Engine
-- Improved ambient occlusion, making it subtler
+- Improved Ambient Occlusion, making it subtler
 - Increased the default ambient light proportion to 90% (from 60%) to partly compensate for the previous change
 - Decreased the default normal maps strength to 3 (from 4)
 - Slightly improved the quality of the bicubic render mode
@@ -45,9 +45,10 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Rearranged some settings in the config
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
-- Fixed a bug causing extra gore to spawn with Smooth Lighting enabled
+- Fixed a bug that caused extra gore to spawn with Smooth Lighting enabled
 - Fixed some potential graphical glitches caused by Fancy Atmosphere
 - Fixed some uncommon graphical glitches
+- Fix a bug that caused Ambient Occlusion to not update immediately after saving configs
 - Made minor optimizations to Smooth Lighting
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod

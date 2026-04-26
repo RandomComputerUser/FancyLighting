@@ -117,7 +117,7 @@ public sealed class PostProcessing
         )
         * (0.9f * Lighting.GlobalBrightness);
 
-    // This code is taken from vanilla Main.DrawUnderworldBackground()
+    // This code is adapted from vanilla (Main.DrawUnderworldBackground())
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
