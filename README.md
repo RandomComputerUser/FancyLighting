@@ -7,6 +7,29 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 
 [EasyXnb](https://github.com/SuperAndyHero/EasyXnb) is required to build this mod. The EasyXnb config file can be found in the Effects directory.
 
+## Mod.Call() API
+
+### AddHook
+- `"AddHook", "PostUpdateLightMap", Action<Texture2D, Matrix, Rectangle, bool>`
+  - Add a hook that runs after Smooth Lighting updates its light map texture. This exposes the light map texture.
+  - **Hook Parameters:**
+    - `Vector2D lightMapTexture`: The texture used to sample the light map.
+    - `Matrix samplingTransformation`: A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling `lightMapTexture`.
+    - `Rectangle lightMapArea`: The area of the world covered by the light map, measured in tiles.
+    - `bool cameraMode`: Whether the light map is for a camera mode capture.
+  - **Remarks:** The dimensions of `lightMapTexture` may not match the dimensions of the light map in tiles.
+- `"AddHook", "PreDrawSky", Func<Vector3, Vector3, Vector3, (Vector3, Vector3, Vector3)>`
+  - Add a hook that runs before Fancy Atmosphere draws the sky. This allows the color of the sky to be modified.
+  - **Hook Parameters:**
+    - `Vector3 highSkyColor`: The color of the high part of the sky.
+    - `Vector3 lowSkyColor`: The color of the low part of the sky.
+    - `Vector3 skyColorMult`: A color multiplier applied to the entire sky. Typically this changes based on the biome.
+  - **Hook Returns:** `(Vector3, Vector3, Vector3)`
+    - `Vector3 highSkyColor`: The modified high sky color.
+    - `Vector3 lowSkyColor`: The modified low sky color.
+    - `Vector3 skyColorMult`: The modified sky color multiplier.
+  - **Remarks**: The hook will be run both while on the main menu and while in a world.
+
 ## Latest Version
 
 ### v1.1.0 (2026-04-??)
@@ -53,6 +76,7 @@ This mod is not endorsed by the creators of either Terraria or tModLoader.
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
 - Made more classes and methods public
-- Added a new event `PreDrawSky` in the FancySkyRendering class for other mods to use
-- Added a new event `PostUpdateLightMap` in the SmoothLighting class for other mods to use
+- Added a Mod.Call() API for other mods to use
+- Added a new event `PreDrawSky` in the FancySkyRendering class, which can be accessed via the `"AddHook"` command in the Mod.Call() API
+- Added a new event `PostUpdateLightMap` in the SmoothLighting class, which can be accessed via the `"AddHook"` command in the Mod.Call() API
 - Updated the mod icon and description

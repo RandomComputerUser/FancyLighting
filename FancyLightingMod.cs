@@ -123,6 +123,23 @@ public sealed class FancyLightingMod : Mod
         return true;
     }
 
+    public override object Call(params object[] args)
+    {
+        foreach (var item in args)
+        {
+            Console.WriteLine(item);
+        }
+
+        try
+        {
+            return ModCalls.Call(args);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
     public override void Load()
     {
         if (Main.netMode is NetmodeID.Server)

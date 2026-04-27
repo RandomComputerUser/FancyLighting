@@ -60,11 +60,13 @@ public sealed class SmoothLighting
     /// <param name="lightMapTexture">The texture used to sample the light map.</param>
     /// <param name="samplingTransformation">A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling <paramref name="lightMapTexture"></paramref>.</param>
     /// <param name="lightMapArea">The area of the world covered by the light map, measured in tiles.</param>
-    /// <remarks>The dimensions of <paramref name="lightMapTexture"></paramref> may be larger than the actual light map.</remarks>
+    /// <param name="cameraMode">Whether the light map is for a camera mode capture.</param>
+    /// <remarks>The dimensions of <paramref name="lightMapTexture"></paramref> may not match the dimensions of the light map in tiles.</remarks>
     public delegate void LightMapUpdateHandler(
         Texture2D lightMapTexture,
         Matrix samplingTransformation,
-        Rectangle lightMapArea
+        Rectangle lightMapArea,
+        bool cameraMode
     );
 
     /// <summary>
@@ -1064,7 +1066,7 @@ public sealed class SmoothLighting
             );
         }
 
-        var invokeEvent = !cameraMode && PostUpdateLightMap != null;
+        var invokeEvent = PostUpdateLightMap != null;
 
         if (doBicubicUpscaling && invokeEvent)
         {
@@ -1091,7 +1093,12 @@ public sealed class SmoothLighting
         var translation = -Vector2.Transform(origin, transformation);
         transformation.Translation = new Vector3(translation.X, translation.Y, 0f);
 
-        PostUpdateLightMap?.Invoke(lightMapTexture, transformation, _lightMapTileArea);
+        PostUpdateLightMap?.Invoke(
+            lightMapTexture,
+            transformation,
+            _lightMapTileArea,
+            cameraMode
+        );
     }
 
     private void CalculateSmoothLightingHdr(

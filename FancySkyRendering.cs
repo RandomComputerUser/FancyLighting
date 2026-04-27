@@ -33,6 +33,7 @@ public static class FancySkyRendering
     /// <summary>
     /// This event is invoked before the sky is drawn.
     /// </summary>
+    /// <remarks>This event is invoked both while on the main menu and while in a world.</remarks>
     public static event SkyColorModifier PreDrawSky;
 
     internal static void Load()
