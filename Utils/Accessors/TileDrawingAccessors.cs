@@ -5,13 +5,6 @@ namespace FancyLighting.Utils.Accessors;
 
 internal static class TileDrawingAccessors
 {
-    [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "ShouldTileShine")]
-    public static extern bool ShouldTileShine(
-        TileDrawing canBeNull,
-        ushort type,
-        short frameX
-    );
-
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DrawMultiTileVines")]
     public static extern void DrawMultiTileVines(TileDrawing obj);
 

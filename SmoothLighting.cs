@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using ReLogic.Content;
 using Terraria.Graphics.Light;
+using Terraria.ID;
 
 namespace FancyLighting;
 
@@ -279,11 +280,39 @@ public sealed class SmoothLighting
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
+    private static bool ShouldTileShine(ushort type, short frameX, float shimmerAlpha)
+    {
+        // Using UnsafeAccessor to access TileDrawing.ShouldTileShine() is slow
+        // So we have our own method
+        // This code is adapted from vanilla
+
+        if ((shimmerAlpha > 0f && Main.tileSolid[type]) || type == TileID.Stalactite)
+        {
+            return true;
+        }
+
+        if (!Main.tileShine2[type])
+        {
+            return false;
+        }
+
+        switch (type)
+        {
+            case TileID.Containers:
+            case TileID.FakeContainers:
+                return frameX is >= 36 and < 178;
+            case TileID.Containers2:
+            case TileID.FakeContainers2:
+                return frameX is >= 144 and < 178;
+        }
+
+        return true;
+    }
+
     private static void TileShine(ref Vector3 color, Tile tile, float shimmerAlpha)
     {
         var type = tile.TileType;
-        var frameX = tile.TileFrameX;
-        if (!TileDrawingAccessors.ShouldTileShine(null, type, frameX))
+        if (!ShouldTileShine(type, tile.TileFrameX, shimmerAlpha))
         {
             return;
         }
@@ -294,11 +323,9 @@ public sealed class SmoothLighting
             // This code is adapted from vanilla
             // The vanilla Main.shine() function limits each component to a max of 1
             // We don't want that
-            var shimmerShine = MainAccessors.shimmerShine(null);
             var inverseShimmerAlpha = 1f - shimmerAlpha;
-            color.X *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.X);
-            color.Y *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.Y);
-            color.Z *= inverseShimmerAlpha + (shimmerAlpha * shimmerShine.Z);
+            color.X *= inverseShimmerAlpha + (shimmerAlpha * 1.2f);
+            color.Z *= inverseShimmerAlpha + (shimmerAlpha * 1.6f);
         }
     }
 
