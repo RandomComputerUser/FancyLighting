@@ -52,7 +52,7 @@ internal static class PerformanceTracker
         }
     }
 
-    public const int MaxSampleSize = 50;
+    public const int MaxSampleSize = 150;
 
     private static Dictionary<string, StatTracker> _stats = new();
 
