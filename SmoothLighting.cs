@@ -55,13 +55,74 @@ public sealed class SmoothLighting
     private Shader _enhancedGlowMaskShader;
 
     /// <summary>
+    /// Modify the lighting of a tile.
+    /// </summary>
+    /// <param name="tile">The affected tile.</param>
+    /// <param name="x">The x-coordinate of the tile.</param>
+    /// <param name="y">The y-coordinate of the tile.</param>
+    /// <param name="lightColor">The light color at the location of the tile, after global brightness is applied.</param>
+    /// <returns>The modified light color to apply to the tile.</returns>
+    /// <remarks>
+    /// It is highly recommended to avoid having side effects.
+    /// </remarks>
+    public delegate Vector3 TileLightModifier(
+        Tile tile,
+        int x,
+        int y,
+        Vector3 lightColor
+    );
+
+    /// <summary>
+    /// The <see cref="TileLightModifier"/> functions currently associated with each tile type, changing how those tile types are lit.
+    /// </summary>
+    /// <remarks>
+    /// This can be null if there is currently no custom tile lighting.
+    /// Custom tile lighting affects only how tiles appear to be lit when using Smooth Lighting; there is no effect on any other part of the game.
+    /// Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting.
+    /// In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
+    /// </remarks>
+    public static TileLightModifier[] TileLightModifiers = null;
+
+    /// <summary>
+    /// Set custom tile lighting for a particular tile type.
+    /// </summary>
+    /// <param name="tileType">The affected tile type.</param>
+    /// <param name="tileLightModifier">The function that modifies the tile's light color. Can be null to remove custom tile lighting for this tile type.</param>
+    /// <returns>Whether any changes were made.</returns>
+    /// <remarks>
+    /// This function changes the <see cref="TileLightModifiers"/> array.
+    /// </remarks>
+    public static bool SetCustomTileLighting(
+        int tileType,
+        TileLightModifier tileLightModifier
+    )
+    {
+        if (TileLightModifiers is null)
+        {
+            if (tileLightModifier is null)
+            {
+                return false;
+            }
+
+            TileLightModifiers = new TileLightModifier[TileLoader.TileCount];
+        }
+
+        ref var activeModifier = ref TileLightModifiers[tileType];
+        var changed = !ReferenceEquals(activeModifier, tileLightModifier);
+        activeModifier = tileLightModifier;
+        return changed;
+    }
+
+    /// <summary>
     /// Handle an update to the light map.
     /// </summary>
     /// <param name="lightMapTexture">The texture used to sample the light map.</param>
     /// <param name="samplingTransformation">A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling <paramref name="lightMapTexture"></paramref>.</param>
     /// <param name="lightMapArea">The area of the world covered by the light map, measured in tiles.</param>
     /// <param name="cameraMode">Whether the light map is for a camera mode capture.</param>
-    /// <remarks>The dimensions of <paramref name="lightMapTexture"></paramref> may not match the dimensions of the light map in tiles.</remarks>
+    /// <remarks>
+    /// The dimensions of <paramref name="lightMapTexture"></paramref> may not match the dimensions of the light map in tiles.
+    /// </remarks>
     public delegate void LightMapUpdateHandler(
         Texture2D lightMapTexture,
         Matrix samplingTransformation,
@@ -179,6 +240,7 @@ public sealed class SmoothLighting
 
     internal void Unload()
     {
+        TileLightModifiers = null;
         PostUpdateLightMap = null;
         _drawTarget?.Dispose();
         _colors?.Dispose();
@@ -472,35 +534,89 @@ public sealed class SmoothLighting
             }
         }
 
-        var low = (1f / 255f) / Lighting.GlobalBrightness;
+        const float AbsoluteLow = 1f / 255f;
+        var low = AbsoluteLow / Lighting.GlobalBrightness;
 
-        Parallel.For(
-            0,
-            width,
-            SettingsSystem._parallelOptions,
-            (x) =>
+        if (TileLightModifiers is null)
+        {
+            Parallel.For(
+                0,
+                width,
+                SettingsSystem._parallelOptions,
+                (x) =>
+                {
+                    var lights = _lights;
+                    var hasLight = _hasLight;
+                    var myLow = low;
+
+                    var i = height * x;
+                    var end = i + height;
+                    while (i < end)
+                    {
+                        try
+                        {
+                            ref var color = ref lights[i];
+                            hasLight[i++] =
+                                color.X >= myLow || color.Y >= myLow || color.Z >= myLow;
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            break;
+                        }
+                    }
+                }
+            );
+        }
+        else
+        {
+            // Can't be parallel due to thread safety issues
+            var brightness = Lighting.GlobalBrightness;
+            var tileX = lightMapTileArea.X;
+            for (var x = 0; x < width; ++x)
             {
-                var lights = _lights;
-                var hasLight = _hasLight;
-                var myLow = low;
-
+                var tileY = lightMapTileArea.Y;
                 var i = height * x;
                 var end = i + height;
                 while (i < end)
                 {
                     try
                     {
-                        ref var color = ref lights[i];
-                        hasLight[i++] =
-                            color.X >= myLow || color.Y >= myLow || color.Z >= myLow;
+                        Vector3.Multiply(ref _lights[i], brightness, out var color);
+
+                        if (
+                            0 <= tileX
+                            && tileX < Main.tile.Width
+                            && 0 <= tileY
+                            && tileY < Main.tile.Height
+                        )
+                        {
+                            var tile = Main.tile[tileX, tileY];
+                            if (
+                                tile.HasTile
+                                && TileLightModifiers[tile.TileType]
+                                    is { } tileLightModifier
+                            )
+                            {
+                                color = tileLightModifier(tile, tileX, tileY, color);
+                            }
+                        }
+
+                        _hasLight[i++] =
+                            color.X >= AbsoluteLow
+                            || color.Y >= AbsoluteLow
+                            || color.Z >= AbsoluteLow;
                     }
                     catch (IndexOutOfRangeException)
                     {
                         break;
                     }
+
+                    ++tileY;
                 }
+
+                ++tileX;
             }
-        );
+        }
 
         Parallel.For(
             1,
@@ -1121,36 +1237,87 @@ public sealed class SmoothLighting
         var brightness = Lighting.GlobalBrightness;
         var shimmerAlpha = Main.shimmerAlpha;
         Main.shimmerAlpha = 0f;
-        Parallel.For(
-            clampedStart,
-            clampedEnd,
-            SettingsSystem._parallelOptions,
-            (x1) =>
-            {
-                var myClampedYmax = clampedYmax;
-                var lights = _lights;
-                var myBrightness = brightness;
-                var myShimmerAlpha = shimmerAlpha;
-                var finalLightsHiDef = _finalLightsHiDef;
+        if (TileLightModifiers is null)
+        {
+            Parallel.For(
+                clampedStart,
+                clampedEnd,
+                SettingsSystem._parallelOptions,
+                (x1) =>
+                {
+                    var myClampedYmax = clampedYmax;
+                    var lights = _lights;
+                    var myBrightness = brightness;
+                    var myShimmerAlpha = shimmerAlpha;
+                    var finalLightsHiDef = _finalLightsHiDef;
 
+                    var i = (height * x1) + offset;
+                    var x = x1 + xmin;
+                    for (var y = clampedYmin; y < myClampedYmax; ++y)
+                    {
+                        try
+                        {
+                            Vector3.Multiply(
+                                ref lights[i],
+                                myBrightness,
+                                out var lightColor
+                            );
+                            var tile = Main.tile[x, y];
+
+                            if (TileUtils.HasShimmer(tile))
+                            {
+                                lightColor.X = Math.Max(lightColor.X, 1f);
+                                lightColor.Y = Math.Max(lightColor.Y, 1f);
+                                lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            }
+
+                            TileShine(ref lightColor, tile, myShimmerAlpha);
+                            ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            break;
+                        }
+                    }
+                }
+            );
+        }
+        else
+        {
+            // Can't be parallel due to thread safety issues
+            for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
+            {
                 var i = (height * x1) + offset;
                 var x = x1 + xmin;
-                for (var y = clampedYmin; y < myClampedYmax; ++y)
+                for (var y = clampedYmin; y < clampedYmax; ++y)
                 {
                     try
                     {
-                        Vector3.Multiply(ref lights[i], myBrightness, out var lightColor);
+                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
                         var tile = Main.tile[x, y];
 
-                        if (TileUtils.HasShimmer(tile))
+                        if (
+                            tile.HasTile
+                            && TileLightModifiers[tile.TileType] is { } tileLightModifier
+                        )
                         {
-                            lightColor.X = Math.Max(lightColor.X, 1f);
-                            lightColor.Y = Math.Max(lightColor.Y, 1f);
-                            lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            Main.shimmerAlpha = shimmerAlpha;
+                            lightColor = tileLightModifier(tile, x, y, lightColor);
+                            Main.shimmerAlpha = 0f;
+                        }
+                        else
+                        {
+                            if (TileUtils.HasShimmer(tile))
+                            {
+                                lightColor.X = Math.Max(lightColor.X, 1f);
+                                lightColor.Y = Math.Max(lightColor.Y, 1f);
+                                lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            }
+
+                            TileShine(ref lightColor, tile, shimmerAlpha);
                         }
 
-                        TileShine(ref lightColor, tile, myShimmerAlpha);
-                        ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
+                        ColorUtils.Assign(ref _finalLightsHiDef[i++], lightColor);
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -1158,7 +1325,7 @@ public sealed class SmoothLighting
                     }
                 }
             }
-        );
+        }
         Main.shimmerAlpha = shimmerAlpha;
 
         TextureUtils.MakeAtLeastSize(
@@ -1193,36 +1360,87 @@ public sealed class SmoothLighting
         var brightness = Lighting.GlobalBrightness;
         var shimmerAlpha = Main.shimmerAlpha;
         Main.shimmerAlpha = 0f;
-        Parallel.For(
-            clampedStart,
-            clampedEnd,
-            SettingsSystem._parallelOptions,
-            (x1) =>
-            {
-                var myClampedYmax = clampedYmax;
-                var lights = _lights;
-                var myBrightness = brightness;
-                var myShimmerAlpha = shimmerAlpha;
-                var finalLights = _finalLights;
+        if (TileLightModifiers is null)
+        {
+            Parallel.For(
+                clampedStart,
+                clampedEnd,
+                SettingsSystem._parallelOptions,
+                (x1) =>
+                {
+                    var myClampedYmax = clampedYmax;
+                    var lights = _lights;
+                    var myBrightness = brightness;
+                    var myShimmerAlpha = shimmerAlpha;
+                    var finalLights = _finalLights;
 
+                    var i = (height * x1) + offset;
+                    var x = x1 + xmin;
+                    for (var y = clampedYmin; y < myClampedYmax; ++y)
+                    {
+                        try
+                        {
+                            Vector3.Multiply(
+                                ref lights[i],
+                                myBrightness,
+                                out var lightColor
+                            );
+                            var tile = Main.tile[x, y];
+
+                            if (TileUtils.HasShimmer(tile))
+                            {
+                                lightColor.X = Math.Max(lightColor.X, 1f);
+                                lightColor.Y = Math.Max(lightColor.Y, 1f);
+                                lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            }
+
+                            TileShine(ref lightColor, tile, myShimmerAlpha);
+                            ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            break;
+                        }
+                    }
+                }
+            );
+        }
+        else
+        {
+            // Can't be parallel due to thread safety issues
+            for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
+            {
                 var i = (height * x1) + offset;
                 var x = x1 + xmin;
-                for (var y = clampedYmin; y < myClampedYmax; ++y)
+                for (var y = clampedYmin; y < clampedYmax; ++y)
                 {
                     try
                     {
-                        Vector3.Multiply(ref lights[i], myBrightness, out var lightColor);
+                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
                         var tile = Main.tile[x, y];
 
-                        if (TileUtils.HasShimmer(tile))
+                        if (
+                            tile.HasTile
+                            && TileLightModifiers[tile.TileType] is { } tileLightModifier
+                        )
                         {
-                            lightColor.X = Math.Max(lightColor.X, 1f);
-                            lightColor.Y = Math.Max(lightColor.Y, 1f);
-                            lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            Main.shimmerAlpha = shimmerAlpha;
+                            lightColor = tileLightModifier(tile, x, y, lightColor);
+                            Main.shimmerAlpha = 0f;
+                        }
+                        else
+                        {
+                            if (TileUtils.HasShimmer(tile))
+                            {
+                                lightColor.X = Math.Max(lightColor.X, 1f);
+                                lightColor.Y = Math.Max(lightColor.Y, 1f);
+                                lightColor.Z = Math.Max(lightColor.Z, 1f);
+                            }
+
+                            TileShine(ref lightColor, tile, shimmerAlpha);
                         }
 
-                        TileShine(ref lightColor, tile, myShimmerAlpha);
-                        ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
+                        ColorUtils.Assign(ref _finalLights[i++], 1f, lightColor);
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -1230,7 +1448,7 @@ public sealed class SmoothLighting
                     }
                 }
             }
-        );
+        }
         Main.shimmerAlpha = shimmerAlpha;
 
         TextureUtils.MakeAtLeastSize(

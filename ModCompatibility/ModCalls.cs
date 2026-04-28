@@ -51,6 +51,54 @@ internal static class ModCalls
             }
         }
 
+        {
+            if (
+                args.Length == 3
+                && args[0] is "AddCustomTileLighting"
+                && args[1] is int tileType
+                && args[2] is Func<Tile, int, int, Vector3, Vector3> tileLightModifier
+            )
+            {
+                var modifier = new SmoothLighting.TileLightModifier(tileLightModifier);
+                return SmoothLighting.SetCustomTileLighting(tileType, modifier);
+            }
+        }
+
+        {
+            if (
+                args.Length == 3
+                && args[0] is "AddCustomTileLighting"
+                && args[1] is ushort tileType
+                && args[2] is Func<Tile, int, int, Vector3, Vector3> tileLightModifier
+            )
+            {
+                var modifier = new SmoothLighting.TileLightModifier(tileLightModifier);
+                return SmoothLighting.SetCustomTileLighting(tileType, modifier);
+            }
+        }
+
+        {
+            if (
+                args.Length == 2
+                && args[0] is "RemoveCustomTileLighting"
+                && args[1] is int tileType
+            )
+            {
+                return SmoothLighting.SetCustomTileLighting(tileType, null);
+            }
+        }
+
+        {
+            if (
+                args.Length == 2
+                && args[0] is "RemoveCustomTileLighting"
+                && args[1] is ushort tileType
+            )
+            {
+                return SmoothLighting.SetCustomTileLighting(tileType, null);
+            }
+        }
+
         return null;
     }
 }

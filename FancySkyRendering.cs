@@ -23,7 +23,7 @@ public static class FancySkyRendering
     /// </summary>
     /// <param name="highSkyColor">The color of the high part of the sky.</param>
     /// <param name="lowSkyColor">The color of the low part of the sky.</param>
-    /// <param name="skyColorMult">A color multiplier applied to the entire sky. Typically this changes based on the biome.</param>
+    /// <param name="skyColorMult">A color multiplier applied to the entire sky. Typically, this changes based on the biome.</param>
     public delegate void SkyColorModifier(
         ref Vector3 highSkyColor,
         ref Vector3 lowSkyColor,
@@ -33,7 +33,9 @@ public static class FancySkyRendering
     /// <summary>
     /// This event is invoked before the sky is drawn.
     /// </summary>
-    /// <remarks>This event is invoked both while on the main menu and while in a world.</remarks>
+    /// <remarks>
+    /// This event is invoked both while on the main menu and while in a world.
+    /// </remarks>
     public static event SkyColorModifier PreDrawSky;
 
     internal static void Load()
