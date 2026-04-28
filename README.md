@@ -68,7 +68,7 @@ Add a hook that runs before Fancy Atmosphere draws the sky. This allows the colo
 - **Call Returns:** `Action`
   - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 
-### AddCustomTileLighting
+### RemoveCustomTileLighting
 
 #### `RemoveCustomTileLighting, int tileType`
 Remove custom lighting for a particular tile type when using Smooth Lighting.
@@ -83,7 +83,7 @@ Same as above, except `tileType` is passed as a ushort.
 
 ## Latest Version
 
-### v1.1.0 (2026-04-??)
+### v1.1.0 (2026-??-??)
 - Added a setting to switch between various tone mapping operators (TMOs) for full HDR rendering
 - Added the Bright TMO, which is the new default TMO 
 - The old TMO is now called Filmic and is available as another option
