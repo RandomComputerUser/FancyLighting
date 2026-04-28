@@ -536,8 +536,7 @@ public sealed class SmoothLighting
             }
         }
 
-        var low = (1f / 255f) / Lighting.GlobalBrightness;
-
+        var low = (0.999f / 255f) / Lighting.GlobalBrightness;
         if (TileLightModifiers is null)
         {
             Parallel.For(
@@ -648,7 +647,7 @@ public sealed class SmoothLighting
                         )
                         {
                             whiteLight.X = whiteLight.Y = whiteLight.Z = 1f;
-                            blackLight.X = blackLight.Y = blackLight.Z = 1f / 255;
+                            blackLight.X = blackLight.Y = blackLight.Z = 1.001f / 255f;
                         }
                         else
                         {

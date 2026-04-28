@@ -114,9 +114,9 @@ Same as above, except `tileType` is passed as a ushort.
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
 - Fixed a bug that caused extra gore to spawn with Smooth Lighting enabled
-- Fixed some potential graphical glitches caused by Fancy Atmosphere
 - Fixed some uncommon graphical glitches
 - Fix a bug that caused Ambient Occlusion to not update immediately after saving configs
+- Fixed some potential graphical glitches caused by Fancy Atmosphere and Smooth Lighting
 - Made minor optimizations to Smooth Lighting
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod

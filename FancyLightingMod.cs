@@ -270,7 +270,6 @@ public sealed class FancyLightingMod : Mod
             _smoothLightingInstance?.InvalidateSmoothLighting();
 
             // Ensure ambient occlusion updates immediately
-            // This code is adapted from vanilla
             MainAccessors.RenderTiles2(Main.instance);
             Main.sceneTile2Pos.X = Main.screenPosition.X - Main.offScreenRange;
             Main.sceneTile2Pos.Y = Main.screenPosition.Y - Main.offScreenRange;
