@@ -58,7 +58,7 @@ Add a hook that runs before Fancy Atmosphere draws the sky. This allows the colo
       - `ref Vector3 highSkyColor`: The color of the high part of the sky.
       - `ref Vector3 lowSkyColor`: The color of the low part of the sky.
       - `ref Vector3 skyColorMult`: A color multiplier applied to the entire sky. Typically, this changes based on the biome.
-    - **Remarks**: The hook will be run both while on the main menu and while in a world.
+    - **Remarks:** The hook will be run both while on the main menu and while in a world.
 - **Call Returns:** `Action`
   - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 
