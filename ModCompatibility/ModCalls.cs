@@ -14,12 +14,11 @@ internal static class ModCalls
                 args.Length == 3
                 && args[0] is "AddHook"
                 && args[1] is "PostUpdateLightMap"
-                && args[2] is Action<Texture2D, Matrix, Rectangle, bool> hook
+                && args[2].IsDelegate(out SmoothLighting.LightMapUpdateHandler hook)
             )
             {
-                var handler = new SmoothLighting.LightMapUpdateHandler(hook);
-                SmoothLighting.PostUpdateLightMap += handler;
-                return () => SmoothLighting.PostUpdateLightMap -= handler;
+                SmoothLighting.PostUpdateLightMap += hook;
+                return () => SmoothLighting.PostUpdateLightMap -= hook;
             }
         }
 
@@ -28,26 +27,11 @@ internal static class ModCalls
                 args.Length == 3
                 && args[0] is "AddHook"
                 && args[1] is "PreDrawSky"
-                && args[2]
-                    is Func<Vector3, Vector3, Vector3, (Vector3, Vector3, Vector3)> hook
+                && args[2].IsDelegate(out FancySkyRendering.SkyColorModifier hook)
             )
             {
-                var handler = new FancySkyRendering.SkyColorModifier(
-                    (
-                        ref Vector3 highSkyColor,
-                        ref Vector3 lowSkyColor,
-                        ref Vector3 skyColorMult
-                    ) =>
-                    {
-                        (highSkyColor, lowSkyColor, skyColorMult) = hook(
-                            highSkyColor,
-                            lowSkyColor,
-                            skyColorMult
-                        );
-                    }
-                );
-                FancySkyRendering.PreDrawSky += handler;
-                return () => FancySkyRendering.PreDrawSky -= handler;
+                FancySkyRendering.PreDrawSky += hook;
+                return () => FancySkyRendering.PreDrawSky -= hook;
             }
         }
 
@@ -56,11 +40,11 @@ internal static class ModCalls
                 args.Length == 3
                 && args[0] is "AddCustomTileLighting"
                 && args[1] is int tileType
-                && args[2] is Func<Tile, int, int, Vector3, Vector3> tileLightModifier
+                && args[2]
+                    .IsDelegate(out SmoothLighting.TileLightModifier tileLightModifier)
             )
             {
-                var modifier = new SmoothLighting.TileLightModifier(tileLightModifier);
-                return SmoothLighting.SetCustomTileLighting(tileType, modifier);
+                return SmoothLighting.SetCustomTileLighting(tileType, tileLightModifier);
             }
         }
 
@@ -69,11 +53,11 @@ internal static class ModCalls
                 args.Length == 3
                 && args[0] is "AddCustomTileLighting"
                 && args[1] is ushort tileType
-                && args[2] is Func<Tile, int, int, Vector3, Vector3> tileLightModifier
+                && args[2]
+                    .IsDelegate(out SmoothLighting.TileLightModifier tileLightModifier)
             )
             {
-                var modifier = new SmoothLighting.TileLightModifier(tileLightModifier);
-                return SmoothLighting.SetCustomTileLighting(tileType, modifier);
+                return SmoothLighting.SetCustomTileLighting(tileType, tileLightModifier);
             }
         }
 

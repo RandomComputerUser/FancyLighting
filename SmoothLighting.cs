@@ -61,15 +61,14 @@ public sealed class SmoothLighting
     /// <param name="x">The x-coordinate of the tile.</param>
     /// <param name="y">The y-coordinate of the tile.</param>
     /// <param name="lightColor">The light color at the location of the tile, after global brightness is applied.</param>
-    /// <returns>The modified light color to apply to the tile.</returns>
     /// <remarks>
     /// It is highly recommended to avoid having side effects.
     /// </remarks>
-    public delegate Vector3 TileLightModifier(
+    public delegate void TileLightModifier(
         Tile tile,
         int x,
         int y,
-        Vector3 lightColor
+        ref Vector3 lightColor
     );
 
     /// <summary>
@@ -597,7 +596,7 @@ public sealed class SmoothLighting
                                     is { } tileLightModifier
                             )
                             {
-                                color = tileLightModifier(tile, tileX, tileY, color);
+                                tileLightModifier(tile, tileX, tileY, ref color);
                             }
                         }
 
@@ -1302,7 +1301,7 @@ public sealed class SmoothLighting
                         )
                         {
                             Main.shimmerAlpha = shimmerAlpha;
-                            lightColor = tileLightModifier(tile, x, y, lightColor);
+                            tileLightModifier(tile, x, y, ref lightColor);
                             Main.shimmerAlpha = 0f;
                         }
                         else
@@ -1425,7 +1424,7 @@ public sealed class SmoothLighting
                         )
                         {
                             Main.shimmerAlpha = shimmerAlpha;
-                            lightColor = tileLightModifier(tile, x, y, lightColor);
+                            tileLightModifier(tile, x, y, ref lightColor);
                             Main.shimmerAlpha = 0f;
                         }
                         else
