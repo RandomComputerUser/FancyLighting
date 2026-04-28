@@ -17,4 +17,20 @@ internal static class ArrayUtils
             array = new T[length];
         }
     }
+
+    public static void MakeAtLeastSizePreserveContents<T>(ref T[] array, int length)
+    {
+        if (array is null)
+        {
+            array = new T[length];
+            return;
+        }
+
+        if (array.Length < length)
+        {
+            var newArray = new T[length];
+            Array.Copy(array, newArray, array.Length);
+            array = newArray;
+        }
+    }
 }

@@ -103,7 +103,10 @@ public sealed class SmoothLighting
                 return false;
             }
 
-            TileLightModifiers = new TileLightModifier[TileLoader.TileCount];
+            ArrayUtils.MakeAtLeastSizePreserveContents(
+                ref TileLightModifiers,
+                TileLoader.TileCount
+            );
         }
 
         ref var activeModifier = ref TileLightModifiers[tileType];
@@ -533,8 +536,7 @@ public sealed class SmoothLighting
             }
         }
 
-        const float AbsoluteLow = 1f / 255f;
-        var low = AbsoluteLow / Lighting.GlobalBrightness;
+        var low = (1f / 255f) / Lighting.GlobalBrightness;
 
         if (TileLightModifiers is null)
         {
@@ -568,20 +570,21 @@ public sealed class SmoothLighting
         }
         else
         {
+            ArrayUtils.MakeAtLeastSizePreserveContents(
+                ref TileLightModifiers,
+                TileLoader.TileCount
+            );
+
             // Can't be parallel due to thread safety issues
-            var brightness = Lighting.GlobalBrightness;
             var tileX = lightMapTileArea.X;
             for (var x = 0; x < width; ++x)
             {
                 var tileY = lightMapTileArea.Y;
-                var i = height * x;
-                var end = i + height;
-                while (i < end)
+                var end = height * (x + 1);
+                for (var i = height * x; i < end; ++i, ++tileY)
                 {
                     try
                     {
-                        Vector3.Multiply(ref _lights[i], brightness, out var color);
-
                         if (
                             0 <= tileX
                             && tileX < Main.tile.Width
@@ -592,25 +595,21 @@ public sealed class SmoothLighting
                             var tile = Main.tile[tileX, tileY];
                             if (
                                 tile.HasTile
-                                && TileLightModifiers[tile.TileType]
-                                    is { } tileLightModifier
+                                && TileLightModifiers[tile.TileType] is not null
                             )
                             {
-                                tileLightModifier(tile, tileX, tileY, ref color);
+                                _hasLight[i] = true;
+                                continue;
                             }
                         }
 
-                        _hasLight[i++] =
-                            color.X >= AbsoluteLow
-                            || color.Y >= AbsoluteLow
-                            || color.Z >= AbsoluteLow;
+                        ref var color = ref _lights[i];
+                        _hasLight[i] = color.X >= low || color.Y >= low || color.Z >= low;
                     }
                     catch (IndexOutOfRangeException)
                     {
                         break;
                     }
-
-                    ++tileY;
                 }
 
                 ++tileX;
@@ -1283,6 +1282,11 @@ public sealed class SmoothLighting
         }
         else
         {
+            ArrayUtils.MakeAtLeastSizePreserveContents(
+                ref TileLightModifiers,
+                TileLoader.TileCount
+            );
+
             // Can't be parallel due to thread safety issues
             for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
             {
@@ -1406,6 +1410,11 @@ public sealed class SmoothLighting
         }
         else
         {
+            ArrayUtils.MakeAtLeastSizePreserveContents(
+                ref TileLightModifiers,
+                TileLoader.TileCount
+            );
+
             // Can't be parallel due to thread safety issues
             for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
             {
