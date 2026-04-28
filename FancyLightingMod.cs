@@ -125,11 +125,6 @@ public sealed class FancyLightingMod : Mod
 
     public override object Call(params object[] args)
     {
-        foreach (var item in args)
-        {
-            Console.WriteLine(item);
-        }
-
         try
         {
             return ModCalls.Call(args);
