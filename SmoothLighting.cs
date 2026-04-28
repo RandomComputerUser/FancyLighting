@@ -1287,14 +1287,6 @@ public sealed class SmoothLighting
                                 out var lightColor
                             );
                             var tile = Main.tile[x, y];
-
-                            if (TileUtils.HasShimmer(tile))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 1f);
-                                lightColor.Y = Math.Max(lightColor.Y, 1f);
-                                lightColor.Z = Math.Max(lightColor.Z, 1f);
-                            }
-
                             TileShine(ref lightColor, tile, myShimmerAlpha);
                             ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
                         }
@@ -1324,7 +1316,6 @@ public sealed class SmoothLighting
                     {
                         Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
                         var tile = Main.tile[x, y];
-
                         if (
                             tile.HasTile
                             && TileLightModifiers[tile.TileType] is { } tileLightModifier
@@ -1336,13 +1327,6 @@ public sealed class SmoothLighting
                         }
                         else
                         {
-                            if (TileUtils.HasShimmer(tile))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 1f);
-                                lightColor.Y = Math.Max(lightColor.Y, 1f);
-                                lightColor.Z = Math.Max(lightColor.Z, 1f);
-                            }
-
                             TileShine(ref lightColor, tile, shimmerAlpha);
                         }
 
@@ -1415,14 +1399,6 @@ public sealed class SmoothLighting
                                 out var lightColor
                             );
                             var tile = Main.tile[x, y];
-
-                            if (TileUtils.HasShimmer(tile))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 1f);
-                                lightColor.Y = Math.Max(lightColor.Y, 1f);
-                                lightColor.Z = Math.Max(lightColor.Z, 1f);
-                            }
-
                             TileShine(ref lightColor, tile, myShimmerAlpha);
                             ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
                         }
@@ -1452,7 +1428,6 @@ public sealed class SmoothLighting
                     {
                         Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
                         var tile = Main.tile[x, y];
-
                         if (
                             tile.HasTile
                             && TileLightModifiers[tile.TileType] is { } tileLightModifier
@@ -1464,13 +1439,6 @@ public sealed class SmoothLighting
                         }
                         else
                         {
-                            if (TileUtils.HasShimmer(tile))
-                            {
-                                lightColor.X = Math.Max(lightColor.X, 1f);
-                                lightColor.Y = Math.Max(lightColor.Y, 1f);
-                                lightColor.Z = Math.Max(lightColor.Z, 1f);
-                            }
-
                             TileShine(ref lightColor, tile, shimmerAlpha);
                         }
 

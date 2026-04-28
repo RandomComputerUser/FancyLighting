@@ -783,7 +783,7 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.waterTarget;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        // enhanced glow effect support is not needed
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -826,48 +826,9 @@ public sealed class FancyLightingMod : Mod
             );
             Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
-
-            if (enhancedGlowMasks)
-            {
-                TextureUtils.MakeSize(
-                    ref _tmpTarget3,
-                    tileTarget.Width,
-                    tileTarget.Height,
-                    TextureUtils.ScreenFormat
-                );
-
-                _disableLightColorOverride = true;
-                try
-                {
-                    orig(self);
-                }
-                finally
-                {
-                    _disableLightColorOverride = false;
-                }
-
-                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget3);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.Opaque,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
-                Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
-            }
         }
 
-        _preventTileParticles = enhancedGlowMasks;
-        try
-        {
-            orig(self);
-        }
-        finally
-        {
-            _preventTileParticles = false;
-        }
+        orig(self);
 
         if (Main.drawToScreen)
         {
@@ -888,11 +849,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        _smoothLightingInstance.DrawGlow(
-            _tmpTarget2,
-            _tmpTarget1,
-            enhancedGlowMasks ? _tmpTarget3 : null
-        );
+        _smoothLightingInstance.DrawGlow(_tmpTarget2, _tmpTarget1);
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -1396,7 +1353,6 @@ public sealed class FancyLightingMod : Mod
             }
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting();
         OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
         _preventTileParticles = enhancedGlowMasks;
         try
@@ -1705,6 +1661,8 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    // Camera mode hooks below
+
     private void _CaptureCamera_DrawTick(On_CaptureCamera.orig_DrawTick orig, object self)
     {
         _field_filterFrameBuffer1 ??= self.GetType()
@@ -1742,8 +1700,6 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTarget = null;
         }
     }
-
-    // Camera mode hooks below
 
     private void _Main_DrawLiquid(
         On_Main.orig_DrawLiquid orig,
