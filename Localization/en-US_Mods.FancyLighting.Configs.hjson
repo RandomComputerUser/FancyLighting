@@ -24,6 +24,18 @@ PreferencesConfig: {
 			'''
 	}
 
+	MonitorPerformance: {
+		Label: (Debug) Performance Monitor
+		Tooltip:
+			'''
+			Collect and display performance statistics
+
+			Prints statistics every 10 seconds
+			'''
+	}
+
+	# Tone Mapping
+	
 	Gamma: {
 		Label: Gamma (%)
 		Tooltip:
@@ -269,16 +281,6 @@ PreferencesConfig: {
 			Whether light is lost exiting non-solid tiles
 
 			Primarily affects vines
-			'''
-	}
-
-	TrackFancyLightingEnginePerf: {
-		Label: (Debug) Monitor Performance
-		Tooltip:
-			'''
-			Measure and display the amount of time consumed by the lighting engine
-
-			Works with both the Fancy Lighting Engine and the vanilla lighting engine
 			'''
 	}
 

@@ -44,7 +44,7 @@ internal sealed class SettingsSystem : ModSystem
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerformanceTracker.Enabled =
-            PreferencesConfig.Instance?.TrackFancyLightingEnginePerf ?? false;
+            PreferencesConfig.Instance?.MonitorPerformance is true;
 
         var needsPostProcessing = NeedsPostProcessing(true);
         if (needsPostProcessing && !_prevNeedsPostProcessing)

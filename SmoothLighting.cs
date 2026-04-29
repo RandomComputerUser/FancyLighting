@@ -1177,6 +1177,7 @@ public sealed class SmoothLighting
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
 
+        PerformanceTracker.StartTiming("Smooth Lighting (Light Map Texture)");
         if (doOverbright)
         {
             CalculateSmoothLightingHdr(
@@ -1205,6 +1206,7 @@ public sealed class SmoothLighting
                 cameraMode
             );
         }
+        PerformanceTracker.StopTiming("Smooth Lighting (Light Map Texture)");
 
         var invokeEvent = PostUpdateLightMap != null;
 

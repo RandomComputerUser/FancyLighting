@@ -1583,7 +1583,9 @@ public sealed class FancyLightingMod : Mod
             && !LightingConfig.Instance.FancyLightingEngineEnabled()
         )
         {
+            PerformanceTracker.StartTiming("Vanilla Lighting Engine");
             orig(self);
+            PerformanceTracker.StopTiming("Vanilla Lighting Engine");
             return;
         }
 
@@ -1616,12 +1618,14 @@ public sealed class FancyLightingMod : Mod
 
         if (LightingConfig.Instance.SmoothLightingEnabled())
         {
+            PerformanceTracker.StartTiming("Smooth Lighting (Light Map Array)");
             _smoothLightingInstance.GetAndBlurLightMap(
                 colors,
                 lightMasks,
                 self.Width,
                 self.Height
             );
+            PerformanceTracker.StopTiming("Smooth Lighting (Light Map Array)");
         }
     }
 
@@ -2196,6 +2200,10 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_DoDraw(On_Main.orig_DoDraw orig, Main self, GameTime gameTime)
     {
+        PerformanceTracker.StopTiming("Delta Time");
+        PerformanceTracker.StartTiming("Delta Time");
+        PerformanceTracker.DisplayStatistics(false);
+
         ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
         _doingFilterManagerCapture = false;
 

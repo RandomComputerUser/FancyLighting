@@ -63,6 +63,9 @@ public sealed class PreferencesConfig : ModConfig
 
     private int _threadCount;
 
+    [DefaultValue(DefaultOptions.MonitorPerformance)]
+    public bool MonitorPerformance { get; set; }
+
     // Tone Mapping
 
     [Header("ToneMapping")]
@@ -182,9 +185,6 @@ public sealed class PreferencesConfig : ModConfig
 
     [DefaultValue(DefaultOptions.FancyLightingEngineNonSolidOpaque)]
     public bool FancyLightingEngineNonSolidOpaque { get; set; }
-
-    [DefaultValue(DefaultOptions.TrackFancyLightingEnginePerf)]
-    public bool TrackFancyLightingEnginePerf { get; set; }
 
     // Fancy Sky
 

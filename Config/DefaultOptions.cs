@@ -13,6 +13,7 @@ public static class DefaultOptions
     public const int MaxDefaultThreadCount = 16;
     public static int RuntimeDefaultThreadCount =>
         Math.Clamp(Environment.ProcessorCount, MinThreadCount, MaxDefaultThreadCount);
+    public const bool MonitorPerformance = false;
 
     // Tone Mapping Preferences
     public const int Gamma = 220;
@@ -65,7 +66,6 @@ public static class DefaultOptions
     public const int FancyLightingEngineLightAbsorption = 100;
     public const int FancyLightingEngineGlobalIlluminationMult = 50;
     public const bool FancyLightingEngineNonSolidOpaque = false;
-    public const bool TrackFancyLightingEnginePerf = false;
 
     // Fancy Sky
     public const bool UseFancySkyRendering = true;
