@@ -783,7 +783,7 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.waterTarget;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        // enhanced glow effect support is not needed
+        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -826,9 +826,48 @@ public sealed class FancyLightingMod : Mod
             );
             Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
+
+            if (enhancedGlowMasks)
+            {
+                TextureUtils.MakeSize(
+                    ref _tmpTarget3,
+                    tileTarget.Width,
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
+                );
+
+                _disableLightColorOverride = true;
+                try
+                {
+                    orig(self);
+                }
+                finally
+                {
+                    _disableLightColorOverride = false;
+                }
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget3);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+            }
         }
 
-        orig(self);
+        _preventTileParticles = enhancedGlowMasks;
+        try
+        {
+            orig(self);
+        }
+        finally
+        {
+            _preventTileParticles = false;
+        }
 
         if (Main.drawToScreen)
         {
@@ -849,7 +888,11 @@ public sealed class FancyLightingMod : Mod
         }
 
         Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        _smoothLightingInstance.DrawGlow(_tmpTarget2, _tmpTarget1);
+        _smoothLightingInstance.DrawGlow(
+            _tmpTarget2,
+            _tmpTarget1,
+            enhancedGlowMasks ? _tmpTarget3 : null
+        );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
