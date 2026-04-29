@@ -1574,6 +1574,9 @@ public sealed class FancyLightingMod : Mod
             LightingEngineAccessors._workingProcessedArea(self)
         );
         orig(self);
+
+        // frame timing optimization
+        Main.renderCount = 2;
     }
 
     private void _LightMap_Blur(On_LightMap.orig_Blur orig, LightMap self)

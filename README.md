@@ -118,6 +118,7 @@ Same as above, except `tileType` is passed as a ushort.
 - Fix a bug that caused Ambient Occlusion to not update immediately after saving configs
 - Fixed some potential graphical glitches caused by Fancy Atmosphere and Smooth Lighting
 - Made minor optimizations to Smooth Lighting
+- Slightly improve frame time consistency when using the Fancy Lighting Engine
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
 - Made more classes and methods public
