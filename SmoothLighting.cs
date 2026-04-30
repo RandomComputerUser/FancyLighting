@@ -282,8 +282,6 @@ public sealed class SmoothLighting
 
     private static bool ShouldTileShine(ushort type, short frameX, float shimmerAlpha)
     {
-        // Using UnsafeAccessor to access TileDrawing.ShouldTileShine() is slow
-        // So we have our own method
         // This code is adapted from vanilla
 
         if ((shimmerAlpha > 0f && Main.tileSolid[type]) || type == TileID.Stalactite)
@@ -1288,8 +1286,13 @@ public sealed class SmoothLighting
                                 myBrightness,
                                 out var lightColor
                             );
+
                             var tile = Main.tile[x, y];
-                            TileShine(ref lightColor, tile, myShimmerAlpha);
+                            if (tile.HasTile)
+                            {
+                                TileShine(ref lightColor, tile, myShimmerAlpha);
+                            }
+
                             ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
                         }
                         catch (IndexOutOfRangeException)
@@ -1317,19 +1320,22 @@ public sealed class SmoothLighting
                     try
                     {
                         Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+
                         var tile = Main.tile[x, y];
-                        if (
-                            tile.HasTile
-                            && TileLightModifiers[tile.TileType] is { } tileLightModifier
-                        )
+                        if (tile.HasTile)
                         {
-                            Main.shimmerAlpha = shimmerAlpha;
-                            tileLightModifier(tile, x, y, ref lightColor);
-                            Main.shimmerAlpha = 0f;
-                        }
-                        else
-                        {
-                            TileShine(ref lightColor, tile, shimmerAlpha);
+                            if (
+                                TileLightModifiers[tile.TileType] is { } tileLightModifier
+                            )
+                            {
+                                Main.shimmerAlpha = shimmerAlpha;
+                                tileLightModifier(tile, x, y, ref lightColor);
+                                Main.shimmerAlpha = 0f;
+                            }
+                            else
+                            {
+                                TileShine(ref lightColor, tile, shimmerAlpha);
+                            }
                         }
 
                         ColorUtils.Assign(ref _finalLightsHiDef[i++], lightColor);
@@ -1400,8 +1406,13 @@ public sealed class SmoothLighting
                                 myBrightness,
                                 out var lightColor
                             );
+
                             var tile = Main.tile[x, y];
-                            TileShine(ref lightColor, tile, myShimmerAlpha);
+                            if (tile.HasTile)
+                            {
+                                TileShine(ref lightColor, tile, myShimmerAlpha);
+                            }
+
                             ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
                         }
                         catch (IndexOutOfRangeException)
@@ -1429,19 +1440,22 @@ public sealed class SmoothLighting
                     try
                     {
                         Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+
                         var tile = Main.tile[x, y];
-                        if (
-                            tile.HasTile
-                            && TileLightModifiers[tile.TileType] is { } tileLightModifier
-                        )
+                        if (tile.HasTile)
                         {
-                            Main.shimmerAlpha = shimmerAlpha;
-                            tileLightModifier(tile, x, y, ref lightColor);
-                            Main.shimmerAlpha = 0f;
-                        }
-                        else
-                        {
-                            TileShine(ref lightColor, tile, shimmerAlpha);
+                            if (
+                                TileLightModifiers[tile.TileType] is { } tileLightModifier
+                            )
+                            {
+                                Main.shimmerAlpha = shimmerAlpha;
+                                tileLightModifier(tile, x, y, ref lightColor);
+                                Main.shimmerAlpha = 0f;
+                            }
+                            else
+                            {
+                                TileShine(ref lightColor, tile, shimmerAlpha);
+                            }
                         }
 
                         ColorUtils.Assign(ref _finalLights[i++], 1f, lightColor);

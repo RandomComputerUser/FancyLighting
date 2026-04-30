@@ -5,14 +5,11 @@ using FancyLighting.Config.Enums;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace FancyLighting;
 
 public static class FancySkyColors
 {
-    private static ILHook _ilHook_SetBackColor;
-
     private static Texture2D _profilesTexture;
 
     public static Dictionary<SkyColorPreset, ISimpleColorProfile> Preset
@@ -32,34 +29,17 @@ public static class FancySkyColors
             [SkyColorPreset.Preset5] = SkyLightColors5.Instance,
         };
 
-        var detourMethod = typeof(Main).GetMethod(
-            "SetBackColor",
-            BindingFlags.NonPublic | BindingFlags.Static
-        );
-        if (detourMethod is not null)
-        {
-            try
-            {
-                _ilHook_SetBackColor = new(detourMethod, IL_Main_SetBackColor, true);
-            }
-            catch (Exception)
-            {
-                // Unable to add the hook
-            }
-        }
-
         AddHooks();
     }
 
     private static void AddHooks()
     {
+        IL_Main.SetBackColor += IL_Main_SetBackColor;
         On_Main.SetBackColor += _Main_SetBackColor;
     }
 
     internal static void Unload()
     {
-        _ilHook_SetBackColor?.Dispose();
-
         _profilesTexture?.Dispose();
         _profilesTexture = null;
     }
@@ -85,24 +65,35 @@ public static class FancySkyColors
 
     private static void IL_Main_SetBackColor(ILContext context)
     {
-        var cursor = new ILCursor(context);
+        try
+        {
+            var cursor = new ILCursor(context);
 
-        var setSkyColorMethod = typeof(FancySkyColors)
-            .GetMethod("SetBaseSkyColor", BindingFlags.NonPublic | BindingFlags.Static)
-            .AssertNotNull();
-        var skyColorVariable = cursor.Body.Variables.First(x =>
-            x.VariableType.Name is "Color"
-        );
+            var setSkyColorMethod = typeof(FancySkyColors)
+                .GetMethod(
+                    nameof(SetBaseSkyColor),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var skyColorVariable = cursor.Body.Variables.First(x =>
+                x.VariableType.Name is "Color"
+            );
 
-        cursor.GotoNext(
-            MoveType.After,
-            instruction =>
-                instruction.OpCode == OpCodes.Call
-                && (instruction.Operand as MethodReference)?.Name is "ModifyNightColor"
-        );
-        cursor.MoveAfterLabels();
-        cursor.Emit(OpCodes.Ldloca, skyColorVariable);
-        cursor.Emit(OpCodes.Call, setSkyColorMethod);
+            cursor.GotoNext(
+                MoveType.After,
+                instruction =>
+                    instruction.OpCode == OpCodes.Call
+                    && (instruction.Operand as MethodReference)?.Name
+                        is "ModifyNightColor"
+            );
+            cursor.MoveAfterLabels();
+            cursor.Emit(OpCodes.Ldloca, skyColorVariable);
+            cursor.Emit(OpCodes.Call, setSkyColorMethod);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
     private static void SetBaseSkyColor(ref Color bgColor)

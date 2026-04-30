@@ -104,7 +104,7 @@ internal static class CalamityModCompatibility
         var cursor = new ILCursor(context);
 
         var newThresholdMethod = typeof(CalamityModCompatibility)
-            .GetMethod("NewThreshold", BindingFlags.NonPublic | BindingFlags.Static)
+            .GetMethod(nameof(NewThreshold), BindingFlags.NonPublic | BindingFlags.Static)
             .AssertNotNull();
 
         cursor.GotoNext(

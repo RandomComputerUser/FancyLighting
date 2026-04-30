@@ -6,7 +6,7 @@ internal static class NullSafetyExtensions
     public static T AssertNotNull<T>(this T? value)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(value, nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
         return value;
     }
 }

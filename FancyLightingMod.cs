@@ -3,7 +3,8 @@ using FancyLighting.Config.Enums;
 using FancyLighting.LightingEngines;
 using FancyLighting.ModCompatibility;
 using FancyLighting.Utils.Accessors;
-using Terraria.DataStructures;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using Terraria.GameContent.Drawing;
 using Terraria.Graphics;
 using Terraria.Graphics.Capture;
@@ -280,12 +281,12 @@ public sealed class FancyLightingMod : Mod
 
     private void AddHooks()
     {
-        On_Dust.NewDust += _Dust_NewDust;
-        On_Gore.NewGore_IEntitySource_Vector2_Vector2_int_float += _Gore_NewGore;
-        On_TileDrawing.DrawTiles_EmitParticles += _TileDrawing_DrawTiles_EmitParticles;
-        On_TileDrawing.ShouldTileShine += _TileDrawing_ShouldTileShine;
-        On_Main.ShouldDrawBackgroundTileAt += _Main_ShouldDrawBackgroundTileAt;
-        On_WorldMap.UpdateLighting += _WorldMap_UpdateLighting;
+        IL_Dust.NewDust += IL_Dust_NewDust;
+        IL_Gore.NewGore_IEntitySource_Vector2_Vector2_int_float += IL_Gore_NewGore;
+        IL_TileDrawing.DrawTiles_EmitParticles += IL_TileDrawing_DrawTiles_EmitParticles;
+        IL_TileDrawing.ShouldTileShine += IL_TileDrawing_ShouldTileShine;
+        IL_Main.ShouldDrawBackgroundTileAt += IL_Main_ShouldDrawBackgroundTileAt;
+        IL_WorldMap.UpdateLighting += IL_WorldMap_UpdateLighting;
         On_TileDrawing.DrawPartialLiquid += _TileDrawing_DrawPartialLiquid;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
@@ -320,83 +321,234 @@ public sealed class FancyLightingMod : Mod
         On_Main.DrawBlack += _Main_DrawBlack;
     }
 
-    private static int _Dust_NewDust(
-        On_Dust.orig_NewDust orig,
-        Vector2 Position,
-        int Width,
-        int Height,
-        int Type,
-        float SpeedX,
-        float SpeedY,
-        int Alpha,
-        Color newColor,
-        float Scale
-    ) =>
-        _preventTileParticles
-            ? Main.dust.Length - 1 // no dust
-            : orig(Position, Width, Height, Type, SpeedX, SpeedY, Alpha, newColor, Scale);
+    // These methods are run often
+    // Use IL hooks for better performance
 
-    private static int _Gore_NewGore(
-        On_Gore.orig_NewGore_IEntitySource_Vector2_Vector2_int_float orig,
-        IEntitySource source,
-        Vector2 Position,
-        Vector2 Velocity,
-        int Type,
-        float Scale
-    ) =>
-        _preventTileParticles
-            ? Main.gore.Length - 1 // no gore
-            : orig(source, Position, Velocity, Type, Scale);
-
-    private static void _TileDrawing_DrawTiles_EmitParticles(
-        On_TileDrawing.orig_DrawTiles_EmitParticles orig,
-        TileDrawing self,
-        int j,
-        int i,
-        Tile tileCache,
-        ushort typeCache,
-        short tileFrameX,
-        short tileFrameY,
-        Color tileLight
-    )
+    private static void IL_Dust_NewDust(ILContext context)
     {
-        if (_preventTileParticles)
+        try
         {
-            return;
-        }
+            var cursor = new ILCursor(context);
 
-        orig(self, j, i, tileCache, typeCache, tileFrameX, tileFrameY, tileLight);
+            var preventTileParticlesField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_preventTileParticles),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var mainDustField = typeof(Main)
+                .GetField(nameof(Main.dust), BindingFlags.Public | BindingFlags.Static)
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (_preventTileParticles)
+            {
+                return Main.dust.Length - 1; // no dust
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, preventTileParticlesField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldsfld, mainDustField);
+            cursor.Emit(OpCodes.Ldlen);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Sub);
+            cursor.Emit(OpCodes.Ret);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
-    private static bool _TileDrawing_ShouldTileShine(
-        On_TileDrawing.orig_ShouldTileShine orig,
-        ushort type,
-        short frameX
-    ) => !_overrideLightColor && orig(type, frameX);
-
-    private static bool _Main_ShouldDrawBackgroundTileAt(
-        On_Main.orig_ShouldDrawBackgroundTileAt orig,
-        int i,
-        int j
-    ) => _overrideLightColor || orig(i, j);
-
-    private static bool _WorldMap_UpdateLighting(
-        On_WorldMap.orig_UpdateLighting orig,
-        WorldMap self,
-        int x,
-        int y,
-        byte light
-    )
+    private static void IL_Gore_NewGore(ILContext context)
     {
-        if (SettingsSystem._hiDef)
+        try
         {
-            // Update if PostProcessing.HiDefBrightnessScale changes
-            light = (byte)Math.Min((int)light << 1, 255);
-        }
+            var cursor = new ILCursor(context);
 
-        return orig(self, x, y, light);
+            var preventTileParticlesField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_preventTileParticles),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var mainGoreField = typeof(Main)
+                .GetField(nameof(Main.gore), BindingFlags.Public | BindingFlags.Static)
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (_preventTileParticles)
+            {
+                return Main.gore.Length - 1; // no gore
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, preventTileParticlesField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldsfld, mainGoreField);
+            cursor.Emit(OpCodes.Ldlen);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Sub);
+            cursor.Emit(OpCodes.Ret);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
+    private static void IL_TileDrawing_DrawTiles_EmitParticles(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var preventTileParticlesField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_preventTileParticles),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (_preventTileParticles)
+            {
+                return;
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, preventTileParticlesField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ret);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    private static void IL_TileDrawing_ShouldTileShine(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var overrideLightColorField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_overrideLightColor),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (_overrideLightColor)
+            {
+                return false;
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, overrideLightColorField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldc_I4_0);
+            cursor.Emit(OpCodes.Ret);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    private static void IL_Main_ShouldDrawBackgroundTileAt(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var overrideLightColorField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_overrideLightColor),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (_overrideLightColor)
+            {
+                return true;
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, overrideLightColorField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Ret);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    private static void IL_WorldMap_UpdateLighting(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var settingsSystemHiDefField = typeof(SettingsSystem)
+                .GetField(
+                    nameof(SettingsSystem._hiDef),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var mathMinMethod = typeof(Math)
+                .GetMethod(
+                    nameof(Math.Min),
+                    BindingFlags.Public | BindingFlags.Static,
+                    [typeof(int), typeof(int)]
+                )
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            // Instance method
+            // Args are: (int x, int y, byte light)
+            /*
+            if (SettingsSystem._hiDef)
+            {
+                // Update if PostProcessing.HiDefBrightnessScale changes
+                light = (byte)Math.Min((int)light << 1, 255);
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, settingsSystemHiDefField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldarg_3);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Shl);
+            cursor.Emit(OpCodes.Ldc_I4, 255);
+            cursor.Emit(OpCodes.Call, mathMinMethod);
+            cursor.Emit(OpCodes.Starg, 3);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    // Only needed if LiquidSlopeFix is set to false in tModLoader
+    // Otherwise this function never runs
     private static void _TileDrawing_DrawPartialLiquid(
         On_TileDrawing.orig_DrawPartialLiquid orig,
         TileDrawing self,
@@ -408,9 +560,6 @@ public sealed class FancyLightingMod : Mod
         ref VertexColors colors
     )
     {
-        // Only needed if LiquidSlopeFix is set to false in tModLoader
-        // Otherwise this function never runs
-
         if (_makePartialLiquidTranslucent)
         {
             colors.TopLeftColor.A = Math.Min(colors.TopLeftColor.A, (byte)254);
