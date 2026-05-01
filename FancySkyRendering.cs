@@ -157,8 +157,8 @@ public class FancySkyRendering
         );
 
         var scale = new Vector2(
-            (float)Main.screenWidth / _ditherNoise.Width,
-            (float)Main.screenHeight / _ditherNoise.Height
+            (float)target.Width / _ditherNoise.Width,
+            (float)target.Height / _ditherNoise.Height
         );
 
         (
