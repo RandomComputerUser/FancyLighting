@@ -60,11 +60,16 @@ internal static class PerformanceTracker
         }
     }
 
-    private static readonly Dictionary<string, StatTracker> _stats = new();
+    private static Dictionary<string, StatTracker> _stats = new();
 
     private static long _lastDisplayTime = 0;
 
     public const double DisplayIntervalSeconds = 10.0;
+
+    internal static void Unload()
+    {
+        _stats = null;
+    }
 
     public static void StartTiming(string label)
     {

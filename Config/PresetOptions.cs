@@ -72,7 +72,7 @@ internal record PresetOptions
         UseFancySkyColors = config.UseFancySkyColors;
     }
 
-    public static readonly PresetOptions VanillaPresetOptions =
+    public static PresetOptions VanillaPresetOptions =>
         new()
         {
             UseSmoothLighting = false,
@@ -90,7 +90,7 @@ internal record PresetOptions
             UseFancySkyColors = false,
         };
 
-    public static readonly PresetOptions LowPresetOptions =
+    public static PresetOptions LowPresetOptions =>
         new()
         {
             UseSmoothLighting = true,
@@ -108,9 +108,9 @@ internal record PresetOptions
             UseFancySkyColors = true,
         };
 
-    public static readonly PresetOptions MediumPresetOptions = new();
+    public static PresetOptions MediumPresetOptions => new();
 
-    public static readonly PresetOptions HighPresetOptions =
+    public static PresetOptions HighPresetOptions =>
         new()
         {
             UseSmoothLighting = true,
@@ -128,7 +128,7 @@ internal record PresetOptions
             UseFancySkyColors = true,
         };
 
-    public static readonly PresetOptions UltraPresetOptions =
+    public static PresetOptions UltraPresetOptions =>
         new()
         {
             UseSmoothLighting = true,
@@ -146,7 +146,11 @@ internal record PresetOptions
             UseFancySkyColors = true,
         };
 
-    public static readonly Dictionary<PresetOptions, SettingsPreset> PresetLookup =
+    public static Dictionary<PresetOptions, SettingsPreset> PresetLookup
+    {
+        get;
+        private set;
+    } =
         new()
         {
             [VanillaPresetOptions] = SettingsPreset.VanillaPreset,
@@ -156,6 +160,15 @@ internal record PresetOptions
             [UltraPresetOptions] = SettingsPreset.UltraPreset,
         };
 
-    public static readonly Dictionary<SettingsPreset, PresetOptions> PresetOptionsLookup =
-        PresetLookup.ToDictionary(entry => entry.Value, entry => entry.Key);
+    public static Dictionary<SettingsPreset, PresetOptions> PresetOptionsLookup
+    {
+        get;
+        private set;
+    } = PresetLookup.ToDictionary(entry => entry.Value, entry => entry.Key);
+
+    internal static void Unload()
+    {
+        PresetLookup = null;
+        PresetOptionsLookup = null;
+    }
 }

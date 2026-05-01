@@ -1,9 +1,7 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyLightColors1 : ISimpleColorProfile
+public class SkyLightColors1 : LoadableColorProfileBase, ISimpleColorProfile
 {
-    public static SkyLightColors1 Instance { get; } = new();
-
     private readonly SkyColorProfile _profile;
 
     private SkyLightColors1()

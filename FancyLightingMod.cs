@@ -32,22 +32,24 @@ public sealed class FancyLightingMod : Mod
     private AmbientOcclusion _ambientOcclusionInstance;
     private ICustomLightingEngine _fancyLightingEngineInstance;
     private PostProcessing _postProcessingInstance;
+    private FancySkyColors _fancySkyColorsInstance;
+    private FancySkyRendering _fancySkyRenderingInstance;
 
     private FieldInfo _field_filterFrameBuffer1;
     private FieldInfo _field_filterFrameBuffer2;
 
     internal static RenderTarget2D _cameraModeTarget;
-    private static RenderTarget2D _cameraModeTmpTarget1;
-    private static RenderTarget2D _cameraModeTmpTarget2;
+    private RenderTarget2D _cameraModeTmpTarget1;
+    private RenderTarget2D _cameraModeTmpTarget2;
     internal static Rectangle _cameraModeArea;
-    private static CaptureBiome _cameraModeBiome;
+    private CaptureBiome _cameraModeBiome;
 
-    private static RenderTarget2D _tmpTarget1;
-    private static RenderTarget2D _tmpTarget2;
-    private static RenderTarget2D _tmpTarget3;
+    private RenderTarget2D _tmpTarget1;
+    private RenderTarget2D _tmpTarget2;
+    private RenderTarget2D _tmpTarget3;
 
-    private static RenderTarget2D _backgroundTarget;
-    private static RenderTarget2D _cameraModeBackgroundTarget;
+    private RenderTarget2D _backgroundTarget;
+    private RenderTarget2D _cameraModeBackgroundTarget;
 
     private bool OverrideLightColor
     {
@@ -156,6 +158,8 @@ public sealed class FancyLightingMod : Mod
         _ambientOcclusionInstance = new();
         SetFancyLightingEngineInstance();
         _postProcessingInstance = new();
+        _fancySkyColorsInstance = new();
+        _fancySkyRenderingInstance = new();
 
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
@@ -188,20 +192,22 @@ public sealed class FancyLightingMod : Mod
             _backgroundTarget?.Dispose();
             _cameraModeBackgroundTarget?.Dispose();
 
-            _smoothLightingInstance?.Unload();
-            _ambientOcclusionInstance?.Unload();
-            _fancyLightingEngineInstance?.Unload();
+            _fancySkyRenderingInstance?.Unload();
+            _fancySkyColorsInstance?.Unload();
             _postProcessingInstance?.Unload();
+            _fancyLightingEngineInstance?.Unload();
+            _ambientOcclusionInstance?.Unload();
+            _smoothLightingInstance?.Unload();
 
             SettingsSystem.EnsureRenderTargets(true);
-
-            FancySkyRendering.Unload();
-            FancySkyColors.Unload();
 
             CalamityModCompatibility.Unload();
             LightsCompatibility.Unload();
             NitrateCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
+
+            PerformanceTracker.Unload();
+            PresetOptions.Unload();
         });
 
         base.Unload();
@@ -211,9 +217,6 @@ public sealed class FancyLightingMod : Mod
     {
         // MonoMod hooks that are added later get run earlier
         AddHooks();
-
-        FancySkyRendering.Load();
-        FancySkyColors.Load();
     }
 
     private void SetFancyLightingEngineInstance()
@@ -803,7 +806,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (LightingConfig.Instance.FancySkyRenderingEnabled())
         {
-            FancySkyRendering.DrawSunAndMoon(
+            _fancySkyRenderingInstance.DrawSunAndMoon(
                 orig,
                 self,
                 sceneArea,
@@ -2366,7 +2369,7 @@ public sealed class FancyLightingMod : Mod
         )
         {
             orig(self, gameTime);
-            FancySkyColors.DrawColorProfiles();
+            _fancySkyColorsInstance.DrawColorProfiles();
             return;
         }
 
@@ -2381,6 +2384,6 @@ public sealed class FancyLightingMod : Mod
             BlendState.Additive.AlphaSourceBlend = originalAlphaSourceBlend;
         }
 
-        FancySkyColors.DrawColorProfiles();
+        _fancySkyColorsInstance.DrawColorProfiles();
     }
 }

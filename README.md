@@ -119,6 +119,7 @@ Same as above, except `tileType` is passed as a ushort.
 - Fixed some potential graphical glitches caused by Fancy Atmosphere and Smooth Lighting
 - Made various minor optimizations
 - Slightly improved frame time consistency when using the Fancy Lighting Engine
+- Made the mod unload more completely
 - Made Smooth Lighting compatible with the custom water lighting in Spirit Reforged
 - Fixed a graphical glitch that occurred in the Sunken Sea biome in Calamity Mod
 - Made more classes and methods public

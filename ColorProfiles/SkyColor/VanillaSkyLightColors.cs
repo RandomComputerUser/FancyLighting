@@ -1,9 +1,7 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class VanillaSkyLightColors : ISimpleColorProfile
+public class VanillaSkyLightColors : LoadableColorProfileBase, ISimpleColorProfile
 {
-    public static VanillaSkyLightColors Instance { get; } = new();
-
     private VanillaSkyLightColors() { }
 
     public Vector3 GetColor(double hour)

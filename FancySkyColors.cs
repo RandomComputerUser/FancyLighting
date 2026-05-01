@@ -8,38 +8,39 @@ using MonoMod.Cil;
 
 namespace FancyLighting;
 
-public static class FancySkyColors
+public class FancySkyColors
 {
-    private static Texture2D _profilesTexture;
+    public static FancySkyColors Instance { get; private set; }
 
-    public static Dictionary<SkyColorPreset, ISimpleColorProfile> Preset
-    {
-        get;
-        private set;
-    }
+    private Texture2D _profilesTexture;
 
-    internal static void Load()
+    public Dictionary<SkyColorPreset, ISimpleColorProfile> Preset { get; private set; }
+
+    internal FancySkyColors()
     {
+        Instance = this;
+
         Preset = new()
         {
-            [SkyColorPreset.Preset1] = SkyLightColors1.Instance,
-            [SkyColorPreset.Preset2] = SkyLightColors2.Instance,
-            [SkyColorPreset.Preset3] = SkyLightColors3.Instance,
-            [SkyColorPreset.Preset4] = SkyLightColors4.Instance,
-            [SkyColorPreset.Preset5] = SkyLightColors5.Instance,
+            [SkyColorPreset.Preset1] = ModContent.GetInstance<SkyLightColors1>(),
+            [SkyColorPreset.Preset2] = ModContent.GetInstance<SkyLightColors2>(),
+            [SkyColorPreset.Preset3] = ModContent.GetInstance<SkyLightColors3>(),
+            [SkyColorPreset.Preset4] = ModContent.GetInstance<SkyLightColors4>(),
+            [SkyColorPreset.Preset5] = ModContent.GetInstance<SkyLightColors5>(),
         };
 
         AddHooks();
     }
 
-    private static void AddHooks()
+    private void AddHooks()
     {
         IL_Main.SetBackColor += IL_Main_SetBackColor;
         On_Main.SetBackColor += _Main_SetBackColor;
     }
 
-    internal static void Unload()
+    internal void Unload()
     {
+        Instance = null;
         _profilesTexture?.Dispose();
         _profilesTexture = null;
     }
@@ -106,18 +107,18 @@ public static class FancySkyColors
         ColorUtils.Assign(
             ref bgColor,
             1f,
-            CalculateSkyColor(GameTimeUtils.CalculateCurrentHour())
+            Instance.CalculateSkyColor(GameTimeUtils.CalculateCurrentHour())
         );
     }
 
-    public static Vector3 CalculateSkyColor(double hour)
+    public Vector3 CalculateSkyColor(double hour)
     {
         if (
             LightingConfig.Instance?.FancySkyColorsEnabled() is not true
             || Preset is null
         )
         {
-            return VanillaSkyLightColors.Instance.GetColor(hour);
+            return ModContent.GetInstance<VanillaSkyLightColors>().GetColor(hour);
         }
 
         var foundProfile = Preset.TryGetValue(
@@ -127,13 +128,13 @@ public static class FancySkyColors
 
         if (!foundProfile)
         {
-            profile = VanillaSkyLightColors.Instance;
+            profile = ModContent.GetInstance<VanillaSkyLightColors>();
         }
 
         return profile.GetColor(hour);
     }
 
-    internal static void DrawColorProfiles()
+    internal void DrawColorProfiles()
     {
         if (
             PreferencesConfig.Instance?.ShowFancySkyColorGradients is not true
@@ -185,15 +186,15 @@ public static class FancySkyColors
         foreach (
             var colorProfile in (ISimpleColorProfile[])
                 [
-                    VanillaSkyLightColors.Instance,
-                    SkyLightColors1.Instance,
-                    SkyLightColors2.Instance,
-                    SkyLightColors3.Instance,
-                    SkyLightColors4.Instance,
-                    SkyLightColors5.Instance,
-                    SkyColorsHigh.Instance,
-                    SkyColorsLow.Instance,
-                    SunColors.Instance,
+                    ModContent.GetInstance<VanillaSkyLightColors>(),
+                    ModContent.GetInstance<SkyLightColors1>(),
+                    ModContent.GetInstance<SkyLightColors2>(),
+                    ModContent.GetInstance<SkyLightColors3>(),
+                    ModContent.GetInstance<SkyLightColors4>(),
+                    ModContent.GetInstance<SkyLightColors5>(),
+                    ModContent.GetInstance<SkyColorsHigh>(),
+                    ModContent.GetInstance<SkyColorsLow>(),
+                    ModContent.GetInstance<SunColors>(),
                 ]
         )
         {

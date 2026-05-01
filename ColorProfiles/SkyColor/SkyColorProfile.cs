@@ -2,8 +2,8 @@
 
 public class SkyColorProfile : ISimpleColorProfile
 {
-    protected List<(double hour, Vector3 color)> _colors;
-    protected InterpolationMode _interpolationMode;
+    protected readonly List<(double hour, Vector3 color)> _colors;
+    protected readonly InterpolationMode _interpolationMode;
 
     public SkyColorProfile(InterpolationMode interpolationMode)
     {

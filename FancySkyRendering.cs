@@ -3,13 +3,13 @@ using ReLogic.Content;
 
 namespace FancyLighting;
 
-public static class FancySkyRendering
+public class FancySkyRendering
 {
-    private static Texture2D _ditherNoise;
+    private Texture2D _ditherNoise;
 
-    private static Shader _skyShader;
-    private static Shader _skyDitheredShader;
-    private static Shader _sunShader;
+    private Shader _skyShader;
+    private Shader _skyDitheredShader;
+    private Shader _sunShader;
 
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
@@ -38,7 +38,7 @@ public static class FancySkyRendering
     /// </remarks>
     public static event SkyColorModifier PreDrawSky;
 
-    internal static void Load()
+    internal FancySkyRendering()
     {
         _ditherNoise = ModContent
             .Request<Texture2D>(
@@ -57,12 +57,12 @@ public static class FancySkyRendering
         AddHooks();
     }
 
-    private static void AddHooks()
+    private void AddHooks()
     {
         On_Main.DrawStarsInBackground += _Main_DrawStarsInBackground;
     }
 
-    internal static void Unload()
+    internal void Unload()
     {
         PreDrawSky = null;
         _ditherNoise?.Dispose();
@@ -73,7 +73,7 @@ public static class FancySkyRendering
     }
 
     // Draw sky
-    private static void _Main_DrawStarsInBackground(
+    private void _Main_DrawStarsInBackground(
         On_Main.orig_DrawStarsInBackground orig,
         Main self,
         Main.SceneArea sceneArea,
@@ -106,7 +106,7 @@ public static class FancySkyRendering
         var hour = GameTimeUtils.CalculateCurrentHour();
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3()
-            / new Color(FancySkyColors.CalculateSkyColor(hour)).ToVector3();
+            / new Color(FancySkyColors.Instance.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
         var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
         skyBrightness = Math.Clamp(
@@ -115,8 +115,8 @@ public static class FancySkyRendering
             10f
         );
 
-        var highSkyColor = SkyColorsHigh.Instance.GetColor(hour);
-        var lowSkyColor = SkyColorsLow.Instance.GetColor(hour);
+        var highSkyColor = ModContent.GetInstance<SkyColorsHigh>().GetColor(hour);
+        var lowSkyColor = ModContent.GetInstance<SkyColorsLow>().GetColor(hour);
 
         PreDrawSky?.Invoke(ref highSkyColor, ref lowSkyColor, ref skyColorMult);
 
@@ -211,7 +211,7 @@ public static class FancySkyRendering
         }
     }
 
-    internal static void DrawSunAndMoon(
+    internal void DrawSunAndMoon(
         On_Main.orig_DrawSunAndMoon orig,
         Main self,
         Main.SceneArea sceneArea,
@@ -243,7 +243,7 @@ public static class FancySkyRendering
         if (!Main.eclipse)
         {
             var hour = GameTimeUtils.CalculateCurrentHour();
-            var sunColorVec = SunColors.Instance.GetColor(hour);
+            var sunColorVec = ModContent.GetInstance<SunColors>().GetColor(hour);
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
