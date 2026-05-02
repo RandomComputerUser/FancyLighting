@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyLightColors4 : LoadableColorProfileBase, ISimpleColorProfile
+public sealed class SkyLightColors4 : LoadableColorProfileBase, ISimpleColorProfile
 {
     private readonly SkyColorProfile _profile;
 

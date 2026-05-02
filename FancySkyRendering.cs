@@ -3,7 +3,7 @@ using ReLogic.Content;
 
 namespace FancyLighting;
 
-public class FancySkyRendering
+public sealed class FancySkyRendering
 {
     private Texture2D _ditherNoise;
 

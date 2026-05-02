@@ -8,7 +8,7 @@ using MonoMod.Cil;
 
 namespace FancyLighting;
 
-public class FancySkyColors
+public sealed class FancySkyColors
 {
     public static FancySkyColors Instance { get; private set; }
 

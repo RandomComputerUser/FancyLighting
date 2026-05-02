@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting;
 
-internal class BlurRenderer(bool alphaOnly, bool allowAdditiveBlend)
+internal sealed class BlurRenderer(bool alphaOnly, bool allowAdditiveBlend)
 {
     private static Shader _blurDownsampleShader;
     private static Shader _blurUpsampleShader;

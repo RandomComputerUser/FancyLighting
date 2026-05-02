@@ -1,9 +1,9 @@
 ﻿namespace FancyLighting.ColorProfiles.SkyColor;
 
-public class SkyColorProfile : ISimpleColorProfile
+public sealed class SkyColorProfile : ISimpleColorProfile
 {
-    protected readonly List<(double hour, Vector3 color)> _colors;
-    protected readonly InterpolationMode _interpolationMode;
+    private readonly List<(double hour, Vector3 color)> _colors;
+    private readonly InterpolationMode _interpolationMode;
 
     public SkyColorProfile(InterpolationMode interpolationMode)
     {
@@ -11,10 +11,9 @@ public class SkyColorProfile : ISimpleColorProfile
         _interpolationMode = interpolationMode;
     }
 
-    public virtual void AddColor(double hour, Vector3 color) =>
-        _colors.Add((hour, color));
+    public void AddColor(double hour, Vector3 color) => _colors.Add((hour, color));
 
-    protected (double hour, Vector3 color) HourColorAtIndex(int index)
+    private (double hour, Vector3 color) HourColorAtIndex(int index)
     {
         if (index < 0)
         {
@@ -84,7 +83,7 @@ public class SkyColorProfile : ISimpleColorProfile
         }
     }
 
-    public virtual Vector3 GetColor(double hour)
+    public Vector3 GetColor(double hour)
     {
         hour %= 24.0;
 
