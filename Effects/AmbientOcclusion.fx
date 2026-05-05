@@ -12,7 +12,7 @@ float4 ExtractInverseAlpha(float2 coords : TEXCOORD0) : COLOR0
 
 float4 ExtractInverseMultipliedAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
-    float brightness = -0.8 * saturate(tex2D(OccluderSampler, coords).a) + 1;
+    float brightness = -0.7 * saturate(tex2D(OccluderSampler, coords).a) + 1;
     return float4(0, 0, 0, brightness);
 }
 

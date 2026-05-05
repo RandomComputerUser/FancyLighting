@@ -97,8 +97,10 @@ Same as above, except `tileType` is passed as a ushort.
 - Made the underworld background slightly brighter when using full HDR rendering
 - Improved and optimized global illumination
 - Improved how water absorbs light when using the Fancy Lighting Engine
-- Improved Ambient Occlusion, making it subtler
-- Increased the default ambient light proportion to 90% (from 60%) to partly compensate for the previous change
+- Improved Ambient Occlusion, making it subtler than before when settings are equal
+- Increased the default ambient occlusion exponent to 200% (from 100%)
+- Increased the default ambient light proportion to 75% (from 60%)
+- Increased the maximum ambient occlusion exponent to 500% (from 400%)
 - Decreased the default normal maps strength to 3 (from 4)
 - Slightly improved the quality of the bicubic render mode
 - The gamma setting now adjusts output gamma (instead of content gamma)

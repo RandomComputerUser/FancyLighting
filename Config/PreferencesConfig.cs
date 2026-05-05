@@ -150,7 +150,7 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int AmbientOcclusionRadius { get; set; }
 
-    [Range(20, 400)]
+    [Range(20, 500)]
     [Increment(25)]
     [DefaultValue(DefaultOptions.AmbientOcclusionIntensity)]
     [Slider]

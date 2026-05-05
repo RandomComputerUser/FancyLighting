@@ -52,8 +52,8 @@ public static class DefaultOptions
 
     // Ambient Occlusion Preferences
     public const int AmbientOcclusionRadius = 4;
-    public const int AmbientOcclusionIntensity = 100;
-    public const int AmbientLightProportion = 90;
+    public const int AmbientOcclusionIntensity = 200;
+    public const int AmbientLightProportion = 75;
 
     // Fancy Lighting Engine
     public const bool UseFancyLightingEngine = true;
