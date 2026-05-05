@@ -303,20 +303,23 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
             var index = i;
             _actions[i] = () =>
             {
+                var myLength = length;
+                var myLightingAction = lightingAction;
+
                 var workingLightMap = _workingLightMaps[index];
                 var temporalData = 0L;
 
-                CopyVec3Array(source, workingLightMap, 0, length);
+                CopyVec3Array(source, workingLightMap, 0, myLength);
 
                 while (true)
                 {
                     var i = Interlocked.Add(ref lightIndex, IndexIncrement);
-                    if (i >= length)
+                    if (i >= myLength)
                     {
                         break;
                     }
 
-                    lightingAction(
+                    myLightingAction(
                         workingLightMap,
                         ref temporalData,
                         i,

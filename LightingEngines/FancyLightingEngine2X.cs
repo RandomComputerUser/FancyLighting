@@ -264,9 +264,19 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
             _countTemporal,
             (Vec3[] lightMap, ref long temporalData, int begin, int end) =>
             {
+                var myColors = colors;
+                var myWidth = width;
+                var myHeight = height;
                 for (var i = begin; i < end; ++i)
                 {
-                    ProcessLight(lightMap, colors, ref temporalData, i, width, height);
+                    ProcessLight(
+                        lightMap,
+                        myColors,
+                        ref temporalData,
+                        i,
+                        myWidth,
+                        myHeight
+                    );
                 }
             }
         );

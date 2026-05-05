@@ -290,6 +290,11 @@ public sealed class FancyLightingMod : Mod
         IL_TileDrawing.ShouldTileShine += IL_TileDrawing_ShouldTileShine;
         IL_Main.ShouldDrawBackgroundTileAt += IL_Main_ShouldDrawBackgroundTileAt;
         IL_WorldMap.UpdateLighting += IL_WorldMap_UpdateLighting;
+        IL_TileLightScanner.ApplySurfaceLight +=
+            IL_TileLightScanner_ApplySurfaceLight_ApplyHellLight;
+        IL_TileLightScanner.ApplyHellLight +=
+            IL_TileLightScanner_ApplySurfaceLight_ApplyHellLight;
+        On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
         On_TileDrawing.DrawPartialLiquid += _TileDrawing_DrawPartialLiquid;
         On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
@@ -305,9 +310,6 @@ public sealed class FancyLightingMod : Mod
         On_Main.DoLightTiles += _Main_DoLightTiles;
         On_LightingEngine.ProcessBlur += _LightingEngine_ProcessBlur;
         On_LightMap.Blur += _LightMap_Blur;
-        On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
-        On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
-        On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
 
         // Camera mode hooks
         // For some reason the order in which these are added matters to ensure that camera mode works
@@ -550,8 +552,119 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    private static void IL_TileLightScanner_ApplySurfaceLight_ApplyHellLight(
+        ILContext context
+    )
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var settingsSystemHiDefField = typeof(SettingsSystem)
+                .GetField(
+                    nameof(SettingsSystem._hiDef),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var vector3MultiplyMethod = typeof(Vector3)
+                .GetMethod(
+                    nameof(Vector3.Multiply),
+                    BindingFlags.Public | BindingFlags.Static,
+                    [
+                        typeof(Vector3).MakeByRefType(),
+                        typeof(float),
+                        typeof(Vector3).MakeByRefType(),
+                    ]
+                )
+                .AssertNotNull();
+
+            var originalEndLabel = cursor.DefineLabel();
+            var newEndLabel = cursor.DefineLabel();
+
+            // Instance method
+            // Args are: (Tile tile, int x, int y, ref Vector3 lightColor)
+            // At end of method
+            /*
+            if (!SettingsSystem._hiDef)
+            {
+                return;
+            }
+
+            Vector3.Multiply(
+                ref lightColor,
+                PostProcessing.HiDefBackgroundBrightnessMult,
+                out lightColor
+            );
+            */
+
+            while (cursor.TryGotoNext(instruction => instruction.OpCode == OpCodes.Ret))
+            {
+                cursor.Remove();
+                cursor.MoveAfterLabels();
+                cursor.Emit(OpCodes.Br, originalEndLabel);
+            }
+
+            cursor.Goto(cursor.Instrs.Count);
+            cursor.MarkLabel(originalEndLabel);
+            cursor.Emit(OpCodes.Ldsfld, settingsSystemHiDefField);
+            cursor.Emit(OpCodes.Brfalse, newEndLabel);
+            cursor.Emit(OpCodes.Ldarg, 4);
+            // Update if PostProcessing.HiDefBackgroundBrightnessMult is changed to not be a const or readonly
+            cursor.Emit(OpCodes.Ldc_R4, PostProcessing.HiDefBackgroundBrightnessMult);
+            cursor.Emit(OpCodes.Ldarg, 4);
+            cursor.Emit(OpCodes.Call, vector3MultiplyMethod);
+            cursor.MarkLabel(newEndLabel);
+            cursor.Emit(OpCodes.Ret);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    private static void _TileLightScanner_ApplyLiquidLight(
+        On_TileLightScanner.orig_ApplyLiquidLight orig,
+        TileLightScanner self,
+        Tile tile,
+        ref Vector3 lightColor
+    )
+    {
+        // This code is adapted from vanilla
+
+        if (!SettingsSystem._hiDef)
+        {
+            orig(self, tile, ref lightColor);
+            return;
+        }
+
+        if (tile.LiquidAmount <= 0)
+        {
+            return;
+        }
+
+        if (tile.LiquidType is LiquidID.Lava)
+        {
+            var brightness = 0.55f;
+            brightness += (270 - Main.mouseTextColor) / 900f;
+            brightness *= 2.5f;
+            lightColor.X = Math.Max(lightColor.X, brightness);
+            lightColor.Y = Math.Max(lightColor.Y, 0.3f * brightness);
+            lightColor.Z = Math.Max(lightColor.Z, 0.05f * brightness);
+        }
+        else if (tile.LiquidType is LiquidID.Shimmer)
+        {
+            var redBlue = 0.7f;
+            var green = 0.7f;
+            redBlue += (270 - Main.mouseTextColor) / 900f;
+            green += (270 - Main.mouseTextColor) / 125f;
+            lightColor.X = Math.Max(lightColor.X, redBlue * 0.6f);
+            lightColor.Y = Math.Max(lightColor.Y, green * 0.25f);
+            lightColor.Z = Math.Max(lightColor.Z, redBlue * 0.9f);
+        }
+    }
+
     // Only needed if LiquidSlopeFix is set to false in tModLoader
-    // Otherwise this function never runs
+    // Otherwise this method never runs
     private static void _TileDrawing_DrawPartialLiquid(
         On_TileDrawing.orig_DrawPartialLiquid orig,
         TileDrawing self,
@@ -1781,85 +1894,6 @@ public sealed class FancyLightingMod : Mod
                 self.Height
             );
             PerformanceTracker.StopTiming("Smooth Lighting (Light Map Array)");
-        }
-    }
-
-    private static void _TileLightScanner_ApplySurfaceLight(
-        On_TileLightScanner.orig_ApplySurfaceLight orig,
-        TileLightScanner self,
-        Tile tile,
-        int x,
-        int y,
-        ref Vector3 lightColor
-    )
-    {
-        orig(self, tile, x, y, ref lightColor);
-
-        if (!SettingsSystem._hiDef)
-        {
-            return;
-        }
-
-        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
-    }
-
-    private static void _TileLightScanner_ApplyHellLight(
-        On_TileLightScanner.orig_ApplyHellLight orig,
-        TileLightScanner self,
-        Tile tile,
-        int x,
-        int y,
-        ref Vector3 lightColor
-    )
-    {
-        orig(self, tile, x, y, ref lightColor);
-
-        if (!SettingsSystem._hiDef)
-        {
-            return;
-        }
-
-        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
-    }
-
-    private static void _TileLightScanner_ApplyLiquidLight(
-        On_TileLightScanner.orig_ApplyLiquidLight orig,
-        TileLightScanner self,
-        Tile tile,
-        ref Vector3 lightColor
-    )
-    {
-        // This code is adapted from vanilla
-
-        if (!SettingsSystem._hiDef)
-        {
-            orig(self, tile, ref lightColor);
-            return;
-        }
-
-        if (tile.LiquidAmount <= 0)
-        {
-            return;
-        }
-
-        if (tile.LiquidType is LiquidID.Lava)
-        {
-            var brightness = 0.55f;
-            brightness += (270 - Main.mouseTextColor) / 900f;
-            brightness *= 2.5f;
-            lightColor.X = Math.Max(lightColor.X, brightness);
-            lightColor.Y = Math.Max(lightColor.Y, 0.3f * brightness);
-            lightColor.Z = Math.Max(lightColor.Z, 0.05f * brightness);
-        }
-        else if (tile.LiquidType is LiquidID.Shimmer)
-        {
-            var redBlue = 0.7f;
-            var green = 0.7f;
-            redBlue += (270 - Main.mouseTextColor) / 900f;
-            green += (270 - Main.mouseTextColor) / 125f;
-            lightColor.X = Math.Max(lightColor.X, redBlue * 0.6f);
-            lightColor.Y = Math.Max(lightColor.Y, green * 0.25f);
-            lightColor.Z = Math.Max(lightColor.Z, redBlue * 0.9f);
         }
     }
 

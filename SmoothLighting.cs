@@ -90,7 +90,7 @@ public sealed class SmoothLighting
     /// <param name="tileLightModifier">The function that modifies the tile's light color. Can be null to remove custom tile lighting for this tile type.</param>
     /// <returns>Whether any changes were made.</returns>
     /// <remarks>
-    /// This function changes the <see cref="TileLightModifiers"/> array.
+    /// This method changes the <see cref="TileLightModifiers"/> array.
     /// </remarks>
     public static bool SetCustomTileLighting(
         int tileType,
@@ -319,7 +319,7 @@ public sealed class SmoothLighting
         if (shimmerAlpha > 0f)
         {
             // This code is adapted from vanilla
-            // The vanilla Main.shine() function limits each component to a max of 1
+            // The vanilla Main.shine() method limits each component to a max of 1
             // We don't want that
             var inverseShimmerAlpha = 1f - shimmerAlpha;
             color.X *= inverseShimmerAlpha + (shimmerAlpha * 1.2f);
