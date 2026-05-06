@@ -3,7 +3,7 @@ author = Rex
 version = 1.1.0
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
-buildIgnore = description_workshop.txt, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, README.md, *.sln.DotSettings.user
+buildIgnore = description_workshop.txt, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, *.md, *.sln.DotSettings.user
 
 hideCode = false
 hideResources = false
