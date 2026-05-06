@@ -7,7 +7,7 @@ namespace FancyLighting;
 
 internal sealed class SettingsSystem : ModSystem
 {
-    internal static readonly ParallelOptions _parallelOptions =
+    internal static ParallelOptions _parallelOptions =
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
 
     internal static bool _hiDef;
@@ -17,6 +17,7 @@ internal sealed class SettingsSystem : ModSystem
 
     public override void Unload()
     {
+        _parallelOptions = null;
         Filters.Scene.OnPostDraw -= DoNothing;
     }
 

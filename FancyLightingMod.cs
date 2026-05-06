@@ -206,6 +206,7 @@ public sealed class FancyLightingMod : Mod
             NitrateCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
 
+            MainGraphics.Unload();
             PerformanceTracker.Unload();
             PresetOptions.Unload();
         });

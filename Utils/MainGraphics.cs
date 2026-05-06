@@ -10,6 +10,11 @@ internal static class MainGraphics
         SamplerState samplerState
     )> _savedTextures = new();
 
+    internal static void Unload()
+    {
+        _savedTextures = null;
+    }
+
     public static RenderTarget2D GetRenderTarget()
     {
         var renderTargets = Main.graphics.GraphicsDevice.GetRenderTargets();
