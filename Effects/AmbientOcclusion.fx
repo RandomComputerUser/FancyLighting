@@ -32,17 +32,19 @@ float4 ToneMappingHiDef(float2 coords : TEXCOORD0) : COLOR0
     return float4(0, 0, 0, brightness);
 }
 
-float4 ToneMappingSimple(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMappingDefault(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = tex2D(OccluderSampler, coords).a;
+    brightness *= brightness;
     brightness = pow((1 - BlurMult) + BlurMult * brightness, 1 / 2.2);
 
     return float4(0, 0, 0, brightness);
 }
 
-float4 ToneMappingSimpleHiDef(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMappingDefaultHiDef(float2 coords : TEXCOORD0) : COLOR0
 {
     float brightness = tex2D(OccluderSampler, coords).a;
+    brightness *= brightness;
     brightness = (1 - BlurMult) + BlurMult * brightness;
 
     return float4(0, 0, 0, brightness);
@@ -70,13 +72,13 @@ technique Technique1
         PixelShader = compile ps_3_0 ToneMappingHiDef();
     }
 
-    pass ToneMappingSimple
+    pass ToneMappingDefault
     {
-        PixelShader = compile ps_3_0 ToneMappingSimple();
+        PixelShader = compile ps_3_0 ToneMappingDefault();
     }
 
-    pass ToneMappingSimpleHiDef
+    pass ToneMappingDefaultHiDef
     {
-        PixelShader = compile ps_3_0 ToneMappingSimpleHiDef();
+        PixelShader = compile ps_3_0 ToneMappingDefaultHiDef();
     }
 }

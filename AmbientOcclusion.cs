@@ -18,7 +18,7 @@ public sealed class AmbientOcclusion
     private Shader _extractInverseAlphaShader;
     private Shader _extractInverseMultipliedAlphaShader;
     private Shader _toneMappingShader;
-    private Shader _toneMappingSimpleShader;
+    private Shader _toneMappingDefaultShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
@@ -39,9 +39,9 @@ public sealed class AmbientOcclusion
             "ToneMapping",
             true
         );
-        _toneMappingSimpleShader = EffectLoader.LoadEffect(
+        _toneMappingDefaultShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/AmbientOcclusion",
-            "ToneMappingSimple",
+            "ToneMappingDefault",
             true
         );
         _glowMaskShader = EffectLoader.LoadEffect(
@@ -66,7 +66,7 @@ public sealed class AmbientOcclusion
         EffectLoader.UnloadEffect(ref _extractInverseAlphaShader);
         EffectLoader.UnloadEffect(ref _extractInverseMultipliedAlphaShader);
         EffectLoader.UnloadEffect(ref _toneMappingShader);
-        EffectLoader.UnloadEffect(ref _toneMappingSimpleShader);
+        EffectLoader.UnloadEffect(ref _toneMappingDefaultShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
 
@@ -417,7 +417,7 @@ public sealed class AmbientOcclusion
 
         var blurTarget = _blurRenderer.RenderBlur(target, null, radius, false);
 
-        var shader = power == 1f ? _toneMappingSimpleShader : _toneMappingShader;
+        var shader = power == 2f ? _toneMappingDefaultShader : _toneMappingShader;
 
         Main.graphics.GraphicsDevice.SetRenderTarget(target);
         Main.spriteBatch.Begin(
