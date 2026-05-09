@@ -8,6 +8,7 @@ sampler DitherSampler : register(s6);
 sampler GlowSampler : register(s4);
 sampler LightedGlowSampler : register(s5);
 
+float Gamma;
 float ReciprocalGamma;
 
 float2 NormalMapResolution;
@@ -25,6 +26,11 @@ float2 LightedGlowCoordMult;
 float Square(float x)
 {
     return x * x;
+}
+
+float3 GammaToLinear(float3 color)
+{
+    return pow(color, Gamma);
 }
 
 float3 LinearToGamma(float3 color)
@@ -59,6 +65,16 @@ float AmbientOcclusion(float2 coords, float alpha)
     alpha = saturate(alpha);
     return lerp(
         1, tex2D(AmbientOcclusionSampler, WorldCoords(coords)).a, alpha
+    );
+}
+
+float AmbientOcclusionHiDef(float2 coords, float alpha)
+{
+    alpha = GammaToLinear(saturate(alpha));
+    return LinearToGamma(
+        lerp(
+            1, tex2D(AmbientOcclusionSampler, WorldCoords(coords)).a, alpha
+        )
     );
 }
 
@@ -224,8 +240,7 @@ float4 NormalsOverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
     return float4(
-        min(lightColor.rgb, 1) * lightColor.a
-            * LinearToGamma(AmbientOcclusion(coords, texColor.a)),
+        min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusionHiDef(coords, texColor.a),
         1
     ) * texColor;
 }
@@ -292,8 +307,7 @@ float4 NormalsOverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEX
     float4 texColor = tex2D(WorldSampler, worldTexCoords);
 
     return float4(
-        min(lightColor.rgb, 1) * lightColor.a
-            * LinearToGamma(AmbientOcclusion(coords, texColor.a)),
+        min(lightColor.rgb, 1) * lightColor.a * AmbientOcclusionHiDef(coords, texColor.a),
         1
     );
 }
@@ -334,8 +348,7 @@ float4 OverbrightAmbientOcclusionHiDef(float2 coords : TEXCOORD0) : COLOR0
     float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(
-        min(lightColor, 1)
-            * LinearToGamma(AmbientOcclusion(coords, texColor.a)),
+        min(lightColor, 1) * AmbientOcclusionHiDef(coords, texColor.a),
         1
     ) * texColor;
 }
@@ -393,8 +406,7 @@ float4 OverbrightLightOnlyOpaqueAmbientOcclusionHiDef(float2 coords : TEXCOORD0)
     float4 texColor = tex2D(WorldSampler, WorldCoords(coords));
 
     return float4(
-        min(lightColor, 1)
-            * LinearToGamma(AmbientOcclusion(coords, texColor.a)), 
+        min(lightColor, 1) * AmbientOcclusionHiDef(coords, texColor.a), 
         1
     );
 }

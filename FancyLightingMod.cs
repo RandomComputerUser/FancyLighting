@@ -1731,7 +1731,9 @@ public sealed class FancyLightingMod : Mod
         var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
         if (doDepthOfField)
         {
-            _postProcessingInstance.ApplyGammaShader(
+            // not in camera mode
+            // background should never have transparency, so we can use no-alpha shader
+            _postProcessingInstance.ApplyGammaNoAlphaShader(
                 ColorUtils.GammaToLinear(brightness),
                 PostProcessing.ContentGamma()
             );
@@ -1760,7 +1762,7 @@ public sealed class FancyLightingMod : Mod
                 DepthStencilState.None,
                 RasterizerState.CullNone
             );
-            _postProcessingInstance.ApplyGammaShader(
+            _postProcessingInstance.ApplyGammaNoAlphaShader(
                 1f,
                 1f / PostProcessing.ContentGamma()
             );

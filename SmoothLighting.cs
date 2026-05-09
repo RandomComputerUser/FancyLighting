@@ -1862,6 +1862,7 @@ public sealed class SmoothLighting
             / new Vector2(worldTarget.Width, worldTarget.Height);
 
         shader
+            .SetParameter("Gamma", gamma)
             .SetParameter("ReciprocalGamma", 1f / gamma)
             .SetParameter(
                 "NormalMapResolution",

@@ -17,11 +17,14 @@ public sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
+    private Shader _gammaToLinearNoAlphaShader;
     private Shader _gammaToLinearShader;
+    private Shader _gammaToGammaDitherNoAlphaShader;
     private Shader _gammaToGammaDitherShader;
+    private Shader _gammaToGammaNoDitherNoAlphaShader;
     private Shader _gammaToGammaNoDitherShader;
-    private Shader _gammaToSrgbDitherShader;
-    private Shader _gammaToSrgbNoDitherShader;
+    private Shader _gammaToSrgbDitherNoAlphaShader;
+    private Shader _gammaToSrgbNoDitherNoAlphaShader;
     private Shader _bloomCompositeShader;
     private Shader _toneMap1Shader;
     private Shader _toneMap1VibranceBoostShader;
@@ -40,25 +43,37 @@ public sealed class PostProcessing
             )
             .Value;
 
+        _gammaToLinearNoAlphaShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToLinearNoAlpha"
+        );
         _gammaToLinearShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToLinear"
+        );
+        _gammaToGammaDitherNoAlphaShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToGammaDitherNoAlpha"
         );
         _gammaToGammaDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToGammaDither"
         );
+        _gammaToGammaNoDitherNoAlphaShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "GammaToGammaNoDitherNoAlpha"
+        );
         _gammaToGammaNoDitherShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "GammaToGammaNoDither"
         );
-        _gammaToSrgbDitherShader = EffectLoader.LoadEffect(
+        _gammaToSrgbDitherNoAlphaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgbDither"
+            "GammaToSrgbDitherNoAlpha"
         );
-        _gammaToSrgbNoDitherShader = EffectLoader.LoadEffect(
+        _gammaToSrgbNoDitherNoAlphaShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgbNoDither"
+            "GammaToSrgbNoDitherNoAlpha"
         );
         _bloomCompositeShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
@@ -89,11 +104,14 @@ public sealed class PostProcessing
     internal void Unload()
     {
         _ditherNoise?.Dispose();
+        EffectLoader.UnloadEffect(ref _gammaToLinearNoAlphaShader);
         EffectLoader.UnloadEffect(ref _gammaToLinearShader);
+        EffectLoader.UnloadEffect(ref _gammaToGammaDitherNoAlphaShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
+        EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherNoAlphaShader);
         EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherNoAlphaShader);
+        EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherNoAlphaShader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
         EffectLoader.UnloadEffect(ref _toneMap1Shader);
         EffectLoader.UnloadEffect(ref _toneMap1VibranceBoostShader);
@@ -122,6 +140,12 @@ public sealed class PostProcessing
     // This code is adapted from vanilla (Main.DrawUnderworldBackground())
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
+
+    internal void ApplyGammaNoAlphaShader(float exposure, float gamma) =>
+        _gammaToLinearNoAlphaShader
+            .SetParameter("Exposure", exposure)
+            .SetParameter("GammaRatio", gamma)
+            .Apply();
 
     internal void ApplyGammaShader(float exposure, float gamma) =>
         _gammaToLinearShader
@@ -263,7 +287,11 @@ public sealed class PostProcessing
                     }
                 }
 
-                _gammaToLinearShader
+                (
+                    separateBackground || gameCameraMode
+                        ? _gammaToLinearShader
+                        : _gammaToLinearNoAlphaShader
+                )
                     .SetParameter("Exposure", exposure)
                     .SetParameter("GammaRatio", gamma)
                     .Apply();
@@ -402,13 +430,19 @@ public sealed class PostProcessing
                 gamma /= outputGamma;
             }
 
+            // in camera mode, the background can be transparent, so we can't use the no-alpha shader
+            // otherwise using the no-alpha shader makes things simpler
             var shader = srgb
                 ? disableDither
-                    ? _gammaToSrgbNoDitherShader
-                    : _gammaToSrgbDitherShader
+                    ? _gammaToSrgbNoDitherNoAlphaShader
+                    : _gammaToSrgbDitherNoAlphaShader
                 : disableDither
-                    ? _gammaToGammaNoDitherShader
-                    : _gammaToGammaDitherShader;
+                    ? gameCameraMode
+                        ? _gammaToGammaNoDitherShader
+                        : _gammaToGammaNoDitherNoAlphaShader
+                    : gameCameraMode
+                        ? _gammaToGammaDitherShader
+                        : _gammaToGammaDitherNoAlphaShader;
             shader
                 .SetParameter(
                     "DitherCoordMult",

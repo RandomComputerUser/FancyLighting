@@ -64,38 +64,58 @@ float Luminance(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
-float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToLinearNoAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
     color.rgb = pow(color.rgb, GammaRatio);
     color.rgb = min(color.rgb, 10000); // prevent infinity
     color.rgb *= Exposure;
-    color.a = saturate(color.a);
+    color.a = 1;
     return color;
+}
+
+float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
+    color.a = saturate(color.a);
+    color = pow(color, GammaRatio);
+    color.rgb = min(color.rgb, 10000); // prevent infinity
+    color.rgb *= Exposure;
+    return color;
+}
+
+float4 GammaToGammaDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+
+    return float4(Dither(pow(color.rgb, GammaRatio), coords), 1);
 }
 
 float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    
+    color = pow(color, GammaRatio);
+    return float4(Dither(color.rgb, coords), color.a);
+}
 
-    return float4(
-        Dither(
-            pow(color.rgb, GammaRatio),
-            coords
-        ),
-        color.a
-    );
+float4 GammaToGammaNoDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+
+    return float4(pow(color.rgb, GammaRatio), 1);
 }
 
 float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
 
-    return float4(pow(color.rgb, GammaRatio), color.a);
+    return pow(color, GammaRatio);
 }
 
-float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToSrgbDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
@@ -103,15 +123,15 @@ float4 GammaToSrgbDither(float2 coords : TEXCOORD0) : COLOR0
         LinearToSrgb(
             pow(color.rgb, GammaRatio)
         ) + DitherNoise(coords),
-        color.a
+        1
     );
 }
 
-float4 GammaToSrgbNoDither(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToSrgbNoDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
-    return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), color.a);
+    return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), 1);
 }
 
 float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
@@ -214,10 +234,20 @@ float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 }
 
 technique Technique1
-{   
+{
+    pass GammaToLinearNoAlpha
+    {
+        PixelShader = compile ps_3_0 GammaToLinearNoAlpha();
+    }
+
     pass GammaToLinear
     {
         PixelShader = compile ps_3_0 GammaToLinear();
+    }
+
+    pass GammaToGammaDitherNoAlpha
+    {
+        PixelShader = compile ps_3_0 GammaToGammaDitherNoAlpha();
     }
 
     pass GammaToGammaDither
@@ -225,19 +255,24 @@ technique Technique1
         PixelShader = compile ps_3_0 GammaToGammaDither();
     }
 
+    pass GammaToGammaNoDitherNoAlpha
+    {
+        PixelShader = compile ps_3_0 GammaToGammaNoDitherNoAlpha();
+    }
+
     pass GammaToGammaNoDither
     {
         PixelShader = compile ps_3_0 GammaToGammaNoDither();
     }
     
-    pass GammaToSrgbDither
+    pass GammaToSrgbDitherNoAlpha
     {
-        PixelShader = compile ps_3_0 GammaToSrgbDither();
+        PixelShader = compile ps_3_0 GammaToSrgbDitherNoAlpha();
     }
     
-    pass GammaToSrgbNoDither
+    pass GammaToSrgbNoDitherNoAlpha
     {
-        PixelShader = compile ps_3_0 GammaToSrgbNoDither();
+        PixelShader = compile ps_3_0 GammaToSrgbNoDitherNoAlpha();
     }
     
     pass BloomComposite
