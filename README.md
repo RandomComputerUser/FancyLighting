@@ -54,7 +54,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Updated some config tooltips and labels
 - Fixed a bug that caused extra gore to spawn with Smooth Lighting enabled
 - Fixed some uncommon graphical glitches
-- Fix a bug that caused Ambient Occlusion to not update immediately after saving configs
+- Fix some bugs that caused minor visual disruption after updating a config
 - Fixed some potential graphical glitches caused by Fancy Atmosphere and Smooth Lighting
 - Made various minor optimizations
 - Slightly improved frame time consistency when using the Fancy Lighting Engine

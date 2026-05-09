@@ -5,6 +5,7 @@ using FancyLighting.Config.Enums;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Terraria.GameContent;
 
 namespace FancyLighting;
 
@@ -77,7 +78,7 @@ public sealed class FancySkyColors
                 )
                 .AssertNotNull();
             var skyColorVariable = cursor.Body.Variables.First(x =>
-                x.VariableType.Name is "Color"
+                x.VariableType.Name is nameof(Color)
             );
 
             cursor.GotoNext(
@@ -85,7 +86,7 @@ public sealed class FancySkyColors
                 instruction =>
                     instruction.OpCode == OpCodes.Call
                     && (instruction.Operand as MethodReference)?.Name
-                        is "ModifyNightColor"
+                        is nameof(DontStarveSeed.ModifyNightColor)
             );
             cursor.MoveAfterLabels();
             cursor.Emit(OpCodes.Ldloca, skyColorVariable);

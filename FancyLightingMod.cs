@@ -6,6 +6,7 @@ using FancyLighting.Utils.Accessors;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria.GameContent.Drawing;
+using Terraria.GameContent.Events;
 using Terraria.Graphics;
 using Terraria.Graphics.Capture;
 using Terraria.Graphics.Effects;
@@ -258,7 +259,37 @@ public sealed class FancyLightingMod : Mod
 
     internal void OnConfigChange()
     {
+        SetFancyLightingEngineInstance();
+
+        // Ensure that the transition is seamless by updating everything needed
+
         Main.renderNow = true;
+
+        // This code is adapted from vanilla
+        MainAccessors.SetBackColor(
+            null,
+            new Main.InfoToSetBackColor
+            {
+                isInGameMenuOrIsServer =
+                    Main.gameMenu || Main.netMode == NetmodeID.Server,
+                CorruptionBiomeInfluence =
+                    (float)Main.SceneMetrics.EvilTileCount
+                    / SceneMetrics.CorruptionTileMax,
+                CrimsonBiomeInfluence =
+                    (float)Main.SceneMetrics.BloodTileCount / SceneMetrics.CrimsonTileMax,
+                JungleBiomeInfluence =
+                    (float)Main.SceneMetrics.JungleTileCount / SceneMetrics.JungleTileMax,
+                MushroomBiomeInfluence = Main.SmoothedMushroomLightInfluence,
+                GraveyardInfluence = Main.GraveyardVisualIntensity,
+                BloodMoonActive = Main.bloodMoon || Main.SceneMetrics.BloodMoonMonolith,
+                LanternNightActive = LanternNight.LanternsUp,
+            },
+            out _,
+            out _
+        );
+        MainAccessors.ApplyColorOfTheSkiesToTiles(null);
+        MainAccessors.UpdateAtmosphereTransparencyToSkyColor(null);
+
         if (!Main.gameMenu)
         {
             Main.GetAreaToLight(
@@ -279,8 +310,6 @@ public sealed class FancyLightingMod : Mod
             Main.sceneTile2Pos.X = Main.screenPosition.X - Main.offScreenRange;
             Main.sceneTile2Pos.Y = Main.screenPosition.Y - Main.offScreenRange;
         }
-
-        SetFancyLightingEngineInstance();
     }
 
     private void AddHooks()
