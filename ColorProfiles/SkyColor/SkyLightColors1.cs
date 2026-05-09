@@ -16,7 +16,7 @@ public sealed class SkyLightColors1 : LoadableColorProfileBase, ISimpleColorProf
 
         var nightColor = new Vector3(0.04f, 0.04f, 0.05f);
         var nightColor2 = new Vector3(0.1f, 0.09f, 0.13f);
-        var nightColor1 = new Vector3(0.2f, 0.18f, 0.22f);
+        var nightColor1 = new Vector3(0.19f, 0.17f, 0.23f);
         var sunriseSunsetColor = new Vector3(0.36f, 0.34f, 0.4f);
         var dayColor1 = new Vector3(0.75f, 0.65f, 0.49f);
         var dayColor2 = new Vector3(0.98f, 0.92f, 0.84f);
