@@ -105,25 +105,25 @@ float2 Gradient(
 float3 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
 {
     float leftLuma
-        = Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0)).rgb);
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0)).rgb));
     float rightLuma
-        = Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0)).rgb);
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0)).rgb));
     float upLuma
-        = Luma(tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y)).rgb);
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y)).rgb));
     float downLuma
-        = Luma(tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y)).rgb);
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y)).rgb));
     float positiveDiagonal
-        = Luma(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb) // up left
-        - Luma(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb); // down right
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb)) // up left
+        - saturate(Luma(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb)); // down right
     float negativeDiagonal
-        = Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb) // down left
-        - Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb); // up right
+        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb)) // down left
+        - saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb)); // up right
 
     float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
     float4 color = tex2D(WorldSampler, worldTexCoords);
-    float luma = Luma(color.rgb);
+    float luma = saturate(Luma(color.rgb));
     float maxLuma = max(
         luma,
         max(max(leftLuma, rightLuma), max(upLuma, downLuma))

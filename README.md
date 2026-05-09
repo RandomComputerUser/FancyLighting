@@ -39,11 +39,11 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Increased the default ambient light proportion to 75% (from 60%)
 - Increased the maximum ambient occlusion exponent to 500% (from 400%)
 - Decreased the default normal maps strength to 3 (from 4)
+- Increased the maximum normal maps strength to 15 (from 12)
 - Slightly improved the quality of the bicubic render mode
 - The gamma setting now adjusts output gamma (instead of content gamma)
 - Gamma and sRGB output no longer affect camera mode
 - Increased the range of the gamma setting to 140–300% (from 160–280%)
-- Increased the maximum normal maps strength to 15 (from 12)
 - Increased the maximum bloom strength to 20 (from 15)
 - Full HDRR exposure can now be adjusted in increments of 5 (instead of 10)
 - Changed the default quality preset to Medium (from Low)
