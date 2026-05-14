@@ -15,16 +15,16 @@ float2 VibranceBoostParams2;
 
 static const float3x3 SrgbToAcescg =
 {
-    {0.612459, 0.338722, 0.048818},
-    {0.070664, 0.917631, 0.011705},
-    {0.020755, 0.106878, 0.872367}
+    0.612459, 0.338722, 0.048818,
+    0.070664, 0.917631, 0.011705,
+    0.020755, 0.106878, 0.872367
 };
 
 static const float3x3 AcescgToSrgb =
 {
-    { 1.707255, -0.620035, -0.087220},
-    {-0.131157,  1.139101, -0.007944},
-    {-0.024550, -0.124805,  1.149354}
+     1.707255, -0.620035, -0.087220,
+    -0.131157,  1.139101, -0.007944,
+    -0.024550, -0.124805,  1.149354
 };
 
 float3 LinearToSrgb(float3 color)
@@ -168,7 +168,7 @@ float3 MakeVibrant(float3 x)
 	
 	float mult = targetSaturation / saturation;
 	float3 result = pow(
-	    max(maxComponent - mult * (maxComponent - pow(x, 1 / 2.2)), 0.0), 
+	    max(lerp(maxComponent.xxx, pow(x, 1 / 2.2), mult), 0.0), 
 	    2.2
 	);
     result *= Luminance(x) / Luminance(result);
