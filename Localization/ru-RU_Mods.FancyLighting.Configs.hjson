@@ -607,7 +607,7 @@ ToneMappingPreset: {
 	Tooltip: ""
 
 	Preset1: {
-		// Label: Bright
+		// Label: Neutral
 		Tooltip: ""
 	}
 

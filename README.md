@@ -15,7 +15,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ### v1.1.0 (2026-??-??)
 - Added a setting to switch between various tone mapping operators (TMOs) for full HDR rendering
-- Added the Bright TMO, which is the new default TMO 
+- Added the Neutral TMO, which is the new default TMO 
 - The old TMO is now called Filmic and is available as another option
 - Added the Linear TMO, which may be used with add-ons to achieve HDR output
 - Added a setting to boost color vibrance when using full HDR rendering

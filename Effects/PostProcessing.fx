@@ -13,18 +13,20 @@ float2 VibranceBoostParams2;
 
 // https://www.colour-science.org/apps/
 
-static const float3x3 SrgbToAcescg =
+// Square root of the transformation matrix from sRGB to ACEScg
+// Use the square root to make desaturation of bright colors less intense
+static const float3x3 SqrtSrgbToAcescg =
 {
-    0.612459, 0.338722, 0.048818,
-    0.070664, 0.917631, 0.011705,
-    0.020755, 0.106878, 0.872367
+    0.77731090, 0.19479431, 0.02789479,
+    0.04078929, 0.95361152, 0.00559919,
+    0.01080702, 0.05551474, 0.93367824
 };
 
-static const float3x3 AcescgToSrgb =
+static const float3x3 SqrtAcescgToSrgb =
 {
-     1.707255, -0.620035, -0.087220,
-    -0.131157,  1.139101, -0.007944,
-    -0.024550, -0.124805,  1.149354
+     1.30083470, -0.26355115, -0.03728355,
+    -0.05557223,  1.06027029, -0.00469806,
+    -0.01175251, -0.05999115,  1.07174366
 };
 
 float3 LinearToSrgb(float3 color)
@@ -179,9 +181,9 @@ float3 ToneMapColor1(float3 x)
 {
     const float c1 = 1.8;
     const float c2 = 4.0;
-    x = mul(SrgbToAcescg, x);
+    x = mul(SqrtSrgbToAcescg, x);
     x = saturate(c1 * (x / (x + c2)));
-    return saturate(mul(AcescgToSrgb, x));
+    return saturate(mul(SqrtAcescgToSrgb, x));
 }
 
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
