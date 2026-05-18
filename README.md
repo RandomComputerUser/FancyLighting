@@ -22,7 +22,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Color vibrance is now boosted by default when using full HDR rendering
 - Added a setting to enable depth of field when using full HDR rendering
 - Slightly increased the contrast of lighting when using full HDR rendering
-- Tweaked how translucent walls and blocks appear when using full HDR rendering
 - Made Fancy Atmosphere more colorful
 - Added a setting to boost sky brightness when Fancy Atmosphere is enabled
 - Sky brightness is now boosted by default when using Fancy Atmosphere

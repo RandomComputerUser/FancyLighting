@@ -82,7 +82,7 @@ float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
     color.a = saturate(color.a);
-    color = pow(color, GammaRatio);
+    color.rgb = pow(color.rgb, GammaRatio);
     color.rgb = min(color.rgb, 10000); // prevent infinity
     color.rgb *= Exposure;
     return color;
@@ -99,7 +99,7 @@ float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
-    color = pow(color, GammaRatio);
+    color.rgb = pow(color.rgb, GammaRatio);
     return float4(Dither(color.rgb, coords), color.a);
 }
 
@@ -114,7 +114,8 @@ float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
 
-    return pow(color, GammaRatio);
+    color.rgb = pow(color.rgb, GammaRatio);
+    return color;
 }
 
 float4 GammaToSrgbDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
