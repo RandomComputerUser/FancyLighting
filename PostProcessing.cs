@@ -260,7 +260,7 @@ public sealed class PostProcessing
                     var backgroundBrightness = ColorUtils.GammaToLinear(
                         CalculateHiDefBackgroundBrightness()
                     );
-                    _gammaToLinearShader
+                    (gameCameraMode ? _gammaToLinearShader : _gammaToLinearNoAlphaShader)
                         .SetParameter("Exposure", exposure * backgroundBrightness)
                         .SetParameter("GammaRatio", gamma)
                         .Apply();
