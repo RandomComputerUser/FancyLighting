@@ -24,7 +24,7 @@ public sealed class FancyLightingMod : Mod
     internal static bool _isGameInCameraMode;
     private static bool _cameraModeDrawBackground;
     private static bool _disableLightColorOverride;
-    private static bool _preventTileParticles;
+    internal static bool _preventTileParticles;
     private static bool _makePartialLiquidTranslucent;
 
     internal static bool _doingFilterManagerCapture;

@@ -51,7 +51,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Rearranged some settings in the config
 - Made some UI tweaks in the config
 - Updated some config tooltips and labels
-- Fixed a bug that caused extra gore to spawn with Smooth Lighting enabled
+- Fixed a bug that caused extra particles to spawn with Smooth Lighting or Ambient Occlusion enabled
 - Fixed some uncommon graphical glitches
 - Fix some bugs that caused minor visual disruption after updating a config
 - Fixed some potential graphical glitches caused by Fancy Atmosphere and Smooth Lighting

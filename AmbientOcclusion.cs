@@ -358,7 +358,9 @@ public sealed class AmbientOcclusion
                 Main.GameViewMatrix.Zoom = Vector2.One;
                 Main.screenPosition -= new Vector2(Main.offScreenRange);
 
+                var prevPreventTileParticles = FancyLightingMod._preventTileParticles;
                 _drawingTileEntities = true;
+                FancyLightingMod._preventTileParticles = true;
                 try
                 {
                     Main.instance.TilesRenderer.PostDrawTiles(false, false, false);
@@ -366,6 +368,7 @@ public sealed class AmbientOcclusion
                 }
                 finally
                 {
+                    FancyLightingMod._preventTileParticles = prevPreventTileParticles;
                     _drawingTileEntities = false;
                     Main.GameViewMatrix.Zoom = currentZoom;
                     Main.screenPosition = currentScreenPosition;
