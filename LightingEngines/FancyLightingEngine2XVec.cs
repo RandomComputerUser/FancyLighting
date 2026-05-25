@@ -465,13 +465,11 @@ public sealed class FancyLightingEngine2XVec : FancyLightingEngineVecDecay
         var lightSpread = _lightSpread;
 
         {
-            workingLights1[0] = workingLights2[0] = Vec3.One;
+            workingLights1[0] = workingLights2[0] = color;
             var i = index + verticalChange;
-            var value = Vec3.One;
             var prevMask = lightMask[i];
-            workingLights1[1] = workingLights2[1] = prevMask[
-                lightSpread[1].DistanceToRight
-            ];
+            workingLights1[1] = workingLights2[1] =
+                color * prevMask[lightSpread[1].DistanceToRight];
             for (var y = 2; y <= verticalDistance; ++y)
             {
                 i += verticalChange;
@@ -479,17 +477,17 @@ public sealed class FancyLightingEngine2XVec : FancyLightingEngineVecDecay
                 var mask = lightMask[i];
                 if (prevMask == solidDecay && mask != solidDecay)
                 {
-                    value *= lightLoss * prevMask[DistanceTicks];
+                    color *= lightLoss * prevMask[DistanceTicks];
                 }
                 else
                 {
-                    value *= prevMask[DistanceTicks];
+                    color *= prevMask[DistanceTicks];
                 }
 
                 prevMask = mask;
 
                 workingLights1[y] = workingLights2[y] =
-                    value * mask[lightSpread[y].DistanceToRight];
+                    color * mask[lightSpread[y].DistanceToRight];
             }
         }
 
@@ -578,7 +576,7 @@ public sealed class FancyLightingEngine2XVec : FancyLightingEngineVecDecay
                             ),
                             spread.LightFrom
                         )
-                    ) * color
+                    )
                 );
 
                 var topDecay = mask[spread.DistanceToTop];
