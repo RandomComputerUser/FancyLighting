@@ -259,6 +259,11 @@ public sealed class FancyLightingMod : Mod
     {
         SetFancyLightingEngineInstance();
 
+        if (Main.gameMenu || Main.mapFullscreen)
+        {
+            return;
+        }
+
         // Ensure that the transition is seamless by updating everything needed
 
         Main.renderNow = true;
@@ -288,26 +293,23 @@ public sealed class FancyLightingMod : Mod
         MainAccessors.ApplyColorOfTheSkiesToTiles(null);
         MainAccessors.UpdateAtmosphereTransparencyToSkyColor(null);
 
-        if (!Main.gameMenu)
+        Main.GetAreaToLight(
+            out var firstTileX,
+            out var lastTileX,
+            out var firstTileY,
+            out var lastTileY
+        );
+        for (var i = 4; i-- > 0; )
         {
-            Main.GetAreaToLight(
-                out var firstTileX,
-                out var lastTileX,
-                out var firstTileY,
-                out var lastTileY
-            );
-            for (var i = 4; i-- > 0; )
-            {
-                Lighting.LightTiles(firstTileX, lastTileX, firstTileY, lastTileY);
-            }
-
-            _smoothLightingInstance?.InvalidateSmoothLighting();
-
-            // Ensure ambient occlusion updates immediately
-            MainAccessors.RenderTiles2(Main.instance);
-            Main.sceneTile2Pos.X = Main.screenPosition.X - Main.offScreenRange;
-            Main.sceneTile2Pos.Y = Main.screenPosition.Y - Main.offScreenRange;
+            Lighting.LightTiles(firstTileX, lastTileX, firstTileY, lastTileY);
         }
+
+        _smoothLightingInstance?.InvalidateSmoothLighting();
+
+        // Ensure ambient occlusion updates immediately
+        MainAccessors.RenderTiles2(Main.instance);
+        Main.sceneTile2Pos.X = Main.screenPosition.X - Main.offScreenRange;
+        Main.sceneTile2Pos.Y = Main.screenPosition.Y - Main.offScreenRange;
     }
 
     private void AddHooks()

@@ -1,6 +1,6 @@
 displayName = Fancy Lighting
 author = Rex
-version = 1.1.0
+version = 1.1.1
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
 buildIgnore = description_workshop.txt, Effects/DitherNoiseGenerator/*, icon_workshop.png, obj/*, packages/*, Properties/*, *.md, *.sln.DotSettings.user
