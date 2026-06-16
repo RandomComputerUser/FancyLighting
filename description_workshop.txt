@@ -27,5 +27,4 @@ You may report issues, download old releases, and view the source code on [url=h
 [h2]Credits[/h2]
 [list]
     [*]Rex
-    [*]osaka_drift: ru-RU locale
 [/list]

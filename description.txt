@@ -18,4 +18,3 @@ If you are using full HDR rendering and experiencing graphical glitches with oth
 
 Credits:
 - Rex
-- osaka_drift: ru-RU locale
