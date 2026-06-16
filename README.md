@@ -13,7 +13,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.1.0 (2026-??-??)
+### v1.1.0 (2026-06-15)
+- Removed the ru-RU localization (unofficial translations are welcome!)
 - Added a setting to switch between various tone mapping operators (TMOs) for full HDR rendering
 - Added the Neutral TMO, which is the new default TMO 
 - The old TMO is now called Filmic and is available as another option
