@@ -164,7 +164,6 @@ public sealed class FancyLightingMod : Mod
 
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
-        NitrateCompatibility.Load();
         SpiritReforgedCompatibility.Load();
 
         Main.QueueMainThreadAction(() =>
@@ -204,7 +203,6 @@ public sealed class FancyLightingMod : Mod
 
             CalamityModCompatibility.Unload();
             LightsCompatibility.Unload();
-            NitrateCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
 
             MainGraphics.Unload();
