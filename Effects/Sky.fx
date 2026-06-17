@@ -14,7 +14,7 @@ float InverseGamma;
 float Smootherstep(float min, float max, float x)
 {
     float t = (x - min) / (max - min);
-    t = clamp(t, 0, 1);
+    t = saturate(t);
     return (t * t * t) * (t * (6 * t - 15) + 10);
 }
 
