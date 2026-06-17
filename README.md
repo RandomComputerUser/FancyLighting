@@ -15,4 +15,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ### v1.1.2 (2026-??-??)
 - Added the "Neutral (LMS)" TMO, which is the new default
-- Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
+- Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"\
+- Tweaked and optimized Vibrance Boost
