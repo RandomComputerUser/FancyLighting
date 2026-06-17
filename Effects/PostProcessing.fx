@@ -17,16 +17,16 @@ float2 VibranceBoostParams2;
 // Use the square root to make desaturation of bright colors less intense
 static const float3x3 SqrtSrgbToAcescg =
 {
-    0.77731090, 0.19479431, 0.02789479,
-    0.04078929, 0.95361152, 0.00559919,
-    0.01080702, 0.05551474, 0.93367824
+    0.77731090, 0.04078929, 0.01080702,
+    0.19479431, 0.95361152, 0.05551474,
+    0.02789479, 0.00559919, 0.93367824
 };
 
 static const float3x3 SqrtAcescgToSrgb =
 {
-     1.30083470, -0.26355115, -0.03728355,
-    -0.05557223,  1.06027029, -0.00469806,
-    -0.01175251, -0.05999115,  1.07174366
+     1.30083470, -0.05557223, -0.01175251,
+    -0.26355115,  1.06027029, -0.05999115,
+    -0.03728355, -0.00469806,  1.07174366
 };
 
 float3 LinearToSrgb(float3 color)
@@ -182,9 +182,9 @@ float3 ToneMapColor1(float3 x)
 {
     const float c1 = 1.8;
     const float c2 = 4.0;
-    x = mul(SqrtSrgbToAcescg, x);
+    x = mul(x, SqrtSrgbToAcescg);
     x = saturate(c1 * (x / (x + c2)));
-    return saturate(mul(SqrtAcescgToSrgb, x));
+    return saturate(mul(x, SqrtAcescgToSrgb));
 }
 
 float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0

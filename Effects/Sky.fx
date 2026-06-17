@@ -11,7 +11,7 @@ float3 LowSkyColor;
 float Gamma;
 float InverseGamma;
 
-float4 Smootherstep(float min, float max, float x)
+float Smootherstep(float min, float max, float x)
 {
     float t = (x - min) / (max - min);
     t = clamp(t, 0, 1);
