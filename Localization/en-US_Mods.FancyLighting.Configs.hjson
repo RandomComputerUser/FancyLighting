@@ -615,13 +615,18 @@ SkyColorPreset: {
 ToneMappingPreset: {
 	Tooltip: ""
 
-	Preset1: {
-		Label: Neutral
+	NeutralLms: {
+		Label: Neutral (LMS)
 		Tooltip: ""
 	}
 
-	Preset2: {
-		Label: Filmic
+	NeutralOld: {
+		Label: Neutral (old)
+		Tooltip: ""
+	}
+
+	FilmicSrgb: {
+		Label: Filmic (sRGB)
 		Tooltip: ""
 	}
 

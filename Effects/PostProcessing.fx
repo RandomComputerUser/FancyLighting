@@ -11,9 +11,46 @@ float BloomStrength;
 float4 VibranceBoostParams1;
 float2 VibranceBoostParams2;
 
+// https://en.wikipedia.org/wiki/SRGB#Primaries
+
+static const float3x3 SrgbToXyzD65 =
+{
+     0.4124,  0.2126,  0.0193,
+     0.3576,  0.7152,  0.1192,
+     0.1805,  0.0722,  0.9505
+};
+
+static const float3x3 XyzD65ToSrgb =
+{
+     3.2406255, -0.9689307,  0.0557101,
+    -1.5372080,  1.8757561, -0.2040211,
+    -0.4986286,  0.0415175,  1.0569959
+};
+
+// http://brucelindbloom.com/index.html?Eqn_ChromAdapt.html
+
+// Hunt–Pointer–Estevez matrix
+static const float3x3 XyzD65ToLmsD65 =
+{
+     0.4002400, -0.2263000,  0.0000000,
+     0.7076000,  1.1653200,  0.0000000,
+    -0.0808100,  0.0457000,  0.9182200
+};
+
+static const float3x3 LmsD65ToXyzD65 =
+{
+     1.8599364,  0.3611914,  0.0000000,
+    -1.1293816,  0.6388125,  0.0000000,
+     0.2198974, -0.0000064,  1.0890636
+};
+
+static const float3x3 SrgbToLmsD65 = mul(SrgbToXyzD65, XyzD65ToLmsD65);
+
+static const float3x3 LmsD65ToSrgb = mul(LmsD65ToXyzD65, XyzD65ToSrgb);
+
 // https://www.colour-science.org/apps/
 
-// Square root of the transformation matrix from sRGB to ACEScg
+// Square root of the transformation matrix from sRGB to ACEScg with chromatic adaptation
 // Use the square root to make desaturation of bright colors less intense
 static const float3x3 SqrtSrgbToAcescg =
 {
@@ -178,7 +215,31 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
-float3 ToneMapColor1(float3 x)
+float3 ToneMapColorNeutralLms(float3 x)
+{
+    const float c1 = 1.8;
+    const float c2 = 4.0;
+    x = mul(x, SrgbToLmsD65);
+    x = saturate(c1 * (x / (x + c2)));
+    return saturate(mul(x, LmsD65ToSrgb));
+}
+
+float4 ToneMapNeutralLms(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColorNeutralLms(color.rgb);
+    return color;
+}
+
+float4 ToneMapNeutralLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColorNeutralLms(color.rgb);
+    color.rgb = saturate(MakeVibrant(color.rgb));
+    return color;
+}
+
+float3 ToneMapColorNeutralOld(float3 x)
 {
     const float c1 = 1.8;
     const float c2 = 4.0;
@@ -187,22 +248,22 @@ float3 ToneMapColor1(float3 x)
     return saturate(mul(x, SqrtAcescgToSrgb));
 }
 
-float4 ToneMap1(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralOld(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor1(color.rgb);
+    color.rgb = ToneMapColorNeutralOld(color.rgb);
     return color;
 }
 
-float4 ToneMap1VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralOldVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor1(color.rgb);
+    color.rgb = ToneMapColorNeutralOld(color.rgb);
     color.rgb = saturate(MakeVibrant(color.rgb));
     return color;
 }
 
-float3 ToneMapColor2(float3 x)
+float3 ToneMapColorFilmicSrgb(float3 x)
 {
     const float c1 = 1.46666666667;
     const float c2 = 0.363636363636;
@@ -214,17 +275,17 @@ float3 ToneMapColor2(float3 x)
     );
 }
 
-float4 ToneMap2(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapFilmicSrgb(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor2(color.rgb);
+    color.rgb = ToneMapColorFilmicSrgb(color.rgb);
     return color;
 }
 
-float4 ToneMap2VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapFilmicSrgbVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColor2(color.rgb);
+    color.rgb = ToneMapColorFilmicSrgb(color.rgb);
     color.rgb = saturate(MakeVibrant(color.rgb));
     return color;
 }
@@ -283,24 +344,34 @@ technique Technique1
         PixelShader = compile ps_3_0 BloomComposite();
     }
     
-    pass ToneMap1
+    pass ToneMapNeutralLms
     {
-        PixelShader = compile ps_3_0 ToneMap1();
+        PixelShader = compile ps_3_0 ToneMapNeutralLms();
     }
     
-    pass ToneMap1VibranceBoost
+    pass ToneMapNeutralLmsVibranceBoost
     {
-        PixelShader = compile ps_3_0 ToneMap1VibranceBoost();
+        PixelShader = compile ps_3_0 ToneMapNeutralLmsVibranceBoost();
     }
     
-    pass ToneMap2
+    pass ToneMapNeutralOld
     {
-        PixelShader = compile ps_3_0 ToneMap2();
+        PixelShader = compile ps_3_0 ToneMapNeutralOld();
     }
     
-    pass ToneMap2VibranceBoost
+    pass ToneMapNeutralOldVibranceBoost
     {
-        PixelShader = compile ps_3_0 ToneMap2VibranceBoost();
+        PixelShader = compile ps_3_0 ToneMapNeutralOldVibranceBoost();
+    }
+    
+    pass ToneMapFilmicSrgb
+    {
+        PixelShader = compile ps_3_0 ToneMapFilmicSrgb();
+    }
+    
+    pass ToneMapFilmicSrgbVibranceBoost
+    {
+        PixelShader = compile ps_3_0 ToneMapFilmicSrgbVibranceBoost();
     }
     
     pass VibranceBoost
