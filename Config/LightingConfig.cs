@@ -29,7 +29,7 @@ public sealed class LightingConfig : ModConfig
     public bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
     public bool UseLightMapToneMapping() =>
-        LightMapRenderMode is RenderMode.Bicubic or RenderMode.BicubicOverbright;
+        LightMapRenderMode is RenderMode.BicubicOverbright;
 
     public bool DrawOverbright() =>
         LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr
