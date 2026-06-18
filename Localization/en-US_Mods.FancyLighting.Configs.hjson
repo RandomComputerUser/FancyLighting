@@ -373,12 +373,33 @@ LightingConfig: {
 	}
 
 	SimulateNormalMaps: {
-		Label: Simulated Normal Maps
+		Label: Normal Maps
 		Tooltip:
 			'''
-			Render normal maps which are automatically generated using tile and wall textures
+			Render normal maps on tiles and walls
 
 			Makes surfaces appear rough/bumpy
+			Normal maps are automatically generated from tile and wall textures
+			'''
+	}
+
+	SimulateNonSolidNormals: {
+		Label: Normal Maps for Non-Solid Tiles
+		Tooltip:
+			'''
+			Whether normal maps are rendered for non-solid tiles
+
+			Primarily affects furniture
+			'''
+	}
+
+	SimulateTileEntityNormals: {
+		Label: Normal Maps for Tile Entities
+		Tooltip:
+			'''
+			Whether normal maps are rendered for tile entities
+
+			Primarily affects tiles that are affected by wind
 			'''
 	}
 
@@ -420,10 +441,9 @@ LightingConfig: {
 		Label: Ambient Occlusion from Non-Solid Tiles
 		Tooltip:
 			'''
-			Whether non-solid tiles generate ambient occlusion
+			Whether non-solid tiles occlude light
 
-			Non-solid tiles generate weaker ambient occlusion
-			Primarily affects furniture and torches
+			Primarily affects furniture
 			'''
 	}
 
@@ -431,9 +451,8 @@ LightingConfig: {
 		Label: Ambient Occlusion from Tile Entities
 		Tooltip:
 			'''
-			Whether tile entities generate ambient occlusion
+			Whether tile entities occlude light
 
-			Tile entities generate weaker ambient occlusion
 			Primarily affects tiles that are affected by wind
 			'''
 	}

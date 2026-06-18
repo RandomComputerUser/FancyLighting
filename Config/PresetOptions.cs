@@ -12,6 +12,12 @@ internal record PresetOptions
 
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
 
+    public bool SimulateNonSolidNormals { get; init; } =
+        DefaultOptions.SimulateNonSolidNormals;
+
+    public bool SimulateTileEntityNormals { get; init; } =
+        DefaultOptions.SimulateTileEntityNormals;
+
     public bool UseEnhancedGlowMaskSupport { get; init; } =
         DefaultOptions.UseEnhancedGlowMaskSupport;
 
@@ -56,6 +62,8 @@ internal record PresetOptions
         UseLightMapBlurring = config.UseLightMapBlurring;
         UseEnhancedBlurring = config.UseEnhancedBlurring;
         SimulateNormalMaps = config.SimulateNormalMaps;
+        SimulateNonSolidNormals = config.SimulateNonSolidNormals;
+        SimulateTileEntityNormals = config.SimulateTileEntityNormals;
         UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
         LightMapRenderMode = config.LightMapRenderMode;
 
@@ -78,6 +86,8 @@ internal record PresetOptions
             UseSmoothLighting = false,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
+            SimulateNonSolidNormals = false,
+            SimulateTileEntityNormals = false,
             UseEnhancedGlowMaskSupport = false,
             LightMapRenderMode = RenderMode.Bilinear,
             UseAmbientOcclusion = false,
@@ -96,6 +106,8 @@ internal record PresetOptions
             UseSmoothLighting = true,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
+            SimulateNonSolidNormals = false,
+            SimulateTileEntityNormals = false,
             UseEnhancedGlowMaskSupport = false,
             LightMapRenderMode = RenderMode.Bilinear,
             UseAmbientOcclusion = true,
@@ -116,6 +128,8 @@ internal record PresetOptions
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
+            SimulateNonSolidNormals = true,
+            SimulateTileEntityNormals = true,
             UseEnhancedGlowMaskSupport = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
             UseAmbientOcclusion = true,
@@ -134,6 +148,8 @@ internal record PresetOptions
             UseSmoothLighting = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
+            SimulateNonSolidNormals = true,
+            SimulateTileEntityNormals = true,
             UseEnhancedGlowMaskSupport = true,
             LightMapRenderMode = RenderMode.EnhancedHdr,
             UseAmbientOcclusion = true,

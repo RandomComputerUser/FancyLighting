@@ -24,6 +24,8 @@ public static class DefaultOptions
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = true;
     public const bool SimulateNormalMaps = false;
+    public const bool SimulateNonSolidNormals = false;
+    public const bool SimulateTileEntityNormals = false;
     public const bool UseEnhancedGlowMaskSupport = false;
     public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
 

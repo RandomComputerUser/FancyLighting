@@ -986,15 +986,12 @@ public sealed class FancyLightingMod : Mod
             (solidLayer || intoRenderTargets)
             || _ambientOcclusionInstance._drawingTileEntities
             || !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-            || !PreferencesConfig.Instance.RenderOnlyLight
+            || !_smoothLightingInstance.ApplyTileEntityEffect()
         )
         {
             orig(self, solidLayer, forRenderTargets, intoRenderTargets);
             return;
         }
-
-        _smoothLightingInstance.ApplyLightOnlyEffect();
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -1021,6 +1018,7 @@ public sealed class FancyLightingMod : Mod
         Main.spriteBatch.End();
 
         SpriteBatchEffectLoader.ClearEffect();
+        MainGraphics.RestoreSavedTextures();
     }
 
     // Liquids
@@ -1572,7 +1570,8 @@ public sealed class FancyLightingMod : Mod
         _smoothLightingInstance.DrawSmoothLighting(
             tileTarget,
             useGlowMasks ? _tmpTarget2 : null,
-            false
+            false,
+            !LightingConfig.Instance.SimulateNonSolidNormals
         );
 
         if (!useGlowMasks)
@@ -2360,6 +2359,7 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTarget,
             false,
             false,
+            !solidLayer && !LightingConfig.Instance.SimulateNonSolidNormals,
             glow: useGlowMasks ? _cameraModeTmpTarget1 : null,
             lightedGlow: useGlowMasks && enhancedGlowMasks ? _cameraModeTmpTarget2 : null
         );

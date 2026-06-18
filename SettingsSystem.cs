@@ -47,7 +47,13 @@ internal sealed class SettingsSystem : ModSystem
         PerformanceTracker.Enabled =
             PreferencesConfig.Instance?.MonitorPerformance is true;
 
-        var needsPostProcessing = NeedsPostProcessing(true);
+        var needsPostProcessing =
+            NeedsPostProcessing(true)
+            || (
+                LightingConfig.Instance?.SmoothLightingEnabled() is true
+                && LightingConfig.Instance?.SimulateNormalMaps is true
+                && LightingConfig.Instance?.SimulateTileEntityNormals is true
+            );
         if (needsPostProcessing && !_prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw += DoNothing;

@@ -74,6 +74,8 @@ public sealed class LightingConfig : ModConfig
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _simulateNormalMaps = options.SimulateNormalMaps;
+        _simulateNonSolidNormals = options.SimulateNonSolidNormals;
+        _simulateTileEntityNormals = options.SimulateTileEntityNormals;
         _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _lightMapRenderMode = options.LightMapRenderMode;
 
@@ -189,6 +191,32 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _simulateNormalMaps;
+
+    [DefaultValue(DefaultOptions.SimulateNonSolidNormals)]
+    public bool SimulateNonSolidNormals
+    {
+        get => _simulateNonSolidNormals;
+        set
+        {
+            _simulateNonSolidNormals = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _simulateNonSolidNormals;
+
+    [DefaultValue(DefaultOptions.SimulateTileEntityNormals)]
+    public bool SimulateTileEntityNormals
+    {
+        get => _simulateTileEntityNormals;
+        set
+        {
+            _simulateTileEntityNormals = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _simulateTileEntityNormals;
 
     [DefaultValue(DefaultOptions.UseEnhancedGlowMaskSupport)]
     public bool UseEnhancedGlowMaskSupport

@@ -18,5 +18,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
 - Tweaked and optimized vibrance boost
 - Made the "Bicubic" render mode a little brighter
+- Added tile entity normal maps
+- Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Made some minor optimizations
 - Improved unloading

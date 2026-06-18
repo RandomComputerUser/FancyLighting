@@ -30,6 +30,8 @@ public sealed class SmoothLighting
     private bool _smoothLightingComplete;
     private bool _smoothLightingHiResComplete;
 
+    private RenderTarget2D _tmpTarget;
+
     internal RenderTarget2D _cameraModeTarget1;
     internal RenderTarget2D _cameraModeTarget2;
 
@@ -54,7 +56,9 @@ public sealed class SmoothLighting
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
 
-    private SpriteBatchEffect _lightOnlyEffect;
+    private SpriteBatchEffect _tileEntityNormalsEffect;
+    private SpriteBatchEffect _tileEntityNormalsLightOnlyEffect;
+    private SpriteBatchEffect _tileEntityLightOnlyEffect;
 
     /// <summary>
     /// Modify the lighting of a tile.
@@ -237,7 +241,15 @@ public sealed class SmoothLighting
             "EnhancedGlowMask"
         );
 
-        _lightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
+        _tileEntityNormalsEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/TileEntityLighting",
+            "Normals"
+        );
+        _tileEntityNormalsLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/TileEntityLighting",
+            "NormalsLightOnly"
+        );
+        _tileEntityLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
             "FancyLighting/Effects/TileEntityLighting",
             "LightOnly"
         );
@@ -250,6 +262,7 @@ public sealed class SmoothLighting
         _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
+        _tmpTarget?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _ditherNoise?.Dispose();
@@ -272,13 +285,12 @@ public sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
-        SpriteBatchEffectLoader.UnloadEffect(ref _lightOnlyEffect);
+        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsEffect);
+        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsLightOnlyEffect);
+        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityLightOnlyEffect);
     }
 
     internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
-
-    internal void ApplyLightOnlyEffect() =>
-        SpriteBatchEffectLoader.ApplyEffect(_lightOnlyEffect);
 
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
@@ -1228,20 +1240,34 @@ public sealed class SmoothLighting
 
         var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
         var scale = doBicubicUpscaling ? 0.25f : 1f;
-
-        var transformation = Matrix.Identity;
-        transformation.Right = new(0f, 1f / (16f * scale * lightMapTexture.Height), 0f);
-        transformation.Up = new(1f / (16f * scale * lightMapTexture.Width), 0f, 0f);
-        var origin = 16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y);
-        var translation = -Vector2.Transform(origin, transformation);
-        transformation.Translation = new Vector3(translation.X, translation.Y, 0f);
-
+        var transformation = CalculateLightMapMatrixTransform(
+            lightMapTexture,
+            scale,
+            _lightMapTileArea,
+            Vector2.Zero
+        );
         PostUpdateLightMap?.Invoke(
             lightMapTexture,
             transformation,
             _lightMapTileArea,
             cameraMode
         );
+    }
+
+    private Matrix CalculateLightMapMatrixTransform(
+        Texture2D lightMapTexture,
+        float scale,
+        Rectangle lightMapTileArea,
+        Vector2 offset
+    )
+    {
+        var transformation = Matrix.Identity;
+        transformation.Right = new(0f, 1f / (16f * scale * lightMapTexture.Height), 0f);
+        transformation.Up = new(1f / (16f * scale * lightMapTexture.Width), 0f, 0f);
+        var origin = (16f * new Vector2(lightMapTileArea.X, lightMapTileArea.Y)) - offset;
+        var translation = -Vector2.Transform(origin, transformation);
+        transformation.Translation = new Vector3(translation.X, translation.Y, 0f);
+        return transformation;
     }
 
     private void CalculateSmoothLightingHdr(
@@ -1849,11 +1875,8 @@ public sealed class SmoothLighting
 
         var gamma = PostProcessing.ContentGamma();
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
-        var overbrightMult = doOverbright
-            ? hiDef
-                ? 1f / PostProcessing.HiDefBrightnessScale
-                : 1f
-            : 1f;
+        var overbrightMult =
+            doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
         var normalMapGradientMult = 24f * overbrightMult * zoom;
         var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
         normalMapMult *= background ? 0.75f : 0.875f;
@@ -1931,6 +1954,112 @@ public sealed class SmoothLighting
             Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
             Main.spriteBatch.End();
         }
+    }
+
+    internal bool ApplyTileEntityEffect()
+    {
+        var doOverbright = LightingConfig.Instance.DrawOverbright();
+        var doNormals =
+            LightingConfig.Instance.SimulateNormalMaps
+            && LightingConfig.Instance.SimulateTileEntityNormals;
+        var lightOnly = PreferencesConfig.Instance.RenderOnlyLight;
+
+        var effect = lightOnly
+            ? doOverbright
+                ? doNormals
+                    ? _tileEntityNormalsLightOnlyEffect
+                    : _tileEntityLightOnlyEffect
+                : null
+            : doNormals
+                ? _tileEntityNormalsEffect
+                : null;
+
+        if (effect is null)
+        {
+            return false;
+        }
+
+        if (doNormals)
+        {
+            CalculateSmoothLighting(FancyLightingMod._inCameraMode);
+
+            if (_colors is null)
+            {
+                // I don't know why this can happen
+                return false;
+            }
+
+            var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
+            var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
+            var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+
+            if (doBicubicUpscaling && !_smoothLightingHiResComplete)
+            {
+                var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+                TextureUtils.MakeSize(
+                    ref _tmpTarget,
+                    target.Width,
+                    target.Height,
+                    TextureUtils.ScreenFormat
+                );
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                RenderHiResLighting(_colors);
+                _smoothLightingHiResComplete = true;
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(target);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(_tmpTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+            }
+
+            var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
+            var lightMapScale = doBicubicUpscaling ? 0.25f : 1f;
+            var lightMapTransform = CalculateLightMapMatrixTransform(
+                lightMapTexture,
+                lightMapScale,
+                _lightMapTileArea,
+                Main.Camera.UnscaledPosition
+            );
+            var zoom = Main.GameViewMatrix.Zoom;
+
+            var normalMapResolution = fineNormalMaps ? 1f : 2f;
+            var overbrightMult =
+                doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
+            var normalMapGradientMult = 24f * overbrightMult * zoom;
+            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
+            normalMapMult *= 0.875f;
+            var normalMapStrength = 1f / (1f + normalMapMult);
+
+            effect
+                .SetParameter("LightMapMatrixTransform", lightMapTransform)
+                .SetParameter("Zoom", zoom)
+                .SetParameter("NormalMapResolution", normalMapResolution)
+                .SetParameter("NormalMapGradientMult", normalMapGradientMult)
+                .SetParameter("NormalMapStrength", normalMapStrength);
+
+            MainGraphics.ResetSavedTextures();
+            MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+        }
+
+        SpriteBatchEffectLoader.ApplyEffect(effect);
+        return true;
     }
 
     internal void DrawGlow(
