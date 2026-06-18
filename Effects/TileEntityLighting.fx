@@ -19,7 +19,7 @@ struct VertexShaderInput
 
 struct NormalsVertexShaderOutput
 {
-    float4 Position : SV_POSITION;
+    float4 Position : SV_Position;
     float4 Color : COLOR0;
     float2 TexCoord : TEXCOORD0;
     float2 LightMapTexCoord : TEXCOORD1;
@@ -78,28 +78,31 @@ float2 Gradient(
 
 // Intentionally use gamma values for simulating normal maps
 
+float SampleForNormal(float2 texCoord, float fallback)
+{
+    float4 color = tex2D(TextureSampler, texCoord);
+    return color.a < 1 ? fallback : saturate(Luma(color.rgb));
+}
+
 float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff)
 {
-    float leftLuma
-        = saturate(Luma(tex2D(TextureSampler, texCoord - float2(diff.x, 0)).rgb));
-    float rightLuma
-        = saturate(Luma(tex2D(TextureSampler, texCoord + float2(diff.x, 0)).rgb));
-    float upLuma
-        = saturate(Luma(tex2D(TextureSampler, texCoord - float2(0, diff.y)).rgb));
-    float downLuma
-        = saturate(Luma(tex2D(TextureSampler, texCoord + float2(0, diff.y)).rgb));
+    float4 color = tex2D(TextureSampler, texCoord);
+    float luma = saturate(Luma(color.rgb));
+    
+    float leftLuma = SampleForNormal(texCoord - float2(diff.x, 0), luma);
+    float rightLuma = SampleForNormal(texCoord + float2(diff.x, 0), luma);
+    float upLuma = SampleForNormal(texCoord - float2(0, diff.y), luma);
+    float downLuma = SampleForNormal(texCoord + float2(0, diff.y), luma);
     float positiveDiagonal
-        = saturate(Luma(tex2D(TextureSampler, texCoord - diff).rgb)) // up left
-        - saturate(Luma(tex2D(TextureSampler, texCoord + diff).rgb)); // down right
+        = SampleForNormal(texCoord - diff, luma) // up left
+        - SampleForNormal(texCoord + diff, luma); // down right
     float negativeDiagonal
-        = saturate(Luma(tex2D(TextureSampler, texCoord - float2(diff.x, -diff.y)).rgb)) // down left
-        - saturate(Luma(tex2D(TextureSampler, texCoord + float2(diff.x, -diff.y)).rgb)); // up right
+        = SampleForNormal(texCoord - float2(diff.x, -diff.y), luma) // down left
+        - SampleForNormal(texCoord + float2(diff.x, -diff.y), luma); // up right
 
     float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
-    float4 color = tex2D(TextureSampler, texCoord);
-    float luma = saturate(Luma(color.rgb));
     float maxLuma = max(
         luma,
         max(max(leftLuma, rightLuma), max(upLuma, downLuma))
