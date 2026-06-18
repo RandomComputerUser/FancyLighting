@@ -438,11 +438,6 @@ float4 InverseOverbrightMaxHiDef(float2 coords : TEXCOORD0) : COLOR0
     return texColor / float4(max(lightColor, 1), 1);
 }
 
-float4 LightOnly(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
-{
-    return color * tex2D(TextureSampler, coords).a;
-}
-
 float4 Brighten(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     color.rgb *= BrightnessMult;
@@ -594,11 +589,6 @@ technique Technique1
     pass InverseOverbrightMaxHiDef
     {
         PixelShader = compile ps_3_0 InverseOverbrightMaxHiDef();
-    }
-
-    pass LightOnly
-    {
-        PixelShader = compile ps_3_0 LightOnly();
     }
 
     pass Brighten

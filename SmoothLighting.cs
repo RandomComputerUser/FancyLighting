@@ -50,10 +50,11 @@ public sealed class SmoothLighting
     private Shader _overbrightLightOnlyOpaqueAmbientOcclusionShader;
     private Shader _overbrightMaxShader;
     private Shader _inverseOverbrightMaxHiDefShader;
-    private Shader _lightOnlyShader;
     private Shader _brightenShader;
     private Shader _glowMaskShader;
     private Shader _enhancedGlowMaskShader;
+
+    private SpriteBatchEffect _lightOnlyEffect;
 
     /// <summary>
     /// Modify the lighting of a tile.
@@ -223,10 +224,6 @@ public sealed class SmoothLighting
             "FancyLighting/Effects/LightRendering",
             "InverseOverbrightMaxHiDef"
         );
-        _lightOnlyShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "LightOnly"
-        );
         _brightenShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "Brighten"
@@ -238,6 +235,11 @@ public sealed class SmoothLighting
         _enhancedGlowMaskShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "EnhancedGlowMask"
+        );
+
+        _lightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/TileEntityLighting",
+            "LightOnly"
         );
     }
 
@@ -267,15 +269,16 @@ public sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueAmbientOcclusionShader);
         EffectLoader.UnloadEffect(ref _overbrightMaxShader);
         EffectLoader.UnloadEffect(ref _inverseOverbrightMaxHiDefShader);
-        EffectLoader.UnloadEffect(ref _lightOnlyShader);
         EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
+        SpriteBatchEffectLoader.UnloadEffect(ref _lightOnlyEffect);
     }
 
     internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
 
-    internal void ApplyLightOnlyShader() => _lightOnlyShader.Apply();
+    internal void ApplyLightOnlyEffect() =>
+        SpriteBatchEffectLoader.ApplyEffect(_lightOnlyEffect);
 
     internal void ApplyBrightenShader(float brightness) =>
         _brightenShader.SetParameter("BrightnessMult", brightness).Apply();

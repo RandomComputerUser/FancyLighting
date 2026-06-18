@@ -994,8 +994,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
+        _smoothLightingInstance.ApplyLightOnlyEffect();
+
         Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
+            SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             Main.DefaultSamplerState,
             DepthStencilState.None,
@@ -1003,8 +1005,6 @@ public sealed class FancyLightingMod : Mod
             null,
             Main.Transform
         );
-
-        _smoothLightingInstance.ApplyLightOnlyShader();
 
         TileDrawingAccessors.DrawMultiTileVines(self);
         TileDrawingAccessors.DrawMultiTileGrass(self);
@@ -1019,6 +1019,8 @@ public sealed class FancyLightingMod : Mod
         TileDrawingAccessors.DrawCustom(self, false);
 
         Main.spriteBatch.End();
+
+        SpriteBatchEffectLoader.ClearEffect();
     }
 
     // Liquids
