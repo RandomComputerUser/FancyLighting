@@ -32,4 +32,11 @@ internal static class BlendStates
             AlphaDestinationBlend = Blend.One,
             AlphaSourceBlend = Blend.Zero,
         };
+
+    internal static void Unload()
+    {
+        Multiply = null;
+        MultiplyColor = null;
+        MultiplyColorByAlpha = null;
+    }
 }

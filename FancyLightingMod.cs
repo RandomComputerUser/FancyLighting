@@ -211,6 +211,7 @@ public sealed class FancyLightingMod : Mod
             PerformanceTracker.Unload();
             PresetOptions.Unload();
 
+            BlendStates.Unload();
             MainGraphics.Unload();
             SpriteBatchEffectLoader.Unload();
         });
