@@ -53,8 +53,6 @@ public sealed class FancyLightingMod : Mod
     private RenderTarget2D _backgroundTarget;
     private RenderTarget2D _cameraModeBackgroundTarget;
 
-    private SpriteBatchEffect _extractFullbrightEffect;
-
     private bool OverrideLightColor
     {
         get => _overrideLightColor;
@@ -159,7 +157,6 @@ public sealed class FancyLightingMod : Mod
         _doingFilterManagerCapture = false;
 
         SpriteBatchEffectLoader.Load();
-        MainGraphics.Load();
 
         _smoothLightingInstance = new();
         _ambientOcclusionInstance = new();
@@ -167,11 +164,6 @@ public sealed class FancyLightingMod : Mod
         _postProcessingInstance = new();
         _fancySkyColorsInstance = new();
         _fancySkyRenderingInstance = new();
-
-        _extractFullbrightEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileLighting",
-            "ExtractFullbright"
-        );
 
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
@@ -209,8 +201,6 @@ public sealed class FancyLightingMod : Mod
             _fancyLightingEngineInstance?.Unload();
             _ambientOcclusionInstance?.Unload();
             _smoothLightingInstance?.Unload();
-
-            SpriteBatchEffectLoader.UnloadEffect(ref _extractFullbrightEffect);
 
             SettingsSystem.EnsureRenderTargets(true);
 
@@ -1060,7 +1050,8 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.waterTarget;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1350,18 +1341,12 @@ public sealed class FancyLightingMod : Mod
 
     private static void _Main_RenderBlack(On_Main.orig_RenderBlack orig, Main self)
     {
-        MainGraphics.DisableRenderTargetsOverride = true;
-        try
+        if (_suppressRenderBlack)
         {
-            if (!_suppressRenderBlack)
-            {
-                orig(self);
-            }
+            return;
         }
-        finally
-        {
-            MainGraphics.DisableRenderTargetsOverride = false;
-        }
+
+        orig(self);
     }
 
     // Non-moving objects (tiles, walls, etc.)
@@ -1376,8 +1361,8 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.instance.tileTarget;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var optimizedGlowMasks =
-            useGlowMasks && !CompatibilityConfig.Instance.GlowEffectCompatibilityFixes;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1395,17 +1380,7 @@ public sealed class FancyLightingMod : Mod
                 tileTarget.Height,
                 TextureUtils.ScreenFormat
             );
-            TextureUtils.MakeSize(
-                ref _tmpTarget3,
-                tileTarget.Width,
-                tileTarget.Height,
-                TextureUtils.ScreenFormat
-            );
-        }
 
-        if (optimizedGlowMasks)
-        {
-            MainGraphics.SetRenderTargetsOverride(_tmpTarget1);
             UseBlackLights = true;
             _preventTileParticles = true;
             _suppressRenderBlack = true;
@@ -1418,51 +1393,27 @@ public sealed class FancyLightingMod : Mod
                 _suppressRenderBlack = false;
                 _preventTileParticles = false;
                 UseBlackLights = false;
-                MainGraphics.ResetRenderTargetsOverride();
             }
 
-            MainGraphics.SetRenderTargetsOverride(_tmpTarget3, tileTarget);
-            SpriteBatchEffectLoader.ApplyEffect(_extractFullbrightEffect);
-            _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
-            try
-            {
-                orig(self);
-            }
-            finally
-            {
-                _makePartialLiquidTranslucent = false;
-                SpriteBatchEffectLoader.ClearEffect();
-                MainGraphics.ResetRenderTargetsOverride();
-            }
-        }
-        else
-        {
-            if (useGlowMasks)
-            {
-                UseBlackLights = true;
-                _preventTileParticles = true;
-                _suppressRenderBlack = true;
-                try
-                {
-                    orig(self);
-                }
-                finally
-                {
-                    _suppressRenderBlack = false;
-                    _preventTileParticles = false;
-                    UseBlackLights = false;
-                }
+            Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget1);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
 
-                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget1);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.Opaque,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
+            if (enhancedGlowMasks)
+            {
+                TextureUtils.MakeSize(
+                    ref _tmpTarget3,
+                    tileTarget.Width,
+                    tileTarget.Height,
+                    TextureUtils.ScreenFormat
                 );
-                Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
 
                 orig(self);
 
@@ -1477,22 +1428,22 @@ public sealed class FancyLightingMod : Mod
                 Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
             }
+        }
 
-            OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
-            _preventTileParticles = true;
-            _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
-            _suppressRenderBlack = true;
-            try
-            {
-                orig(self);
-            }
-            finally
-            {
-                _suppressRenderBlack = false;
-                _makePartialLiquidTranslucent = false;
-                _preventTileParticles = false;
-                OverrideLightColor = false;
-            }
+        OverrideLightColor = _smoothLightingInstance.CanDrawSmoothLighting;
+        _preventTileParticles = enhancedGlowMasks;
+        _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
+        _suppressRenderBlack = enhancedGlowMasks;
+        try
+        {
+            orig(self);
+        }
+        finally
+        {
+            _suppressRenderBlack = false;
+            _makePartialLiquidTranslucent = false;
+            _preventTileParticles = false;
+            OverrideLightColor = false;
         }
 
         if (Main.drawToScreen)
@@ -1513,7 +1464,11 @@ public sealed class FancyLightingMod : Mod
         }
 
         Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        _smoothLightingInstance.DrawGlow(_tmpTarget2, _tmpTarget1, _tmpTarget3);
+        _smoothLightingInstance.DrawGlow(
+            _tmpTarget2,
+            _tmpTarget1,
+            enhancedGlowMasks ? _tmpTarget3 : null
+        );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
@@ -1527,7 +1482,8 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.instance.tile2Target;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1658,7 +1614,8 @@ public sealed class FancyLightingMod : Mod
 
         var tileTarget = Main.instance.wallTarget;
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -2033,7 +1990,8 @@ public sealed class FancyLightingMod : Mod
         }
 
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting(true);
 
@@ -2158,7 +2116,8 @@ public sealed class FancyLightingMod : Mod
         }
 
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting(true);
 
@@ -2299,7 +2258,8 @@ public sealed class FancyLightingMod : Mod
         }
 
         var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
-        var enhancedGlowMasks = LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+        var enhancedGlowMasks =
+            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
         _smoothLightingInstance.CalculateSmoothLighting(true);
 

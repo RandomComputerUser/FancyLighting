@@ -1,11 +1,4 @@
-CompatibilityConfig: {
-	DisplayName: Compatibility Settings
-
-	GlowEffectCompatibilityFixes: {
-		Label: Glow Effect Compatibility Fixes
-		Tooltip: ""
-	}
-}
+CompatibilityConfig.DisplayName: Compatibility Settings
 
 PreferencesConfig: {
 	DisplayName: Preferences

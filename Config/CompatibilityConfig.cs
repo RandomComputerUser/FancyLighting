@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Terraria.ModLoader.Config;
+﻿using Terraria.ModLoader.Config;
 
 namespace FancyLighting.Config;
 
@@ -9,7 +8,4 @@ public sealed class CompatibilityConfig : ModConfig
 
     // Handled automatically by tModLoader
     public static CompatibilityConfig Instance;
-
-    [DefaultValue(DefaultOptions.GlowEffectCompatibilityFixes)]
-    public bool GlowEffectCompatibilityFixes { get; set; }
 }

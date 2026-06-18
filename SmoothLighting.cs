@@ -1259,9 +1259,6 @@ public sealed class SmoothLighting
         _finalLights = null; // Save some memory
 
         var brightness = Lighting.GlobalBrightness;
-        var actuatedBrightness = CompatibilityConfig.Instance.GlowEffectCompatibilityFixes
-            ? 1f
-            : 0.4f;
         var shimmerAlpha = Main.shimmerAlpha;
         Main.shimmerAlpha = 0f;
         if (TileLightModifiers is null)
@@ -1294,14 +1291,6 @@ public sealed class SmoothLighting
                             if (tile.HasTile)
                             {
                                 TileShine(ref lightColor, tile, myShimmerAlpha);
-                                if (tile.IsActuated)
-                                {
-                                    Vector3.Multiply(
-                                        ref lightColor,
-                                        actuatedBrightness,
-                                        out lightColor
-                                    );
-                                }
                             }
 
                             ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
@@ -1347,15 +1336,6 @@ public sealed class SmoothLighting
                             {
                                 TileShine(ref lightColor, tile, shimmerAlpha);
                             }
-
-                            if (tile.IsActuated)
-                            {
-                                Vector3.Multiply(
-                                    ref lightColor,
-                                    actuatedBrightness,
-                                    out lightColor
-                                );
-                            }
                         }
 
                         ColorUtils.Assign(ref _finalLightsHiDef[i++], lightColor);
@@ -1399,9 +1379,6 @@ public sealed class SmoothLighting
         _finalLightsHiDef = null; // Save some memory
 
         var brightness = Lighting.GlobalBrightness;
-        var actuatedBrightness = CompatibilityConfig.Instance.GlowEffectCompatibilityFixes
-            ? 1f
-            : 0.4f;
         var shimmerAlpha = Main.shimmerAlpha;
         Main.shimmerAlpha = 0f;
         if (TileLightModifiers is null)
@@ -1434,14 +1411,6 @@ public sealed class SmoothLighting
                             if (tile.HasTile)
                             {
                                 TileShine(ref lightColor, tile, myShimmerAlpha);
-                                if (tile.IsActuated)
-                                {
-                                    Vector3.Multiply(
-                                        ref lightColor,
-                                        actuatedBrightness,
-                                        out lightColor
-                                    );
-                                }
                             }
 
                             ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
@@ -1486,15 +1455,6 @@ public sealed class SmoothLighting
                             else
                             {
                                 TileShine(ref lightColor, tile, shimmerAlpha);
-                            }
-
-                            if (tile.IsActuated)
-                            {
-                                Vector3.Multiply(
-                                    ref lightColor,
-                                    actuatedBrightness,
-                                    out lightColor
-                                );
                             }
                         }
 
