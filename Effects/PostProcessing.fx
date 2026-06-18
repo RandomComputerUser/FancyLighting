@@ -240,8 +240,9 @@ float4 ToneMapNeutralLms(float2 coords : TEXCOORD0) : COLOR0
 float4 ToneMapNeutralLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    // Color grade before tone mapping to prevent artifacts caused by out-of-gamut colors
+    color.rgb = MakeVibrant(max(color.rgb, 0.0));
     color.rgb = ToneMapColorNeutralLms(color.rgb);
-    color.rgb = saturate(MakeVibrant(color.rgb));
     return color;
 }
 
