@@ -1,13 +1,13 @@
 ﻿namespace FancyLighting.Utils;
 
-internal class Shader
+internal sealed class Shader
 {
-    protected Effect Effect { get; init; }
+    private Effect Effect { get; init; }
 
-    private EffectPass _shader;
-    private EffectPass _hiDefShader;
+    private readonly EffectPass _shader;
+    private readonly EffectPass _hiDefShader;
 
-    protected EffectPass EffectPass =>
+    private EffectPass EffectPass =>
         _hiDefShader is not null
         && LightingConfig.Instance.HiDefFeaturesEnabled()
         && !Main.gameMenu

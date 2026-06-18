@@ -6,6 +6,9 @@ public static class DefaultOptions
 {
     public const SettingsPreset QualityPreset = SettingsPreset.MediumPreset;
 
+    // Compatibility Settings
+    public const bool GlowEffectCompatibilityFixes = false;
+
     // General Preferences
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
     public const int MinThreadCount = 1;

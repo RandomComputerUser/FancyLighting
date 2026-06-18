@@ -1,3 +1,12 @@
+CompatibilityConfig: {
+	DisplayName: Compatibility Settings
+
+	GlowEffectCompatibilityFixes: {
+		Label: Glow Effect Compatibility Fixes
+		Tooltip: ""
+	}
+}
+
 PreferencesConfig: {
 	DisplayName: Preferences
 
