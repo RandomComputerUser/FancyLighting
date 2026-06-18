@@ -76,9 +76,14 @@ internal static class LightsCompatibility
         _hook_NewScreenTarget?.Dispose();
         _hook_UseLightAndShadow?.Dispose();
         _hook_UseBloom?.Dispose();
-
         _lightsTarget1?.Dispose();
         _lightsTarget2?.Dispose();
+
+        _hook_NewScreenTarget = null;
+        _hook_UseLightAndShadow = null;
+        _hook_UseBloom = null;
+        _lightsTarget1 = null;
+        _lightsTarget2 = null;
     }
 
     private delegate void orig_NewScreenTarget(object self);

@@ -97,6 +97,9 @@ internal static class CalamityModCompatibility
     {
         _ilHook_NewThreshold?.Dispose();
         _ilHook_ChangeBlackThreshold_Delegate?.Dispose();
+
+        _ilHook_NewThreshold = null;
+        _ilHook_ChangeBlackThreshold_Delegate = null;
     }
 
     private static void IL_NewThreshold(ILContext context)
