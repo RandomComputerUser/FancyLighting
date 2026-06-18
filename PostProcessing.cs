@@ -5,10 +5,9 @@ namespace FancyLighting;
 
 public sealed class PostProcessing
 {
-    // Update FancyLightingMod._WorldMap_UpdateLighting() if this changes
+    // Update FancyLightingMod.IL_WorldMap_UpdateLighting() if this changes
     internal const float HiDefBrightnessScale = 0.5f;
 
-    // Update FancyLightingMod.IL_TileLightScanner_ApplySurfaceLight_ApplyHellLight if this is changed to not be a const or readonly
     internal const float HiDefBackgroundBrightnessMult = 1.5f;
     private const float UnderworldBackgroundBrightnessMult = 1.2f;
 
