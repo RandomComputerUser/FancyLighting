@@ -18,8 +18,6 @@ For the best performance, try lowering the in-game resolution to either 1920x108
 
 [b]If you enter a world with this mod disabled and then later enable this mod, there may be graphical glitches. It is recommended to have this mod enabled before entering any worlds after launching tModLoader.[/b]
 
-If you are using full HDR rendering and experiencing graphical glitches with other mods, try enabling the settings labeled 'Full HDRR Mod Compatibility Fixes' and 'Disable HDRR During Boss Fights and Events' in the Preferences config.
-
 [h2]GitHub[/h2]
 
 You may report issues, download old releases, and view the source code on [url=https://github.com/RandomComputerUser/FancyLighting]the GitHub repository[/url].

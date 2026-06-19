@@ -989,7 +989,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
-            && PreferencesConfig.Instance.RenderOnlyLight
+            && DeveloperConfig.Instance.RenderOnlyLight
             && !LightingConfig.Instance.DrawOverbright()
         )
         {
@@ -1003,7 +1003,7 @@ public sealed class FancyLightingMod : Mod
             !LightingConfig.Instance.SmoothLightingEnabled()
             || (
                 SpiritReforgedCompatibility._disableCustomLiquidRendering
-                && !PreferencesConfig.Instance.RenderOnlyLight
+                && !DeveloperConfig.Instance.RenderOnlyLight
             )
         )
         {
@@ -1012,7 +1012,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.waterTarget;
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -1135,7 +1135,7 @@ public sealed class FancyLightingMod : Mod
     {
         if (
             LightingConfig.Instance.SmoothLightingEnabled()
-            && PreferencesConfig.Instance.RenderOnlyLight
+            && DeveloperConfig.Instance.RenderOnlyLight
             && !LightingConfig.Instance.DrawOverbright()
         )
         {
@@ -1149,7 +1149,7 @@ public sealed class FancyLightingMod : Mod
             || UseBlackLights
             || (
                 SpiritReforgedCompatibility._disableCustomLiquidRendering
-                && !PreferencesConfig.Instance.RenderOnlyLight
+                && !DeveloperConfig.Instance.RenderOnlyLight
             )
         )
         {
@@ -1177,7 +1177,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (PreferencesConfig.Instance.RenderOnlyLight)
+        if (DeveloperConfig.Instance.RenderOnlyLight)
         {
             Main.graphics.GraphicsDevice.SetRenderTarget(Main.instance.backgroundTarget);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
@@ -1221,7 +1221,7 @@ public sealed class FancyLightingMod : Mod
         if (
             _inCameraMode
             && LightingConfig.Instance.SmoothLightingEnabled()
-            && PreferencesConfig.Instance.RenderOnlyLight
+            && DeveloperConfig.Instance.RenderOnlyLight
         )
         {
             return;
@@ -1285,7 +1285,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (PreferencesConfig.Instance.RenderOnlyLight)
+        if (DeveloperConfig.Instance.RenderOnlyLight)
         {
             return;
         }
@@ -1323,7 +1323,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tileTarget;
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -1444,7 +1444,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.tile2Target;
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -1566,7 +1566,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         if (
-            PreferencesConfig.Instance.RenderOnlyLight
+            DeveloperConfig.Instance.RenderOnlyLight
             && !LightingConfig.Instance.DrawOverbright()
         )
         {
@@ -1577,7 +1577,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         var tileTarget = Main.instance.wallTarget;
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -1861,8 +1861,10 @@ public sealed class FancyLightingMod : Mod
         );
         orig(self);
 
-        // frame timing optimization
-        Main.renderCount = 2;
+        if (!CompatibilityConfig.Instance.DisableFrameTimingOptimizations)
+        {
+            Main.renderCount = 2;
+        }
     }
 
     private void _LightMap_Blur(On_LightMap.orig_Blur orig, LightMap self)
@@ -1972,7 +1974,7 @@ public sealed class FancyLightingMod : Mod
             || !LightingConfig.Instance.SmoothLightingEnabled()
             || (
                 SpiritReforgedCompatibility._disableCustomLiquidRendering
-                && !PreferencesConfig.Instance.RenderOnlyLight
+                && !DeveloperConfig.Instance.RenderOnlyLight
             )
         )
         {
@@ -1981,14 +1983,14 @@ public sealed class FancyLightingMod : Mod
         }
 
         if (
-            PreferencesConfig.Instance.RenderOnlyLight
+            DeveloperConfig.Instance.RenderOnlyLight
             && !LightingConfig.Instance.DrawOverbright()
         )
         {
             return;
         }
 
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -2081,11 +2083,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (
-            doSmoothLighting
-            && PreferencesConfig.Instance.RenderOnlyLight
-            && !doOverbright
-        )
+        if (doSmoothLighting && DeveloperConfig.Instance.RenderOnlyLight && !doOverbright)
         {
             return;
         }
@@ -2118,7 +2116,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 
@@ -2255,7 +2253,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var useGlowMasks = !PreferencesConfig.Instance.RenderOnlyLight;
+        var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
 

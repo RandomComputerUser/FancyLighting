@@ -138,7 +138,7 @@ public sealed class FancySkyColors
     internal void DrawColorProfiles()
     {
         if (
-            PreferencesConfig.Instance?.ShowFancySkyColorGradients is not true
+            DeveloperConfig.Instance?.ShowFancySkyColorGradients is not true
             || Main.gameMenu
             || Main.gamePaused
             || Main.mapFullscreen

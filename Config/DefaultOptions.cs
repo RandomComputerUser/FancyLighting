@@ -6,6 +6,16 @@ public static class DefaultOptions
 {
     public const SettingsPreset QualityPreset = SettingsPreset.MediumPreset;
 
+    // Compatibility Settings
+    public const bool DisableHdrDuringBossFights = false;
+    public const bool UseHdrCompatibilityFixes = false;
+    public const bool DisableFrameTimingOptimizations = false;
+
+    // Developer Settings
+    public const bool MonitorPerformance = false;
+    public const bool RenderOnlyLight = false;
+    public const bool ShowFancySkyColorGradients = false;
+
     // General Preferences
     public const int ThreadCount = -1; // Used for the DefaultValue attribute in PreferencesConfig
     public const int MinThreadCount = 1;
@@ -13,9 +23,8 @@ public static class DefaultOptions
     public const int MaxDefaultThreadCount = 16;
     public static int RuntimeDefaultThreadCount =>
         Math.Clamp(Environment.ProcessorCount, MinThreadCount, MaxDefaultThreadCount);
-    public const bool MonitorPerformance = false;
 
-    // Tone Mapping Preferences
+    // Color Management Preferences
     public const int Gamma = 220;
     public const bool UseSrgb = false;
 
@@ -32,9 +41,7 @@ public static class DefaultOptions
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 3;
     public const bool FineNormalMaps = false;
-    public const bool DisableHdrDuringBossFights = false;
     public const bool UseGrayscaleLighting = false;
-    public const bool RenderOnlyLight = false;
 
     // Full HDR Rendering Preferences
     public const int Exposure = 100;
@@ -43,7 +50,6 @@ public static class DefaultOptions
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
     public const int BloomStrength = 6;
-    public const bool UseHdrCompatibilityFixes = false;
 
     // Ambient Occlusion
     public const bool UseAmbientOcclusion = true;
@@ -76,5 +82,4 @@ public static class DefaultOptions
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
     public const bool DepthOfField = false;
     public const int DepthOfFieldRadius = 2;
-    public const bool ShowFancySkyColorGradients = false;
 }

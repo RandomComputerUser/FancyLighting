@@ -1,10 +1,81 @@
-CompatibilityConfig.DisplayName: Compatibility Settings
+CompatibilityConfig: {
+	DisplayName: Compatibility Settings
+
+	Headers: {
+		SmoothLighting: Smooth Lighting
+		FullHdrRendering: Full HDR Rendering
+		FancyLightingEngine: Fancy Lighting Engine
+	}
+
+	DisableHdrDuringBossFights: {
+		Label: Disable HDRR During Boss Fights and Events
+		Tooltip:
+			'''
+			Disable HDR rendering during boss fights and events
+
+			May prevent visual issues with some modded boss fights
+			Affects bosses with a boss health bar and events with a progress bar
+			'''
+	}
+
+	UseHdrCompatibilityFixes: {
+		Label: Full HDRR Mod Compatibility Fixes
+		Tooltip:
+			'''
+			Enable fixes that may improve mod compatibility when using full HDR rendering
+
+			May prevent some visual issues when using other mods
+			Has a small impact on visuals and performance
+			'''
+	}
+
+	DisableFrameTimingOptimizations: {
+		Label: Disable Frame Timing Optimizations
+		Tooltip: Disable frame timing optimizations used by the Fancy Lighting Engine
+	}
+}
+
+DeveloperConfig: {
+	DisplayName: Developer Settings
+
+	Headers: {
+		General: General
+		SmoothLighting: Smooth Lighting
+		FancySky: Fancy Sky
+	}
+
+	MonitorPerformance: {
+		Label: Performance Monitor
+		Tooltip:
+			'''
+			Collect and display performance statistics
+
+			Prints statistics every 10 seconds
+			'''
+	}
+
+	RenderOnlyLight: {
+		Label: Show Light Colors
+		Tooltip: Display light colors directly without tile and wall textures
+	}
+
+	ShowFancySkyColorGradients: {
+		Label: Show Fancy Sky Color Gradients
+		Tooltip:
+			'''
+			Show the color gradients used by Fancy Sky
+
+			Obscures a large part of the screen
+			'''
+	}
+}
 
 PreferencesConfig: {
 	DisplayName: Preferences
 
 	Headers: {
-		ToneMapping: Tone Mapping
+		General: General
+		ColorManagement: Color Management
 		SmoothLighting: Smooth Lighting
 		FullHdrRendering: Full HDR Rendering
 		AmbientOcclusion: Ambient Occlusion
@@ -26,17 +97,7 @@ PreferencesConfig: {
 			'''
 	}
 
-	MonitorPerformance: {
-		Label: (Debug) Performance Monitor
-		Tooltip:
-			'''
-			Collect and display performance statistics
-
-			Prints statistics every 10 seconds
-			'''
-	}
-
-	# Tone Mapping
+	# Color Management
 	
 	Gamma: {
 		Label: Gamma (%)
@@ -88,17 +149,6 @@ PreferencesConfig: {
 			'''
 	}
 
-	DisableHdrDuringBossFights: {
-		Label: Disable HDRR During Boss Fights and Events
-		Tooltip:
-			'''
-			Disable HDR rendering during boss fights and events
-
-			May prevent visual issues with some modded boss fights
-			Affects bosses with a boss health bar and events with a progress bar
-			'''
-	}
-
 	UseGrayscaleLighting: {
 		Label: Grayscale Lighting
 		Tooltip:
@@ -107,11 +157,6 @@ PreferencesConfig: {
 
 			Enable to remove all color from light
 			'''
-	}
-
-	RenderOnlyLight: {
-		Label: (Debug) Show Light Colors
-		Tooltip: Display light colors directly without tile and wall textures
 	}
 
 	# Full HDR Rendering
@@ -176,17 +221,6 @@ PreferencesConfig: {
 
 			Higher values result in a brighter glow around bright objects
 			Bloom must be enabled for this setting to have any effect
-			'''
-	}
-
-	UseHdrCompatibilityFixes: {
-		Label: Full HDRR Mod Compatibility Fixes
-		Tooltip:
-			'''
-			Enable fixes that may improve mod compatibility when using full HDR rendering
-
-			May prevent some visual issues when using other mods
-			Has a small impact on visuals and performance
 			'''
 	}
 
@@ -309,16 +343,6 @@ PreferencesConfig: {
 			Depth of field must be enabled for this setting to have any effect
 			'''
 	}
-
-	ShowFancySkyColorGradients: {
-		Label: (Debug) Show Fancy Sky Color Gradients
-		Tooltip:
-			'''
-			Show the color gradients used by Fancy Sky
-
-			Obscures a large part of the screen
-			'''
-	}
 }
 
 LightingConfig: {
@@ -410,6 +434,7 @@ LightingConfig: {
 			Use a more accurate technique to render glow effects
 
 			When disabled, glow effect brightness may differ from vanilla
+			[c/FFF014:Has a high impact on performance]
 			'''
 	}
 
@@ -421,6 +446,7 @@ LightingConfig: {
 
 			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
+			[c/FFF014:Has a very high impact on performance]
 			'''
 	}
 
@@ -490,6 +516,7 @@ LightingConfig: {
 			The quality of the light spreading algorithm
 
 			Primarily affects shadow accuracy
+			[c/FFF014:Has a medium-high impact on performance]
 			'''
 	}
 

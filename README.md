@@ -21,5 +21,9 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added tile entity normal maps
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
+- Created two new configs: "Compatibility Settings" and "Developer Settings"
+- Some settings from the "Preferences" config have been moved to the new configs
+- Added tooltip lines to settings that have a high impact on performance
+- Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Made some minor optimizations
 - Improved unloading

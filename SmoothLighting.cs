@@ -1760,7 +1760,7 @@ public sealed class SmoothLighting
         var simulateNormalMaps =
             !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
-        var lightOnly = PreferencesConfig.Instance.RenderOnlyLight;
+        var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var doOneStepOnly = !(simulateNormalMaps || doOverbright);
         var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
@@ -1962,7 +1962,7 @@ public sealed class SmoothLighting
         var doNormals =
             LightingConfig.Instance.SimulateNormalMaps
             && LightingConfig.Instance.SimulateTileEntityNormals;
-        var lightOnly = PreferencesConfig.Instance.RenderOnlyLight;
+        var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
 
         var effect = lightOnly
             ? doOverbright

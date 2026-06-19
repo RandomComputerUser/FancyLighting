@@ -46,6 +46,9 @@ public sealed class PreferencesConfig : ModConfig
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
     }
 
+    // General
+
+    [Header("General")]
     [Range(DefaultOptions.MinThreadCount, DefaultOptions.MaxThreadCount)]
     [Increment(1)]
     [DefaultValue(DefaultOptions.ThreadCount)]
@@ -63,12 +66,9 @@ public sealed class PreferencesConfig : ModConfig
 
     private int _threadCount;
 
-    [DefaultValue(DefaultOptions.MonitorPerformance)]
-    public bool MonitorPerformance { get; set; }
+    // Color Management
 
-    // Tone Mapping
-
-    [Header("ToneMapping")]
+    [Header("ColorManagement")]
     [Range(140, 300)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.Gamma)]
@@ -89,14 +89,8 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FineNormalMaps)]
     public bool FineNormalMaps { get; set; }
 
-    [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
-    public bool DisableHdrDuringBossFights { get; set; }
-
     [DefaultValue(DefaultOptions.UseGrayscaleLighting)]
     public bool UseGrayscaleLighting { get; set; }
-
-    [DefaultValue(DefaultOptions.RenderOnlyLight)]
-    public bool RenderOnlyLight { get; set; }
 
     // Full HDR Rendering
 
@@ -128,9 +122,6 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
     public int BloomStrength { get; set; }
-
-    [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
-    public bool UseHdrCompatibilityFixes { get; set; }
 
     // Ambient Occlusion
 
@@ -196,7 +187,4 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     [DrawTicks]
     public int DepthOfFieldRadius { get; set; }
-
-    [DefaultValue(DefaultOptions.ShowFancySkyColorGradients)]
-    public bool ShowFancySkyColorGradients { get; set; }
 }

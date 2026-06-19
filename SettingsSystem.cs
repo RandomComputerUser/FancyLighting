@@ -44,8 +44,7 @@ internal sealed class SettingsSystem : ModSystem
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
-        PerformanceTracker.Enabled =
-            PreferencesConfig.Instance?.MonitorPerformance is true;
+        PerformanceTracker.Enabled = DeveloperConfig.Instance?.MonitorPerformance is true;
 
         var needsPostProcessing = NeedsPostProcessing(true) || NeedsCapture();
         if (needsPostProcessing && !_prevNeedsPostProcessing)
@@ -128,11 +127,11 @@ internal sealed class SettingsSystem : ModSystem
         ) || PreferencesConfig.Instance?.DepthOfField is true;
 
     internal static bool HdrCompatibilityEnabled() =>
-        PreferencesConfig.Instance.UseHdrCompatibilityFixes
-        && LightingConfig.Instance.HiDefFeaturesEnabled();
+        CompatibilityConfig.Instance?.UseHdrCompatibilityFixes is true
+        && LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
 
     internal static bool HdrDisabled() =>
-        PreferencesConfig.Instance?.DisableHdrDuringBossFights is true
+        CompatibilityConfig.Instance?.DisableHdrDuringBossFights is true
         && (IsBossFightOccurring() || IsEventOccurring());
 
     private static void DoNothing() { }
