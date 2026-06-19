@@ -96,7 +96,7 @@ public sealed class FancySkyRendering
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
-        var rasterizerState = FancyLightingMod._inCameraMode
+        var rasterizerState = FancyLightingMod._isGameInCameraMode
             ? RasterizerState.CullNone
             : Main.Rasterizer;
         Main.spriteBatch.End();
@@ -229,12 +229,12 @@ public sealed class FancySkyRendering
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
         var origTransform = transform;
-        var rasterizerState = FancyLightingMod._inCameraMode
+        var rasterizerState = FancyLightingMod._isGameInCameraMode
             ? RasterizerState.CullNone
             : Main.Rasterizer;
         Main.spriteBatch.End();
 
-        if (!Main.gameMenu && !FancyLightingMod._inCameraMode)
+        if (!Main.gameMenu && !FancyLightingMod._isGameInCameraMode)
         {
             // shift sun/moon downward
             transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;

@@ -47,13 +47,7 @@ internal sealed class SettingsSystem : ModSystem
         PerformanceTracker.Enabled =
             PreferencesConfig.Instance?.MonitorPerformance is true;
 
-        var needsPostProcessing =
-            NeedsPostProcessing(true)
-            || (
-                LightingConfig.Instance?.SmoothLightingEnabled() is true
-                && LightingConfig.Instance?.SimulateNormalMaps is true
-                && LightingConfig.Instance?.SimulateTileEntityNormals is true
-            );
+        var needsPostProcessing = NeedsPostProcessing(true) || NeedsCapture();
         if (needsPostProcessing && !_prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw += DoNothing;
@@ -96,6 +90,11 @@ internal sealed class SettingsSystem : ModSystem
         TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
+    internal static bool ModifyCameraModeRendering() =>
+        LightingConfig.Instance?.SmoothLightingEnabled() is true
+        || LightingConfig.Instance?.AmbientOcclusionEnabled() is true
+        || PreferencesConfig.Instance?.DepthOfField is true;
+
     internal static bool PostProcessingAllowed() =>
         !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
@@ -120,6 +119,13 @@ internal sealed class SettingsSystem : ModSystem
                 && LightingConfig.Instance.DrawOverbright()
             )
         );
+
+    private static bool NeedsCapture() =>
+        (
+            LightingConfig.Instance?.SmoothLightingEnabled() is true
+            && LightingConfig.Instance?.SimulateNormalMaps is true
+            && LightingConfig.Instance?.SimulateTileEntityNormals is true
+        ) || PreferencesConfig.Instance?.DepthOfField is true;
 
     internal static bool HdrCompatibilityEnabled() =>
         PreferencesConfig.Instance.UseHdrCompatibilityFixes

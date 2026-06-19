@@ -129,15 +129,6 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     public int BloomStrength { get; set; }
 
-    [DefaultValue(DefaultOptions.DepthOfField)]
-    public bool DepthOfField { get; set; }
-
-    [Range(1, 5)]
-    [DefaultValue(DefaultOptions.DepthOfFieldRadius)]
-    [Slider]
-    [DrawTicks]
-    public int DepthOfFieldRadius { get; set; }
-
     [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
     public bool UseHdrCompatibilityFixes { get; set; }
 
@@ -196,6 +187,15 @@ public sealed class PreferencesConfig : ModConfig
 
     [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
     public SkyColorPreset FancySkyColorsPreset { get; set; }
+
+    [DefaultValue(DefaultOptions.DepthOfField)]
+    public bool DepthOfField { get; set; }
+
+    [Range(1, 5)]
+    [DefaultValue(DefaultOptions.DepthOfFieldRadius)]
+    [Slider]
+    [DrawTicks]
+    public int DepthOfFieldRadius { get; set; }
 
     [DefaultValue(DefaultOptions.ShowFancySkyColorGradients)]
     public bool ShowFancySkyColorGradients { get; set; }

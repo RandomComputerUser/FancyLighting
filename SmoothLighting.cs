@@ -1983,9 +1983,12 @@ public sealed class SmoothLighting
         {
             CalculateSmoothLighting(FancyLightingMod._inCameraMode);
 
-            if (_colors is null)
+            if (
+                _colors is null
+                || !SettingsSystem.PostProcessingAllowed()
+                || !FancyLightingMod._doingFilterManagerCapture
+            )
             {
-                // I don't know why this can happen
                 return false;
             }
 

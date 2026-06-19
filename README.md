@@ -20,5 +20,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Made the "Bicubic" render mode a little brighter
 - Added tile entity normal maps
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
+- Depth of field is no longer exclusive to full HDR rendering
 - Made some minor optimizations
 - Improved unloading

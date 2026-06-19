@@ -330,7 +330,6 @@ public sealed class FancyLightingMod : Mod
         On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
         On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
         On_TileDrawing.DrawPartialLiquid += _TileDrawing_DrawPartialLiquid;
-        On_Main.DrawBG += _Main_DrawBG;
         On_Main.DrawUnderworldBackground += _Main_DrawUnderworldBackground;
         On_Main.DrawSunAndMoon += _Main_DrawSunAndMoon;
         On_TileDrawing.PostDrawTiles += _TileDrawing_PostDrawTiles;
@@ -747,57 +746,6 @@ public sealed class FancyLightingMod : Mod
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
     }
 
-    // Separate background layer (so we don't apply overbright to it)
-
-    private void _Main_DrawBG(On_Main.orig_DrawBG orig, Main self)
-    {
-        orig(self);
-
-        if (
-            !LightingConfig.Instance.OverbrightOverrideBackground()
-            || SettingsSystem.HdrCompatibilityEnabled()
-        )
-        {
-            return;
-        }
-
-        var samplerState = MainGraphics.GetSamplerState();
-        var transform = MainGraphics.GetTransformMatrix();
-        Main.spriteBatch.End();
-
-        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
-        TextureUtils.MakeSize(
-            ref _backgroundTarget,
-            target.Width,
-            target.Height,
-            TextureUtils.ScreenFormat
-        );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            Main.Rasterizer,
-            null,
-            transform
-        );
-    }
-
     private void _Main_DrawUnderworldBackground(
         On_Main.orig_DrawUnderworldBackground orig,
         Main self,
@@ -806,64 +754,42 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, flat);
 
-        if (
-            !_inCameraMode
-            || !LightingConfig.Instance.SmoothLightingEnabled()
-            || !LightingConfig.Instance.DrawOverbright()
-        )
+        var doOverbright =
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright();
+        var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
+
+        if (!_inCameraMode || !(doOverbright || doDepthOfField))
         {
             return;
         }
 
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
+
         Main.spriteBatch.End();
 
-        TextureUtils.MakeSize(
-            ref _cameraModeBackgroundTarget,
-            _cameraModeTarget.Width,
-            _cameraModeTarget.Height,
-            TextureUtils.ScreenFormat
-        );
-
-        if (SettingsSystem.HdrCompatibilityEnabled())
+        if (doDepthOfField && !hiDef)
         {
-            var doDepthOfField =
-                LightingConfig.Instance.HiDefFeaturesEnabled()
-                && PreferencesConfig.Instance.DepthOfField;
+            _postProcessingInstance.Blur(
+                _cameraModeTarget,
+                _cameraModeTarget,
+                PreferencesConfig.Instance.DepthOfFieldRadius
+            );
+        }
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
+        if (doOverbright)
+        {
+            TextureUtils.MakeSize(
+                ref _cameraModeBackgroundTarget,
+                _cameraModeTarget.Width,
+                _cameraModeTarget.Height,
+                TextureUtils.ScreenFormat
             );
 
-            var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
-            if (doDepthOfField)
+            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+            if (hdrCompat)
             {
-                _postProcessingInstance.ApplyGammaShader(
-                    ColorUtils.GammaToLinear(brightness),
-                    PostProcessing.ContentGamma()
-                );
-            }
-            else
-            {
-                _smoothLightingInstance.ApplyBrightenShader(brightness);
-            }
-
-            Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            if (doDepthOfField)
-            {
-                _postProcessingInstance.Blur(
-                    _cameraModeBackgroundTarget,
-                    _cameraModeTarget,
-                    PreferencesConfig.Instance.DepthOfFieldRadius
-                );
-
-                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
                 Main.spriteBatch.Begin(
                     SpriteSortMode.Immediate,
                     BlendState.Opaque,
@@ -871,41 +797,77 @@ public sealed class FancyLightingMod : Mod
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
-                _postProcessingInstance.ApplyGammaShader(
-                    1f,
-                    1f / PostProcessing.ContentGamma()
+
+                var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
+                if (doDepthOfField)
+                {
+                    _postProcessingInstance.ApplyGammaShader(
+                        ColorUtils.GammaToLinear(brightness),
+                        PostProcessing.ContentGamma()
+                    );
+                }
+                else
+                {
+                    _smoothLightingInstance.ApplyBrightenShader(brightness);
+                }
+
+                Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                if (doDepthOfField)
+                {
+                    _postProcessingInstance.Blur(
+                        _cameraModeBackgroundTarget,
+                        _cameraModeTarget,
+                        PreferencesConfig.Instance.DepthOfFieldRadius
+                    );
+
+                    Main.graphics.GraphicsDevice.SetRenderTarget(
+                        _cameraModeBackgroundTarget
+                    );
+                    Main.spriteBatch.Begin(
+                        SpriteSortMode.Immediate,
+                        BlendState.Opaque,
+                        SamplerState.PointClamp,
+                        DepthStencilState.None,
+                        RasterizerState.CullNone
+                    );
+                    _postProcessingInstance.ApplyGammaShader(
+                        1f,
+                        1f / PostProcessing.ContentGamma()
+                    );
+                    Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
+                    Main.spriteBatch.End();
+                }
+
+                _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
+                _smoothLightingInstance.CalculateSmoothLighting(true);
+                _smoothLightingInstance.DrawSmoothLightingCameraMode(
+                    _cameraModeBackgroundTarget,
+                    _cameraModeTarget,
+                    false,
+                    false,
+                    true,
+                    true,
+                    true
+                );
+            }
+            else
+            {
+                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
                 );
                 Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
                 Main.spriteBatch.End();
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             }
-
-            _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
-            _smoothLightingInstance.CalculateSmoothLighting(true);
-            _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                _cameraModeBackgroundTarget,
-                _cameraModeTarget,
-                false,
-                false,
-                true,
-                true,
-                true
-            );
-        }
-        else
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            Main.spriteBatch.Draw(_cameraModeTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
         }
 
         Main.spriteBatch.Begin();
@@ -1749,91 +1711,126 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self);
 
+        var doOverbright =
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright();
+        var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
+
         if (
-            !LightingConfig.Instance.OverbrightOverrideBackground()
-            || !SettingsSystem.HdrCompatibilityEnabled()
-            || _inCameraMode
+            _inCameraMode
+            || !SettingsSystem.PostProcessingAllowed()
+            || !_doingFilterManagerCapture
+            || !(doOverbright || doDepthOfField)
         )
         {
             return;
         }
 
-        var doDepthOfField =
-            LightingConfig.Instance.HiDefFeaturesEnabled()
-            && PreferencesConfig.Instance.DepthOfField;
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+        var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
 
+        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
         Main.spriteBatch.End();
 
-        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
-        TextureUtils.MakeSize(
-            ref _backgroundTarget,
-            target.Width,
-            target.Height,
-            TextureUtils.ScreenFormat
-        );
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-
-        var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
-        if (doDepthOfField)
-        {
-            // not in camera mode
-            // background should never have transparency, so we can use no-alpha shader
-            _postProcessingInstance.ApplyGammaNoAlphaShader(
-                ColorUtils.GammaToLinear(brightness),
-                PostProcessing.ContentGamma()
-            );
-        }
-        else
-        {
-            _smoothLightingInstance.ApplyBrightenShader(brightness);
-        }
-
-        Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        if (doDepthOfField)
+        if (doDepthOfField && !hiDef)
         {
             _postProcessingInstance.Blur(
-                _backgroundTarget,
+                target,
                 target,
                 PreferencesConfig.Instance.DepthOfFieldRadius
             );
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            _postProcessingInstance.ApplyGammaNoAlphaShader(
-                1f,
-                1f / PostProcessing.ContentGamma()
-            );
-            Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting();
-        _smoothLightingInstance.DrawSmoothLighting(
-            _backgroundTarget,
-            target,
-            false,
-            true,
-            true,
-            true
-        );
+        if (doOverbright)
+        {
+            TextureUtils.MakeSize(
+                ref _backgroundTarget,
+                target.Width,
+                target.Height,
+                TextureUtils.ScreenFormat
+            );
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+            if (hdrCompat)
+            {
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Immediate,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+
+                var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
+                if (doDepthOfField)
+                {
+                    // not in camera mode
+                    // background should never have transparency, so we can use no-alpha shader
+                    _postProcessingInstance.ApplyGammaNoAlphaShader(
+                        ColorUtils.GammaToLinear(brightness),
+                        PostProcessing.ContentGamma()
+                    );
+                }
+                else
+                {
+                    _smoothLightingInstance.ApplyBrightenShader(brightness);
+                }
+
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                if (doDepthOfField)
+                {
+                    _postProcessingInstance.Blur(
+                        _backgroundTarget,
+                        target,
+                        PreferencesConfig.Instance.DepthOfFieldRadius
+                    );
+
+                    Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
+                    Main.spriteBatch.Begin(
+                        SpriteSortMode.Immediate,
+                        BlendState.Opaque,
+                        SamplerState.PointClamp,
+                        DepthStencilState.None,
+                        RasterizerState.CullNone
+                    );
+                    _postProcessingInstance.ApplyGammaNoAlphaShader(
+                        1f,
+                        1f / PostProcessing.ContentGamma()
+                    );
+                    Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                    Main.spriteBatch.End();
+                }
+
+                _smoothLightingInstance.CalculateSmoothLighting();
+                _smoothLightingInstance.DrawSmoothLighting(
+                    _backgroundTarget,
+                    target,
+                    false,
+                    true,
+                    true,
+                    true
+                );
+            }
+            else
+            {
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(target);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            }
+        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -1947,7 +1944,7 @@ public sealed class FancyLightingMod : Mod
         TextureUtils.EnsureFormat(ref target, TextureUtils.ScreenFormat);
         _field_filterFrameBuffer2.SetValue(self, target);
 
-        _inCameraMode = LightingConfig.Instance.ModifyCameraModeRendering();
+        _inCameraMode = SettingsSystem.ModifyCameraModeRendering();
         _isGameInCameraMode = true;
         try
         {
@@ -2074,16 +2071,20 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_DrawWalls(On_Main.orig_DrawWalls orig, Main self)
     {
-        if (!_inCameraMode)
+        var doSmoothLighting = LightingConfig.Instance.SmoothLightingEnabled();
+        var doOverbright = doSmoothLighting && LightingConfig.Instance.DrawOverbright();
+        var doAmbientOcclusion = LightingConfig.Instance.AmbientOcclusionEnabled();
+
+        if (!_inCameraMode || !(doSmoothLighting || doAmbientOcclusion))
         {
             orig(self);
             return;
         }
 
         if (
-            LightingConfig.Instance.SmoothLightingEnabled()
+            doSmoothLighting
             && PreferencesConfig.Instance.RenderOnlyLight
-            && !LightingConfig.Instance.DrawOverbright()
+            && !doOverbright
         )
         {
             return;
@@ -2093,7 +2094,7 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTarget
         );
 
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (!doSmoothLighting)
         {
             // To get here, ambient occlusion must be enabled
             Main.tileBatch.End();
@@ -2189,11 +2190,6 @@ public sealed class FancyLightingMod : Mod
         }
         Main.tileBatch.End();
         Main.spriteBatch.End();
-
-        var doAmbientOcclusion = LightingConfig.Instance.AmbientOcclusionEnabled();
-        var doOverbright =
-            LightingConfig.Instance.DrawOverbright()
-            && LightingConfig.Instance.SmoothLightingEnabled();
 
         RenderTarget2D ambientOcclusionTarget = null;
         if (doAmbientOcclusion && doOverbright)
@@ -2375,7 +2371,7 @@ public sealed class FancyLightingMod : Mod
         CaptureSettings settings
     )
     {
-        if (LightingConfig.Instance.ModifyCameraModeRendering())
+        if (SettingsSystem.ModifyCameraModeRendering())
         {
             _cameraModeTarget = MainGraphics.GetRenderTarget();
             _inCameraMode = _inCameraMode && _cameraModeTarget is not null;

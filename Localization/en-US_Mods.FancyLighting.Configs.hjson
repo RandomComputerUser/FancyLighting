@@ -72,7 +72,7 @@ PreferencesConfig: {
 			The strength of rendered normal maps
 
 			Higher values make surfaces appear rougher/bumpier
-			Simulated normal maps must be enabled for this setting to have any effect
+			Normal maps must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -176,26 +176,6 @@ PreferencesConfig: {
 
 			Higher values result in a brighter glow around bright objects
 			Bloom must be enabled for this setting to have any effect
-			'''
-	}
-
-	DepthOfField: {
-		Label: Depth of Field
-		Tooltip:
-			'''
-			Render depth of field blur
-
-			Applies a bokeh-like blur to the background
-			'''
-	}
-
-	DepthOfFieldRadius: {
-		Label: Depth of Field Blur Radius
-		Tooltip:
-			'''
-			The radius of the blur used in the depth of field effect
-
-			Depth of field must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -307,6 +287,26 @@ PreferencesConfig: {
 			Has the largest effect around sunrise and sunset
 			Fancy Atmosphere is intended to be used with the Natural preset
 			Fancy Sky Lighting must be enabled for this setting to have any effect
+			'''
+	}
+
+	DepthOfField: {
+		Label: Depth of Field
+		Tooltip:
+			'''
+			Render depth of field blur
+
+			Applies a bokeh-like blur to the background
+			'''
+	}
+
+	DepthOfFieldRadius: {
+		Label: Depth of Field Blur Radius
+		Tooltip:
+			'''
+			The radius of the blur used in the depth of field effect
+
+			Depth of field must be enabled for this setting to have any effect
 			'''
 	}
 

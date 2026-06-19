@@ -19,9 +19,6 @@ public sealed class LightingConfig : ModConfig
         || UseFancySkyRendering
         || UseFancySkyColors;
 
-    public bool ModifyCameraModeRendering() =>
-        SmoothLightingEnabled() || AmbientOcclusionEnabled();
-
     // Smooth Lighting
 
     public bool SmoothLightingEnabled() => UseSmoothLighting && Lighting.UsingNewLighting;
