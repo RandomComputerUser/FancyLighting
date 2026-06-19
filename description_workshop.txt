@@ -12,17 +12,14 @@
     [*]Camera mode compatibility
 [/list]
 
-For the best performance, try lowering the in-game resolution to either 1920x1080 or 1920x1200 depending on the aspect ratio of your display.
+For the best performance, lower the in-game resolution to 1920x1080 or 1920x1200.
 
 [h2]Troubleshooting[/h2]
 
-[b]If you enter a world with this mod disabled and then later enable this mod, there may be graphical glitches. It is recommended to have this mod enabled before entering any worlds after launching tModLoader.[/b]
+If you are experiencing graphical glitches, try relaunching tModLoader with the Fancy Lighting mod enabled. Fancy Lighting may fail to fully load if the mod is disabled when tModLoader is launched.
+
+If you are running other mods alongside Fancy Lighting and experiencing issues, try enabling some settings in the Compatibility Settings config.
 
 [h2]GitHub[/h2]
 
 You may report issues, download old releases, and view the source code on [url=https://github.com/RandomComputerUser/FancyLighting]the GitHub repository[/url].
-
-[h2]Credits[/h2]
-[list]
-    [*]Rex
-[/list]

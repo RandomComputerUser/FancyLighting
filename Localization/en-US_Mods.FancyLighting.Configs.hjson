@@ -434,7 +434,7 @@ LightingConfig: {
 			Use a more accurate technique to render glow effects
 
 			When disabled, glow effect brightness may differ from vanilla
-			[c/FFF014:Has a high impact on performance]
+			[c/FFFF00:Has a high impact on performance]
 			'''
 	}
 
@@ -446,7 +446,7 @@ LightingConfig: {
 
 			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
-			[c/FFF014:Has a very high impact on performance]
+			[c/FFFF00:Has a very high impact on performance]
 			'''
 	}
 
@@ -516,7 +516,7 @@ LightingConfig: {
 			The quality of the light spreading algorithm
 
 			Primarily affects shadow accuracy
-			[c/FFF014:Has a medium-high impact on performance]
+			[c/FFFF00:Has a medium-high impact on performance]
 			'''
 	}
 
