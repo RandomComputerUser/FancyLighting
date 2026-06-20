@@ -25,5 +25,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Some settings from the "Preferences" config have been moved to the new configs
 - Added tooltip lines to settings that have a high impact on performance
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
+- Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
 - Made some minor optimizations
 - Improved unloading

@@ -358,6 +358,11 @@ public sealed class FancyLightingMod : Mod
         On_FilterManager.BeginCapture += _FilterManager_BeginCapture;
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
         On_Main.DrawBlack += _Main_DrawBlack;
+
+        // Force these methods to be recompiled
+        // Otherwise our hooks for On_LightingEngine.ProcessBlur and On_LightMap.Blur may fail to be applied due to inlining
+        IL_LightingEngine.ProcessBlur += _ => { };
+        IL_LightingEngine.ProcessArea += _ => { };
     }
 
     // These methods are run often
