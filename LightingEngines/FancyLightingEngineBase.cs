@@ -47,10 +47,10 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
     );
 
     protected static void CalculateSubTileLightSpread(
-        scoped in Span<double> x,
-        scoped in Span<double> y,
-        scoped ref Span<double> lightFrom,
-        scoped ref Span<double> area,
+        ReadOnlySpan<double> x,
+        ReadOnlySpan<double> y,
+        Span<double> lightFrom,
+        Span<double> area,
         int row,
         int col
     )

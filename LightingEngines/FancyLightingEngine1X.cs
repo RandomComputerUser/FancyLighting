@@ -145,7 +145,7 @@ public sealed class FancyLightingEngine1X : FancyLightingEngineFloatDecay
 
         var x = (Span<double>)[0.0, 1.0];
         var y = (Span<double>)[0.0, 0.0];
-        CalculateSubTileLightSpread(in x, in y, ref lightFrom, ref area, row, col);
+        CalculateSubTileLightSpread(x, y, lightFrom, area, row, col);
 
         distanceToTop -=
             (lightFrom[0] * leftDistanceError) + (lightFrom[2] * bottomDistanceError);
