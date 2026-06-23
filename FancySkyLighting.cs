@@ -56,14 +56,14 @@ public static class FancySkyLighting
             // sun is out
             progress = (diffFromNoon + SunsetOffset) / (2.0 * SunsetOffset);
             amountVisible = (SunsetOffset - Math.Abs(diffFromNoon)) / (16.0 / 60.0);
-            baseMult = 2.0;
+            baseMult = 1.0;
         }
         else if (Math.Abs(diffFromMidnight) < MoonsetOffset)
         {
             // moon is out
             progress = (diffFromMidnight + MoonsetOffset) / (2.0 * MoonsetOffset);
             amountVisible = (MoonsetOffset - Math.Abs(diffFromMidnight)) / (9.0 / 60.0);
-            baseMult = 1.0;
+            baseMult = 0.25;
         }
         else
         {

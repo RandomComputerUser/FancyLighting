@@ -10,6 +10,7 @@ float NormalMapResolution;
 float2 NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
+float SkyLightStrength;
 
 struct VertexShaderInput
 {
@@ -192,12 +193,9 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
         : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
-    float shininess = saturate(skyLightLuma);
+    float shininess = SkyLightStrength * saturate(skyLightLuma);
     float lightMult = dot(lightGradient, surfaceGradient);
-    if (lightMult > 0.0)
-    {
-        lightMult += 0.33 * shininess * Square(lightMult);
-    }
+    lightMult += (0.5 + 0.15 * lightMult) * shininess * Square(lightMult);
     lightMult = 1.0 + NormalMapStrength * lightMult;
     return lerp(
         1.0,

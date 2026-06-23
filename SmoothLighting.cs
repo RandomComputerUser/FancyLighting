@@ -1978,14 +1978,16 @@ public sealed class SmoothLighting
             var (skyLightAngle, skyLightMult) =
                 FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
             var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult * zoom;
-            shader.SetParameter(
-                "SkyLightGradient",
-                -normalMapSkyGradientMult
-                    * new Vector2(
-                        (float)Math.Cos(skyLightAngle),
-                        (float)Math.Sin(skyLightAngle)
-                    )
-            );
+            shader
+                .SetParameter(
+                    "SkyLightGradient",
+                    -normalMapSkyGradientMult
+                        * new Vector2(
+                            (float)Math.Cos(skyLightAngle),
+                            (float)Math.Sin(skyLightAngle)
+                        )
+                )
+                .SetParameter("SkyLightStrength", (float)skyLightMult);
         }
 
         MainGraphics.ResetSavedTextures();
@@ -2153,14 +2155,16 @@ public sealed class SmoothLighting
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
                     (float)skyLightMult * overbrightMult * zoom;
-                effect.SetParameter(
-                    "SkyLightGradient",
-                    -normalMapSkyGradientMult
-                        * new Vector2(
-                            (float)Math.Cos(skyLightAngle),
-                            (float)Math.Sin(skyLightAngle)
-                        )
-                );
+                effect
+                    .SetParameter(
+                        "SkyLightGradient",
+                        -normalMapSkyGradientMult
+                            * new Vector2(
+                                (float)Math.Cos(skyLightAngle),
+                                (float)Math.Sin(skyLightAngle)
+                            )
+                    )
+                    .SetParameter("SkyLightStrength", (float)skyLightMult);
             }
 
             MainGraphics.ResetSavedTextures();
