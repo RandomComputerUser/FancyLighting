@@ -1942,9 +1942,11 @@ public sealed class SmoothLighting
         var overbrightMult =
             doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
         var normalMapGradientMult = 24f * overbrightMult * zoom;
-        var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
-        normalMapMult *= background ? 0.75f : 0.875f;
-        var normalMapStrength = 1f / (1f + normalMapMult);
+        var normalMapStrength = Math.Clamp(
+            PreferencesConfig.Instance.NormalMapsMultiplier(),
+            0f,
+            1f
+        );
 
         var worldCoordMult =
             new Vector2(scale.Y, scale.X)
@@ -1975,8 +1977,7 @@ public sealed class SmoothLighting
             var hour = GameTimeUtils.CalculateCurrentHour();
             var (skyLightAngle, skyLightMult) =
                 FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
-            var normalMapSkyGradientMult =
-                1.5f * (float)skyLightMult * overbrightMult * zoom;
+            var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult * zoom;
             shader.SetParameter(
                 "SkyLightGradient",
                 -normalMapSkyGradientMult
@@ -2132,9 +2133,11 @@ public sealed class SmoothLighting
             var overbrightMult =
                 doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
             var normalMapGradientMult = 24f * overbrightMult * zoom;
-            var normalMapMult = PreferencesConfig.Instance.NormalMapsMultiplier();
-            normalMapMult *= 0.875f;
-            var normalMapStrength = 1f / (1f + normalMapMult);
+            var normalMapStrength = Math.Clamp(
+                PreferencesConfig.Instance.NormalMapsMultiplier(),
+                0f,
+                1f
+            );
 
             effect
                 .SetParameter("LightMapMatrixTransform", lightMapTransform)

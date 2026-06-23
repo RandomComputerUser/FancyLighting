@@ -134,13 +134,13 @@ float2 NormalsLightGradient(float2 coords)
     return NormalMapGradientMult * float2(ddx(luma), ddy(luma));
 }
 
-float4 NormalsLightGradientFancySky(float2 coords)
+float3 NormalsLightGradientFancySky(float2 coords)
 {
     float4 light = tex2D(LightSampler, coords);
     float luma = Luma(light.rgb);
-    return float4(
+    return float3(
         NormalMapGradientMult * float2(ddx(luma), ddy(luma)),
-        SkyLightGradient * light.a
+        light.a
     );
 }
 
@@ -164,20 +164,21 @@ float NormalsMultiplier(float2 coords, float2 worldTexCoords)
         : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
-    float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
+    float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
     return lerp(
         1.0,
         lightMult,
-        pow(surfaceGradientLength, NormalMapStrength)
-            * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
     );
 }
 
 float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
 {
-    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(coords);
+    float3 lightGradientAndSkyLightLuma = NormalsLightGradientFancySky(coords);
     
-    float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
+    float skyLightLuma = lightGradientAndSkyLightLuma.z;
+    float2 lightGradient =
+        lightGradientAndSkyLightLuma.xy + SkyLightGradient * skyLightLuma;
     float lightGradientLength = length(lightGradient);
     
     if (lightGradientLength == 0)
@@ -195,12 +196,17 @@ float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
         : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
-    float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
+    float shininess = saturate(skyLightLuma);
+    float lightMult = dot(lightGradient, surfaceGradient);
+    if (lightMult > 0.0)
+    {
+        lightMult += 0.33 * shininess * Square(lightMult);
+    }
+    lightMult = 1.0 + NormalMapStrength * lightMult;
     return lerp(
         1.0,
         lightMult,
-        pow(surfaceGradientLength, NormalMapStrength)
-            * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
     );
 }
 

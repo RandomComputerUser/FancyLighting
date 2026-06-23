@@ -16,8 +16,10 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ### v1.2.0 (2026-??-??)
 - Added Fancy Sky Light Shading
   - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
-- Tweaked normal maps rendering
 - Added tile entity normal maps
+- Tweaked normal maps rendering
+- Increased the default normal maps strength to 7 (from 3)
+- Decreased the maximum normal maps strength to 10 (from 15)
 - Added the "Neutral (LMS)" TMO, which is the new default
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
 - Tweaked and optimized vibrance boost

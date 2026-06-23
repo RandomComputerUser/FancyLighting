@@ -70,7 +70,7 @@ public static class FancySkyLighting
             return (angle: 0.0, mult: 0.0);
         }
 
-        amountVisible *= 0.25; // ease the transition
+        amountVisible /= 3f; // ease the transition
 
         var angle = Math.PI * progress;
         var mult = baseMult * MathUtils.Smoothstep(0.0, 1.0, amountVisible);

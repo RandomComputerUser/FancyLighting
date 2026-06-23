@@ -15,10 +15,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
 
-    public float NormalMapsMultiplier() =>
-        NormalMapsIntensity <= 5
-            ? 0.5f * NormalMapsIntensity
-            : (0.05f * (NormalMapsIntensity * NormalMapsIntensity)) + 1.25f;
+    public float NormalMapsMultiplier() => NormalMapsIntensity / 10f;
 
     public float ExposureMult() => Exposure / 100f;
 
@@ -81,7 +78,7 @@ public sealed class PreferencesConfig : ModConfig
     // Smooth Lighting
 
     [Header("SmoothLighting")]
-    [Range(1, 15)]
+    [Range(1, 10)]
     [DefaultValue(DefaultOptions.NormalMapsIntensity)]
     [Slider]
     public int NormalMapsIntensity { get; set; }
