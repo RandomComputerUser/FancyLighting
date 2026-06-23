@@ -16,11 +16,12 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ### v1.2.0 (2026-??-??)
 - Added Fancy Sky Light Shading
   - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
+- Tweaked normal maps rendering
+- Added tile entity normal maps
 - Added the "Neutral (LMS)" TMO, which is the new default
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
 - Tweaked and optimized vibrance boost
 - Made the "Bicubic" render mode a little brighter
-- Added tile entity normal maps
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
 - Created two new configs: "Compatibility Settings" and "Developer Settings"

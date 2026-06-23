@@ -77,7 +77,7 @@ float2 Gradient(
     return gradient;
 }
 
-// Intentionally use gamma values for simulating normal maps
+// Intentionally use gamma-encoded values for simulating normal maps
 
 float SampleForNormal(float2 texCoord, float fallback)
 {

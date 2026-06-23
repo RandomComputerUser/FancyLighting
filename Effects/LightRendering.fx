@@ -89,30 +89,33 @@ float2 Gradient(
     return gradient;
 }
 
-// Intentionally use gamma values for simulating normal maps
+// Intentionally use gamma-encoded values for simulating normal maps
+
+float SampleForNormal(float2 worldTexCoords, float fallback)
+{
+    float4 color = tex2D(WorldSampler, worldTexCoords);
+    return color.a < 1 ? fallback : saturate(Luma(color.rgb));
+}
 
 float3 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
 {
-    float leftLuma
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, 0)).rgb));
-    float rightLuma
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, 0)).rgb));
-    float upLuma
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(0, NormalMapResolution.y)).rgb));
-    float downLuma
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(0, NormalMapResolution.y)).rgb));
+    float4 color = tex2D(WorldSampler, worldTexCoords);
+    float luma = saturate(Luma(color.rgb));
+    
+    float leftLuma = SampleForNormal(worldTexCoords - float2(NormalMapResolution.x, 0), luma);
+    float rightLuma = SampleForNormal(worldTexCoords + float2(NormalMapResolution.x, 0), luma);
+    float upLuma = SampleForNormal(worldTexCoords - float2(0, NormalMapResolution.y), luma);
+    float downLuma = SampleForNormal(worldTexCoords + float2(0, NormalMapResolution.y), luma);
     float positiveDiagonal
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - NormalMapResolution).rgb)) // up left
-        - saturate(Luma(tex2D(WorldSampler, worldTexCoords + NormalMapResolution).rgb)); // down right
+        = SampleForNormal(worldTexCoords - NormalMapResolution, luma) // up left
+        - SampleForNormal(worldTexCoords + NormalMapResolution, luma); // down right
     float negativeDiagonal
-        = saturate(Luma(tex2D(WorldSampler, worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb)) // down left
-        - saturate(Luma(tex2D(WorldSampler, worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y)).rgb)); // up right
+        = SampleForNormal(worldTexCoords - float2(NormalMapResolution.x, -NormalMapResolution.y), luma) // down left
+        - SampleForNormal(worldTexCoords + float2(NormalMapResolution.x, -NormalMapResolution.y), luma); // up right
 
     float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
-    float4 color = tex2D(WorldSampler, worldTexCoords);
-    float luma = saturate(Luma(color.rgb));
     float maxLuma = max(
         luma,
         max(max(leftLuma, rightLuma), max(upLuma, downLuma))
