@@ -11,6 +11,7 @@ internal sealed class SettingsSystem : ModSystem
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
 
     internal static bool _hiDef;
+    internal static bool _useSkyLightLuma;
 
     private bool _prevNeedsPostProcessing = false;
     private bool _prevHdrDisabled = false;
@@ -42,6 +43,7 @@ internal sealed class SettingsSystem : ModSystem
             1
         );
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
+        _useSkyLightLuma = LightingConfig.Instance?.UseSkyLightLuma() is true;
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerformanceTracker.Enabled = DeveloperConfig.Instance?.MonitorPerformance is true;

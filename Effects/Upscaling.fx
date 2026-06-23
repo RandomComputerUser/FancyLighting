@@ -49,6 +49,35 @@ float3 BicubicColor(float2 coords)
     return lerp(lerp(sample3, sample2, sx), lerp(sample1, sample0, sx), sy);
 }
 
+float4 BicubicColorWithAlpha(float2 coords)
+{
+    float2 texCoords = LightMapSize * coords - 0.5;
+
+    float2 fxy = frac(texCoords);
+    texCoords -= fxy;
+    fxy *= CUBIC_MULT;
+
+    float4 xcubic = Cubic(fxy.x);
+    float4 ycubic = Cubic(fxy.y);
+
+    float4 c = texCoords.xxyy + float2(-0.5, 1.5).xyxy;
+
+    float4 s = float4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
+    float4 offset = c + float4(xcubic.yw, ycubic.yw) / s;
+
+    offset *= PixelSize.xxyy;
+
+    float4 sample0 = tex2D(LightSampler, offset.xz);
+    float4 sample1 = tex2D(LightSampler, offset.yz);
+    float4 sample2 = tex2D(LightSampler, offset.xw);
+    float4 sample3 = tex2D(LightSampler, offset.yw);
+
+    float sx = s.x / (s.x + s.y);
+    float sy = s.z / (s.z + s.w);
+
+    return lerp(lerp(sample3, sample2, sx), lerp(sample1, sample0, sx), sy);
+}
+
 float4 BicubicFiltering(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 color = BicubicColor(coords);
@@ -56,10 +85,23 @@ float4 BicubicFiltering(float2 coords : TEXCOORD0) : COLOR0
     return float4(max(color, 0), 1);
 }
 
+float4 BicubicFilteringWithAlpha(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = BicubicColorWithAlpha(coords);
+    
+    return max(color, 0);
+}
+
+
 technique Technique1
 {
     pass BicubicFiltering
     {
         PixelShader = compile ps_3_0 BicubicFiltering();
+    }
+    
+    pass BicubicFilteringWithAlpha
+    {
+        PixelShader = compile ps_3_0 BicubicFilteringWithAlpha();
     }
 }

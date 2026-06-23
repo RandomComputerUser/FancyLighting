@@ -544,12 +544,23 @@ LightingConfig: {
 	}
 
 	UseFancySkyColors: {
-		Label: Fancy Sky Lighting
+		Label: Fancy Sky Light Colors
 		Tooltip:
 			'''
-			Use new colors for sky light
+			Use new colors for sunlight and moonlight
 
 			Primarily affects the color of sunlight around sunrise and sunset
+			'''
+	}
+
+	UseFancySkyLighting: {
+		Label: Fancy Sky Light Shading
+		Tooltip:
+			'''
+			Use improved shading for sunlight and moonlight
+
+			Improves the shading of clouds
+			Improves the shading of normal maps when using HDR rendering
 			'''
 	}
 }

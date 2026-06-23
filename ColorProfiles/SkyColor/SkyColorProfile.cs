@@ -85,7 +85,7 @@ public sealed class SkyColorProfile : ISimpleColorProfile
 
     public Vector3 GetColor(double hour)
     {
-        hour %= 24.0;
+        hour = MathUtils.EuclideanRemainder(hour, 24.0);
 
         var color = _colors[^1].color;
         for (var i = 1; i <= _colors.Count; ++i)

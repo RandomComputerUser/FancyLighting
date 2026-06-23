@@ -195,7 +195,7 @@ public sealed class FancyLightingMod : Mod
             _backgroundTarget?.Dispose();
             _cameraModeBackgroundTarget?.Dispose();
 
-            _fancySkyRenderingInstance?.Unload();
+            FancySkyLighting.Unload();
             _fancySkyColorsInstance?.Unload();
             _postProcessingInstance?.Unload();
             _fancyLightingEngineInstance?.Unload();
@@ -326,6 +326,7 @@ public sealed class FancyLightingMod : Mod
         IL_TileDrawing.ShouldTileShine += IL_TileDrawing_ShouldTileShine;
         IL_Main.ShouldDrawBackgroundTileAt += IL_Main_ShouldDrawBackgroundTileAt;
         IL_WorldMap.UpdateLighting += IL_WorldMap_UpdateLighting;
+        On_TileLightScanner.GetTileLight += _TileLightScanner_GetTileLight;
         On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
         On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
         On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
@@ -342,6 +343,7 @@ public sealed class FancyLightingMod : Mod
         On_Main.RenderTiles2 += _Main_RenderTiles2;
         On_Main.RenderWalls += _Main_RenderWalls;
         On_Main.DoLightTiles += _Main_DoLightTiles;
+        On_TileLightScanner.ExportTo += _TileLightScanner_ExportTo;
         On_LightingEngine.ProcessBlur += _LightingEngine_ProcessBlur;
         On_LightMap.Blur += _LightMap_Blur;
 
@@ -591,6 +593,22 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
+    private static void _TileLightScanner_GetTileLight(
+        On_TileLightScanner.orig_GetTileLight orig,
+        TileLightScanner self,
+        int x,
+        int y,
+        out Vector3 outputColor
+    )
+    {
+        if (SettingsSystem._useSkyLightLuma)
+        {
+            FancySkyLighting.SetSkyLightLuma(x, y, 0f);
+        }
+
+        orig(self, x, y, out outputColor);
+    }
+
     private static void _TileLightScanner_ApplySurfaceLight(
         On_TileLightScanner.orig_ApplySurfaceLight orig,
         TileLightScanner self,
@@ -602,12 +620,15 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (!SettingsSystem._hiDef)
+        if (SettingsSystem._hiDef)
         {
-            return;
+            lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
         }
 
-        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
+        if (SettingsSystem._useSkyLightLuma)
+        {
+            FancySkyLighting.SetSkyLightLuma(x, y, ColorUtils.Luma(lightColor));
+        }
     }
 
     private static void _TileLightScanner_ApplyHellLight(
@@ -1849,6 +1870,22 @@ public sealed class FancyLightingMod : Mod
     }
 
     // Lighting engine
+
+    private void _TileLightScanner_ExportTo(
+        On_TileLightScanner.orig_ExportTo orig,
+        TileLightScanner self,
+        Rectangle area,
+        LightMap outputMap,
+        TileLightScannerOptions options
+    )
+    {
+        if (LightingConfig.Instance.UseSkyLightLuma())
+        {
+            FancySkyLighting.SetLightMapArea(area);
+        }
+
+        orig(self, area, outputMap, options);
+    }
 
     private void _LightingEngine_ProcessBlur(
         On_LightingEngine.orig_ProcessBlur orig,

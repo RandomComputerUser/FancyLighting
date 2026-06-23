@@ -29,4 +29,32 @@ internal static class MathUtils
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Lerp(float x, float y, float t) => ((1 - t) * x) + (t * y);
+
+    public static double Smoothstep(double edge1, double edge2, double x)
+    {
+        x = (x - edge1) / (edge2 - edge1);
+
+        if (x <= 0.0)
+        {
+            return 0.0;
+        }
+
+        if (x >= 1.0)
+        {
+            return 1.0;
+        }
+
+        return x * x * (3.0 - (2.0 * x));
+    }
+
+    public static double EuclideanRemainder(double x, double y)
+    {
+        var result = x % y;
+        if (result < 0.0)
+        {
+            result += Math.Abs(y);
+        }
+
+        return result;
+    }
 }

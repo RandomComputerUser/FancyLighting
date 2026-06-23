@@ -60,6 +60,12 @@ public sealed class LightingConfig : ModConfig
 
     public bool FancySkyColorsEnabled() => UseFancySkyColors && Lighting.UsingNewLighting;
 
+    public bool FancySkyLightingEnabled() =>
+        UseFancySkyLighting && Lighting.UsingNewLighting;
+
+    public bool UseSkyLightLuma() =>
+        FancySkyLightingEnabled() && SmoothLightingEnabled() && DrawOverbright();
+
     public override void OnChanged()
     {
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
@@ -87,6 +93,7 @@ public sealed class LightingConfig : ModConfig
 
         _useFancySkyRendering = options.UseFancySkyRendering;
         _useFancySkyColors = options.UseFancySkyColors;
+        _useFancySkyLighting = options.UseFancySkyLighting;
     }
 
     public void UpdatePreset()
@@ -369,4 +376,17 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _useFancySkyColors;
+
+    [DefaultValue(DefaultOptions.UseFancySkyLighting)]
+    public bool UseFancySkyLighting
+    {
+        get => _useFancySkyLighting;
+        set
+        {
+            _useFancySkyLighting = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _useFancySkyLighting;
 }

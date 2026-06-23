@@ -80,9 +80,9 @@ internal static class ColorUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Assign(ref HalfVector4 color, Vector3 rgb)
+    public static void Assign(ref HalfVector4 color, Vector3 rgb, float alpha)
     {
-        color = new(rgb.X, rgb.Y, rgb.Z, 1f);
+        color = new(rgb.X, rgb.Y, rgb.Z, alpha);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

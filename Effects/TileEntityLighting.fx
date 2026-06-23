@@ -9,6 +9,7 @@ float Zoom;
 float NormalMapResolution;
 float2 NormalMapGradientMult;
 float NormalMapStrength;
+float2 SkyLightGradient;
 
 struct VertexShaderInput
 {
@@ -121,6 +122,16 @@ float2 NormalsLightGradient(float2 lightMapTexCoord)
     return NormalMapGradientMult * float2(ddx(luma), ddy(luma));
 }
 
+float4 NormalsLightGradientFancySky(float2 lightMapTexCoord)
+{
+    float4 light = tex2D(LightSampler, lightMapTexCoord);
+    float luma = Luma(light.rgb);
+    return float4(
+        NormalMapGradientMult * float2(ddx(luma), ddy(luma)),
+        SkyLightGradient * light.a
+    );
+}
+
 float NormalsMultiplier(float2 texCoord, float2 lightMapTexCoord)
 {
     SamplingTransform samplingTransform = CalculateSamplingTransform(texCoord);
@@ -140,7 +151,44 @@ float NormalsMultiplier(float2 texCoord, float2 lightMapTexCoord)
     float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(texCoord, diff);
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
-    surfaceGradient = surfaceGradientLength == 0 ? 0 : surfaceGradient / surfaceGradientLength;
+    surfaceGradient = surfaceGradientLength == 0
+        ? 0
+        : surfaceGradient / surfaceGradientLength;
+    surfaceGradient *= surfaceGradientAndMult.z;
+    
+    float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
+    return lerp(
+        1.0,
+        lightMult,
+        pow(surfaceGradientLength, NormalMapStrength)
+            * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+    );
+}
+
+float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
+{
+    SamplingTransform samplingTransform = CalculateSamplingTransform(texCoord);
+    float2 diff = samplingTransform.TexelSize * NormalMapResolution;
+    
+    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(lightMapTexCoord);
+    
+    float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
+    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
+    float lightGradientLength = length(lightGradient);
+    
+    if (lightGradientLength == 0)
+    {
+        return 1.0;
+    }
+    
+    lightGradient /= lightGradientLength;
+    
+    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(texCoord, diff);
+    float2 surfaceGradient = surfaceGradientAndMult.xy;
+    float surfaceGradientLength = length(surfaceGradient);
+    surfaceGradient = surfaceGradientLength == 0
+        ? 0 
+        : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
     float lightMult = lerp(1.0, 1.5, dot(lightGradient, surfaceGradient));
@@ -161,11 +209,29 @@ float4 NormalsPS(in NormalsVertexShaderOutput input) : COLOR0
     return lightColor * float4(mult.xxx, 1) * texColor;
 }
 
+float4 NormalsFancySkyPS(in NormalsVertexShaderOutput input) : COLOR0
+{
+    float4 texColor = tex2D(TextureSampler, input.TexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
+
+    return lightColor * float4(mult.xxx, 1) * texColor;
+}
+
 float4 NormalsLightOnlyPS(in NormalsVertexShaderOutput input) : COLOR0
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
     float4 lightColor = input.Color;
     float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
+    
+    return lightColor * float4(mult.xxx, 1) * texColor.a;
+}
+
+float4 NormalsLightOnlyFancySkyPS(in NormalsVertexShaderOutput input) : COLOR0
+{
+    float4 texColor = tex2D(TextureSampler, input.TexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
     
     return lightColor * float4(mult.xxx, 1) * texColor.a;
 }
@@ -196,12 +262,30 @@ technique Normals
     }
 }
 
+technique NormalsFancySky
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 NormalsVS();
+        PixelShader = compile ps_3_0 NormalsFancySkyPS();
+    }
+}
+
 technique NormalsLightOnly
 {
     pass Pass1
     {
         VertexShader = compile vs_3_0 NormalsVS();
         PixelShader = compile ps_3_0 NormalsLightOnlyPS();
+    }
+}
+
+technique NormalsLightOnlyFancySky
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 NormalsVS();
+        PixelShader = compile ps_3_0 NormalsLightOnlyFancySkyPS();
     }
 }
 

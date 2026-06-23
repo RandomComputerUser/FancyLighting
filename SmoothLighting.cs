@@ -29,6 +29,7 @@ public sealed class SmoothLighting
     private bool _smoothLightingLightMapValid;
     private bool _smoothLightingComplete;
     private bool _smoothLightingHiResComplete;
+    private bool _useAlphaChannelAsSkyLightLuma;
 
     private RenderTarget2D _tmpTarget;
 
@@ -39,10 +40,13 @@ public sealed class SmoothLighting
         _smoothLightingComplete && LightingConfig.Instance.SmoothLightingEnabled();
 
     private Shader _bicubicFilteringShader;
+    private Shader _bicubicFilteringWithAlphaShader;
     private Shader _normalsShader;
     private Shader _normalsOverbrightShader;
+    private Shader _normalsOverbrightFancySkyShader;
     private Shader _normalsOverbrightAmbientOcclusionShader;
     private Shader _normalsOverbrightLightOnlyShader;
+    private Shader _normalsOverbrightLightOnlyFancySkyShader;
     private Shader _normalsOverbrightLightOnlyOpaqueShader;
     private Shader _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader;
     private Shader _overbrightShader;
@@ -57,7 +61,9 @@ public sealed class SmoothLighting
     private Shader _enhancedGlowMaskShader;
 
     private SpriteBatchEffect _tileEntityNormalsEffect;
+    private SpriteBatchEffect _tileEntityNormalsFancySkyEffect;
     private SpriteBatchEffect _tileEntityNormalsLightOnlyEffect;
+    private SpriteBatchEffect _tileEntityNormalsLightOnlyFancySkyEffect;
     private SpriteBatchEffect _tileEntityLightOnlyEffect;
 
     /// <summary>
@@ -130,6 +136,7 @@ public sealed class SmoothLighting
     /// <param name="cameraMode">Whether the light map is for a camera mode capture.</param>
     /// <remarks>
     /// The dimensions of <paramref name="lightMapTexture"></paramref> may not match the dimensions of the light map in tiles.
+    /// Do not rely on the values in the alpha channel of <paramref name="lightMapTexture"></paramref>. The alpha channel may be used by the Fancy Lighting mod for any purpose.
     /// </remarks>
     public delegate void LightMapUpdateHandler(
         Texture2D lightMapTexture,
@@ -150,6 +157,7 @@ public sealed class SmoothLighting
         _smoothLightingLightMapValid = false;
         _smoothLightingComplete = false;
         _smoothLightingHiResComplete = false;
+        _useAlphaChannelAsSkyLightLuma = false;
 
         _tmpLights = null;
 
@@ -164,6 +172,10 @@ public sealed class SmoothLighting
             "FancyLighting/Effects/Upscaling",
             "BicubicFiltering"
         );
+        _bicubicFilteringWithAlphaShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/Upscaling",
+            "BicubicFilteringWithAlpha"
+        );
 
         _normalsShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
@@ -174,6 +186,11 @@ public sealed class SmoothLighting
             "NormalsOverbright",
             true
         );
+        _normalsOverbrightFancySkyShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "NormalsOverbrightFancySky",
+            true
+        );
         _normalsOverbrightAmbientOcclusionShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "NormalsOverbrightAmbientOcclusion",
@@ -182,6 +199,11 @@ public sealed class SmoothLighting
         _normalsOverbrightLightOnlyShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/LightRendering",
             "NormalsOverbrightLightOnly",
+            true
+        );
+        _normalsOverbrightLightOnlyFancySkyShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/LightRendering",
+            "NormalsOverbrightLightOnlyFancySky",
             true
         );
         _normalsOverbrightLightOnlyOpaqueShader = EffectLoader.LoadEffect(
@@ -245,9 +267,17 @@ public sealed class SmoothLighting
             "FancyLighting/Effects/TileEntityLighting",
             "Normals"
         );
+        _tileEntityNormalsFancySkyEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/TileEntityLighting",
+            "NormalsFancySky"
+        );
         _tileEntityNormalsLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
             "FancyLighting/Effects/TileEntityLighting",
             "NormalsLightOnly"
+        );
+        _tileEntityNormalsLightOnlyFancySkyEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/TileEntityLighting",
+            "NormalsLightOnlyFancySky"
         );
         _tileEntityLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
             "FancyLighting/Effects/TileEntityLighting",
@@ -267,10 +297,13 @@ public sealed class SmoothLighting
         _cameraModeTarget2?.Dispose();
         _ditherNoise?.Dispose();
         EffectLoader.UnloadEffect(ref _bicubicFilteringShader);
+        EffectLoader.UnloadEffect(ref _bicubicFilteringWithAlphaShader);
         EffectLoader.UnloadEffect(ref _normalsShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightShader);
+        EffectLoader.UnloadEffect(ref _normalsOverbrightFancySkyShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightAmbientOcclusionShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyShader);
+        EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyFancySkyShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyOpaqueShader);
         EffectLoader.UnloadEffect(
             ref _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
@@ -286,7 +319,11 @@ public sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsEffect);
+        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsFancySkyEffect);
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsLightOnlyEffect);
+        SpriteBatchEffectLoader.UnloadEffect(
+            ref _tileEntityNormalsLightOnlyFancySkyEffect
+        );
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityLightOnlyEffect);
     }
 
@@ -1282,6 +1319,11 @@ public sealed class SmoothLighting
         bool cameraMode
     )
     {
+        var skyLightArea = FancySkyLighting._lightMapArea;
+        var useLuma =
+            LightingConfig.Instance.UseSkyLightLuma()
+            && skyLightArea == _lightMapTileArea;
+
         var length = width * height;
 
         ArrayUtils.MakeAtLeastSize(ref _finalLightsHiDef, length);
@@ -1303,6 +1345,7 @@ public sealed class SmoothLighting
                     var myBrightness = brightness;
                     var myShimmerAlpha = shimmerAlpha;
                     var finalLightsHiDef = _finalLightsHiDef;
+                    var myUseLuma = useLuma;
 
                     var i = (height * x1) + offset;
                     var x = x1 + xmin;
@@ -1322,7 +1365,12 @@ public sealed class SmoothLighting
                                 TileShine(ref lightColor, tile, myShimmerAlpha);
                             }
 
-                            ColorUtils.Assign(ref finalLightsHiDef[i++], lightColor);
+                            ColorUtils.Assign(
+                                ref finalLightsHiDef[i],
+                                lightColor,
+                                myUseLuma ? FancySkyLighting._skyLightLuma[i] : 1f
+                            );
+                            ++i;
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -1367,7 +1415,12 @@ public sealed class SmoothLighting
                             }
                         }
 
-                        ColorUtils.Assign(ref _finalLightsHiDef[i++], lightColor);
+                        ColorUtils.Assign(
+                            ref _finalLightsHiDef[i],
+                            lightColor,
+                            useLuma ? FancySkyLighting._skyLightLuma[i] : 1f
+                        );
+                        ++i;
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -1388,6 +1441,7 @@ public sealed class SmoothLighting
         _colors.SetData(0, new(0, 0, height, width), _finalLightsHiDef, 0, length);
 
         _smoothLightingComplete = !cameraMode;
+        _useAlphaChannelAsSkyLightLuma = useLuma;
     }
 
     private void CalculateSmoothLightingLdr(
@@ -1508,6 +1562,7 @@ public sealed class SmoothLighting
         _colors.SetData(0, new(0, 0, height, width), _finalLights, 0, length);
 
         _smoothLightingComplete = !cameraMode;
+        _useAlphaChannelAsSkyLightLuma = false;
     }
 
     private void RenderHiResLighting(Texture2D lights)
@@ -1519,6 +1574,10 @@ public sealed class SmoothLighting
             TextureUtils.LightMapFormat
         );
 
+        var shader = _useAlphaChannelAsSkyLightLuma
+            ? _bicubicFilteringWithAlphaShader
+            : _bicubicFilteringShader;
+
         Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiRes);
         Main.spriteBatch.Begin(
             SpriteSortMode.Immediate,
@@ -1527,7 +1586,7 @@ public sealed class SmoothLighting
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-        _bicubicFilteringShader
+        shader
             .SetParameter("LightMapSize", lights.Size())
             .SetParameter("PixelSize", new Vector2(1f / lights.Width, 1f / lights.Height))
             .Apply();
@@ -1765,6 +1824,7 @@ public sealed class SmoothLighting
         var doOneStepOnly = !(simulateNormalMaps || doOverbright);
         var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
         var doDithering = doOverbright && !hiDef;
+        var doFancySky = _useAlphaChannelAsSkyLightLuma && !background;
 
         var lightMapScale = 16f;
 
@@ -1854,10 +1914,14 @@ public sealed class SmoothLighting
                         ? doAmbientOcclusion
                             ? _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
                             : _normalsOverbrightLightOnlyOpaqueShader
-                        : _normalsOverbrightLightOnlyShader
+                        : doFancySky
+                            ? _normalsOverbrightLightOnlyFancySkyShader
+                            : _normalsOverbrightLightOnlyShader
                     : doAmbientOcclusion
                         ? _normalsOverbrightAmbientOcclusionShader
-                        : _normalsOverbrightShader
+                        : doFancySky
+                            ? _normalsOverbrightFancySkyShader
+                            : _normalsOverbrightShader
                 : _normalsShader
             : doScaling // doOverbright is guaranteed to be true here
                 ? invertOverbright // if doScaling is true we're doing post-processing
@@ -1905,6 +1969,23 @@ public sealed class SmoothLighting
                 (position / new Vector2(worldTarget.Width, worldTarget.Height))
                     - (worldCoordMult * new Vector2(0.5f))
             );
+
+        if (doFancySky)
+        {
+            var hour = GameTimeUtils.CalculateCurrentHour();
+            var (skyLightAngle, skyLightMult) =
+                FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
+            var normalMapSkyGradientMult =
+                1.5f * (float)skyLightMult * overbrightMult * zoom;
+            shader.SetParameter(
+                "SkyLightGradient",
+                -normalMapSkyGradientMult
+                    * new Vector2(
+                        (float)Math.Cos(skyLightAngle),
+                        (float)Math.Sin(skyLightAngle)
+                    )
+            );
+        }
 
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(4, worldTarget, SamplerState.PointClamp);
@@ -1963,15 +2044,20 @@ public sealed class SmoothLighting
             LightingConfig.Instance.SimulateNormalMaps
             && LightingConfig.Instance.SimulateTileEntityNormals;
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
+        var doFancySky = _useAlphaChannelAsSkyLightLuma;
 
         var effect = lightOnly
             ? doOverbright
                 ? doNormals
-                    ? _tileEntityNormalsLightOnlyEffect
+                    ? doFancySky
+                        ? _tileEntityNormalsLightOnlyFancySkyEffect
+                        : _tileEntityNormalsLightOnlyEffect
                     : _tileEntityLightOnlyEffect
                 : null
             : doNormals
-                ? _tileEntityNormalsEffect
+                ? doFancySky
+                    ? _tileEntityNormalsFancySkyEffect
+                    : _tileEntityNormalsEffect
                 : null;
 
         if (effect is null)
@@ -2056,6 +2142,23 @@ public sealed class SmoothLighting
                 .SetParameter("NormalMapResolution", normalMapResolution)
                 .SetParameter("NormalMapGradientMult", normalMapGradientMult)
                 .SetParameter("NormalMapStrength", normalMapStrength);
+
+            if (doFancySky)
+            {
+                var hour = GameTimeUtils.CalculateCurrentHour();
+                var (skyLightAngle, skyLightMult) =
+                    FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
+                var normalMapSkyGradientMult =
+                    (float)skyLightMult * overbrightMult * zoom;
+                effect.SetParameter(
+                    "SkyLightGradient",
+                    -normalMapSkyGradientMult
+                        * new Vector2(
+                            (float)Math.Cos(skyLightAngle),
+                            (float)Math.Sin(skyLightAngle)
+                        )
+                );
+            }
 
             MainGraphics.ResetSavedTextures();
             MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);

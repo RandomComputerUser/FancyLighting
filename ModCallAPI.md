@@ -32,11 +32,11 @@ Add a hook that runs after Smooth Lighting updates its light map texture. This e
 - **Call Parameters:**
     - `void hook(Texture2D, Matrix, Rectangle, bool)`: The hook.
         - **Parameters:**
-            - `Vector2D lightMapTexture`: The texture used to sample the light map.
+            - `Texture2D lightMapTexture`: The texture used to sample the light map.
             - `Matrix samplingTransformation`: A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling `lightMapTexture`.
             - `Rectangle lightMapArea`: The area of the world covered by the light map, measured in tiles.
             - `bool cameraMode`: Whether the light map is for a camera mode capture.
-        - **Remarks:** The dimensions of `lightMapTexture` may not match the dimensions of the light map in tiles.
+        - **Remarks:** The dimensions of `lightMapTexture` may not match the dimensions of the light map in tiles. Do not rely on the values in the alpha channel of `lightMapTexture`. The alpha channel may be used by the Fancy Lighting mod for any purpose.
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 

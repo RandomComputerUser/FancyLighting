@@ -54,6 +54,8 @@ internal record PresetOptions
 
     public bool UseFancySkyColors { get; init; } = DefaultOptions.UseFancySkyColors;
 
+    public bool UseFancySkyLighting { get; init; } = DefaultOptions.UseFancySkyLighting;
+
     public PresetOptions() { }
 
     public PresetOptions(LightingConfig config)
@@ -78,6 +80,7 @@ internal record PresetOptions
 
         UseFancySkyRendering = config.UseFancySkyRendering;
         UseFancySkyColors = config.UseFancySkyColors;
+        UseFancySkyLighting = config.UseFancySkyLighting;
     }
 
     public static PresetOptions VanillaPresetOptions =>
@@ -98,6 +101,7 @@ internal record PresetOptions
             SimulateGlobalIllumination = false,
             UseFancySkyRendering = false,
             UseFancySkyColors = false,
+            UseFancySkyLighting = false,
         };
 
     public static PresetOptions LowPresetOptions =>
@@ -118,6 +122,7 @@ internal record PresetOptions
             SimulateGlobalIllumination = false,
             UseFancySkyRendering = true,
             UseFancySkyColors = true,
+            UseFancySkyLighting = false,
         };
 
     public static PresetOptions MediumPresetOptions => new();
@@ -140,6 +145,7 @@ internal record PresetOptions
             SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
             UseFancySkyColors = true,
+            UseFancySkyLighting = true,
         };
 
     public static PresetOptions UltraPresetOptions =>
@@ -160,6 +166,7 @@ internal record PresetOptions
             SimulateGlobalIllumination = true,
             UseFancySkyRendering = true,
             UseFancySkyColors = true,
+            UseFancySkyLighting = true,
         };
 
     public static Dictionary<PresetOptions, SettingsPreset> PresetLookup
