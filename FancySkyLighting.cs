@@ -1,4 +1,7 @@
-﻿namespace FancyLighting;
+﻿using FancyLighting.Utils.Accessors;
+using Terraria.Graphics.Light;
+
+namespace FancyLighting;
 
 public static class FancySkyLighting
 {
@@ -50,27 +53,38 @@ public static class FancySkyLighting
 
         double progress;
         double amountVisible;
-        double baseMult;
         if (Math.Abs(diffFromNoon) < SunsetOffset)
         {
             // sun is out
             progress = (diffFromNoon + SunsetOffset) / (2.0 * SunsetOffset);
             amountVisible = (SunsetOffset - Math.Abs(diffFromNoon)) / (16.0 / 60.0);
-            baseMult = 1.0;
         }
         else if (Math.Abs(diffFromMidnight) < MoonsetOffset)
         {
             // moon is out
             progress = (diffFromMidnight + MoonsetOffset) / (2.0 * MoonsetOffset);
             amountVisible = (MoonsetOffset - Math.Abs(diffFromMidnight)) / (9.0 / 60.0);
-            baseMult = 0.25;
         }
         else
         {
             return (angle: 0.0, mult: 0.0);
         }
 
-        amountVisible /= 3f; // ease the transition
+        var airDecayMult = (double)0.91f;
+        var activeEngine = LightingAccessors._activeEngine(null);
+        if (activeEngine is LightingEngine lightingEngine)
+        {
+            var lightMap = LightingEngineAccessors._activeLightMap(lightingEngine);
+            if (lightMap is not null)
+            {
+                airDecayMult = lightMap.LightDecayThroughAir;
+            }
+        }
+
+        var baseMult =
+            -Math.Log(airDecayMult)
+            * Lighting.GlobalBrightness
+            * SmoothLighting.NormalMapGradientBaseMult;
 
         var angle = Math.PI * progress;
         var mult = baseMult * MathUtils.Smoothstep(0.0, 1.0, amountVisible);

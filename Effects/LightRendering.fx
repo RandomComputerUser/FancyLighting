@@ -15,7 +15,6 @@ float2 NormalMapResolution;
 float2 NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
-float SkyLightStrength;
 float2 WorldCoordMult;
 float2 WorldCoordOffset;
 float2 DitherCoordMult;
@@ -135,13 +134,13 @@ float2 NormalsLightGradient(float2 coords)
     return NormalMapGradientMult * float2(ddx(luma), ddy(luma));
 }
 
-float3 NormalsLightGradientFancySky(float2 coords)
+float4 NormalsLightGradientFancySky(float2 coords)
 {
     float4 light = tex2D(LightSampler, coords);
     float luma = Luma(light.rgb);
-    return float3(
+    return float4(
         NormalMapGradientMult * float2(ddx(luma), ddy(luma)),
-        light.a
+        SkyLightGradient * light.a
     );
 }
 
@@ -175,11 +174,9 @@ float NormalsMultiplier(float2 coords, float2 worldTexCoords)
 
 float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
 {
-    float3 lightGradientAndSkyLightLuma = NormalsLightGradientFancySky(coords);
+    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(coords);
     
-    float skyLightLuma = lightGradientAndSkyLightLuma.z;
-    float2 lightGradient =
-        lightGradientAndSkyLightLuma.xy + SkyLightGradient * skyLightLuma;
+    float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
     float lightGradientLength = length(lightGradient);
     
     if (lightGradientLength == 0)
@@ -189,6 +186,11 @@ float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
     
     lightGradient /= lightGradientLength;
     
+    float skyLightGradientLength = length(lightAndSkyLightGradient.zw);
+    float shininess = skyLightGradientLength / (
+        skyLightGradientLength + length(lightAndSkyLightGradient.xy)
+    );
+    
     float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(worldTexCoords);
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
@@ -197,7 +199,6 @@ float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
         : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
-    float shininess = SkyLightStrength * saturate(skyLightLuma);
     float lightMult = dot(lightGradient, surfaceGradient);
     lightMult += (0.5 + 0.15 * lightMult) * shininess * Square(lightMult);
     lightMult = 1.0 + NormalMapStrength * lightMult;

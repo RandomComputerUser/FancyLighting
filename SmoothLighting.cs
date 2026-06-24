@@ -8,6 +8,8 @@ namespace FancyLighting;
 
 public sealed class SmoothLighting
 {
+    internal const float NormalMapGradientBaseMult = 1.5f;
+
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
 
@@ -1941,7 +1943,8 @@ public sealed class SmoothLighting
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
         var overbrightMult =
             doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-        var normalMapGradientMult = 24f * overbrightMult * zoom;
+        var normalMapGradientMult =
+            16f * NormalMapGradientBaseMult * overbrightMult * zoom;
         var normalMapStrength = Math.Clamp(
             PreferencesConfig.Instance.NormalMapsMultiplier(),
             0f,
@@ -1978,16 +1981,14 @@ public sealed class SmoothLighting
             var (skyLightAngle, skyLightMult) =
                 FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
             var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult * zoom;
-            shader
-                .SetParameter(
-                    "SkyLightGradient",
-                    -normalMapSkyGradientMult
-                        * new Vector2(
-                            (float)Math.Cos(skyLightAngle),
-                            (float)Math.Sin(skyLightAngle)
-                        )
-                )
-                .SetParameter("SkyLightStrength", (float)skyLightMult);
+            shader.SetParameter(
+                "SkyLightGradient",
+                -normalMapSkyGradientMult
+                    * new Vector2(
+                        (float)Math.Cos(skyLightAngle),
+                        (float)Math.Sin(skyLightAngle)
+                    )
+            );
         }
 
         MainGraphics.ResetSavedTextures();
@@ -2134,7 +2135,8 @@ public sealed class SmoothLighting
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult =
                 doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-            var normalMapGradientMult = 24f * overbrightMult * zoom;
+            var normalMapGradientMult =
+                16f * NormalMapGradientBaseMult * overbrightMult * zoom;
             var normalMapStrength = Math.Clamp(
                 PreferencesConfig.Instance.NormalMapsMultiplier(),
                 0f,
@@ -2155,16 +2157,14 @@ public sealed class SmoothLighting
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
                     (float)skyLightMult * overbrightMult * zoom;
-                effect
-                    .SetParameter(
-                        "SkyLightGradient",
-                        -normalMapSkyGradientMult
-                            * new Vector2(
-                                (float)Math.Cos(skyLightAngle),
-                                (float)Math.Sin(skyLightAngle)
-                            )
-                    )
-                    .SetParameter("SkyLightStrength", (float)skyLightMult);
+                effect.SetParameter(
+                    "SkyLightGradient",
+                    -normalMapSkyGradientMult
+                        * new Vector2(
+                            (float)Math.Cos(skyLightAngle),
+                            (float)Math.Sin(skyLightAngle)
+                        )
+                );
             }
 
             MainGraphics.ResetSavedTextures();
