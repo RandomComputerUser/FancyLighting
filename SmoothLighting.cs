@@ -1951,6 +1951,11 @@ public sealed class SmoothLighting
             1f
         );
 
+        if (background)
+        {
+            normalMapStrength *= 0.85f;
+        }
+
         var worldCoordMult =
             new Vector2(scale.Y, scale.X)
             * new Vector2(lightMapTexture.Height, lightMapTexture.Width)
