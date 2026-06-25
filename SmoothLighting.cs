@@ -1648,7 +1648,7 @@ public sealed class SmoothLighting
             tmpTarget,
             16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y),
             Main.screenPosition - offset,
-            doScaling && !FancyLightingMod._inCameraMode
+            doScaling && !FancyLightingMod._isGameInCameraMode
                 ? Main.GameViewMatrix.Zoom
                     * new Vector2(1f, Main.LocalPlayer.gravDir < 0f ? -1f : 1f)
                 : Vector2.One,
@@ -2090,6 +2090,7 @@ public sealed class SmoothLighting
             var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
             var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
             var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+            var cameraMode = FancyLightingMod._isGameInCameraMode;
 
             if (doBicubicUpscaling && !_smoothLightingHiResComplete)
             {
@@ -2135,7 +2136,7 @@ public sealed class SmoothLighting
                 _lightMapTileArea,
                 Main.Camera.UnscaledPosition
             );
-            var zoom = Main.GameViewMatrix.Zoom;
+            var zoom = cameraMode ? Vector2.One : Main.GameViewMatrix.Zoom;
 
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult =
@@ -2162,6 +2163,11 @@ public sealed class SmoothLighting
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
                     (float)skyLightMult * overbrightMult * zoom;
+                if (!cameraMode && Main.LocalPlayer.gravDir < 0f)
+                {
+                    normalMapSkyGradientMult.Y *= -1f;
+                }
+
                 effect.SetParameter(
                     "SkyLightGradient",
                     -normalMapSkyGradientMult

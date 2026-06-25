@@ -43,7 +43,7 @@ struct SamplingTransform
     float2x2 ScalingAndRotation;  
 };
 
-// Assumes only rotation and no scaling or stretching
+// Assumes only rotation and/or flipping and no scaling or stretching
 SamplingTransform CalculateSamplingTransform(float2 texCoord)
 {
     SamplingTransform output;
