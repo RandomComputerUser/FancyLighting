@@ -92,14 +92,14 @@ public sealed class PreferencesConfig : ModConfig
     // Full HDR Rendering
 
     [Header("FullHdrRendering")]
+    [DefaultValue(DefaultOptions.ToneMappingOperator)]
+    public ToneMappingPreset ToneMappingOperator { get; set; }
+
     [Range(50, 150)]
     [Increment(5)]
     [DefaultValue(DefaultOptions.Exposure)]
     [Slider]
     public int Exposure { get; set; }
-
-    [DefaultValue(DefaultOptions.ToneMappingOperator)]
-    public ToneMappingPreset ToneMappingOperator { get; set; }
 
     [Range(0, 10)]
     [DefaultValue(DefaultOptions.VibranceBoost)]

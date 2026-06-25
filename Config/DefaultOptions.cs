@@ -30,13 +30,13 @@ public static class DefaultOptions
 
     // Smooth Lighting
     public const bool UseSmoothLighting = true;
+    public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = true;
     public const bool SimulateNormalMaps = false;
     public const bool SimulateNonSolidNormals = false;
     public const bool SimulateTileEntityNormals = false;
     public const bool UseEnhancedGlowMaskSupport = false;
-    public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
 
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 7;
@@ -44,8 +44,8 @@ public static class DefaultOptions
     public const bool UseGrayscaleLighting = false;
 
     // Full HDR Rendering Preferences
-    public const int Exposure = 100;
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.NeutralLms;
+    public const int Exposure = 100;
     public const int VibranceBoost = 2;
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
@@ -63,8 +63,8 @@ public static class DefaultOptions
 
     // Fancy Lighting Engine
     public const bool UseFancyLightingEngine = true;
-    public const bool FancyLightingEngineUseTemporal = true;
     public const LightingEngineMode FancyLightingEngineMode = LightingEngineMode.Low;
+    public const bool FancyLightingEngineUseTemporal = true;
     public const bool SimulateGlobalIllumination = true;
 
     // Fancy Lighting Engine Preferences

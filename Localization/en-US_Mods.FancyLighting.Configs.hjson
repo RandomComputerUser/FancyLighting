@@ -161,6 +161,17 @@ PreferencesConfig: {
 
 	# Full HDR Rendering
 	
+	ToneMappingOperator: {
+		Label: Tone Mapping Operator
+		Tooltip:
+			'''
+			Which tone mapping operator is used
+
+			Affects the overall appearance of colors and contrast in the final image
+			The Linear tone mapping operator also disables dithering
+			'''
+	}
+
 	Exposure: {
 		Label: Exposure (%)
 		Tooltip:
@@ -168,17 +179,6 @@ PreferencesConfig: {
 			The exposure used when tone mapping the image from HDR
 
 			Higher values result in a brighter image
-			'''
-	}
-
-	ToneMappingOperator: {
-		Label: Tone Mapping Operator
-		Tooltip:
-			'''
-			Which tone mapping operator is used
-
-			Affects the overall appearance of lighting in the final image
-			The Linear tone mapping operator also disables dithering
 			'''
 	}
 
@@ -375,6 +375,18 @@ LightingConfig: {
 			'''
 	}
 
+	LightMapRenderMode: {
+		Label: Render Mode
+		Tooltip:
+			'''
+			How light is rendered
+
+			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
+			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
+			[c/FFFF00:Has a very high impact on performance]
+			'''
+	}
+
 	UseLightMapBlurring: {
 		Label: Light Map Blurring
 		Tooltip:
@@ -438,18 +450,6 @@ LightingConfig: {
 			'''
 	}
 
-	LightMapRenderMode: {
-		Label: Render Mode
-		Tooltip:
-			'''
-			How light is rendered
-
-			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
-			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
-			[c/FFFF00:Has a very high impact on performance]
-			'''
-	}
-
 	# Ambient Occlusion
 	
 	UseAmbientOcclusion: {
@@ -497,6 +497,17 @@ LightingConfig: {
 			'''
 	}
 
+	FancyLightingEngineMode: {
+		Label: Lighting Quality
+		Tooltip:
+			'''
+			The quality of the light spreading algorithm
+
+			Primarily affects shadow accuracy
+			[c/FFFF00:Has a medium-high impact on performance]
+			'''
+	}
+
 	FancyLightingEngineUseTemporal: {
 		Label: Temporal Optimization
 		Tooltip:
@@ -506,17 +517,6 @@ LightingConfig: {
 			Adjusts the lighting quality level using data from the previous lighting update
 			Improves lighting performance in more intensely lit areas
 			May sometimes cause a slightly noticeable reduction in lighting quality
-			'''
-	}
-
-	FancyLightingEngineMode: {
-		Label: Lighting Quality
-		Tooltip:
-			'''
-			The quality of the light spreading algorithm
-
-			Primarily affects shadow accuracy
-			[c/FFFF00:Has a medium-high impact on performance]
 			'''
 	}
 

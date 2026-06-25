@@ -74,21 +74,21 @@ public sealed class LightingConfig : ModConfig
     private void CopyFrom(PresetOptions options)
     {
         _useSmoothLighting = options.UseSmoothLighting;
+        _lightMapRenderMode = options.LightMapRenderMode;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _simulateNormalMaps = options.SimulateNormalMaps;
         _simulateNonSolidNormals = options.SimulateNonSolidNormals;
         _simulateTileEntityNormals = options.SimulateTileEntityNormals;
         _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
-        _lightMapRenderMode = options.LightMapRenderMode;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
         _doTileEntityAmbientOcclusion = options.DoTileEntityAmbientOcclusion;
 
         _useFancyLightingEngine = options.UseFancyLightingEngine;
-        _fancyLightingEngineUseTemporal = options.FancyLightingEngineUseTemporal;
         _fancyLightingEngineMode = options.FancyLightingEngineMode;
+        _fancyLightingEngineUseTemporal = options.FancyLightingEngineUseTemporal;
         _simulateGlobalIllumination = options.SimulateGlobalIllumination;
 
         _useFancySkyRendering = options.UseFancySkyRendering;
@@ -156,6 +156,21 @@ public sealed class LightingConfig : ModConfig
     }
 
     private bool _useSmoothLighting;
+
+    [DefaultValue(DefaultOptions.LightMapRenderMode)]
+    [Slider]
+    [DrawTicks]
+    public RenderMode LightMapRenderMode
+    {
+        get => _lightMapRenderMode;
+        set
+        {
+            _lightMapRenderMode = value;
+            UpdatePreset();
+        }
+    }
+
+    private RenderMode _lightMapRenderMode;
 
     [DefaultValue(DefaultOptions.UseLightMapBlurring)]
     public bool UseLightMapBlurring
@@ -234,21 +249,6 @@ public sealed class LightingConfig : ModConfig
     }
     private bool _useEnhancedGlowMaskSupport;
 
-    [DefaultValue(DefaultOptions.LightMapRenderMode)]
-    [Slider]
-    [DrawTicks]
-    public RenderMode LightMapRenderMode
-    {
-        get => _lightMapRenderMode;
-        set
-        {
-            _lightMapRenderMode = value;
-            UpdatePreset();
-        }
-    }
-
-    private RenderMode _lightMapRenderMode;
-
     // Ambient Occlusion
 
     [Header("AmbientOcclusion")]
@@ -307,19 +307,6 @@ public sealed class LightingConfig : ModConfig
 
     private bool _useFancyLightingEngine;
 
-    [DefaultValue(DefaultOptions.FancyLightingEngineUseTemporal)]
-    public bool FancyLightingEngineUseTemporal
-    {
-        get => _fancyLightingEngineUseTemporal;
-        set
-        {
-            _fancyLightingEngineUseTemporal = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _fancyLightingEngineUseTemporal;
-
     [DefaultValue(DefaultOptions.FancyLightingEngineMode)]
     [Slider]
     [DrawTicks]
@@ -334,6 +321,19 @@ public sealed class LightingConfig : ModConfig
     }
 
     private LightingEngineMode _fancyLightingEngineMode;
+
+    [DefaultValue(DefaultOptions.FancyLightingEngineUseTemporal)]
+    public bool FancyLightingEngineUseTemporal
+    {
+        get => _fancyLightingEngineUseTemporal;
+        set
+        {
+            _fancyLightingEngineUseTemporal = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _fancyLightingEngineUseTemporal;
 
     [DefaultValue(DefaultOptions.SimulateGlobalIllumination)]
     public bool SimulateGlobalIllumination
