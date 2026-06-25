@@ -420,20 +420,20 @@ LightingConfig: {
 	}
 
 	SimulateNonSolidNormals: {
-		Label: Normal Maps for Non-Solid Tiles
+		Label: Normal Maps on Non-Solid Tiles
 		Tooltip:
 			'''
-			Whether normal maps are rendered for non-solid tiles
+			Whether normal maps are rendered on non-solid tiles
 
 			Primarily affects furniture
 			'''
 	}
 
 	SimulateTileEntityNormals: {
-		Label: Normal Maps for Tile Entities
+		Label: Normal Maps on Tile Entities
 		Tooltip:
 			'''
-			Whether normal maps are rendered for tile entities
+			Whether normal maps are rendered on tile entities
 
 			Primarily affects tiles that are affected by wind
 			'''
@@ -467,7 +467,7 @@ LightingConfig: {
 		Label: Ambient Occlusion from Non-Solid Tiles
 		Tooltip:
 			'''
-			Whether non-solid tiles occlude light
+			Whether non-solid tiles generate ambient occlusion shadows
 
 			Primarily affects furniture
 			'''
@@ -477,7 +477,7 @@ LightingConfig: {
 		Label: Ambient Occlusion from Tile Entities
 		Tooltip:
 			'''
-			Whether tile entities occlude light
+			Whether tile entities generate ambient occlusion shadows
 
 			Primarily affects tiles that are affected by wind
 			'''
