@@ -13,5 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.1.1 (2026-06-16)
-- Fixed some crashes that could occur when running other mods
+### v1.1.2 (2026-06-25)
