@@ -10,6 +10,9 @@ internal static class SpriteBatchAccessors
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "samplerState")]
     public static extern ref SamplerState samplerState(SpriteBatch obj);
 
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "rasterizerState")]
+    public static extern ref RasterizerState rasterizerState(SpriteBatch obj);
+
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "transformMatrix")]
     public static extern ref Matrix transformMatrix(SpriteBatch obj);
 }

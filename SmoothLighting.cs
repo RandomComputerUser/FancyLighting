@@ -1649,8 +1649,10 @@ public sealed class SmoothLighting
             16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y),
             Main.screenPosition - offset,
             doScaling && !FancyLightingMod._isGameInCameraMode
-                ? Main.GameViewMatrix.Zoom
-                    * new Vector2(1f, Main.LocalPlayer.gravDir < 0f ? -1f : 1f)
+                ? new Vector2(
+                    Main.GameViewMatrix.TransformationMatrix.M11,
+                    Main.GameViewMatrix.TransformationMatrix.M22
+                )
                 : Vector2.One,
             target,
             background,
@@ -2158,15 +2160,18 @@ public sealed class SmoothLighting
 
             if (doFancySky)
             {
+                var zoomWithFlipping = cameraMode
+                    ? Vector2.One
+                    : new Vector2(
+                        Main.GameViewMatrix.TransformationMatrix.M11,
+                        Main.GameViewMatrix.TransformationMatrix.M22
+                    );
+
                 var hour = GameTimeUtils.CalculateCurrentHour();
                 var (skyLightAngle, skyLightMult) =
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
-                    (float)skyLightMult * overbrightMult * zoom;
-                if (!cameraMode && Main.LocalPlayer.gravDir < 0f)
-                {
-                    normalMapSkyGradientMult.Y *= -1f;
-                }
+                    (float)skyLightMult * overbrightMult * zoomWithFlipping;
 
                 effect.SetParameter(
                     "SkyLightGradient",

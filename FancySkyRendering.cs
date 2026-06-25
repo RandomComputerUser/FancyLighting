@@ -96,9 +96,7 @@ public sealed class FancySkyRendering
 
         var samplerState = MainGraphics.GetSamplerState();
         var transformMatrix = MainGraphics.GetTransformMatrix();
-        var rasterizerState = FancyLightingMod._isGameInCameraMode
-            ? RasterizerState.CullNone
-            : Main.Rasterizer;
+        var rasterizerState = MainGraphics.GetRasterizerState();
         Main.spriteBatch.End();
 
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
@@ -142,7 +140,11 @@ public sealed class FancySkyRendering
         highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
         lowLevel = midLevel + (FadeHeightMult * (lowLevel - midLevel));
 
-        if (Main.LocalPlayer.gravDir < 0f)
+        if (
+            !Main.gameMenu
+            && !FancyLightingMod._isGameInCameraMode
+            && Main.BackgroundViewMatrix.TransformationMatrix.M22 < 0f
+        )
         {
             (highSkyColor, lowSkyColor) = (lowSkyColor, highSkyColor);
             (highLevel, lowLevel) = (1f - lowLevel, 1f - highLevel);
@@ -229,15 +231,13 @@ public sealed class FancySkyRendering
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
         var origTransform = transform;
-        var rasterizerState = FancyLightingMod._isGameInCameraMode
-            ? RasterizerState.CullNone
-            : Main.Rasterizer;
+        var rasterizerState = MainGraphics.GetRasterizerState();
         Main.spriteBatch.End();
 
         if (!Main.gameMenu && !FancyLightingMod._isGameInCameraMode)
         {
             // shift sun/moon downward
-            transform.M42 += Main.LocalPlayer.gravDir < 0f ? -25f : 25f;
+            transform.Translation += 25f * transform.Up;
         }
 
         if (!Main.eclipse)

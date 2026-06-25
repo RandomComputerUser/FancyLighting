@@ -932,7 +932,7 @@ public sealed class FancyLightingMod : Mod
 
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
-        var rasterizerState = _inCameraMode ? RasterizerState.CullNone : Main.Rasterizer;
+        var rasterizerState = MainGraphics.GetRasterizerState();
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
