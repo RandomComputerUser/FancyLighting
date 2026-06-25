@@ -344,14 +344,17 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
             SettingsSystem._parallelOptions,
             (i) =>
             {
+                var myTaskCount = taskCount;
+                var workingLightMaps = _workingLightMaps;
+
                 var begin = ChunkSize * i;
                 var end = Math.Min(length, begin + ChunkSize);
 
-                for (var j = 1; j < _workingLightMaps.Length; ++j)
+                for (var j = 1; j < myTaskCount; ++j)
                 {
                     MaxArraysIntoFirst(
-                        _workingLightMaps[0],
-                        _workingLightMaps[j],
+                        workingLightMaps[0],
+                        workingLightMaps[j],
                         begin,
                         end
                     );
@@ -359,7 +362,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
 
                 if (!doGi)
                 {
-                    CopyVec3Array(_workingLightMaps[0], destination, begin, end);
+                    CopyVec3Array(workingLightMaps[0], destination, begin, end);
                 }
             }
         );

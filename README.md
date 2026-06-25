@@ -14,3 +14,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.1.2 (2026-06-25)
+- Fixed graphical glitches with the Fancy Lighting that occurred when using 4 or fewer threads
