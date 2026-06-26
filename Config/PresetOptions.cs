@@ -25,6 +25,9 @@ internal record PresetOptions
     public bool UseEnhancedGlowMaskSupport { get; init; } =
         DefaultOptions.UseEnhancedGlowMaskSupport;
 
+    public bool UseTileEntitySmoothLighting { get; init; } =
+        DefaultOptions.UseTileEntitySmoothLighting;
+
     // Ambient Occlusion
 
     public bool UseAmbientOcclusion { get; init; } = DefaultOptions.UseAmbientOcclusion;
@@ -69,6 +72,7 @@ internal record PresetOptions
         SimulateNonSolidNormals = config.SimulateNonSolidNormals;
         SimulateTileEntityNormals = config.SimulateTileEntityNormals;
         UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
+        UseTileEntitySmoothLighting = config.UseTileEntitySmoothLighting;
 
         UseAmbientOcclusion = config.UseAmbientOcclusion;
         DoNonSolidAmbientOcclusion = config.DoNonSolidAmbientOcclusion;
@@ -94,6 +98,7 @@ internal record PresetOptions
             SimulateNonSolidNormals = false,
             SimulateTileEntityNormals = false,
             UseEnhancedGlowMaskSupport = false,
+            UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
@@ -115,6 +120,7 @@ internal record PresetOptions
             SimulateNonSolidNormals = false,
             SimulateTileEntityNormals = false,
             UseEnhancedGlowMaskSupport = false,
+            UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = false,
             DoTileEntityAmbientOcclusion = false,
@@ -138,6 +144,7 @@ internal record PresetOptions
             SimulateNonSolidNormals = true,
             SimulateTileEntityNormals = true,
             UseEnhancedGlowMaskSupport = true,
+            UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
@@ -159,6 +166,7 @@ internal record PresetOptions
             SimulateNonSolidNormals = true,
             SimulateTileEntityNormals = true,
             UseEnhancedGlowMaskSupport = true,
+            UseTileEntitySmoothLighting = true,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,

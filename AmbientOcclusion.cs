@@ -52,8 +52,6 @@ public sealed class AmbientOcclusion
             "FancyLighting/Effects/LightRendering",
             "EnhancedGlowMask"
         );
-
-        _drawingTileEntities = false;
     }
 
     internal void Unload()

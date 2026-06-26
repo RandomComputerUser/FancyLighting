@@ -450,6 +450,17 @@ LightingConfig: {
 			'''
 	}
 
+	UseTileEntitySmoothLighting: {
+		Label: Smooth Lighting on Tile Entities
+		Tooltip:
+			'''
+			Use smooth lighting on tile entities
+
+			Primarily affects tiles that are affected by wind
+			[c/FFFF00:Has a medium-high impact on performance]
+			'''
+	}
+
 	# Ambient Occlusion
 	
 	UseAmbientOcclusion: {

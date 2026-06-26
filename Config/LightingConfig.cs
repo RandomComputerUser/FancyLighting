@@ -81,6 +81,7 @@ public sealed class LightingConfig : ModConfig
         _simulateNonSolidNormals = options.SimulateNonSolidNormals;
         _simulateTileEntityNormals = options.SimulateTileEntityNormals;
         _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
+        _useTileEntitySmoothLighting = options.UseTileEntitySmoothLighting;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
         _doNonSolidAmbientOcclusion = options.DoNonSolidAmbientOcclusion;
@@ -248,6 +249,18 @@ public sealed class LightingConfig : ModConfig
         }
     }
     private bool _useEnhancedGlowMaskSupport;
+
+    [DefaultValue(DefaultOptions.UseTileEntitySmoothLighting)]
+    public bool UseTileEntitySmoothLighting
+    {
+        get => _useTileEntitySmoothLighting;
+        set
+        {
+            _useTileEntitySmoothLighting = value;
+            UpdatePreset();
+        }
+    }
+    private bool _useTileEntitySmoothLighting;
 
     // Ambient Occlusion
 

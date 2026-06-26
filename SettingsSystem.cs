@@ -124,8 +124,12 @@ internal sealed class SettingsSystem : ModSystem
     private static bool NeedsCapture() =>
         (
             LightingConfig.Instance?.SmoothLightingEnabled() is true
-            && LightingConfig.Instance?.SimulateNormalMaps is true
-            && LightingConfig.Instance?.SimulateTileEntityNormals is true
+            && (
+                (
+                    LightingConfig.Instance?.SimulateNormalMaps is true
+                    && LightingConfig.Instance?.SimulateTileEntityNormals is true
+                ) || LightingConfig.Instance?.UseTileEntitySmoothLighting is true
+            )
         ) || PreferencesConfig.Instance?.DepthOfField is true;
 
     internal static bool HdrCompatibilityEnabled() =>

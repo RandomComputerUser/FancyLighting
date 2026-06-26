@@ -20,6 +20,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Tweaked normal maps rendering
 - Increased the default normal maps strength to 7 (from 3)
 - Decreased the maximum normal maps strength to 10 (from 15)
+- Added a setting to apply smooth lighting to tile entities
 - Added the "Neutral (LMS)" TMO, which is the new default
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
 - Tweaked and optimized vibrance boost

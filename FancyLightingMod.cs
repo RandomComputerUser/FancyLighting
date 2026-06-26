@@ -50,6 +50,9 @@ public sealed class FancyLightingMod : Mod
     private RenderTarget2D _tmpTarget2;
     private RenderTarget2D _tmpTarget3;
 
+    private RenderTarget2D _tmpScreenTarget1;
+    private RenderTarget2D _tmpScreenTarget2;
+
     private RenderTarget2D _backgroundTarget;
     private RenderTarget2D _cameraModeBackgroundTarget;
 
@@ -192,6 +195,8 @@ public sealed class FancyLightingMod : Mod
             _cameraModeTarget = null;
             _cameraModeTmpTarget1?.Dispose();
             _cameraModeTmpTarget2?.Dispose();
+            _tmpScreenTarget1?.Dispose();
+            _tmpScreenTarget2?.Dispose();
             _backgroundTarget?.Dispose();
             _cameraModeBackgroundTarget?.Dispose();
 
@@ -974,13 +979,100 @@ public sealed class FancyLightingMod : Mod
             (solidLayer || intoRenderTargets)
             || _ambientOcclusionInstance._drawingTileEntities
             || !LightingConfig.Instance.SmoothLightingEnabled()
-            || !_smoothLightingInstance.ApplyTileEntityEffect()
+            || !SettingsSystem.PostProcessingAllowed()
+            || !_doingFilterManagerCapture
         )
         {
             orig(self, solidLayer, forRenderTargets, intoRenderTargets);
             return;
         }
 
+        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+
+        var useGlowMasks =
+            LightingConfig.Instance.UseTileEntitySmoothLighting
+            && !DeveloperConfig.Instance.RenderOnlyLight;
+        var (effect, usedTmpTarget) = _smoothLightingInstance.GetTileEntityEffect(
+            target,
+            ref _tmpScreenTarget1
+        );
+
+        if (effect is null)
+        {
+            orig(self, solidLayer, forRenderTargets, intoRenderTargets);
+            return;
+        }
+
+        if (useGlowMasks)
+        {
+            TextureUtils.MakeSize(
+                ref _tmpScreenTarget2,
+                target.Width,
+                target.Height,
+                TextureUtils.ScreenFormat
+            );
+
+            if (!usedTmpTarget)
+            {
+                TextureUtils.MakeSize(
+                    ref _tmpScreenTarget1,
+                    target.Width,
+                    target.Height,
+                    TextureUtils.ScreenFormat
+                );
+
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget1);
+                Main.spriteBatch.Begin(
+                    SpriteSortMode.Deferred,
+                    BlendState.Opaque,
+                    SamplerState.PointClamp,
+                    DepthStencilState.None,
+                    RasterizerState.CullNone
+                );
+                Main.spriteBatch.Draw(target, Vector2.Zero, Color.White);
+                Main.spriteBatch.End();
+                usedTmpTarget = true;
+            }
+
+            Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget2);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+
+            UseBlackLights = true;
+            _preventTileParticles = true;
+            try
+            {
+                DrawTileEntities(self);
+            }
+            finally
+            {
+                _preventTileParticles = false;
+                UseBlackLights = false;
+            }
+        }
+
+        if (usedTmpTarget)
+        {
+            Main.graphics.GraphicsDevice.SetRenderTarget(target);
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.Opaque,
+                SamplerState.PointClamp,
+                DepthStencilState.None,
+                RasterizerState.CullNone
+            );
+            Main.spriteBatch.Draw(_tmpScreenTarget1, Vector2.Zero, Color.White);
+            Main.spriteBatch.End();
+        }
+
+        var glowTarget = useGlowMasks ? _tmpScreenTarget2 : null;
+        _smoothLightingInstance.ApplyTileEntityEffect(effect, glowTarget);
+        DrawTileEntities(self);
+        SpriteBatchEffectLoader.ClearEffect();
+        MainGraphics.RestoreSavedTextures();
+    }
+
+    private static void DrawTileEntities(TileDrawing self)
+    {
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
@@ -1004,9 +1096,6 @@ public sealed class FancyLightingMod : Mod
         TileDrawingAccessors.DrawCustom(self, false);
 
         Main.spriteBatch.End();
-
-        SpriteBatchEffectLoader.ClearEffect();
-        MainGraphics.RestoreSavedTextures();
     }
 
     // Liquids

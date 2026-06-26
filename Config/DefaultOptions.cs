@@ -37,6 +37,7 @@ public static class DefaultOptions
     public const bool SimulateNonSolidNormals = false;
     public const bool SimulateTileEntityNormals = false;
     public const bool UseEnhancedGlowMaskSupport = false;
+    public const bool UseTileEntitySmoothLighting = false;
 
     // Smooth Lighting Preferences
     public const int NormalMapsIntensity = 7;
