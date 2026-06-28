@@ -218,6 +218,10 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
 float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
+    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+    {
+        return input.Color * texColor;
+    }
     float3 lightColor =
         input.Color.a
         * lightMult
@@ -232,6 +236,21 @@ float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
         lerp(primary.rgb, bright, step(2.0 / 255, selector)),
         glow.a
     );
+}
+
+float4 SmoothLightingColorLightOnly(in VertexShaderOutput input, float lightMult)
+{
+    float alpha = tex2D(TextureSampler, input.TexCoord).a;
+    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+    {
+        return input.Color * alpha;
+    }
+    float3 lightColor =
+        input.Color.a
+        * lightMult
+        * min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1);
+    
+    return float4(lightColor, input.Color.a) * alpha;
 }
 
 VertexShaderOutput SmoothLightingVS(in VertexShaderInput input)
@@ -305,13 +324,8 @@ float4 NormalsLightOnlyPS(in VertexShaderOutput input) : COLOR0
 
 float4 NormalsLightOnlySmoothPS(in VertexShaderOutput input) : COLOR0
 {
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor =
-        input.Color.a
-        * float4(min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1), 1);
     float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    
-    return lightColor * float4(mult.xxx, 1) * texColor.a;
+    return SmoothLightingColorLightOnly(input, mult);
 }
 
 float4 NormalsLightOnlyFancySkyPS(in VertexShaderOutput input) : COLOR0
@@ -325,13 +339,8 @@ float4 NormalsLightOnlyFancySkyPS(in VertexShaderOutput input) : COLOR0
 
 float4 NormalsLightOnlyFancySkySmoothPS(in VertexShaderOutput input) : COLOR0
 {
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor =
-        input.Color.a
-        * float4(min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1), 1);
     float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    
-    return lightColor * float4(mult.xxx, 1) * texColor.a;
+    return SmoothLightingColorLightOnly(input, mult);
 }
 
 float4 LightOnlyPS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
@@ -341,10 +350,7 @@ float4 LightOnlyPS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 
 float4 LightOnlySmoothPS(in VertexShaderOutput input) : COLOR0
 {
-    float4 lightColor =
-        input.Color.a
-        * float4(min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1), 1);
-    return lightColor * tex2D(TextureSampler, input.TexCoord).a;
+    return SmoothLightingColorLightOnly(input, 1);
 }
 
 technique Smooth
