@@ -172,13 +172,14 @@ PreferencesConfig: {
 			'''
 	}
 
-	Exposure: {
-		Label: Exposure (%)
+	ExposureLogarithmic: {
+		Label: Exposure
 		Tooltip:
 			'''
 			The exposure used when tone mapping the image from HDR
 
 			Higher values result in a brighter image
+			An increase or decrease of 5 corresponds to one stop
 			'''
 	}
 

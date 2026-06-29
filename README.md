@@ -23,6 +23,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to apply smooth lighting to tile entities
 - Added the "Neutral (LMS)" TMO, which is the new default
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
+- Changed the exposure slider to be logarithmic
 - Tweaked and optimized vibrance boost
 - Made the "Bicubic" render mode a little brighter
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles

@@ -46,7 +46,7 @@ public static class DefaultOptions
 
     // Full HDR Rendering Preferences
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.NeutralLms;
-    public const int Exposure = 100;
+    public const int ExposureLogarithmic = 0;
     public const int VibranceBoost = 2;
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;

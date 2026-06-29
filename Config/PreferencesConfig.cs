@@ -17,7 +17,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public float NormalMapsMultiplier() => NormalMapsIntensity / 10f;
 
-    public float ExposureMult() => Exposure / 100f;
+    public float ExposureMult() => MathF.Pow(2f, ExposureLogarithmic / 5f);
 
     public float BloomLerp() => 0.0025f * BloomStrength;
 
@@ -95,11 +95,10 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.ToneMappingOperator)]
     public ToneMappingPreset ToneMappingOperator { get; set; }
 
-    [Range(50, 150)]
-    [Increment(5)]
-    [DefaultValue(DefaultOptions.Exposure)]
+    [Range(-25, 25)]
+    [DefaultValue(DefaultOptions.ExposureLogarithmic)]
     [Slider]
-    public int Exposure { get; set; }
+    public int ExposureLogarithmic { get; set; }
 
     [Range(0, 10)]
     [DefaultValue(DefaultOptions.VibranceBoost)]
