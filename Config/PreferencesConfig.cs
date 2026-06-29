@@ -66,7 +66,7 @@ public sealed class PreferencesConfig : ModConfig
     // Color Management
 
     [Header("ColorManagement")]
-    [Range(140, 300)]
+    [Range(100, 340)]
     [Increment(10)]
     [DefaultValue(DefaultOptions.Gamma)]
     [Slider]
@@ -100,7 +100,7 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     public int ExposureLogarithmic { get; set; }
 
-    [Range(0, 10)]
+    [Range(0, 15)]
     [DefaultValue(DefaultOptions.VibranceBoost)]
     [Slider]
     public int VibranceBoost { get; set; }
@@ -114,7 +114,7 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int BloomRadius { get; set; }
 
-    [Range(1, 20)]
+    [Range(1, 30)]
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
     public int BloomStrength { get; set; }
@@ -167,7 +167,7 @@ public sealed class PreferencesConfig : ModConfig
     // Fancy Sky
 
     [Header("FancySky")]
-    [Range(0, 10)]
+    [Range(0, 15)]
     [DefaultValue(DefaultOptions.SkyBrightnessBoost)]
     [Slider]
     public int SkyBrightnessBoost { get; set; }

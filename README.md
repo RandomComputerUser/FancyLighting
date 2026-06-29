@@ -17,17 +17,21 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added Fancy Sky Light Shading
   - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
 - Added tile entity normal maps
-- Tweaked normal maps rendering
-- Increased the default normal maps strength to 7 (from 3)
-- Decreased the maximum normal maps strength to 10 (from 15)
+- Tweaked normal maps rendering and adjusted the normal maps strength scale
+- Changed the default normal maps strength to 7 (from 3)
+- Changed the maximum normal maps strength to 10 (from 15)
 - Added a setting to apply smooth lighting to tile entities
 - Added the "Neutral (LMS)" TMO, which is the new default
 - Renamed the "Neutral" TMO to "Neutral (old)" and "Filmic" to "Filmic (sRGB)"
-- Changed the exposure slider to be logarithmic
 - Tweaked and optimized vibrance boost
 - Made the "Bicubic" render mode a little brighter
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
+- Increased the range of the gamma setting to 100–340% (from 140–300%)
+- Changed the exposure setting to be logarithmic and increased its range
+- Increased the max vibrance boost to 15 (from 10)
+- Increased the max bloom strength to 30 (from 20)
+- Increased the max sky brightness boost to 15 (from 10)
 - Created two new configs: "Compatibility Settings" and "Developer Settings"
 - Some settings from the "Preferences" config have been moved to the new configs
 - Added tooltip lines to settings that have a high impact on performance
