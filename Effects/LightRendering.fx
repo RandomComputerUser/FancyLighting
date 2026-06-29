@@ -59,7 +59,7 @@ float AmbientOcclusion(float2 coords, float alpha)
 
 float AmbientOcclusionHiDef(float2 coords, float alpha)
 {
-    alpha = GammaToLinear(saturate(alpha));
+    alpha = saturate(alpha);
     return LinearToGamma(
         lerp(
             1, tex2D(AmbientOcclusionSampler, WorldCoords(coords)).a, alpha
