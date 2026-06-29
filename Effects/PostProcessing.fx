@@ -79,7 +79,7 @@ float3 LinearToSrgb(float3 color)
 float3 DitherNoise(float2 coords)
 {
     return (
-        (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r - 0.5 / 255
+        (1.0 / 256) * tex2D(DitherSampler, coords * DitherCoordMult).r - 0.5 / 255
     ).xxx;
 }
 

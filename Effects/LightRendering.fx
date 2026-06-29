@@ -71,7 +71,7 @@ float AmbientOcclusionHiDef(float2 coords, float alpha)
 float4 Dithered(float4 color, float2 coords)
 {
     float noise
-        = (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r
+        = (1.0 / 256) * tex2D(DitherSampler, coords * DitherCoordMult).r
         - 0.5 / 255;
     
     color.rgb += noise;
