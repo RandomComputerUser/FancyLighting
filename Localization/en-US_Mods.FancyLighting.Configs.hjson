@@ -81,6 +81,7 @@ PreferencesConfig: {
 		AmbientOcclusion: Ambient Occlusion
 		FancyLightingEngine: Fancy Lighting Engine
 		FancySky: Fancy Sky
+		Miscellaneous: Miscellaneous
 	}
 
 	# General
@@ -100,13 +101,12 @@ PreferencesConfig: {
 	# Color Management
 	
 	Gamma: {
-		Label: Gamma (%)
+		Label: Gamma
 		Tooltip:
 			'''
-			The gamma of the final image
+			The gamma of the final image, multiplied by 100
 
 			Higher values result in a brighter image with decreased contrast
-			A value of 220% corresponds to a gamma of 2.2
 			Recommended to set to the gamma of the display
 			If the display gamma is unknown, adjust according to preference
 			'''
@@ -172,14 +172,13 @@ PreferencesConfig: {
 			'''
 	}
 
-	ExposureLogarithmic: {
+	Exposure: {
 		Label: Exposure
 		Tooltip:
 			'''
-			The exposure used when tone mapping the image from HDR
+			The exposure used when tone mapping the image from HDR, in 1/10ths of a stop
 
 			Higher values result in a brighter image
-			An increase or decrease of 5 corresponds to one stop
 			'''
 	}
 
@@ -692,7 +691,7 @@ ToneMappingPreset: {
 	}
 
 	NeutralOld: {
-		Label: Neutral (old)
+		Label: Neutral (old WCG)
 		Tooltip: ""
 	}
 

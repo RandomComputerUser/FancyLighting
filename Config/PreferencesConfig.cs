@@ -17,9 +17,9 @@ public sealed class PreferencesConfig : ModConfig
 
     public float NormalMapsMultiplier() => NormalMapsIntensity / 10f;
 
-    public float ExposureMult() => MathF.Pow(2f, ExposureLogarithmic / 5f);
+    public float ExposureMult() => MathF.Pow(2f, Exposure / 10f);
 
-    public float BloomLerp() => 0.0025f * BloomStrength;
+    public float BloomLerp() => 0.005f * BloomStrength;
 
     public double VibranceIncrease() => VibranceBoost / 80.0;
 
@@ -93,12 +93,13 @@ public sealed class PreferencesConfig : ModConfig
 
     [Header("FullHdrRendering")]
     [DefaultValue(DefaultOptions.ToneMappingOperator)]
+    [Dropdown]
     public ToneMappingPreset ToneMappingOperator { get; set; }
 
-    [Range(-25, 25)]
-    [DefaultValue(DefaultOptions.ExposureLogarithmic)]
+    [Range(-20, 20)]
+    [DefaultValue(DefaultOptions.Exposure)]
     [Slider]
-    public int ExposureLogarithmic { get; set; }
+    public int Exposure { get; set; }
 
     [Range(0, 15)]
     [DefaultValue(DefaultOptions.VibranceBoost)]
@@ -114,7 +115,7 @@ public sealed class PreferencesConfig : ModConfig
     [DrawTicks]
     public int BloomRadius { get; set; }
 
-    [Range(1, 30)]
+    [Range(1, 15)]
     [DefaultValue(DefaultOptions.BloomStrength)]
     [Slider]
     public int BloomStrength { get; set; }
@@ -173,8 +174,10 @@ public sealed class PreferencesConfig : ModConfig
     public int SkyBrightnessBoost { get; set; }
 
     [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
+    [Dropdown]
     public SkyColorPreset FancySkyColorsPreset { get; set; }
 
+    [Header("Miscellaneous")]
     [DefaultValue(DefaultOptions.DepthOfField)]
     public bool DepthOfField { get; set; }
 
