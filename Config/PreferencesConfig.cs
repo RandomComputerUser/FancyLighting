@@ -11,9 +11,9 @@ public sealed class PreferencesConfig : ModConfig
     // Handled automatically by tModLoader
     public static PreferencesConfig Instance;
 
-    public float OutputGamma() => Gamma / 100f;
+    public float OutputGamma() => OutputImageGamma / 100f;
 
-    public bool UseCustomGamma() => Gamma != DefaultOptions.Gamma;
+    public bool UseCustomGamma() => OutputImageGamma != DefaultOptions.OutputImageGamma;
 
     public float NormalMapsMultiplier() => NormalMapsIntensity / 10f;
 
@@ -67,10 +67,10 @@ public sealed class PreferencesConfig : ModConfig
 
     [Header("ColorManagement")]
     [Range(100, 340)]
-    [Increment(10)]
-    [DefaultValue(DefaultOptions.Gamma)]
+    [Increment(5)]
+    [DefaultValue(DefaultOptions.OutputImageGamma)]
     [Slider]
-    public int Gamma { get; set; }
+    public int OutputImageGamma { get; set; }
 
     [DefaultValue(DefaultOptions.UseSrgb)]
     public bool UseSrgb { get; set; }

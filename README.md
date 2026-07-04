@@ -28,6 +28,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
 - Increased the range of the gamma setting to 100–340 (from 140–300)
+- Gamma can now be adjusted in increments of 5 (from 10)
 - Changed the exposure setting to be logarithmic and increased its range
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values

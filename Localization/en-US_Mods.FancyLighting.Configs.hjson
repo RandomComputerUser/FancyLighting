@@ -100,7 +100,7 @@ PreferencesConfig: {
 
 	# Color Management
 	
-	Gamma: {
+	OutputImageGamma: {
 		Label: Gamma
 		Tooltip:
 			'''
@@ -176,7 +176,7 @@ PreferencesConfig: {
 		Label: Exposure
 		Tooltip:
 			'''
-			The exposure used when tone mapping the image from HDR, in 1/10ths of a stop
+			The exposure of the image before tone mapping, in 1/10ths of a stop
 
 			Higher values result in a brighter image
 			'''
@@ -230,7 +230,7 @@ PreferencesConfig: {
 		Label: Ambient Occlusion Radius
 		Tooltip:
 			'''
-			The radius of blur used in Ambient Occlusion
+			The radius of blur used to generate ambient occlusion shadows
 
 			Higher values result in larger ambient occlusion shadows
 			'''
@@ -240,7 +240,7 @@ PreferencesConfig: {
 		Label: Ambient Occlusion Exponent (%)
 		Tooltip:
 			'''
-			How strongly light is affected by Ambient Occlusion
+			How strongly light is affected by ambient occlusion
 
 			Higher values result in larger, darker ambient occlusion shadows
 			'''
@@ -250,7 +250,7 @@ PreferencesConfig: {
 		Label: Ambient Light Proportion (%)
 		Tooltip:
 			'''
-			The proportion of light affected by Ambient Occlusion
+			The proportion of light affected by ambient occlusion
 
 			Higher values result in darker ambient occlusion shadows
 			'''

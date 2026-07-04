@@ -25,7 +25,7 @@ public static class DefaultOptions
         Math.Clamp(Environment.ProcessorCount, MinThreadCount, MaxDefaultThreadCount);
 
     // Color Management Preferences
-    public const int Gamma = 220;
+    public const int OutputImageGamma = 220;
     public const bool UseSrgb = false;
 
     // Smooth Lighting
