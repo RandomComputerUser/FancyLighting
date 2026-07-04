@@ -205,7 +205,8 @@ public sealed class PostProcessing
         var gamma = ContentGamma();
 
         var tmo = PreferencesConfig.Instance.ToneMappingOperator;
-        var disableDither = tmo is ToneMappingPreset.Linear;
+        var disableDither =
+            DeveloperConfig.Instance.DisableDithering || tmo is ToneMappingPreset.Linear;
 
         if (
             LightingConfig.Instance.SmoothLightingEnabled()

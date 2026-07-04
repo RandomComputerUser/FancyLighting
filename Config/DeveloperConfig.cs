@@ -19,6 +19,9 @@ public sealed class DeveloperConfig : ModConfig
     [DefaultValue(DefaultOptions.MonitorPerformance)]
     public bool MonitorPerformance { get; set; }
 
+    [DefaultValue(DefaultOptions.DisableDithering)]
+    public bool DisableDithering { get; set; }
+
     [Header("SmoothLighting")]
     [DefaultValue(DefaultOptions.RenderOnlyLight)]
     public bool RenderOnlyLight { get; set; }

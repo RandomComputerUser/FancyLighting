@@ -89,7 +89,10 @@ public sealed class FancySkyRendering
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
         var doDithering =
-            LightingConfig.Instance.SmoothLightingEnabled() && doOverbright && !hiDef;
+            !DeveloperConfig.Instance.DisableDithering
+            && LightingConfig.Instance.SmoothLightingEnabled()
+            && doOverbright
+            && !hiDef;
         var gamma = Main.gameMenu
             ? PostProcessing.DefaultGamma
             : PostProcessing.ContentGamma();

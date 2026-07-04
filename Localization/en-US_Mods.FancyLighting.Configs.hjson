@@ -54,6 +54,17 @@ DeveloperConfig: {
 			'''
 	}
 
+	DisableDithering: {
+		Label: Disable Dithering
+		Tooltip:
+			'''
+			Disable dithering
+
+			Dithering helps reduce or eliminate color banding
+			Dithering is added when using HDR rendering or custom color management settings
+			'''
+	}
+
 	RenderOnlyLight: {
 		Label: Show Light Colors
 		Tooltip: Display light colors directly without tile and wall textures

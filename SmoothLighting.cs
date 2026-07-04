@@ -14,6 +14,7 @@ public sealed class SmoothLighting
     private RenderTarget2D _colorsHiRes;
 
     private readonly Texture2D _ditherNoise;
+    private readonly Texture2D _grayPixel;
 
     private Rectangle _lightMapTileArea;
 
@@ -176,6 +177,12 @@ public sealed class SmoothLighting
         _ditherNoise = ModContent
             .Request<Texture2D>(
                 "FancyLighting/Effects/DitherNoise",
+                AssetRequestMode.ImmediateLoad
+            )
+            .Value;
+        _grayPixel = ModContent
+            .Request<Texture2D>(
+                "FancyLighting/Effects/GrayPixel",
                 AssetRequestMode.ImmediateLoad
             )
             .Value;
@@ -359,6 +366,7 @@ public sealed class SmoothLighting
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _ditherNoise?.Dispose();
+        _grayPixel?.Dispose();
         EffectLoader.UnloadEffect(ref _bicubicFilteringShader);
         EffectLoader.UnloadEffect(ref _bicubicFilteringWithAlphaShader);
         EffectLoader.UnloadEffect(ref _normalsShader);
@@ -2099,7 +2107,11 @@ public sealed class SmoothLighting
                     )
                 )
                 .Apply();
-            MainGraphics.SetTexture(6, _ditherNoise, SamplerState.PointWrap);
+            MainGraphics.SetTexture(
+                6,
+                DeveloperConfig.Instance.DisableDithering ? _grayPixel : _ditherNoise,
+                SamplerState.PointWrap
+            );
         }
 
         shader.Apply();
@@ -2145,7 +2157,11 @@ public sealed class SmoothLighting
             && LightingConfig.Instance.SimulateTileEntityNormals;
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
-        var doDithering = smoothLighting && doOverbright && !hiDef;
+        var doDithering =
+            !DeveloperConfig.Instance.DisableDithering
+            && smoothLighting
+            && doOverbright
+            && !hiDef;
         var doFancySky = _useAlphaChannelAsSkyLightLuma;
         var needsLightMap = smoothLighting || doNormals;
         var cameraMode = FancyLightingMod._isGameInCameraMode;
@@ -2297,7 +2313,8 @@ public sealed class SmoothLighting
     )
     {
         var doDithering =
-            LightingConfig.Instance.UseTileEntitySmoothLighting
+            !DeveloperConfig.Instance.DisableDithering
+            && LightingConfig.Instance.UseTileEntitySmoothLighting
             && LightingConfig.Instance.DrawOverbright()
             && !LightingConfig.Instance.HiDefFeaturesEnabled();
 

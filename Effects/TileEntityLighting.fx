@@ -240,7 +240,7 @@ float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
     float3 lightColor =
         input.Color.a
         * lightMult
-        * min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1);
+        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
     
     float3 primary = lightColor * texColor.rgb;
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
@@ -263,7 +263,7 @@ float4 SmoothLightingColorDithered(in GlowVertexShaderOutput input, float lightM
     float3 lightColor =
         input.Color.a
         * lightMult
-        * min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1);
+        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
     
     float3 primary = Dithered(lightColor * texColor.rgb, input.Position);
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
@@ -286,7 +286,7 @@ float4 SmoothLightingColorLightOnly(in VertexShaderOutput input, float lightMult
     float3 lightColor =
         input.Color.a
         * lightMult
-        * min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1);
+        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
     
     return float4(lightColor, input.Color.a) * alpha;
 }
@@ -301,7 +301,7 @@ float4 SmoothLightingColorLightOnlyDithered(in VertexShaderOutput input, float l
     float3 lightColor =
         input.Color.a
         * lightMult
-        * min(tex2D(LightSampler, input.LightMapTexCoord).rgb, 1);
+        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
     
     float4 result = float4(lightColor, input.Color.a) * alpha;
     result.rgb = Dithered(result.rgb, input.Position);

@@ -13,6 +13,7 @@ public static class DefaultOptions
 
     // Developer Settings
     public const bool MonitorPerformance = false;
+    public const bool DisableDithering = false;
     public const bool RenderOnlyLight = false;
     public const bool ShowFancySkyColorGradients = false;
 
