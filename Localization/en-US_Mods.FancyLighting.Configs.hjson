@@ -214,10 +214,10 @@ PreferencesConfig: {
 		Label: Tone Mapping Operator
 		Tooltip:
 			'''
-			Which tone mapping operator is used
+			Which tone mapping operator (TMO) is used
 
 			Affects the overall appearance of colors and contrast in the final image
-			The Linear tone mapping operator also disables dithering
+			The Linear TMO can be used with other programs to output HDR to the display
 
 			{$Snippets.RequireRenderModeFullHdr}
 			'''
