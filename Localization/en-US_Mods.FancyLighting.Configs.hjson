@@ -7,6 +7,8 @@ CompatibilityConfig: {
 		FancyLightingEngine: Fancy Lighting Engine
 	}
 
+	# Smooth Lighting
+	
 	DisableHdrDuringBossFights: {
 		Label: Disable HDRR During Boss Fights and Events
 		Tooltip:
@@ -16,11 +18,13 @@ CompatibilityConfig: {
 			Affects bosses with a boss health bar and events with a progress bar
 			May prevent visual issues with boss fights from other mods
 
-			[c/00FFFF:Render Mode must be set to Basic HDRR or Full HDRR for this setting to have any effect]
-			[c/FFFF00:Very High performance benefit]
+			{$Snippets.RequireRenderModeHdr}
+			{$Snippets.PerformanceBenefit}
 			'''
 	}
 
+	# Full HDR Rendering
+	
 	DisableHdrEnhancedAlphaBlending: {
 		Label: Disable Gamma-Correct Alpha Blending
 		Tooltip:
@@ -29,11 +33,10 @@ CompatibilityConfig: {
 
 			When disabled, blending between the foreground and background is done in a linear color space
 			Vanilla graphics does alpha blending in a gamma-encoded color space
-			Alpha blending in a gamma-encoded color space tends to make colors appear dirty in affected areas
+			Alpha blending in a gamma-encoded color space tends to make colors appear "dirty" in affected areas
 			May prevent some visual issues with semitransparent objects from other mods
 
-			[c/FFFF00:Low performance impact]
-			[c/FFFF00:Medium visual impact]
+			{$Snippets.RequireRenderModeFullHdr}
 			'''
 	}
 
@@ -45,18 +48,20 @@ CompatibilityConfig: {
 
 			May cause some visual issues with bright, moving light sources
 
-			[c/FFFF00:High performance benefit]
-			[c/FFFF00:Low visual impact]
+			{$Snippets.RequireRenderModeFullHdr}
+			{$Snippets.PerformanceBenefit}
 			'''
 	}
 
+	# Fancy Lighting Engine
+	
 	DisableFrameTimingOptimizations: {
 		Label: Disable Frame Timing Optimizations
 		Tooltip:
 			'''
-			Disable frame timing optimizations used by the Fancy Lighting Engine
+			Disable frame timing optimizations used by the {$Snippets.FancyLightingEngine}
 
-			[c/FFFF00:Low performance impact]
+			{$Snippets.PossiblePerformanceImpact}
 			'''
 	}
 }
@@ -70,6 +75,8 @@ DeveloperConfig: {
 		FancySky: Fancy Sky
 	}
 
+	# General
+	
 	MonitorPerformance: {
 		Label: Performance Monitor
 		Tooltip:
@@ -91,18 +98,22 @@ DeveloperConfig: {
 			'''
 	}
 
+	# Smooth Lighting
+	
 	RenderOnlyLight: {
 		Label: Show Light Colors
 		Tooltip: Display light colors directly without tile and wall textures
 	}
 
+	# Fancy Sky
+	
 	ShowFancySkyColorGradients: {
 		Label: Show Fancy Sky Color Gradients
 		Tooltip:
 			'''
-			Show the color gradients used by Fancy Sky
+			Show the color gradients used by {$Snippets.FancySky}
 
-			[c/FF00FF:Warning: this obscures a large part of the screen]
+			[c/FF4000:Warning:] [c/FFA080:this obscures a large part of the screen]
 			'''
 	}
 }
@@ -127,11 +138,13 @@ PreferencesConfig: {
 		Label: Thread Count
 		Tooltip:
 			'''
-			How many threads Smooth Lighting and the Fancy Lighting Engine use
+			How many threads {$Snippets.SmoothLighting} and the {$Snippets.FancyLightingEngine} use
 
 			Higher values typically improve performance with diminishing returns
 			Values greater than the number of CPU hardware threads may reduce performance
 			The default value should be close to optimal
+
+			{$Snippets.PossibleSignificantPerformanceEffect}
 			'''
 	}
 
@@ -156,7 +169,7 @@ PreferencesConfig: {
 			Use the sRGB tone curve in the final image
 
 			Makes dark colors darker and more saturated
-			When enabled, this setting overrides the gamma setting
+			This setting overrides the gamma setting
 			Recommended to enable if using HDR in Windows 11 or if the image is washed out
 			'''
 	}
@@ -170,7 +183,6 @@ PreferencesConfig: {
 			The strength of rendered normal maps
 
 			Higher values make surfaces appear rougher/bumpier
-			Normal maps must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -206,6 +218,8 @@ PreferencesConfig: {
 
 			Affects the overall appearance of colors and contrast in the final image
 			The Linear tone mapping operator also disables dithering
+
+			{$Snippets.RequireRenderModeFullHdr}
 			'''
 	}
 
@@ -216,6 +230,8 @@ PreferencesConfig: {
 			The exposure of the image before tone mapping, in 1/10ths of a stop
 
 			Higher values result in a brighter image
+
+			{$Snippets.RequireRenderModeFullHdr}
 			'''
 	}
 
@@ -226,6 +242,8 @@ PreferencesConfig: {
 			How much to boost the vibrance of colors
 
 			A value of 0 leaves colors unchanged
+
+			{$Snippets.RequireRenderModeFullHdr}
 			'''
 	}
 
@@ -236,6 +254,8 @@ PreferencesConfig: {
 			Render bloom
 
 			Adds a soft glow around bright objects
+
+			{$Snippets.RequireRenderModeFullHdr}
 			'''
 	}
 
@@ -246,7 +266,6 @@ PreferencesConfig: {
 			The radius of the bloom effect
 
 			Higher values result in a larger glow around bright objects
-			Bloom must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -257,7 +276,6 @@ PreferencesConfig: {
 			The strength of the bloom effect
 
 			Higher values result in a brighter glow around bright objects
-			Bloom must be enabled for this setting to have any effect
 			'''
 	}
 
@@ -323,7 +341,7 @@ PreferencesConfig: {
 			'''
 			How bright indirect lighting is compared to direct lighting
 
-			Global illumination must be enabled for this setting to have any effect
+			{$Snippets.RequireGlobalIllumination}
 			'''
 	}
 
@@ -345,7 +363,7 @@ PreferencesConfig: {
 			'''
 			How much to boost the brightness of the sky
 
-			Fancy Atmosphere must be enabled for this setting to have any effect
+			{$Snippets.RequireFancyAtmosphere}
 			'''
 	}
 
@@ -357,7 +375,7 @@ PreferencesConfig: {
 
 			Has the largest effect around sunrise and sunset
 			Fancy Atmosphere is intended to be used with the Natural preset
-			Fancy Sky Lighting must be enabled for this setting to have any effect
+			{$Snippets.RequireFancySkyLightColors}
 			'''
 	}
 
@@ -375,12 +393,7 @@ PreferencesConfig: {
 
 	DepthOfFieldRadius: {
 		Label: Depth of Field Blur Radius
-		Tooltip:
-			'''
-			The radius of the blur used in the depth of field effect
-
-			Depth of field must be enabled for this setting to have any effect
-			'''
+		Tooltip: The radius of the blur used in the depth of field effect
 	}
 }
 
@@ -409,8 +422,9 @@ LightingConfig: {
 			'''
 			Use smooth lighting
 
-			Makes light appear less blocky
-			Performance is primarily affected by single-threaded CPU and GPU performance
+			Eliminates the blockiness of lighting present in vanilla graphics
+
+			[c/FFFF80:Performance impact is primarily affected by single-threaded CPU and GPU performance]
 			'''
 	}
 
@@ -423,7 +437,7 @@ LightingConfig: {
 			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
 
-			[c/FFFF00:Very High performance impact]
+			{$Snippets.VeryHighPerformanceImpact}
 			'''
 	}
 
@@ -445,6 +459,8 @@ LightingConfig: {
 			Use an improved method to blur the light map
 
 			When enabled, the light absorption of each tile affects how the light map is blurred
+
+			{$Snippets.RequireLightMapBlurring}
 			'''
 	}
 
@@ -466,6 +482,8 @@ LightingConfig: {
 			Whether normal maps are rendered on non-solid tiles
 
 			Primarily affects furniture
+
+			{$Snippets.RequireNormalMaps}
 			'''
 	}
 
@@ -476,6 +494,8 @@ LightingConfig: {
 			Whether normal maps are rendered on tile entities
 
 			Primarily affects tiles that are affected by wind
+
+			{$Snippets.RequireNormalMaps}
 			'''
 	}
 
@@ -487,7 +507,7 @@ LightingConfig: {
 
 			When disabled, glow effect brightness may differ from vanilla
 
-			[c/FFFF00:High performance impact]
+			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 
@@ -498,8 +518,6 @@ LightingConfig: {
 			Use smooth lighting on tile entities
 
 			Primarily affects tiles that are affected by wind
-
-			[c/FFFF00:Medium-High performance impact]
 			'''
 	}
 
@@ -512,7 +530,8 @@ LightingConfig: {
 			Use ambient occlusion
 
 			Adds shadows on background walls in areas near foreground tiles
-			Performance is primarily affected by GPU performance
+
+			[c/FFFF80:Performance impact is primarily affected by GPU performance]
 			'''
 	}
 
@@ -546,7 +565,8 @@ LightingConfig: {
 
 			Spreads light more realistically with pronounced shadows
 			Has a higher performance impact the more light sources there are on-screen
-			Performance is primarily affected by multithreaded CPU performance
+
+			[c/FFFF80:Performance impact is primarily affected by multithreaded CPU performance]
 			'''
 	}
 
@@ -558,7 +578,7 @@ LightingConfig: {
 
 			Primarily affects shadow accuracy
 
-			[c/FFFF00:Medium-High performance impact]
+			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 
@@ -566,11 +586,13 @@ LightingConfig: {
 		Label: Temporal Optimization
 		Tooltip:
 			'''
-			Use temporal optimization with the Fancy Lighting Engine
+			Use temporal optimization with the {$Snippets.FancyLightingEngine}
 
 			Adjusts the lighting quality level using data from the previous lighting update
 			Improves lighting performance in more intensely lit areas
 			May sometimes cause a slightly noticeable reduction in lighting quality
+
+			{$Snippets.PerformanceBenefit}
 			'''
 	}
 
@@ -747,4 +769,32 @@ ToneMappingPreset: {
 		Label: Linear
 		Tooltip: ""
 	}
+}
+
+Snippets: {
+	VeryHighPerformanceImpact: "[c/FFE080:This setting has a] [c/FFC000:very high impact] [c/FFE080:on performance]"
+	HighPerformanceImpact: "[c/FFE080:This setting has a] [c/FFC000:high impact] [c/FFE080:on performance]"
+	PossiblePerformanceImpact: "[c/FFE080:This setting may] [c/FFC000:impact] [c/FFE080:performance]"
+	PossibleSignificantPerformanceEffect: "[c/FFFF80:This setting may have a] [c/FFFF00:significant effect] [c/FFFF80:on performance]"
+	PerformanceBenefit: "[c/80FF80:This setting] [c/00FF00:benefits] [c/80FF80:performance]"
+	SmoothLighting: "{$LightingConfig.UseSmoothLighting.Label}"
+	RenderMode: "{$LightingConfig.LightMapRenderMode.Label}"
+	LightMapBlurring: "{$LightingConfig.UseLightMapBlurring.Label}"
+	NormalMaps: "{$LightingConfig.SimulateNormalMaps.Label}"
+	AmbientOcclusion: "{$LightingConfig.UseAmbientOcclusion.Label}"
+	FancyLightingEngine: "{$LightingConfig.UseFancyLightingEngine.Label}"
+	GlobalIllumination: "{$LightingConfig.SimulateGlobalIllumination.Label}"
+	FancySky: "{$LightingConfig.Headers.FancySky}"
+	FancyAtmosphere: "{$LightingConfig.UseFancySkyRendering.Label}"
+	FancySkyLightColors: "{$LightingConfig.UseFancySkyColors.Label}"
+	FancySkyLightShading: "{$LightingConfig.UseFancySkyLighting.Label}"
+	BasicHdr: "{$RenderMode.BicubicOverbright.Label}"
+	FullHdr: "{$RenderMode.EnhancedHdr.Label}"
+	RequireRenderModeHdr: "[c/FF00FF:{$Snippets.RenderMode}] [c/FF80FF:must be set to] [c/FF00FF:{$Snippets.BasicHdr}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:for this setting to have an effect]"
+	RequireRenderModeFullHdr: "[c/FF00FF:{$Snippets.RenderMode}] [c/FF80FF:must be set to] [c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:for this setting to have an effect]"
+	RequireLightMapBlurring: "[c/FF00FF:{$Snippets.LightMapBlurring}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireNormalMaps: "[c/FF00FF:{$Snippets.NormalMaps}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireGlobalIllumination: "[c/FF00FF:{$Snippets.GlobalIllumination}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireFancyAtmosphere: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireFancySkyLightColors: "[c/FF00FF:{$Snippets.FancySkyLightColors}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 }

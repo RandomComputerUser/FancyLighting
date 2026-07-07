@@ -22,8 +22,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Changed the maximum normal maps strength to 10 (from 15)
 - Added a setting to apply smooth lighting to tile entities
 - Added bright light synchronization for full HDR rendering
-- Added the "Neutral (LMS)" TMO, which is the new default
-- Renamed the "Neutral" TMO to "Neutral (old WCG)" and "Filmic" to "Filmic (sRGB)"
+- Added the *Neutral (LMS)* TMO, which is the new default
+- Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
 - Tweaked and optimized vibrance boost
 - Made the "Bicubic" render mode a little brighter
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
@@ -34,10 +34,11 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values
 - Increased the max sky brightness boost to 15 (from 10)
-- Created two new configs: "Compatibility Settings" and "Developer Settings"
-- Some settings from the "Preferences" config have been moved to the new configs
-- Added tooltip lines to settings that have a high impact on performance
-- Made other UI tweaks to the configs
+- Created two new configs: *Compatibility Settings* and *Developer Settings*
+- Some settings from the *Preferences* config have been moved to the new configs
+- Added tooltip lines to settings that have a major effect on performance
+- Made other improvements to settings tooltips
+- Rearranged and renamed some settings
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering
 - Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
