@@ -126,8 +126,8 @@ float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff)
         = SampleForNormal(texCoord - float2(diff.x, -diff.y), luma) // down left
         - SampleForNormal(texCoord + float2(diff.x, -diff.y), luma); // up right
 
-    float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
-    float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
+    float horizontalColorDiff = 0.7071068 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
+    float verticalColorDiff = 0.7071068 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
 
     float maxLuma = max(
         luma,
