@@ -47,8 +47,6 @@ public sealed class FancyLightingMod : Mod
     private FieldInfo _field_filterFrameBuffer2;
 
     internal static RenderTarget2D _cameraModeTarget;
-    private RenderTarget2D _cameraModeTmpTarget1;
-    private RenderTarget2D _cameraModeTmpTarget2;
     internal static Rectangle _cameraModeArea;
     private CaptureBiome _cameraModeBiome;
 
@@ -199,8 +197,6 @@ public sealed class FancyLightingMod : Mod
             _tmpTarget2?.Dispose();
             _tmpTarget3?.Dispose();
             _cameraModeTarget = null;
-            _cameraModeTmpTarget1?.Dispose();
-            _cameraModeTmpTarget2?.Dispose();
             _tmpScreenTarget1?.Dispose();
             _tmpScreenTarget2?.Dispose();
             _backgroundTarget?.Dispose();
@@ -2272,7 +2268,7 @@ public sealed class FancyLightingMod : Mod
         if (useGlowMasks)
         {
             TextureUtils.MakeSize(
-                ref _cameraModeTmpTarget1,
+                ref _tmpScreenTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height,
                 TextureUtils.ScreenFormat
@@ -2281,7 +2277,7 @@ public sealed class FancyLightingMod : Mod
             UseBlackLights = true;
             _preventTileParticles = true;
             Main.spriteBatch.End();
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget1);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.spriteBatch.Begin();
             try
@@ -2297,14 +2293,14 @@ public sealed class FancyLightingMod : Mod
             if (enhancedGlowMasks)
             {
                 TextureUtils.MakeSize(
-                    ref _cameraModeTmpTarget2,
+                    ref _tmpScreenTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height,
                     TextureUtils.ScreenFormat
                 );
 
                 Main.spriteBatch.End();
-                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget2);
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget2);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.spriteBatch.Begin();
                 orig(self, bg, Style, Alpha, drawSinglePassLiquids);
@@ -2337,8 +2333,8 @@ public sealed class FancyLightingMod : Mod
             bg,
             false,
             true,
-            glow: useGlowMasks ? _cameraModeTmpTarget1 : null,
-            lightedGlow: useGlowMasks && enhancedGlowMasks ? _cameraModeTmpTarget2 : null
+            glow: useGlowMasks ? _tmpScreenTarget1 : null,
+            lightedGlow: useGlowMasks && enhancedGlowMasks ? _tmpScreenTarget2 : null
         );
 
         Main.spriteBatch.Begin();
@@ -2398,7 +2394,7 @@ public sealed class FancyLightingMod : Mod
         if (useGlowMasks)
         {
             TextureUtils.MakeSize(
-                ref _cameraModeTmpTarget1,
+                ref _tmpScreenTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height,
                 TextureUtils.ScreenFormat
@@ -2408,7 +2404,7 @@ public sealed class FancyLightingMod : Mod
             _preventTileParticles = true;
             Main.tileBatch.End();
             Main.spriteBatch.End();
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget1);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.tileBatch.Begin();
             Main.spriteBatch.Begin();
@@ -2425,7 +2421,7 @@ public sealed class FancyLightingMod : Mod
             if (enhancedGlowMasks)
             {
                 TextureUtils.MakeSize(
-                    ref _cameraModeTmpTarget2,
+                    ref _tmpScreenTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height,
                     TextureUtils.ScreenFormat
@@ -2433,7 +2429,7 @@ public sealed class FancyLightingMod : Mod
 
                 Main.tileBatch.End();
                 Main.spriteBatch.End();
-                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget2);
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget2);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
@@ -2482,9 +2478,9 @@ public sealed class FancyLightingMod : Mod
             true,
             skipFinalPass,
             ambientOcclusionTarget: ambientOcclusionTarget,
-            glow: !skipFinalPass && useGlowMasks ? _cameraModeTmpTarget1 : null,
+            glow: !skipFinalPass && useGlowMasks ? _tmpScreenTarget1 : null,
             lightedGlow: !skipFinalPass && useGlowMasks && enhancedGlowMasks
-                ? _cameraModeTmpTarget2
+                ? _tmpScreenTarget2
                 : null
         );
 
@@ -2494,10 +2490,8 @@ public sealed class FancyLightingMod : Mod
                 _cameraModeTarget,
                 _smoothLightingInstance._cameraModeTarget2,
                 _cameraModeBiome,
-                glow: useGlowMasks ? _cameraModeTmpTarget1 : null,
-                lightedGlow: useGlowMasks && enhancedGlowMasks
-                    ? _cameraModeTmpTarget2
-                    : null
+                glow: useGlowMasks ? _tmpScreenTarget1 : null,
+                lightedGlow: useGlowMasks && enhancedGlowMasks ? _tmpScreenTarget2 : null
             );
         }
 
@@ -2535,7 +2529,7 @@ public sealed class FancyLightingMod : Mod
         if (useGlowMasks)
         {
             TextureUtils.MakeSize(
-                ref _cameraModeTmpTarget1,
+                ref _tmpScreenTarget1,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height,
                 TextureUtils.ScreenFormat
@@ -2545,7 +2539,7 @@ public sealed class FancyLightingMod : Mod
             _preventTileParticles = true;
             Main.tileBatch.End();
             Main.spriteBatch.End();
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget1);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget1);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.tileBatch.Begin();
             Main.spriteBatch.Begin();
@@ -2568,7 +2562,7 @@ public sealed class FancyLightingMod : Mod
             if (enhancedGlowMasks)
             {
                 TextureUtils.MakeSize(
-                    ref _cameraModeTmpTarget2,
+                    ref _tmpScreenTarget2,
                     _cameraModeTarget.Width,
                     _cameraModeTarget.Height,
                     TextureUtils.ScreenFormat
@@ -2576,7 +2570,7 @@ public sealed class FancyLightingMod : Mod
 
                 Main.tileBatch.End();
                 Main.spriteBatch.End();
-                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTmpTarget2);
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget2);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
@@ -2627,8 +2621,8 @@ public sealed class FancyLightingMod : Mod
             false,
             false,
             !solidLayer && !LightingConfig.Instance.SimulateNonSolidNormals,
-            glow: useGlowMasks ? _cameraModeTmpTarget1 : null,
-            lightedGlow: useGlowMasks && enhancedGlowMasks ? _cameraModeTmpTarget2 : null
+            glow: useGlowMasks ? _tmpScreenTarget1 : null,
+            lightedGlow: useGlowMasks && enhancedGlowMasks ? _tmpScreenTarget2 : null
         );
 
         Main.tileBatch.Begin();
