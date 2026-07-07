@@ -20,8 +20,11 @@ public sealed class CompatibilityConfig : ModConfig
     public bool DisableHdrDuringBossFights { get; set; }
 
     [Header("FullHdrRendering")]
-    [DefaultValue(DefaultOptions.UseHdrCompatibilityFixes)]
-    public bool UseHdrCompatibilityFixes { get; set; }
+    [DefaultValue(DefaultOptions.DisableHdrEnhancedAlphaBlending)]
+    public bool DisableHdrEnhancedAlphaBlending { get; set; }
+
+    [DefaultValue(DefaultOptions.DisableHdrLightingSync)]
+    public bool DisableHdrLightingSync { get; set; }
 
     [Header("FancyLightingEngine")]
     [DefaultValue(DefaultOptions.DisableFrameTimingOptimizations)]

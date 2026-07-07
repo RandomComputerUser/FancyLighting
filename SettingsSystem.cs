@@ -13,8 +13,8 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool _hiDef;
     internal static bool _useSkyLightLuma;
 
-    private bool _prevNeedsPostProcessing = false;
-    private bool _prevHdrDisabled = false;
+    private bool _prevNeedsPostProcessing;
+    private bool _prevHdrDisabled;
 
     public override void Unload()
     {
@@ -132,8 +132,8 @@ internal sealed class SettingsSystem : ModSystem
             )
         ) || PreferencesConfig.Instance?.DepthOfField is true;
 
-    internal static bool HdrCompatibilityEnabled() =>
-        CompatibilityConfig.Instance?.UseHdrCompatibilityFixes is true
+    internal static bool HdrEnhancedAlphaBlendingDisabled() =>
+        CompatibilityConfig.Instance?.DisableHdrEnhancedAlphaBlending is true
         && LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
 
     internal static bool HdrDisabled() =>

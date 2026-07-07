@@ -8,7 +8,8 @@ public static class DefaultOptions
 
     // Compatibility Settings
     public const bool DisableHdrDuringBossFights = false;
-    public const bool UseHdrCompatibilityFixes = false;
+    public const bool DisableHdrEnhancedAlphaBlending = false;
+    public const bool DisableHdrLightingSync = false;
     public const bool DisableFrameTimingOptimizations = false;
 
     // Developer Settings

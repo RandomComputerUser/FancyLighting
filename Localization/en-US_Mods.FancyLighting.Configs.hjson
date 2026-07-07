@@ -13,25 +13,51 @@ CompatibilityConfig: {
 			'''
 			Disable HDR rendering during boss fights and events
 
-			May prevent visual issues with some modded boss fights
 			Affects bosses with a boss health bar and events with a progress bar
+			May prevent visual issues with boss fights from other mods
+
+			[c/00FFFF:Render Mode must be set to Basic HDRR or Full HDRR for this setting to have any effect]
+			[c/FFFF00:Very High performance benefit]
 			'''
 	}
 
-	UseHdrCompatibilityFixes: {
-		Label: Full HDRR Mod Compatibility Fixes
+	DisableHdrEnhancedAlphaBlending: {
+		Label: Disable Gamma-Correct Alpha Blending
 		Tooltip:
 			'''
-			Enable fixes that may improve mod compatibility when using full HDR rendering
+			Perform alpha blending between the foreground and background in a gamma-encoded color space
 
-			May prevent some visual issues when using other mods
-			Has a small impact on visuals and performance
+			When disabled, blending between the foreground and background is done in a linear color space
+			Vanilla graphics does alpha blending in a gamma-encoded color space
+			Alpha blending in a gamma-encoded color space tends to make colors appear dirty in affected areas
+			May prevent some visual issues with semitransparent objects from other mods
+
+			[c/FFFF00:Low performance impact]
+			[c/FFFF00:Medium visual impact]
+			'''
+	}
+
+	DisableHdrLightingSync: {
+		Label: Disable Bright Light Synchronization
+		Tooltip:
+			'''
+			Disable synchronization between bright areas of the light map and the tile layers
+
+			May cause some visual issues with bright, moving light sources
+
+			[c/FFFF00:High performance benefit]
+			[c/FFFF00:Low visual impact]
 			'''
 	}
 
 	DisableFrameTimingOptimizations: {
 		Label: Disable Frame Timing Optimizations
-		Tooltip: Disable frame timing optimizations used by the Fancy Lighting Engine
+		Tooltip:
+			'''
+			Disable frame timing optimizations used by the Fancy Lighting Engine
+
+			[c/FFFF00:Low performance impact]
+			'''
 	}
 }
 
@@ -76,7 +102,7 @@ DeveloperConfig: {
 			'''
 			Show the color gradients used by Fancy Sky
 
-			Obscures a large part of the screen
+			[c/FF00FF:Warning: this obscures a large part of the screen]
 			'''
 	}
 }
@@ -335,6 +361,8 @@ PreferencesConfig: {
 			'''
 	}
 
+	# Miscellaneous
+	
 	DepthOfField: {
 		Label: Depth of Field
 		Tooltip:
@@ -394,7 +422,8 @@ LightingConfig: {
 
 			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
-			[c/FFFF00:Has a very high impact on performance]
+
+			[c/FFFF00:Very High performance impact]
 			'''
 	}
 
@@ -457,7 +486,8 @@ LightingConfig: {
 			Use a more accurate technique to render glow effects
 
 			When disabled, glow effect brightness may differ from vanilla
-			[c/FFFF00:Has a high impact on performance]
+
+			[c/FFFF00:High performance impact]
 			'''
 	}
 
@@ -468,7 +498,8 @@ LightingConfig: {
 			Use smooth lighting on tile entities
 
 			Primarily affects tiles that are affected by wind
-			[c/FFFF00:Has a medium-high impact on performance]
+
+			[c/FFFF00:Medium-High performance impact]
 			'''
 	}
 
@@ -514,7 +545,7 @@ LightingConfig: {
 			Use a more advanced lighting engine
 
 			Spreads light more realistically with pronounced shadows
-			Has a larger performance impact the more light sources there are in the scene
+			Has a higher performance impact the more light sources there are on-screen
 			Performance is primarily affected by multithreaded CPU performance
 			'''
 	}
@@ -526,7 +557,8 @@ LightingConfig: {
 			The quality of the light spreading algorithm
 
 			Primarily affects shadow accuracy
-			[c/FFFF00:Has a medium-high impact on performance]
+
+			[c/FFFF00:Medium-High performance impact]
 			'''
 	}
 

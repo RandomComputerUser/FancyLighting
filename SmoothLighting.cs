@@ -13,6 +13,9 @@ public sealed class SmoothLighting
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
 
+    private RenderTarget2D _prevColorsHiRes;
+    private Rectangle _prevLightMapTileArea;
+
     private readonly Texture2D _ditherNoise;
     private readonly Texture2D _grayPixel;
 
@@ -42,6 +45,7 @@ public sealed class SmoothLighting
 
     private Shader _bicubicFilteringShader;
     private Shader _bicubicFilteringWithAlphaShader;
+
     private Shader _normalsShader;
     private Shader _normalsOverbrightShader;
     private Shader _normalsOverbrightFancySkyShader;
@@ -78,6 +82,11 @@ public sealed class SmoothLighting
     private SpriteBatchEffect _tileEntityLightOnlyEffect;
     private SpriteBatchEffect _tileEntityLightOnlySmoothEffect;
     private SpriteBatchEffect _tileEntityLightOnlySmoothDitheredEffect;
+
+    private SpriteBatchEffect _syncHdrEffect;
+
+    internal bool ReadyForHdrSync =>
+        _smoothLightingHiResComplete && _prevColorsHiRes is not null;
 
     /// <summary>
     /// Modify the lighting of a tile.
@@ -354,21 +363,31 @@ public sealed class SmoothLighting
             "FancyLighting/Effects/TileEntityLighting",
             "LightOnlySmoothDithered"
         );
+
+        _syncHdrEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/HdrSync",
+            "SyncHdr"
+        );
     }
 
     internal void Unload()
     {
         TileLightModifiers = null;
         PostUpdateLightMap = null;
+
         _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
+        _prevColorsHiRes?.Dispose();
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
+
         _ditherNoise?.Dispose();
         _grayPixel?.Dispose();
+
         EffectLoader.UnloadEffect(ref _bicubicFilteringShader);
         EffectLoader.UnloadEffect(ref _bicubicFilteringWithAlphaShader);
+
         EffectLoader.UnloadEffect(ref _normalsShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightShader);
         EffectLoader.UnloadEffect(ref _normalsOverbrightFancySkyShader);
@@ -389,6 +408,7 @@ public sealed class SmoothLighting
         EffectLoader.UnloadEffect(ref _brightenShader);
         EffectLoader.UnloadEffect(ref _glowMaskShader);
         EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
+
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntitySmoothEffect);
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntitySmoothDitheredEffect);
         SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsEffect);
@@ -418,6 +438,8 @@ public sealed class SmoothLighting
         SpriteBatchEffectLoader.UnloadEffect(
             ref _tileEntityLightOnlySmoothDitheredEffect
         );
+
+        SpriteBatchEffectLoader.UnloadEffect(ref _syncHdrEffect);
     }
 
     internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
@@ -833,6 +855,7 @@ public sealed class SmoothLighting
             }
         );
 
+        _prevLightMapTileArea = _lightMapTileArea;
         _lightMapTileArea = lightMapTileArea;
 
         _smoothLightingLightMapValid = true;
@@ -1262,7 +1285,10 @@ public sealed class SmoothLighting
         }
     }
 
-    internal void CalculateSmoothLighting(bool cameraMode = false)
+    internal void CalculateSmoothLighting(
+        bool cameraMode = false,
+        bool doHiResLightingRender = false
+    )
     {
         if (!LightingConfig.Instance.SmoothLightingEnabled())
         {
@@ -1348,12 +1374,17 @@ public sealed class SmoothLighting
                 height,
                 cameraMode
             );
+
+            _colorsHiRes?.Dispose();
+            _colorsHiRes = null;
+            _prevColorsHiRes?.Dispose();
+            _prevColorsHiRes = null;
         }
         PerformanceTracker.StopTiming("Smooth Lighting (Light Map Texture)");
 
         var invokeEvent = PostUpdateLightMap != null;
 
-        if (doBicubicUpscaling && invokeEvent)
+        if (doBicubicUpscaling && (doHiResLightingRender || invokeEvent))
         {
             RenderHiResLighting(_colors);
             _smoothLightingHiResComplete = true;
@@ -1660,6 +1691,19 @@ public sealed class SmoothLighting
 
     private void RenderHiResLighting(Texture2D lights)
     {
+        if (
+            LightingConfig.Instance.HiDefFeaturesEnabled()
+            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+        )
+        {
+            (_colorsHiRes, _prevColorsHiRes) = (_prevColorsHiRes, _colorsHiRes);
+        }
+        else
+        {
+            _prevColorsHiRes?.Dispose();
+            _prevColorsHiRes = null;
+        }
+
         TextureUtils.MakeSize(
             ref _colorsHiRes,
             4 * lights.Width,
@@ -2143,6 +2187,61 @@ public sealed class SmoothLighting
         }
     }
 
+    internal void DrawGlow(
+        Texture2D lighted,
+        Texture2D glow,
+        Texture2D lightedGlow = null
+    )
+    {
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+
+        MainGraphics.ResetSavedTextures();
+
+        if (lightedGlow is null)
+        {
+            _glowMaskShader
+                .SetParameter(
+                    "GlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / glow.Width,
+                        (float)lighted.Height / glow.Height
+                    )
+                )
+                .Apply();
+        }
+        else
+        {
+            _enhancedGlowMaskShader
+                .SetParameter(
+                    "GlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / glow.Width,
+                        (float)lighted.Height / glow.Height
+                    )
+                )
+                .SetParameter(
+                    "LightedGlowCoordMult",
+                    new Vector2(
+                        (float)lighted.Width / lightedGlow.Width,
+                        (float)lighted.Height / lightedGlow.Height
+                    )
+                )
+                .Apply();
+            MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
+        }
+
+        MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
+        Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
+        MainGraphics.RestoreSavedTextures();
+    }
+
     internal (SpriteBatchEffect, bool) GetTileEntityEffect(
         RenderTarget2D screenTarget,
         ref RenderTarget2D tmpTarget
@@ -2336,58 +2435,73 @@ public sealed class SmoothLighting
         }
     }
 
-    internal void DrawGlow(
-        Texture2D lighted,
-        Texture2D glow,
-        Texture2D lightedGlow = null
+    internal void BindHdrSyncTextures()
+    {
+        MainGraphics.SetTexture(4, _prevColorsHiRes, SamplerState.LinearClamp);
+        MainGraphics.SetTexture(5, _colorsHiRes, SamplerState.LinearClamp);
+    }
+
+    internal void DoHdrSync(
+        RenderTarget2D tileTarget,
+        Vector2 tilesPosition,
+        ref RenderTarget2D tmpTarget
     )
     {
+        var prevMatrixTransform = CalculateLightMapMatrixTransform(
+            _prevColorsHiRes,
+            0.25f,
+            _prevLightMapTileArea,
+            Vector2.Zero
+        );
+        var currMatrixTransform = CalculateLightMapMatrixTransform(
+            _colorsHiRes,
+            0.25f,
+            _lightMapTileArea,
+            Vector2.Zero
+        );
+
+        var tileTargetTransform = Matrix.Identity;
+        tileTargetTransform.Translation = new(tilesPosition.X, tilesPosition.Y, 0f);
+        tileTargetTransform.M11 = tileTarget.Width;
+        tileTargetTransform.M22 = tileTarget.Height;
+
+        prevMatrixTransform = tileTargetTransform * prevMatrixTransform;
+        currMatrixTransform = tileTargetTransform * currMatrixTransform;
+
+        TextureUtils.MakeSize(
+            ref tmpTarget,
+            tileTarget.Width,
+            tileTarget.Height,
+            TextureUtils.ScreenFormat
+        );
+
+        _syncHdrEffect.SetParameter("PrevLightMapMatrixTransform", prevMatrixTransform);
+        _syncHdrEffect.SetParameter("CurrLightMapMatrixTransform", currMatrixTransform);
+
+        SpriteBatchEffectLoader.ApplyEffect(_syncHdrEffect);
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
         Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
+            SpriteSortMode.Deferred,
             BlendState.Opaque,
             SamplerState.PointClamp,
             DepthStencilState.None,
             RasterizerState.CullNone
         );
-
-        MainGraphics.ResetSavedTextures();
-
-        if (lightedGlow is null)
-        {
-            _glowMaskShader
-                .SetParameter(
-                    "GlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / glow.Width,
-                        (float)lighted.Height / glow.Height
-                    )
-                )
-                .Apply();
-        }
-        else
-        {
-            _enhancedGlowMaskShader
-                .SetParameter(
-                    "GlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / glow.Width,
-                        (float)lighted.Height / glow.Height
-                    )
-                )
-                .SetParameter(
-                    "LightedGlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / lightedGlow.Width,
-                        (float)lighted.Height / lightedGlow.Height
-                    )
-                )
-                .Apply();
-            MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
-        }
-
-        MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
-        Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);
+        Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
         Main.spriteBatch.End();
-        MainGraphics.RestoreSavedTextures();
+
+        SpriteBatchEffectLoader.ClearEffect();
+
+        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.Opaque,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone
+        );
+        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
+        Main.spriteBatch.End();
     }
 }

@@ -195,15 +195,14 @@ public sealed class PostProcessing
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
         var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfField;
-        var hdrCompat = SettingsSystem.HdrCompatibilityEnabled();
-        var separateBackground = backgroundTarget is not null && !hdrCompat;
+        var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
+        var separateBackground = backgroundTarget is not null && !hdrCompatBlending;
         var cameraMode = FancyLightingMod._inCameraMode;
         var gameCameraMode = FancyLightingMod._isGameInCameraMode;
         var customGamma =
             (!gameCameraMode && PreferencesConfig.Instance.UseCustomGamma()) || hiDef;
         var srgb = !gameCameraMode && PreferencesConfig.Instance.UseSrgb;
         var gamma = ContentGamma();
-
         var tmo = PreferencesConfig.Instance.ToneMappingOperator;
         var disableDither =
             DeveloperConfig.Instance.DisableDithering || tmo is ToneMappingPreset.Linear;
