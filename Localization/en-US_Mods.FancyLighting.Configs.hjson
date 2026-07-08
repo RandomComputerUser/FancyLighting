@@ -31,9 +31,9 @@ CompatibilityConfig: {
 			'''
 			Perform alpha blending between the foreground and background in a gamma-encoded color space
 
-			When disabled, blending between the foreground and background is done in a linear color space
+			When this setting is not enabled, alpha blending is done in a linear color space
 			Vanilla graphics does alpha blending in a gamma-encoded color space
-			Alpha blending in a gamma-encoded color space tends to make colors appear "dirty" in affected areas
+			Alpha blending in a gamma-encoded color space can make colors appear dull in affected areas
 			May prevent some visual issues with semitransparent objects from other mods
 
 			{$Snippets.RequireRenderModeFullHdr}
