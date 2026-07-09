@@ -52,7 +52,6 @@ public sealed class FancyLightingMod : Mod
     private RenderTarget2D _tmpScreenTarget2;
 
     private RenderTarget2D _backgroundTarget;
-    private RenderTarget2D _cameraModeBackgroundTarget;
 
     private bool OverrideLightColor
     {
@@ -194,7 +193,6 @@ public sealed class FancyLightingMod : Mod
             _tmpScreenTarget1?.Dispose();
             _tmpScreenTarget2?.Dispose();
             _backgroundTarget?.Dispose();
-            _cameraModeBackgroundTarget?.Dispose();
 
             FancySkyLighting.Unload();
             _fancySkyColorsInstance?.Unload();
@@ -757,11 +755,8 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var backgroundTarget = _inCameraMode
-            ? _cameraModeDrawBackground
-                ? _cameraModeBackgroundTarget
-                : null
-            : _backgroundTarget;
+        var backgroundTarget =
+            _inCameraMode && !_cameraModeDrawBackground ? null : _backgroundTarget;
 
         _postProcessingInstance.ApplyPostProcessing(
             screenTarget1,
@@ -808,13 +803,13 @@ public sealed class FancyLightingMod : Mod
         if (doOverbright)
         {
             TextureUtils.MakeSize(
-                ref _cameraModeBackgroundTarget,
+                ref _backgroundTarget,
                 _cameraModeTarget.Width,
                 _cameraModeTarget.Height,
                 TextureUtils.ScreenFormat
             );
 
-            Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+            Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
             if (hdrCompatBlending)
             {
                 Main.spriteBatch.Begin(
@@ -844,14 +839,12 @@ public sealed class FancyLightingMod : Mod
                 if (doDepthOfField)
                 {
                     _postProcessingInstance.Blur(
-                        _cameraModeBackgroundTarget,
+                        _backgroundTarget,
                         _cameraModeTarget,
                         PreferencesConfig.Instance.DepthOfFieldRadius
                     );
 
-                    Main.graphics.GraphicsDevice.SetRenderTarget(
-                        _cameraModeBackgroundTarget
-                    );
+                    Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
                     Main.spriteBatch.Begin(
                         SpriteSortMode.Immediate,
                         BlendState.Opaque,
@@ -870,7 +863,7 @@ public sealed class FancyLightingMod : Mod
                 _smoothLightingInstance.GetCameraModeRenderTarget(_cameraModeTarget);
                 _smoothLightingInstance.CalculateSmoothLighting(true);
                 _smoothLightingInstance.DrawSmoothLightingCameraMode(
-                    _cameraModeBackgroundTarget,
+                    _backgroundTarget,
                     _cameraModeTarget,
                     false,
                     false,
@@ -881,7 +874,7 @@ public sealed class FancyLightingMod : Mod
             }
             else
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeBackgroundTarget);
+                Main.graphics.GraphicsDevice.SetRenderTarget(_backgroundTarget);
                 Main.spriteBatch.Begin(
                     SpriteSortMode.Deferred,
                     BlendState.Opaque,
