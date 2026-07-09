@@ -30,12 +30,6 @@ public sealed class FancyLightingMod : Mod
 
     internal static bool _doingFilterManagerCapture;
 
-    internal static bool _syncedWater;
-    internal static bool _syncedBackground;
-    internal static bool _syncedTiles;
-    internal static bool _syncedTiles2;
-    internal static bool _syncedWalls;
-
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
     private ICustomLightingEngine _fancyLightingEngineInstance;
@@ -1242,8 +1236,6 @@ public sealed class FancyLightingMod : Mod
             enhancedGlowMasks ? _tmpTarget3 : null
         );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        _syncedWater = true;
     }
 
     private void _Main_DrawWaters(
@@ -1327,8 +1319,6 @@ public sealed class FancyLightingMod : Mod
             true
         );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        _syncedBackground = true;
     }
 
     private void _Main_DrawBackground(On_Main.orig_DrawBackground orig, Main self)
@@ -1554,8 +1544,6 @@ public sealed class FancyLightingMod : Mod
             enhancedGlowMasks ? _tmpTarget3 : null
         );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        _syncedTiles = true;
     }
 
     private void _Main_RenderTiles2(On_Main.orig_RenderTiles2 orig, Main self)
@@ -1672,8 +1660,6 @@ public sealed class FancyLightingMod : Mod
             enhancedGlowMasks ? _tmpTarget3 : null
         );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        _syncedTiles2 = true;
     }
 
     private void _Main_RenderWalls(On_Main.orig_RenderWalls orig, Main self)
@@ -1830,8 +1816,6 @@ public sealed class FancyLightingMod : Mod
             enhancedGlowMasks ? _tmpTarget3 : null
         );
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
-
-        _syncedWalls = true;
     }
 
     private void _Main_DoLightTiles(On_Main.orig_DoLightTiles orig, Main self)
@@ -2061,12 +2045,6 @@ public sealed class FancyLightingMod : Mod
             );
             PerformanceTracker.StopTiming("Smooth Lighting (Light Map Array)");
 
-            _syncedWater = false;
-            _syncedBackground = false;
-            _syncedTiles = false;
-            _syncedTiles2 = false;
-            _syncedWalls = false;
-
             if (
                 LightingConfig.Instance.HiDefFeaturesEnabled()
                 && !CompatibilityConfig.Instance.DisableHdrLightingSync
@@ -2114,56 +2092,36 @@ public sealed class FancyLightingMod : Mod
         MainGraphics.ResetSavedTextures();
         _smoothLightingInstance.BindHdrSyncTextures();
 
-        if (!_syncedWater)
-        {
-            _smoothLightingInstance.DoHdrSync(
-                Main.waterTarget,
-                Main.sceneWaterPos,
-                ref _tmpTarget1
-            );
-            _syncedWater = true;
-        }
-        if (!_syncedBackground)
-        {
-            _smoothLightingInstance.DoHdrSync(
-                Main.instance.backgroundTarget,
-                Main.sceneBackgroundPos,
-                ref _tmpTarget1
-            );
-            _smoothLightingInstance.DoHdrSync(
-                Main.instance.backWaterTarget,
-                Main.sceneBackgroundPos,
-                ref _tmpTarget1
-            );
-            _syncedBackground = true;
-        }
-        if (!_syncedTiles)
-        {
-            _smoothLightingInstance.DoHdrSync(
-                Main.instance.tileTarget,
-                Main.sceneTilePos,
-                ref _tmpTarget1
-            );
-            _syncedTiles = true;
-        }
-        if (!_syncedTiles2)
-        {
-            _smoothLightingInstance.DoHdrSync(
-                Main.instance.tile2Target,
-                Main.sceneTile2Pos,
-                ref _tmpTarget1
-            );
-            _syncedTiles2 = true;
-        }
-        if (!_syncedWalls)
-        {
-            _smoothLightingInstance.DoHdrSync(
-                Main.instance.wallTarget,
-                Main.sceneWallPos,
-                ref _tmpTarget1
-            );
-            _syncedWalls = true;
-        }
+        _smoothLightingInstance.DoHdrSync(
+            Main.waterTarget,
+            Main.sceneWaterPos,
+            ref _tmpTarget1
+        );
+        _smoothLightingInstance.DoHdrSync(
+            Main.instance.backgroundTarget,
+            Main.sceneBackgroundPos,
+            ref _tmpTarget1
+        );
+        _smoothLightingInstance.DoHdrSync(
+            Main.instance.backWaterTarget,
+            Main.sceneBackgroundPos,
+            ref _tmpTarget1
+        );
+        _smoothLightingInstance.DoHdrSync(
+            Main.instance.tileTarget,
+            Main.sceneTilePos,
+            ref _tmpTarget1
+        );
+        _smoothLightingInstance.DoHdrSync(
+            Main.instance.tile2Target,
+            Main.sceneTile2Pos,
+            ref _tmpTarget1
+        );
+        _smoothLightingInstance.DoHdrSync(
+            Main.instance.wallTarget,
+            Main.sceneWallPos,
+            ref _tmpTarget1
+        );
 
         MainGraphics.RestoreSavedTextures();
 

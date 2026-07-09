@@ -2447,6 +2447,11 @@ public sealed class SmoothLighting
         ref RenderTarget2D tmpTarget
     )
     {
+        if (tileTarget is not { Width: > 0, Height: > 0 })
+        {
+            return;
+        }
+
         var prevMatrixTransform = CalculateLightMapMatrixTransform(
             _prevColorsHiRes,
             0.25f,
