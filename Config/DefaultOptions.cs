@@ -7,6 +7,7 @@ public static class DefaultOptions
     public const SettingsPreset QualityPreset = SettingsPreset.MediumPreset;
 
     // Compatibility Settings
+    public const bool DisableGlowEffectOptimizations = false;
     public const bool DisableHdrDuringBossFights = false;
     public const bool DisableHdrEnhancedAlphaBlending = false;
     public const bool DisableHdrLightingSync = false;

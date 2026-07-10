@@ -9,6 +9,16 @@ CompatibilityConfig: {
 
 	# Smooth Lighting
 	
+	DisableGlowEffectOptimizations: {
+		Label: Disable Glow Effect Optimizations
+		Tooltip:
+			'''
+			Disable optimizations used when rendering glow effects
+
+			{$Snippets.PossiblePerformanceImpact}
+			'''
+	}
+
 	DisableHdrDuringBossFights: {
 		Label: Disable HDRR During Boss Fights and Events
 		Tooltip:

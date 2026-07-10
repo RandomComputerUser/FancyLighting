@@ -16,6 +16,9 @@ public sealed class CompatibilityConfig : ModConfig
     }
 
     [Header("SmoothLighting")]
+    [DefaultValue(DefaultOptions.DisableGlowEffectOptimizations)]
+    public bool DisableGlowEffectOptimizations { get; set; }
+
     [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
     public bool DisableHdrDuringBossFights { get; set; }
 

@@ -1960,7 +1960,7 @@ public sealed class SmoothLighting
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var doOneStepOnly = !(simulateNormalMaps || doOverbright);
+        var doSimpleRender = !(simulateNormalMaps || doOverbright);
         var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
         var doDithering = doOverbright && !hiDef;
         var doFancySky = _useAlphaChannelAsSkyLightLuma && !background;
@@ -2000,7 +2000,7 @@ public sealed class SmoothLighting
 
         Main.graphics.GraphicsDevice.SetRenderTarget(outputTarget);
 
-        if (doOneStepOnly)
+        if (doSimpleRender)
         {
             Main.spriteBatch.Begin(
                 SpriteSortMode.Deferred,
