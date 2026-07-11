@@ -212,12 +212,8 @@ float3 ToneMapColorFilmicLms(float3 x)
     const float c2 = 256.0;
     const float c3 = 4.0;
     x = mul(x, SrgbToLmsD65);
-    x.rg = saturate(
-        c1 * (1.0 - 1.0 / (c2 * x.rg + 1.0)) * (x.rg / (x.rg + c3))
-    );
-    // Crude approximation of the Purkinje effect
-    x.b = saturate(
-        c1 * (x.b / (x.b + c3))
+    x = saturate(
+        c1 * (1.0 - 1.0 / (c2 * x + 1.0)) * (x / (x + c3))
     );
     return saturate(mul(x, LmsD65ToSrgb));
 }
