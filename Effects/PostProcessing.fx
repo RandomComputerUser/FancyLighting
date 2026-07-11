@@ -206,6 +206,38 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
+float3 ToneMapColorFilmicLms(float3 x)
+{
+    const float c1 = 1.8;
+    const float c2 = 256.0;
+    const float c3 = 4.0;
+    x = mul(x, SrgbToLmsD65);
+    x.rg = saturate(
+        c1 * (1.0 - 1.0 / (c2 * x.rg + 1.0)) * (x.rg / (x.rg + c3))
+    );
+    // Crude approximation of the Purkinje effect
+    x.b = saturate(
+        c1 * (x.b / (x.b + c3))
+    );
+    return saturate(mul(x, LmsD65ToSrgb));
+}
+
+float4 ToneMapFilmicLms(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = ToneMapColorFilmicLms(color.rgb);
+    return color;
+}
+
+float4 ToneMapFilmicLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    // Color grade before tone mapping to prevent artifacts caused by out-of-gamut colors
+    color.rgb = MakeVibrant(max(color.rgb, 0.0));
+    color.rgb = ToneMapColorFilmicLms(color.rgb);
+    return color;
+}
+
 float3 ToneMapColorNeutralLms(float3 x)
 {
     const float c1 = 1.8;
@@ -334,6 +366,16 @@ technique Technique1
     pass BloomComposite
     {
         PixelShader = compile ps_3_0 BloomComposite();
+    }
+    
+    pass ToneMapFilmicLms
+    {
+        PixelShader = compile ps_3_0 ToneMapFilmicLms();
+    }
+    
+    pass ToneMapFilmicLmsVibranceBoost
+    {
+        PixelShader = compile ps_3_0 ToneMapFilmicLmsVibranceBoost();
     }
     
     pass ToneMapNeutralLms

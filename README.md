@@ -27,7 +27,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Made the *Bicubic* render mode a little brighter
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
-- Added the *Neutral (LMS)* TMO, which is the new default
+- Added the *Filmic (LMS)* TMO, which is the new default
+- Added the *Neutral (LMS)* TMO
 - Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
 - Changed the exposure setting to be logarithmic and increased its range
 - Tweaked and optimized vibrance boost

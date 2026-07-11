@@ -25,6 +25,8 @@ public sealed class PostProcessing
     private Shader _gammaToSrgbDitherNoAlphaShader;
     private Shader _gammaToSrgbNoDitherNoAlphaShader;
     private Shader _bloomCompositeShader;
+    private Shader _toneMapFilmicLmsShader;
+    private Shader _toneMapFilmicLmsVibranceBoostShader;
     private Shader _toneMapNeutralLmsShader;
     private Shader _toneMapNeutralLmsVibranceBoostShader;
     private Shader _toneMapNeutralOldShader;
@@ -80,6 +82,14 @@ public sealed class PostProcessing
             "FancyLighting/Effects/PostProcessing",
             "BloomComposite"
         );
+        _toneMapFilmicLmsShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMapFilmicLms"
+        );
+        _toneMapFilmicLmsVibranceBoostShader = EffectLoader.LoadEffect(
+            "FancyLighting/Effects/PostProcessing",
+            "ToneMapFilmicLmsVibranceBoost"
+        );
         _toneMapNeutralLmsShader = EffectLoader.LoadEffect(
             "FancyLighting/Effects/PostProcessing",
             "ToneMapNeutralLms"
@@ -122,6 +132,8 @@ public sealed class PostProcessing
         EffectLoader.UnloadEffect(ref _gammaToSrgbDitherNoAlphaShader);
         EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherNoAlphaShader);
         EffectLoader.UnloadEffect(ref _bloomCompositeShader);
+        EffectLoader.UnloadEffect(ref _toneMapFilmicLmsShader);
+        EffectLoader.UnloadEffect(ref _toneMapFilmicLmsVibranceBoostShader);
         EffectLoader.UnloadEffect(ref _toneMapNeutralLmsShader);
         EffectLoader.UnloadEffect(ref _toneMapNeutralLmsVibranceBoostShader);
         EffectLoader.UnloadEffect(ref _toneMapNeutralOldShader);
@@ -377,6 +389,7 @@ public sealed class PostProcessing
             {
                 toneMappingShader = tmo switch
                 {
+                    ToneMappingPreset.FilmicLms => _toneMapFilmicLmsShader,
                     ToneMappingPreset.NeutralLms => _toneMapNeutralLmsShader,
                     ToneMappingPreset.NeutralOld => _toneMapNeutralOldShader,
                     ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbShader,
@@ -387,6 +400,7 @@ public sealed class PostProcessing
             {
                 toneMappingShader = tmo switch
                 {
+                    ToneMappingPreset.FilmicLms => _toneMapFilmicLmsVibranceBoostShader,
                     ToneMappingPreset.NeutralLms => _toneMapNeutralLmsVibranceBoostShader,
                     ToneMappingPreset.NeutralOld => _toneMapNeutralOldVibranceBoostShader,
                     ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbVibranceBoostShader,
