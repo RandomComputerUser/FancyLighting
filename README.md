@@ -33,7 +33,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
 - Changed the exposure setting to be logarithmic and increased its range
 - Tweaked and optimized vibrance boost
-- Increased the default vibrance boost to 5 (from 2)
+- Increased the default vibrance boost to 3 (from 2)
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values
 - Increased the max sky brightness boost to 15 (from 10)

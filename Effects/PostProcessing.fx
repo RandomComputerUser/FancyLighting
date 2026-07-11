@@ -209,11 +209,13 @@ float3 MakeVibrant(float3 x)
 float3 ToneMapColorFilmicLms(float3 x)
 {
     const float c1 = 1.8;
-    const float c2 = 256.0;
-    const float c3 = 4.0;
+    const float c2 = 0.333333333333;
+    const float c3 = 256.0;
+    const float c4 = 2.0;
+    const float c5 = 4.0;
     x = mul(x, SrgbToLmsD65);
     x = saturate(
-        c1 * (1.0 - 1.0 / (c2 * x + 1.0)) * (x / (x + c3))
+        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
     );
     return saturate(mul(x, LmsD65ToSrgb));
 }
