@@ -25,6 +25,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
 - Made the *Bicubic* render mode a little brighter
+- Slightly increased the brightness of the background when using full HDR rendering
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
 - Added the *Filmic (LMS)* TMO, which is the new default

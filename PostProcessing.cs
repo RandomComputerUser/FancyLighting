@@ -1,4 +1,5 @@
 ﻿using FancyLighting.Config.Enums;
+
 using ReLogic.Content;
 
 namespace FancyLighting;
@@ -158,7 +159,7 @@ public sealed class PostProcessing
                 ? UnderworldBackgroundBrightnessMult
                 : 1f
         )
-        * (0.9f * Lighting.GlobalBrightness);
+        * (0.95f * Lighting.GlobalBrightness);
 
     // This code is adapted from vanilla (Main.DrawUnderworldBackground())
     private static bool InUnderworld() =>
