@@ -394,11 +394,7 @@ public sealed class PostProcessing
                 };
 
                 var (params1, params2) = CalculateVibranceBoostParameters(
-                    Math.Clamp(
-                        PreferencesConfig.Instance.VibranceIncrease(),
-                        -0.249,
-                        0.249
-                    )
+                    Math.Clamp(PreferencesConfig.Instance.VibranceIncrease(), -0.2, 0.2)
                 );
 
                 toneMappingShader

@@ -21,7 +21,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public float BloomLerp() => 0.005f * BloomStrength;
 
-    public double VibranceIncrease() => VibranceBoost / 80.0;
+    public double VibranceIncrease() => VibranceBoost / 75.0;
 
     public float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 

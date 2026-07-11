@@ -103,11 +103,6 @@ float Luminance(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
-float3 Cube(float3 x)
-{
-    return x * x * x;
-}
-
 float4 GammaToLinearNoAlpha(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
@@ -196,28 +191,18 @@ float SaturationCurve(float x)
 
 float3 MakeVibrant(float3 x)
 {
-    // Use a gamma of 3.0 instead of 1.0 or 2.2
-    // because it seems to reduce hue shift
-    // and predict saturation in a perceptually uniform manner (to my eye)
-    // Oklab also uses cube root
-	float maxComponent = pow(max(x.r, max(x.g, x.b)), 1 / 3.0);
-	if (maxComponent <= 0)
-	{
-	    return x;
-	}
-	
-	float minComponent = pow(min(x.r, min(x.g, x.b)), 1 / 3.0);
-	float saturation = 1 - minComponent / maxComponent;
-	if (saturation <= 0)
-	{
-	    return x;
-	}
-	
+    float luminance = Luminance(x);
+    if (luminance <= 0)
+    {
+        return x;
+    }
+
+	float minComponent = min(x.r, min(x.g, x.b));
+	float saturation = saturate(1 - minComponent / luminance);
 	float targetSaturation = SaturationCurve(saturation);
 	
 	float mult = targetSaturation / saturation;
-	float3 result = Cube(max(lerp(maxComponent.xxx, pow(x, 1 / 3.0), mult), 0.0));
-    result *= Luminance(x) / Luminance(result);
+	float3 result = max(lerp(luminance.xxx, x, mult), 0.0);
 	return result;
 }
 
@@ -300,7 +285,7 @@ float4 ToneMapFilmicSrgbVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = max(MakeVibrant(color.rgb), 0);
+    color.rgb = max(MakeVibrant(max(color.rgb, 0.0)), 0);
     return color;
 }
 

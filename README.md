@@ -22,15 +22,16 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Changed the maximum normal maps strength to 10 (from 15)
 - Added a setting to apply smooth lighting to tile entities
 - Added bright light synchronization for full HDR rendering
-- Added the *Neutral (LMS)* TMO, which is the new default
-- Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
-- Tweaked and optimized vibrance boost
-- Made the "Bicubic" render mode a little brighter
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
+- Made the *Bicubic* render mode a little brighter
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
+- Added the *Neutral (LMS)* TMO, which is the new default
+- Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
 - Changed the exposure setting to be logarithmic and increased its range
+- Tweaked and optimized vibrance boost
+- Increased the default vibrance boost to 5 (from 2)
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values
 - Increased the max sky brightness boost to 15 (from 10)
