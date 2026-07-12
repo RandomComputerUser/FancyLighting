@@ -2,7 +2,7 @@
 
 internal sealed class SpriteBatchEffect
 {
-    private Effect Effect { get; init; }
+    public Effect Effect { get; init; }
 
     private EffectTechnique Technique { get; init; }
 

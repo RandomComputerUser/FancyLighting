@@ -12,6 +12,7 @@ internal sealed class SettingsSystem : ModSystem
 
     internal static bool _hiDef;
     internal static bool _useSkyLightLuma;
+    internal static bool _useFancyClouds;
 
     private bool _prevNeedsPostProcessing;
     private bool _prevHdrDisabled;
@@ -44,6 +45,7 @@ internal sealed class SettingsSystem : ModSystem
         );
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
         _useSkyLightLuma = LightingConfig.Instance?.UseSkyLightLuma() is true;
+        _useFancyClouds = LightingConfig.Instance?.FancySkyLightingEnabled() is true;
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerformanceTracker.Enabled = DeveloperConfig.Instance?.MonitorPerformance is true;
