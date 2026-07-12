@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+
 using Mono.Cecil.Cil;
+
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
@@ -104,17 +106,25 @@ internal static class CalamityModCompatibility
 
     private static void IL_NewThreshold(ILContext context)
     {
-        var cursor = new ILCursor(context);
+        try
+        {
+            var cursor = new ILCursor(context);
 
-        var newThresholdMethod = typeof(CalamityModCompatibility)
-            .GetMethod(nameof(NewThreshold), BindingFlags.NonPublic | BindingFlags.Static)
-            .AssertNotNull();
+            var newThresholdMethod = typeof(CalamityModCompatibility)
+                .GetMethod(nameof(NewThreshold),
+                    BindingFlags.NonPublic | BindingFlags.Static)
+                .AssertNotNull();
 
-        cursor.GotoNext(
-            MoveType.After,
-            instruction => instruction.OpCode == OpCodes.Ldc_R4
-        );
-        cursor.Emit(OpCodes.Call, newThresholdMethod);
+            cursor.GotoNext(
+                MoveType.After,
+                instruction => instruction.OpCode == OpCodes.Ldc_R4
+            );
+            cursor.Emit(OpCodes.Call, newThresholdMethod);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
     private static float NewThreshold(float threshold)
@@ -129,14 +139,21 @@ internal static class CalamityModCompatibility
 
     private static void IL_ChangeBlackThreshold_Delegate(ILContext context)
     {
-        var cursor = new ILCursor(context);
+        try
+        {
+            var cursor = new ILCursor(context);
 
-        // Fix bug in Calamity Mod's code
-        cursor.GotoNext(
-            MoveType.Before,
-            instruction => instruction.OpCode == OpCodes.Ldc_I4_S
-        );
-        cursor.Remove();
-        cursor.Emit(OpCodes.Ldc_I4, 14); // originally ldc.i4.s 13
+            // Fix bug in Calamity Mod's code
+            cursor.GotoNext(
+                MoveType.Before,
+                instruction => instruction.OpCode == OpCodes.Ldc_I4_S
+            );
+            cursor.Remove();
+            cursor.Emit(OpCodes.Ldc_I4, 14); // originally ldc.i4.s 13
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 }
