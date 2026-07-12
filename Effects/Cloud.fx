@@ -2,7 +2,7 @@ sampler TextureSampler : register(s0);
 
 float4x4 MatrixTransform;
 
-float PixelSize;
+float Scale;
 float2 NormalMapGradientMult;
 float2 SkyLightGradient;
 float SkyLightMult;
@@ -26,37 +26,6 @@ float Luma(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
-struct SamplingTransform
-{
-    float2 TexelSize;
-    float2 TextureSize;
-    float2x2 ScalingAndRotation;
-};
-
-// Assumes only rotation and/or flipping and no scaling or stretching
-SamplingTransform CalculateSamplingTransform(float2 texCoord)
-{
-    SamplingTransform output;
-
-    float2 partialX = ddx(texCoord);
-    float2 partialY = ddy(texCoord);
-    
-    float2 texelSize = float2(
-        length(float2(partialX.x, partialY.x)),
-        length(float2(partialX.y, partialY.y))
-    );
-    float2 textureSize = 1.0 / texelSize;
-    
-    output.TexelSize = texelSize;
-    output.TextureSize = textureSize;
-    output.ScalingAndRotation = float2x2(
-        partialX * textureSize,
-        partialY * textureSize
-    );
-    
-    return output;
-}
-
 float2 Gradient(
     float horizontalColorDiff,
     float verticalColorDiff
@@ -69,27 +38,38 @@ float2 Gradient(
 
 // Intentionally use gamma-encoded values for simulating normal maps
 
-float SampleForNormal(float2 texCoord)
+float4 SampleTexture(float2 texCoord, bool wrap)
 {
     float4 color = tex2D(TextureSampler, texCoord);
+    if (!wrap)
+    {
+        color *= any(texCoord <= 0.0 || texCoord >= 1.0) ? 0 : 1;
+    }
+    
+    return color;
+}
+
+float SampleForNormal(float2 texCoord, bool wrap)
+{
+    float4 color = SampleTexture(texCoord, wrap);
     return saturate(Luma(color.rgb));
 }
 
-float2 NormalsSurfaceGradient(float2 texCoord, float2 diff)
+float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
 {
-    float4 color = tex2D(TextureSampler, texCoord);
+    float4 color = SampleTexture(texCoord, wrap);
     float luma = saturate(Luma(color.rgb));
     
-    float leftLuma = SampleForNormal(texCoord - float2(diff.x, 0));
-    float rightLuma = SampleForNormal(texCoord + float2(diff.x, 0));
-    float upLuma = SampleForNormal(texCoord - float2(0, diff.y));
-    float downLuma = SampleForNormal(texCoord + float2(0, diff.y));
+    float leftLuma = SampleForNormal(texCoord - diff.xy, wrap);
+    float rightLuma = SampleForNormal(texCoord + diff.xy, wrap);
+    float upLuma = SampleForNormal(texCoord - diff.zw, wrap);
+    float downLuma = SampleForNormal(texCoord + diff.zw, wrap);
     float positiveDiagonal
-        = SampleForNormal(texCoord - diff) // up left
-        - SampleForNormal(texCoord + diff); // down right
+        = SampleForNormal(texCoord - diff.xy - diff.zw, wrap) // up left
+        - SampleForNormal(texCoord + diff.zy + diff.zw, wrap); // down right
     float negativeDiagonal
-        = SampleForNormal(texCoord - float2(diff.x, -diff.y)) // down left
-        - SampleForNormal(texCoord + float2(diff.x, -diff.y)); // up right
+        = SampleForNormal(texCoord - diff.xy + diff.zw, wrap) // down left
+        - SampleForNormal(texCoord + diff.xy - diff.zw, wrap); // up right
 
     float horizontalColorDiff = 0.7071068 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.7071068 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
@@ -103,13 +83,11 @@ float2 NormalsSurfaceGradient(float2 texCoord, float2 diff)
 }
 
 
-float NormalsMultiplierFancySky(float2 texCoord)
+float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
 {
-    SamplingTransform samplingTransform = CalculateSamplingTransform(texCoord);
-    float2 diff = samplingTransform.TexelSize * PixelSize;
+    float4 diff = Scale * float4(ddx(texCoord), ddy(texCoord));
     
     float2 lightGradient = SkyLightGradient;
-    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
     float lightGradientLength = length(lightGradient);
     
     if (lightGradientLength == 0)
@@ -119,7 +97,7 @@ float NormalsMultiplierFancySky(float2 texCoord)
     
     lightGradient /= lightGradientLength;
     
-    float2 surfaceGradient = NormalsSurfaceGradient(texCoord, diff);
+    float2 surfaceGradient = NormalsSurfaceGradient(texCoord, diff, wrap);
     float surfaceGradientLength = length(surfaceGradient);
     surfaceGradient = surfaceGradientLength == 0
         ? 0 
@@ -135,14 +113,24 @@ float NormalsMultiplierFancySky(float2 texCoord)
     );
 }
 
-float4 CloudShadingPS(in VertexShaderOutput input) : COLOR0
+float4 CloudShadingColor(in VertexShaderOutput input, bool wrap)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
     
     float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TexCoord);
+    float mult = NormalsMultiplierFancySky(input.TexCoord, wrap);
 
     return lightColor * lerp(texColor, float4(mult.xxx, 1) * texColor.a, SkyLightMult);
+}
+
+float4 CloudShadingPS(in VertexShaderOutput input) : COLOR0
+{
+    return CloudShadingColor(input, false);
+}
+
+float4 CloudShadingWrapPS(in VertexShaderOutput input) : COLOR0
+{
+    return CloudShadingColor(input, true);
 }
 
 technique CloudShading
@@ -150,5 +138,13 @@ technique CloudShading
     pass Pass1
     {
         PixelShader = compile ps_3_0 CloudShadingPS();
+    }
+}
+
+technique CloudShadingWrap
+{
+    pass Pass1
+    {
+        PixelShader = compile ps_3_0 CloudShadingWrapPS();
     }
 }

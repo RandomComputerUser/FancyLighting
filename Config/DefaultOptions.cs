@@ -80,7 +80,7 @@ public static class DefaultOptions
     // Fancy Sky
     public const bool UseFancySkyRendering = true;
     public const bool UseFancySkyColors = true;
-    public const bool UseFancySkyLighting = true;
+    public const bool UseFancySkyLighting = false;
 
     // Fancy Sky Preferences
     public const int SkyBrightnessBoost = 5;

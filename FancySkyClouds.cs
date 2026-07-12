@@ -7,16 +7,20 @@ namespace FancyLighting;
 
 public static class FancySkyClouds
 {
-    private const int IndividualCloudPixelSize = 2;
-    private const int BackgroundCloudPixelSize = 1;
+    private static SamplerState _samplerState = SamplerState.LinearClamp;
 
     private static SpriteBatchEffect _cloudShadingEffect;
+    private static SpriteBatchEffect _cloudShadingWrapEffect;
 
     internal static void Load()
     {
         _cloudShadingEffect = SpriteBatchEffectLoader.LoadEffect(
             "FancyLighting/Effects/Cloud",
             "CloudShading"
+        );
+        _cloudShadingWrapEffect = SpriteBatchEffectLoader.LoadEffect(
+            "FancyLighting/Effects/Cloud",
+            "CloudShadingWrap"
         );
 
         AddHooks();
@@ -31,6 +35,7 @@ public static class FancySkyClouds
     internal static void Unload()
     {
         SpriteBatchEffectLoader.UnloadEffect(ref _cloudShadingEffect);
+        SpriteBatchEffectLoader.UnloadEffect(ref _cloudShadingWrapEffect);
     }
 
     private static void _Main_DrawSurfaceBG(On_Main.orig_DrawSurfaceBG orig, Main self)
@@ -85,12 +90,14 @@ public static class FancySkyClouds
             var endMethod = typeof(FancySkyClouds)
                 .GetMethod(nameof(End), BindingFlags.NonPublic | BindingFlags.Static)
                 .AssertNotNull();
-            var setCloudScaleMethod = typeof(FancySkyClouds)
-                .GetMethod(
-                    nameof(SetCloudScale),
-                    BindingFlags.NonPublic | BindingFlags.Static
-                )
-                .AssertNotNull();
+
+            // average cloud scale for each cloud layer
+            // this is adapted from vanilla code
+            const float Layer1Scale = (0.70f + 0.99f) / 2f;
+            const float Layer2Scale = 1.65f / 2f;
+            const float Layer3Scale = 1.85f / 2f;
+            const float Layer4Scale = (1.00f + 1.15f) / 2f;
+            const float Layer5Scale = (1.16f + 1.30f) / 2f;
 
             // individual clouds
             cursor.GotoNext(
@@ -98,9 +105,9 @@ public static class FancySkyClouds
                 instruction => instruction.MatchLdcI4(0),
                 instruction => instruction.MatchStloc(13)
             );
+            cursor.Emit(OpCodes.Ldc_R4, Layer1Scale);
+            cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
-            cursor.Emit(OpCodes.Ldc_I4, IndividualCloudPixelSize);
-            cursor.Emit(OpCodes.Call, setCloudScaleMethod);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(13),
@@ -115,9 +122,9 @@ public static class FancySkyClouds
                 instruction => instruction.MatchLdcI4(0),
                 instruction => instruction.MatchStloc(21)
             );
+            cursor.Emit(OpCodes.Ldc_R4, Layer2Scale);
+            cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
-            cursor.Emit(OpCodes.Ldc_I4, BackgroundCloudPixelSize);
-            cursor.Emit(OpCodes.Call, setCloudScaleMethod);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(21),
@@ -133,9 +140,9 @@ public static class FancySkyClouds
                 instruction => instruction.MatchLdcI4(0),
                 instruction => instruction.MatchStloc(22)
             );
+            cursor.Emit(OpCodes.Ldc_R4, Layer3Scale);
+            cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
-            cursor.Emit(OpCodes.Ldc_I4, BackgroundCloudPixelSize);
-            cursor.Emit(OpCodes.Call, setCloudScaleMethod);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(22),
@@ -151,9 +158,9 @@ public static class FancySkyClouds
                 instruction => instruction.MatchLdcI4(0),
                 instruction => instruction.MatchStloc(23)
             );
+            cursor.Emit(OpCodes.Ldc_R4, Layer4Scale);
+            cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
-            cursor.Emit(OpCodes.Ldc_I4, IndividualCloudPixelSize);
-            cursor.Emit(OpCodes.Call, setCloudScaleMethod);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(23),
@@ -168,9 +175,9 @@ public static class FancySkyClouds
                 instruction => instruction.MatchLdcI4(0),
                 instruction => instruction.MatchStloc(31)
             );
+            cursor.Emit(OpCodes.Ldc_R4, Layer5Scale);
+            cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
-            cursor.Emit(OpCodes.Ldc_I4, IndividualCloudPixelSize);
-            cursor.Emit(OpCodes.Call, setCloudScaleMethod);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(31),
@@ -185,32 +192,54 @@ public static class FancySkyClouds
         }
     }
 
-    private static void Begin()
+    private static void Begin(float scale, bool wrap)
     {
         if (!SettingsSystem._useFancyClouds)
         {
             return;
         }
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
+        _samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+
+        var newSamplerState = _samplerState;
+        if (wrap)
+        {
+            // Could create a new SamplerState object and change AddressU and AddressV
+            // But vanilla code just uses the builtin SamplerStates
+            if (_samplerState == SamplerState.LinearClamp)
+            {
+                newSamplerState = SamplerState.LinearWrap;
+            }
+            else if (_samplerState == SamplerState.PointClamp)
+            {
+                newSamplerState = SamplerState.PointWrap;
+            }
+            else if (_samplerState == SamplerState.AnisotropicWrap)
+            {
+                newSamplerState = SamplerState.AnisotropicWrap;
+            }
+        }
+
+        var effect = wrap ? _cloudShadingWrapEffect : _cloudShadingEffect;
+
+        effect.SetParameter("Scale", 2f * scale);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
-            samplerState,
+            newSamplerState,
             DepthStencilState.Default,
             rasterizerState,
-            _cloudShadingEffect.Effect,
+            effect.ApplyTechnique(),
             transformMatrix
         );
     }
 
     private static void End()
     {
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
 
@@ -218,16 +247,11 @@ public static class FancySkyClouds
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
-            samplerState,
+            _samplerState,
             DepthStencilState.Default,
             rasterizerState,
             null,
             transformMatrix
         );
-    }
-
-    private static void SetCloudScale(int pixelSize)
-    {
-        _cloudShadingEffect.SetParameter("PixelSize", 1.5f * pixelSize);
     }
 }
