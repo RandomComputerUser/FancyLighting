@@ -113,7 +113,7 @@ float4 CloudShadingColor(in VertexShaderOutput input, bool wrap)
     return lightColor * lerp(
         texColor, 
         float4(mult * float3(196 / 255.0, 223 / 255.0, 244 / 255.0), 1) * texColor.a, 
-        SkyLightMult * lightColor.a
+        SkyLightMult
     );
 }
 
