@@ -221,7 +221,7 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
     surfaceGradient *= surfaceGradientAndMult.z;
     
     float lightMult = dot(lightGradient, surfaceGradient);
-    lightMult += (0.333 + 0.1 * lightMult) * shininess * Square(lightMult);
+    lightMult += (0.3 + 0.1 * lightMult) * shininess * Square(lightMult);
     lightMult = 1.0 + NormalMapStrength * lightMult;
     return lerp(
         1.0,

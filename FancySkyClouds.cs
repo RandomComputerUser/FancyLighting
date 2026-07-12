@@ -49,7 +49,6 @@ public static class FancySkyClouds
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
 
         var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-        var normalMapGradientMult = 24f * overbrightMult;
 
         var zoomWithFlipping = FancyLightingMod._isGameInCameraMode
             ? Vector2.One
@@ -64,7 +63,6 @@ public static class FancySkyClouds
         var normalMapSkyGradientMult = overbrightMult * zoomWithFlipping;
 
         _cloudShadingEffect
-            .SetParameter("NormalMapGradientMult", normalMapGradientMult)
             .SetParameter(
                 "SkyLightGradient",
                 -normalMapSkyGradientMult
@@ -73,7 +71,7 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("SkyLightMult", (float)skyLightMult);
+            .SetParameter("SkyLightMult", 0.5f * (float)skyLightMult);
 
         orig(self);
     }
