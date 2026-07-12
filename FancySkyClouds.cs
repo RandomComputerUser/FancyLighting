@@ -61,6 +61,11 @@ public static class FancySkyClouds
         var (skyLightAngle, _, skyLightMult) =
             FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
         var normalMapSkyGradientMult = overbrightMult * zoomWithFlipping;
+        var cloudShadingStrength = Math.Clamp(
+            PreferencesConfig.Instance.CloudShadingMultiplier(),
+            0f,
+            1f
+        );
 
         _cloudShadingEffect
             .SetParameter(
@@ -71,7 +76,8 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("SkyLightMult", 0.5f * (float)skyLightMult);
+            .SetParameter("SkyLightMult", 0.5f * (float)skyLightMult)
+            .SetParameter("ShadingStrength", cloudShadingStrength);
 
         orig(self);
     }

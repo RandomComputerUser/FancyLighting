@@ -85,6 +85,9 @@ public static class DefaultOptions
     // Fancy Sky Preferences
     public const int SkyBrightnessBoost = 5;
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
+    public const int CloudShadingStrength = 5;
+
+    // Miscellaneous Preferences
     public const bool DepthOfField = false;
     public const int DepthOfFieldRadius = 2;
 }

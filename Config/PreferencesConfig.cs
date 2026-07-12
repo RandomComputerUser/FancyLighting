@@ -38,6 +38,8 @@ public sealed class PreferencesConfig : ModConfig
 
     public float SkyBrightness() => SkyBrightnessBoost / 5f;
 
+    public float CloudShadingMultiplier() => CloudShadingStrength / 10f * 0.75f;
+
     public override void OnChanged()
     {
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
@@ -176,6 +178,13 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.FancySkyColorsPreset)]
     [Dropdown]
     public SkyColorPreset FancySkyColorsPreset { get; set; }
+
+    [Range(1, 10)]
+    [DefaultValue(DefaultOptions.CloudShadingStrength)]
+    [Slider]
+    public int CloudShadingStrength { get; set; }
+
+    // Miscellaneous
 
     [Header("Miscellaneous")]
     [DefaultValue(DefaultOptions.DepthOfField)]

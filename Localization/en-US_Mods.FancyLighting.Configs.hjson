@@ -385,7 +385,20 @@ PreferencesConfig: {
 
 			Has the largest effect around sunrise and sunset
 			Fancy Atmosphere is intended to be used with the Natural preset
+
 			{$Snippets.RequireFancySkyLightColors}
+			'''
+	}
+
+	CloudShadingStrength: {
+		Label: Cloud Shading Strength
+		Tooltip:
+			'''
+			The strength of shading on clouds
+
+			Higher values make clouds appear bumpier
+
+			{$Snippets.RequireFancySkyLightShading}
 			'''
 	}
 
@@ -812,4 +825,5 @@ Snippets: {
 	RequireGlobalIllumination: "[c/FF00FF:{$Snippets.GlobalIllumination}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancyAtmosphere: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancySkyLightColors: "[c/FF00FF:{$Snippets.FancySkyLightColors}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireFancySkyLightShading: "[c/FF00FF:{$Snippets.FancySkyLightShading}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 }

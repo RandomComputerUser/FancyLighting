@@ -5,8 +5,7 @@ float4x4 MatrixTransform;
 float Scale;
 float2 SkyLightGradient;
 float SkyLightMult;
-
-const float NormalMapStrength = 0.35;
+float ShadingStrength;
 
 struct VertexShaderOutput
 {
@@ -96,7 +95,7 @@ float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
     
     float lightMult = dot(lightGradient, surfaceGradient);
     lightMult -= (0.3 - 0.1 * lightMult) * Square(lightMult);
-    lightMult = 1.0 + NormalMapStrength * lightMult;
+    lightMult = 1.0 + ShadingStrength * lightMult;
     return lerp(
         1.0,
         lightMult,
