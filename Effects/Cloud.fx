@@ -41,7 +41,7 @@ float SampleTexture(float2 texCoord, bool wrap)
     float3 color = tex2D(TextureSampler, texCoord).rgb;
     if (!wrap)
     {
-        color *= any(texCoord <= 0.0 || texCoord >= 1.0) ? 0 : 1;
+        color *= all(texCoord == saturate(texCoord));
     }
     
     return saturate((Luma(color) - 0.65) * (1.0 / (1.0 - 0.65)));
@@ -52,12 +52,12 @@ float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
     float center = SampleTexture(texCoord, wrap);
     float2 sum = 0;
     [unroll]
-    for (int dy = -2; dy <= 2; ++dy)
+    for (int dy = -3; dy <= 3; ++dy)
     {
         [unroll]
-        for (int dx = -2; dx <= 2; ++dx)
+        for (int dx = -3; dx <= 3; ++dx)
         {
-            if (abs(dx) + abs(dy) > 3 || dx == 0 && dy == 0)
+            if (abs(dx) + abs(dy) > 4 || dx == 0 && dy == 0)
             {
                 continue;
             }
@@ -68,7 +68,7 @@ float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
         }
     }
     
-    sum *= -0.5 / (5.0 + 3.0 / 2.0);
+    sum *= -0.5 / (7.0 + 5.0 / 2.0 + 3.0 / 3.0);
     return sum;
 }
 
