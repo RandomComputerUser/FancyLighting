@@ -39,9 +39,11 @@ public static class FancySkyLighting
         _skyLightLuma[index] = luma;
     }
 
-    public static (double angle, double mult) CalculateSkyLightAngleAndMultiplier(
-        double hour
-    )
+    public static (
+        double angle,
+        double mult,
+        double amountVisible
+    ) CalculateSkyLightAngleAndMultiplier(double hour)
     {
         hour = MathUtils.EuclideanRemainder(hour, 24.0);
 
@@ -67,7 +69,7 @@ public static class FancySkyLighting
         }
         else
         {
-            return (angle: 0.0, mult: 0.0);
+            return (angle: 0.0, mult: 0.0, amountVisible: 0.0);
         }
 
         var airDecayMult = (double)0.91f;
@@ -87,7 +89,8 @@ public static class FancySkyLighting
             * SmoothLighting.NormalMapGradientBaseMult;
 
         var angle = Math.PI * progress;
-        var mult = baseMult * MathUtils.Smoothstep(0.0, 1.0, amountVisible);
-        return (angle, mult);
+        amountVisible = MathUtils.Smoothstep(0.0, 1.0, amountVisible);
+        var mult = baseMult * amountVisible;
+        return (angle, mult, amountVisible);
     }
 }

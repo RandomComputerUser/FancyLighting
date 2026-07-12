@@ -2078,8 +2078,7 @@ public sealed class SmoothLighting
 
         var gamma = PostProcessing.ContentGamma();
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
-        var overbrightMult =
-            doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
+        var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
         var normalMapGradientMult =
             16f * NormalMapGradientBaseMult * overbrightMult * zoom;
         var normalMapStrength = Math.Clamp(
@@ -2120,7 +2119,7 @@ public sealed class SmoothLighting
         if (doFancySky)
         {
             var hour = GameTimeUtils.CalculateCurrentHour();
-            var (skyLightAngle, skyLightMult) =
+            var (skyLightAngle, skyLightMult, _) =
                 FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
             var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult * zoom;
             shader.SetParameter(
@@ -2358,11 +2357,10 @@ public sealed class SmoothLighting
 
         if (doNormals)
         {
-            var zoom = cameraMode ? Vector2.One : Main.GameViewMatrix.Zoom;
+            var zoom = cameraMode ? 1f : Main.GameViewMatrix.Zoom.X;
 
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
-            var overbrightMult =
-                doOverbright && hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
+            var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
             var normalMapGradientMult =
                 16f * NormalMapGradientBaseMult * overbrightMult * zoom;
             var normalMapStrength = Math.Clamp(
@@ -2387,7 +2385,7 @@ public sealed class SmoothLighting
                     );
 
                 var hour = GameTimeUtils.CalculateCurrentHour();
-                var (skyLightAngle, skyLightMult) =
+                var (skyLightAngle, skyLightMult, _) =
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
                     (float)skyLightMult * overbrightMult * zoomWithFlipping;

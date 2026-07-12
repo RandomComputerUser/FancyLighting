@@ -65,7 +65,7 @@ struct SamplingTransform
 {
     float2 TexelSize;
     float2 TextureSize;
-    float2x2 ScalingAndRotation;  
+    float2x2 ScalingAndRotation;
 };
 
 // Assumes only rotation and/or flipping and no scaling or stretching

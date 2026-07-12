@@ -41,6 +41,35 @@ public static class FancySkyClouds
             return;
         }
 
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
+
+        var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
+        var normalMapGradientMult = 24f * overbrightMult;
+
+        var zoomWithFlipping = FancyLightingMod._isGameInCameraMode
+            ? Vector2.One
+            : new Vector2(
+                1f,
+                (float)MathF.Sign(Main.GameViewMatrix.TransformationMatrix.M22)
+            );
+
+        var hour = GameTimeUtils.CalculateCurrentHour();
+        var (skyLightAngle, _, skyLightMult) =
+            FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
+        var normalMapSkyGradientMult = overbrightMult * zoomWithFlipping;
+
+        _cloudShadingEffect
+            .SetParameter("NormalMapGradientMult", normalMapGradientMult)
+            .SetParameter(
+                "SkyLightGradient",
+                -normalMapSkyGradientMult
+                    * new Vector2(
+                        (float)Math.Cos(skyLightAngle),
+                        (float)Math.Sin(skyLightAngle)
+                    )
+            )
+            .SetParameter("SkyLightMult", (float)skyLightMult);
+
         orig(self);
     }
 
@@ -199,6 +228,6 @@ public static class FancySkyClouds
 
     private static void SetCloudScale(int pixelSize)
     {
-        _cloudShadingEffect.SetParameter("PixelSize", (float)pixelSize);
+        _cloudShadingEffect.SetParameter("PixelSize", 1.5f * pixelSize);
     }
 }
