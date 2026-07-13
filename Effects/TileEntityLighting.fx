@@ -233,10 +233,6 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
 float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-    {
-        return input.Color * texColor;
-    }
     float3 lightColor =
         input.Color.a
         * lightMult
@@ -247,19 +243,17 @@ float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
     float4 glow = input.Color * texColor;
     float3 bright = max(primary, glow.rgb);
     
-    return float4(
-        lerp(primary.rgb, bright, step(2.0 / 255, selector)),
-        glow.a
-    );
+    return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+        ? input.Color * texColor
+        : float4(
+            lerp(primary.rgb, bright, step(2.0 / 255, selector)),
+            glow.a
+        );
 }
 
 float4 SmoothLightingColorDithered(in GlowVertexShaderOutput input, float lightMult)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-    {
-        return input.Color * texColor;
-    }
     float3 lightColor =
         input.Color.a
         * lightMult
@@ -270,34 +264,30 @@ float4 SmoothLightingColorDithered(in GlowVertexShaderOutput input, float lightM
     float4 glow = input.Color * texColor;
     float3 bright = max(primary, glow.rgb);
     
-    return float4(
-        lerp(primary.rgb, bright, step(2.0 / 255, selector)),
-        glow.a
-    );
+    return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+        ? input.Color * texColor
+        : float4(
+            lerp(primary.rgb, bright, step(2.0 / 255, selector)),
+            glow.a
+        );
 }
 
 float4 SmoothLightingColorLightOnly(in VertexShaderOutput input, float lightMult)
 {
     float alpha = tex2D(TextureSampler, input.TexCoord).a;
-    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-    {
-        return input.Color * alpha;
-    }
     float3 lightColor =
         input.Color.a
         * lightMult
         * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
     
-    return float4(lightColor, input.Color.a) * alpha;
+    return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+        ? input.Color * alpha
+        : float4(lightColor, input.Color.a) * alpha;
 }
 
 float4 SmoothLightingColorLightOnlyDithered(in VertexShaderOutput input, float lightMult)
 {
     float alpha = tex2D(TextureSampler, input.TexCoord).a;
-    if (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-    {
-        return input.Color * alpha;
-    }
     float3 lightColor =
         input.Color.a
         * lightMult
@@ -305,7 +295,9 @@ float4 SmoothLightingColorLightOnlyDithered(in VertexShaderOutput input, float l
     
     float4 result = float4(lightColor, input.Color.a) * alpha;
     result.rgb = Dithered(result.rgb, input.Position);
-    return result;
+    return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
+        ? input.Color * alpha
+        : result;
 }
 
 VertexShaderOutput SmoothLightingVS(in VertexShaderInput input)
