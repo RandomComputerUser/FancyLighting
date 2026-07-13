@@ -44,7 +44,7 @@ float SampleTexture(float2 texCoord, bool wrap)
         color *= all(texCoord == saturate(texCoord));
     }
     
-    return saturate((Luma(color) - 0.65) * (1.0 / (1.0 - 0.65)));
+    return saturate((Luma(color) - 0.5) * (1.0 / (1.0 - 0.5)));
 }
 
 float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
@@ -62,13 +62,14 @@ float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
                 continue;
             }
         
+            float2 direction = float2(dx, dy);
             sum += (SampleTexture(
                 texCoord + dx * diff.xy + dy * diff.zw, wrap
-            ) - center) * float2(dx == 0 ? 0.0 : 1.0 / dx, dy == 0 ? 0.0 : 1.0 / dy);
+            ) - center) * direction / dot(direction, direction);
         }
     }
     
-    sum *= -0.5 / (7.0 + 5.0 / 2.0 + 3.0 / 3.0);
+    sum *= -0.09375;
     return sum;
 }
 
