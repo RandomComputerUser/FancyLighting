@@ -222,7 +222,8 @@ public sealed class FancySkyRendering
         Main.SceneArea sceneArea,
         Color moonColor,
         Color sunColor,
-        float tempMushroomInfluence
+        float tempMushroomInfluence,
+        SmoothLighting smoothLightingInstance
     )
     {
         if (_sunShader is null)
@@ -230,6 +231,8 @@ public sealed class FancySkyRendering
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;
         }
+
+        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
 
         var samplerState = MainGraphics.GetSamplerState();
         var transform = MainGraphics.GetTransformMatrix();
@@ -250,10 +253,8 @@ public sealed class FancySkyRendering
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
-        var isDay = Main.dayTime;
-
         Main.spriteBatch.Begin(
-            isDay ? SpriteSortMode.Immediate : SpriteSortMode.Deferred,
+            SpriteSortMode.Immediate,
             BlendState.AlphaBlend,
             SamplerState.LinearClamp,
             DepthStencilState.None,
@@ -261,7 +262,7 @@ public sealed class FancySkyRendering
             null,
             transform
         );
-        if (isDay)
+        if (Main.dayTime)
         {
             var gamma = Main.gameMenu
                 ? PostProcessing.DefaultGamma
@@ -270,6 +271,10 @@ public sealed class FancySkyRendering
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)
                 .Apply();
+        }
+        else if (hiDef)
+        {
+            smoothLightingInstance.ApplyBrightenShader(1.5f);
         }
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();

@@ -913,7 +913,8 @@ public sealed class FancyLightingMod : Mod
                 sceneArea,
                 moonColor,
                 sunColor,
-                tempMushroomInfluence
+                tempMushroomInfluence,
+                _smoothLightingInstance
             );
             return;
         }
