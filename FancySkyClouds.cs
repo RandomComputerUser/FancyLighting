@@ -8,6 +8,7 @@ namespace FancyLighting;
 public static class FancySkyClouds
 {
     private static SamplerState _samplerState = SamplerState.LinearClamp;
+    private static float _skyLightMult = 1f;
 
     private static SpriteBatchEffect _cloudShadingEffect;
     private static SpriteBatchEffect _cloudShadingWrapEffect;
@@ -66,6 +67,7 @@ public static class FancySkyClouds
             0f,
             1f
         );
+        _skyLightMult = 0.5f * (float)skyLightMult;
 
         _cloudShadingEffect
             .SetParameter(
@@ -76,7 +78,6 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("SkyLightMult", 0.5f * (float)skyLightMult)
             .SetParameter("ShadingStrength", cloudShadingStrength);
 
         orig(self);
@@ -103,6 +104,12 @@ public static class FancySkyClouds
             const float Layer4Scale = (1.00f + 1.15f) / 2f;
             const float Layer5Scale = (1.16f + 1.30f) / 2f;
 
+            const float Layer1Mult = 0.75f;
+            const float Layer2Mult = 1f;
+            const float Layer3Mult = 1f;
+            const float Layer4Mult = 1f;
+            const float Layer5Mult = 1f;
+
             // individual clouds
             cursor.GotoNext(
                 MoveType.AfterLabel,
@@ -110,6 +117,7 @@ public static class FancySkyClouds
                 instruction => instruction.MatchStloc(13)
             );
             cursor.Emit(OpCodes.Ldc_R4, Layer1Scale);
+            cursor.Emit(OpCodes.Ldc_R4, Layer1Mult);
             cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
@@ -127,6 +135,7 @@ public static class FancySkyClouds
                 instruction => instruction.MatchStloc(21)
             );
             cursor.Emit(OpCodes.Ldc_R4, Layer2Scale);
+            cursor.Emit(OpCodes.Ldc_R4, Layer2Mult);
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
@@ -145,6 +154,7 @@ public static class FancySkyClouds
                 instruction => instruction.MatchStloc(22)
             );
             cursor.Emit(OpCodes.Ldc_R4, Layer3Scale);
+            cursor.Emit(OpCodes.Ldc_R4, Layer3Mult);
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
@@ -163,6 +173,7 @@ public static class FancySkyClouds
                 instruction => instruction.MatchStloc(23)
             );
             cursor.Emit(OpCodes.Ldc_R4, Layer4Scale);
+            cursor.Emit(OpCodes.Ldc_R4, Layer4Mult);
             cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
@@ -180,6 +191,7 @@ public static class FancySkyClouds
                 instruction => instruction.MatchStloc(31)
             );
             cursor.Emit(OpCodes.Ldc_R4, Layer5Scale);
+            cursor.Emit(OpCodes.Ldc_R4, Layer5Mult);
             cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
@@ -196,7 +208,7 @@ public static class FancySkyClouds
         }
     }
 
-    private static void Begin(float scale, bool wrap)
+    private static void Begin(float scale, float mult, bool wrap)
     {
         if (!SettingsSystem._useFancyClouds)
         {
@@ -228,7 +240,9 @@ public static class FancySkyClouds
 
         var effect = wrap ? _cloudShadingWrapEffect : _cloudShadingEffect;
 
-        effect.SetParameter("Scale", 2f * scale);
+        effect
+            .SetParameter("Scale", 2f * scale)
+            .SetParameter("SkyLightMult", mult * _skyLightMult);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(
