@@ -34,12 +34,12 @@ public static class DefaultOptions
     // Smooth Lighting
     public const bool UseSmoothLighting = true;
     public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
+    public const bool UseEnhancedGlowMaskSupport = false;
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = true;
     public const bool SimulateNormalMaps = false;
     public const bool SimulateNonSolidNormals = false;
     public const bool SimulateTileEntityNormals = false;
-    public const bool UseEnhancedGlowMaskSupport = false;
     public const bool UseTileEntitySmoothLighting = false;
 
     // Smooth Lighting Preferences

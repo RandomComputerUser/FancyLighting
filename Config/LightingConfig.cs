@@ -75,12 +75,12 @@ public sealed class LightingConfig : ModConfig
     {
         _useSmoothLighting = options.UseSmoothLighting;
         _lightMapRenderMode = options.LightMapRenderMode;
+        _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _simulateNormalMaps = options.SimulateNormalMaps;
         _simulateNonSolidNormals = options.SimulateNonSolidNormals;
         _simulateTileEntityNormals = options.SimulateTileEntityNormals;
-        _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _useTileEntitySmoothLighting = options.UseTileEntitySmoothLighting;
 
         _useAmbientOcclusion = options.UseAmbientOcclusion;
@@ -173,6 +173,19 @@ public sealed class LightingConfig : ModConfig
 
     private RenderMode _lightMapRenderMode;
 
+    [DefaultValue(DefaultOptions.UseEnhancedGlowMaskSupport)]
+    public bool UseEnhancedGlowMaskSupport
+    {
+        get => _useEnhancedGlowMaskSupport;
+        set
+        {
+            _useEnhancedGlowMaskSupport = value;
+            UpdatePreset();
+        }
+    }
+
+    private bool _useEnhancedGlowMaskSupport;
+
     [DefaultValue(DefaultOptions.UseLightMapBlurring)]
     public bool UseLightMapBlurring
     {
@@ -238,18 +251,6 @@ public sealed class LightingConfig : ModConfig
 
     private bool _simulateTileEntityNormals;
 
-    [DefaultValue(DefaultOptions.UseEnhancedGlowMaskSupport)]
-    public bool UseEnhancedGlowMaskSupport
-    {
-        get => _useEnhancedGlowMaskSupport;
-        set
-        {
-            _useEnhancedGlowMaskSupport = value;
-            UpdatePreset();
-        }
-    }
-    private bool _useEnhancedGlowMaskSupport;
-
     [DefaultValue(DefaultOptions.UseTileEntitySmoothLighting)]
     public bool UseTileEntitySmoothLighting
     {
@@ -260,6 +261,7 @@ public sealed class LightingConfig : ModConfig
             UpdatePreset();
         }
     }
+
     private bool _useTileEntitySmoothLighting;
 
     // Ambient Occlusion

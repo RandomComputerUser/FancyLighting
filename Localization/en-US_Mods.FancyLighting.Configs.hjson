@@ -464,6 +464,18 @@ LightingConfig: {
 			'''
 	}
 
+	UseEnhancedGlowMaskSupport: {
+		Label: Improved Glow Effect Accuracy
+		Tooltip:
+			'''
+			Use a more accurate technique to render glow effects
+
+			When disabled, glow effect brightness may differ from vanilla
+
+			{$Snippets.HighPerformanceImpact}
+			'''
+	}
+
 	UseLightMapBlurring: {
 		Label: Light Map Blurring
 		Tooltip:
@@ -519,18 +531,6 @@ LightingConfig: {
 			Primarily affects tiles that are affected by wind
 
 			{$Snippets.RequireNormalMaps}
-			'''
-	}
-
-	UseEnhancedGlowMaskSupport: {
-		Label: Improved Glow Effect Accuracy
-		Tooltip:
-			'''
-			Use a more accurate technique to render glow effects
-
-			When disabled, glow effect brightness may differ from vanilla
-
-			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 

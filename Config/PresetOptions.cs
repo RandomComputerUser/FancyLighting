@@ -11,7 +11,11 @@ internal record PresetOptions
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
 
+    public bool UseEnhancedGlowMaskSupport { get; init; } =
+        DefaultOptions.UseEnhancedGlowMaskSupport;
+
     public bool UseLightMapBlurring { get; init; } = DefaultOptions.UseLightMapBlurring;
+
     public bool UseEnhancedBlurring { get; init; } = DefaultOptions.UseEnhancedBlurring;
 
     public bool SimulateNormalMaps { get; init; } = DefaultOptions.SimulateNormalMaps;
@@ -21,9 +25,6 @@ internal record PresetOptions
 
     public bool SimulateTileEntityNormals { get; init; } =
         DefaultOptions.SimulateTileEntityNormals;
-
-    public bool UseEnhancedGlowMaskSupport { get; init; } =
-        DefaultOptions.UseEnhancedGlowMaskSupport;
 
     public bool UseTileEntitySmoothLighting { get; init; } =
         DefaultOptions.UseTileEntitySmoothLighting;
@@ -66,12 +67,12 @@ internal record PresetOptions
     {
         UseSmoothLighting = config.UseSmoothLighting;
         LightMapRenderMode = config.LightMapRenderMode;
+        UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
         UseLightMapBlurring = config.UseLightMapBlurring;
         UseEnhancedBlurring = config.UseEnhancedBlurring;
         SimulateNormalMaps = config.SimulateNormalMaps;
         SimulateNonSolidNormals = config.SimulateNonSolidNormals;
         SimulateTileEntityNormals = config.SimulateTileEntityNormals;
-        UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
         UseTileEntitySmoothLighting = config.UseTileEntitySmoothLighting;
 
         UseAmbientOcclusion = config.UseAmbientOcclusion;
@@ -93,11 +94,11 @@ internal record PresetOptions
         {
             UseSmoothLighting = false,
             LightMapRenderMode = RenderMode.Bilinear,
+            UseEnhancedGlowMaskSupport = false,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             SimulateNonSolidNormals = false,
             SimulateTileEntityNormals = false,
-            UseEnhancedGlowMaskSupport = false,
             UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = false,
             DoNonSolidAmbientOcclusion = false,
@@ -115,11 +116,11 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.Bilinear,
+            UseEnhancedGlowMaskSupport = false,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             SimulateNonSolidNormals = false,
             SimulateTileEntityNormals = false,
-            UseEnhancedGlowMaskSupport = false,
             UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = false,
@@ -139,11 +140,11 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
+            UseEnhancedGlowMaskSupport = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             SimulateNonSolidNormals = true,
             SimulateTileEntityNormals = true,
-            UseEnhancedGlowMaskSupport = true,
             UseTileEntitySmoothLighting = false,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
@@ -161,11 +162,11 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.EnhancedHdr,
+            UseEnhancedGlowMaskSupport = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             SimulateNonSolidNormals = true,
             SimulateTileEntityNormals = true,
-            UseEnhancedGlowMaskSupport = true,
             UseTileEntitySmoothLighting = true,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
