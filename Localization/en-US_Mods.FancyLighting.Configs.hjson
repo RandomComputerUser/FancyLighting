@@ -773,11 +773,6 @@ SkyColorPreset: {
 ToneMappingPreset: {
 	Tooltip: ""
 
-	FilmicLms: {
-		Label: Filmic (LMS)
-		Tooltip: ""
-	}
-
 	NeutralLms: {
 		Label: Neutral (LMS)
 		Tooltip: ""

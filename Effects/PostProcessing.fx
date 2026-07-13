@@ -206,40 +206,10 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
-float3 ToneMapColorFilmicLms(float3 x)
-{
-    const float c1 = 1.8;
-    const float c2 = 0.333333333333;
-    const float c3 = 256.0;
-    const float c4 = 2.0;
-    const float c5 = 4.0;
-    x = mul(x, SrgbToLmsD65);
-    x = saturate(
-        c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
-    );
-    return saturate(mul(x, LmsD65ToSrgb));
-}
-
-float4 ToneMapFilmicLms(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorFilmicLms(color.rgb);
-    return color;
-}
-
-float4 ToneMapFilmicLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    // Color grade before tone mapping to prevent artifacts caused by out-of-gamut colors
-    color.rgb = MakeVibrant(max(color.rgb, 0.0));
-    color.rgb = ToneMapColorFilmicLms(color.rgb);
-    return color;
-}
-
 float3 ToneMapColorNeutralLms(float3 x)
 {
-    const float c1 = 1.8;
-    const float c2 = 4.0;
+    const float c1 = 2.05;
+    const float c2 = 5.25;
     x = mul(x, SrgbToLmsD65);
     x = saturate(c1 * (x / (x + c2)));
     return saturate(mul(x, LmsD65ToSrgb));
@@ -263,8 +233,8 @@ float4 ToneMapNeutralLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColorNeutralOld(float3 x)
 {
-    const float c1 = 1.8;
-    const float c2 = 4.0;
+    const float c1 = 2.05;
+    const float c2 = 5.25;
     x = mul(x, SqrtSrgbToAcescg);
     x = saturate(c1 * (x / (x + c2)));
     return saturate(mul(x, SqrtAcescgToSrgb));
@@ -364,16 +334,6 @@ technique Technique1
     pass BloomComposite
     {
         PixelShader = compile ps_3_0 BloomComposite();
-    }
-    
-    pass ToneMapFilmicLms
-    {
-        PixelShader = compile ps_3_0 ToneMapFilmicLms();
-    }
-    
-    pass ToneMapFilmicLmsVibranceBoost
-    {
-        PixelShader = compile ps_3_0 ToneMapFilmicLmsVibranceBoost();
     }
     
     pass ToneMapNeutralLms

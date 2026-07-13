@@ -25,15 +25,15 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
 - Made the *Bicubic* render mode a little brighter
+- Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
-- Added the *Filmic (LMS)* TMO, which is the new default
-- Added the *Neutral (LMS)* TMO
+- Added the *Neutral (LMS)* TMO, which is the new default
 - Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
 - Changed the exposure setting to be logarithmic and increased its range
 - Tweaked and optimized vibrance boost
-- Increased the default vibrance boost to 3 (from 2)
+- Increased the default vibrance boost to 4 (from 2)
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values
 - Increased the max sky brightness boost to 15 (from 10)

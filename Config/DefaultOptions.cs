@@ -48,9 +48,9 @@ public static class DefaultOptions
     public const bool UseGrayscaleLighting = false;
 
     // Full HDR Rendering Preferences
-    public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.FilmicLms;
+    public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.NeutralLms;
     public const int Exposure = 0;
-    public const int VibranceBoost = 3;
+    public const int VibranceBoost = 4;
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
     public const int BloomStrength = 4;
@@ -85,7 +85,7 @@ public static class DefaultOptions
     // Fancy Sky Preferences
     public const int SkyBrightnessBoost = 5;
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
-    public const int CloudShadingStrength = 7;
+    public const int CloudShadingStrength = 8;
 
     // Miscellaneous Preferences
     public const bool DepthOfField = false;
