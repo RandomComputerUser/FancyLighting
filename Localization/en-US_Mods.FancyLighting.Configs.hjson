@@ -541,6 +541,8 @@ LightingConfig: {
 			Use smooth lighting on tile entities
 
 			Primarily affects tiles that are affected by wind
+
+			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 
