@@ -660,6 +660,8 @@ LightingConfig: {
 
 			Improves the shading of clouds
 			Improves the shading of normal maps when using HDR rendering
+
+			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 }
