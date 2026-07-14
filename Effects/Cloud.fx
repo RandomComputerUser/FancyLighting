@@ -44,7 +44,9 @@ float SampleTexture(float2 texCoord, bool wrap)
         color *= all(texCoord == saturate(texCoord));
     }
     
-    return saturate((Luma(color) - 0.5) * (1.0 / (1.0 - 0.5)));
+    const float MIN_LUMA = 0.5;
+    const float MULT = 1.0 / (1.0 - MIN_LUMA);
+    return saturate(MULT * Luma(color) - MULT * MIN_LUMA);
 }
 
 float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
