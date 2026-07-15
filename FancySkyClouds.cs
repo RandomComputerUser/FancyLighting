@@ -8,7 +8,6 @@ namespace FancyLighting;
 public static class FancySkyClouds
 {
     private static SamplerState _samplerState = SamplerState.LinearClamp;
-    private static float _skyLightMult = 1f;
 
     private static SpriteBatchEffect _cloudShadingEffect;
     private static SpriteBatchEffect _cloudShadingWrapEffect;
@@ -53,21 +52,12 @@ public static class FancySkyClouds
 
         var zoomWithFlipping = FancyLightingMod._isGameInCameraMode
             ? Vector2.One
-            : new Vector2(
-                1f,
-                (float)MathF.Sign(Main.GameViewMatrix.TransformationMatrix.M22)
-            );
+            : new Vector2(1f, MathF.Sign(Main.GameViewMatrix.TransformationMatrix.M22));
 
         var hour = GameTimeUtils.CalculateCurrentHour();
         var (skyLightAngle, _, skyLightMult) =
             FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
         var normalMapSkyGradientMult = overbrightMult * zoomWithFlipping;
-        var cloudShadingStrength = Math.Clamp(
-            PreferencesConfig.Instance.CloudShadingMultiplier(),
-            0f,
-            1f
-        );
-        _skyLightMult = 0.5f * (float)skyLightMult;
 
         _cloudShadingEffect
             .SetParameter(
@@ -78,7 +68,7 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("ShadingStrength", cloudShadingStrength);
+            .SetParameter("SkyLightMult", 0.5f * (float)skyLightMult);
 
         orig(self);
     }
@@ -238,11 +228,17 @@ public static class FancySkyClouds
             }
         }
 
+        var cloudShadingStrength = Math.Clamp(
+            PreferencesConfig.Instance.CloudShadingMultiplier(),
+            0f,
+            1f
+        );
+
         var effect = wrap ? _cloudShadingWrapEffect : _cloudShadingEffect;
 
         effect
             .SetParameter("Scale", 2f * scale)
-            .SetParameter("SkyLightMult", mult * _skyLightMult);
+            .SetParameter("ShadingStrength", mult * cloudShadingStrength);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(
