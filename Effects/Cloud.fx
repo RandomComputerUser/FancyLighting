@@ -24,16 +24,6 @@ float Luma(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
-float2 Gradient(
-    float horizontalColorDiff,
-    float verticalColorDiff
-)
-{
-    float2 gradient = float2(horizontalColorDiff, verticalColorDiff);
-    gradient *= 0.5;
-    return gradient;
-}
-
 // Intentionally use gamma-encoded values for simulating normal maps
 
 float SampleTexture(float2 texCoord, bool wrap)
