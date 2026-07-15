@@ -43,7 +43,7 @@ public static class DefaultOptions
     public const bool UseTileEntitySmoothLighting = false;
 
     // Smooth Lighting Preferences
-    public const int NormalMapsIntensity = 8;
+    public const int NormalMapsIntensity = 7;
     public const bool FineNormalMaps = false;
     public const bool UseGrayscaleLighting = false;
 

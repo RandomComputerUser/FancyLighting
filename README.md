@@ -18,7 +18,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
   - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
 - Added tile entity normal maps
 - Tweaked normal maps rendering and adjusted the normal maps strength scale
-- Changed the default normal maps strength to 8 (from 3)
+- Changed the default normal maps strength to 7 (from 3)
 - Changed the maximum normal maps strength to 10 (from 15)
 - Added a setting to apply smooth lighting to tile entities
 - Added bright light synchronization for full HDR rendering

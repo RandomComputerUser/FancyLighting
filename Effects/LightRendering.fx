@@ -127,34 +127,32 @@ float3 NormalsSurfaceGradientAndMult(float2 worldTexCoords)
     );
 }
 
-float2 NormalsLightGradient(float2 coords)
+float2 NormalsLightGradient(float luma)
 {
-    float3 light = tex2D(LightSampler, coords).rgb;
-    float luma = Luma(light);
     return NormalMapGradientMult * float2(ddx(luma), ddy(luma));
 }
 
-float4 NormalsLightGradientFancySky(float2 coords)
+float4 NormalsLightGradientFancySky(float luma, float alpha)
 {
-    float4 light = tex2D(LightSampler, coords);
-    float luma = Luma(light.rgb);
     return float4(
         NormalMapGradientMult * float2(ddx(luma), ddy(luma)),
-        SkyLightGradient * light.a
+        SkyLightGradient * alpha
     );
 }
 
 float NormalsMultiplier(float2 coords, float2 worldTexCoords)
 {
-    float2 lightGradient = NormalsLightGradient(coords);
+    float luma = Luma(tex2D(LightSampler, coords).rgb);
+    float2 lightGradient = NormalsLightGradient(luma);
     float lightGradientLength = length(lightGradient);
     
-    if (lightGradientLength == 0)
+    if (lightGradientLength == 0 || luma <= 0)
     {
         return 1.0;
     }
     
     lightGradient /= lightGradientLength;
+    lightGradientLength /= luma;
     
     float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(worldTexCoords);
     float2 surfaceGradient = surfaceGradientAndMult.xy;
@@ -174,17 +172,20 @@ float NormalsMultiplier(float2 coords, float2 worldTexCoords)
 
 float NormalsMultiplierFancySky(float2 coords, float2 worldTexCoords)
 {
-    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(coords);
+    float4 light = tex2D(LightSampler, coords);
+    float luma = Luma(light.rgb);
+    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, light.a);
     
     float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
     float lightGradientLength = length(lightGradient);
     
-    if (lightGradientLength == 0)
+    if (lightGradientLength == 0 || luma <= 0)
     {
         return 1.0;
     }
     
     lightGradient /= lightGradientLength;
+    lightGradientLength /= luma;
     
     float skyLightGradientLength = length(lightAndSkyLightGradient.zw);
     float shininess = skyLightGradientLength / (
