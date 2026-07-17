@@ -29,6 +29,11 @@ float Square(float x)
     return x * x;
 }
 
+float3 Square(float3 x)
+{
+    return x * x;
+}
+
 float3 GammaToLinear(float3 color)
 {
     return pow(color, Gamma);
@@ -41,7 +46,7 @@ float3 LinearToGamma(float3 color)
 
 float Luma(float3 color)
 {
-    return dot(color, float3(0.2126, 0.7152, 0.0722));
+    return sqrt(dot(Square(color), float3(0.2126, 0.7152, 0.0722)));
 }
 
 float2 WorldCoords(float2 lightMapCoords)
@@ -88,8 +93,6 @@ float2 Gradient(
     gradient *= 0.5;
     return gradient;
 }
-
-// Intentionally use gamma-encoded values for simulating normal maps
 
 float SampleForNormal(float2 worldTexCoords, float fallback)
 {

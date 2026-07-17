@@ -44,9 +44,14 @@ float Square(float x)
     return x * x;
 }
 
+float3 Square(float3 x)
+{
+    return x * x;
+}
+
 float Luma(float3 color)
 {
-    return dot(color, float3(0.2126, 0.7152, 0.0722));
+    return sqrt(dot(Square(color), float3(0.2126, 0.7152, 0.0722)));
 }
 
 // Not technically correct because it ignores gamma, but cheap and decent quality
@@ -101,8 +106,6 @@ float2 Gradient(
     gradient *= 0.5;
     return gradient;
 }
-
-// Intentionally use gamma-encoded values for simulating normal maps
 
 float SampleForNormal(float2 texCoord, float fallback)
 {
