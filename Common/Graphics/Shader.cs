@@ -1,4 +1,4 @@
-﻿namespace FancyLighting.Utils;
+﻿namespace FancyLighting.Common.Graphics;
 
 internal sealed class Shader
 {

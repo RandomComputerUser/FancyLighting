@@ -1,4 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+﻿#region
+
+using System.Runtime.CompilerServices;
+
+#endregion
 
 namespace FancyLighting.Utils;
 

@@ -1,10 +1,14 @@
-﻿using FancyLighting.Utils.Accessors;
+﻿#region
+
+using FancyLighting.Core.Sky;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using ReLogic.Content;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core;
 
 public sealed class SmoothLighting
 {

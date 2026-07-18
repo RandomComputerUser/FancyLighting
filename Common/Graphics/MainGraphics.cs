@@ -1,6 +1,4 @@
-﻿using FancyLighting.Utils.Accessors;
-
-namespace FancyLighting.Utils;
+﻿namespace FancyLighting.Common.Graphics;
 
 internal static class MainGraphics
 {

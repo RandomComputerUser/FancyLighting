@@ -1,10 +1,13 @@
-﻿using System.Reflection;
-using FancyLighting.Utils.Accessors;
+﻿#region
+
+using System.Reflection;
 using MonoMod.RuntimeDetour;
 using ReLogic.Content;
 using Terraria.Graphics;
 
-namespace FancyLighting.Utils;
+#endregion
+
+namespace FancyLighting.Common.Graphics;
 
 internal static class SpriteBatchEffectLoader
 {

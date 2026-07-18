@@ -1,7 +1,11 @@
-﻿using FancyLighting.ColorProfiles.SkyColor;
+﻿#region
+
+using FancyLighting.ColorProfiles.SkyColor;
 using ReLogic.Content;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core.Sky;
 
 public sealed class FancySkyRendering
 {

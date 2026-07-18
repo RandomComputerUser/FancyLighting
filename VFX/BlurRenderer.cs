@@ -1,4 +1,4 @@
-﻿namespace FancyLighting;
+﻿namespace FancyLighting.VFX;
 
 internal sealed class BlurRenderer(bool alphaOnly, bool allowAdditiveBlend)
 {

@@ -1,8 +1,12 @@
-﻿using System.ComponentModel;
+﻿#region
+
+using System.ComponentModel;
 using FancyLighting.Config.Enums;
 using Terraria.ModLoader.Config;
 
-namespace FancyLighting.Config;
+#endregion
+
+namespace FancyLighting.Config.Configs;
 
 public sealed class PreferencesConfig : ModConfig
 {

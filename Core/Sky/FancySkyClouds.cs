@@ -1,9 +1,12 @@
-﻿using System.Reflection;
-using FancyLighting.Utils.Accessors;
+﻿#region
+
+using System.Reflection;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core.Sky;
 
 public static class FancySkyClouds
 {

@@ -1,4 +1,8 @@
-﻿using MonoMod.Utils;
+﻿#region
+
+using MonoMod.Utils;
+
+#endregion
 
 namespace FancyLighting.Utils;
 

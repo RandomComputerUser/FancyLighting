@@ -1,7 +1,10 @@
-﻿using FancyLighting.Utils.Accessors;
+﻿#region
+
 using Terraria.Graphics.Light;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core.Sky;
 
 public static class FancySkyLighting
 {

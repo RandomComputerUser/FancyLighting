@@ -1,6 +1,10 @@
-﻿using System.Reflection;
+﻿#region
+
+using System.Reflection;
 using MonoMod.RuntimeDetour;
 using Terraria.Graphics.Effects;
+
+#endregion
 
 namespace FancyLighting.ModCompatibility;
 

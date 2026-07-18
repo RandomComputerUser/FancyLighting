@@ -1,5 +1,9 @@
-﻿using System.Runtime.CompilerServices;
+﻿#region
+
+using System.Runtime.CompilerServices;
 using Terraria.GameContent.Drawing;
+
+#endregion
 
 namespace FancyLighting.Utils.Accessors;
 

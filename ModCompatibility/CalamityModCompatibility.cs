@@ -1,9 +1,11 @@
-﻿using System.Reflection;
+﻿#region
 
+using System.Reflection;
 using Mono.Cecil.Cil;
-
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+
+#endregion
 
 namespace FancyLighting.ModCompatibility;
 
@@ -111,8 +113,10 @@ internal static class CalamityModCompatibility
             var cursor = new ILCursor(context);
 
             var newThresholdMethod = typeof(CalamityModCompatibility)
-                .GetMethod(nameof(NewThreshold),
-                    BindingFlags.NonPublic | BindingFlags.Static)
+                .GetMethod(
+                    nameof(NewThreshold),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
                 .AssertNotNull();
 
             cursor.GotoNext(

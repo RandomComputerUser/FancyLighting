@@ -1,7 +1,11 @@
-﻿using System.ComponentModel;
+﻿#region
+
+using System.ComponentModel;
 using Terraria.ModLoader.Config;
 
-namespace FancyLighting.Config;
+#endregion
+
+namespace FancyLighting.Config.Configs;
 
 public sealed class CompatibilityConfig : ModConfig
 {

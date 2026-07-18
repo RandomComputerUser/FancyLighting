@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿#region
+
+using System.Reflection;
 using FancyLighting.ColorProfiles;
 using FancyLighting.ColorProfiles.SkyColor;
 using FancyLighting.Config.Enums;
@@ -7,7 +9,9 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria.GameContent;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core.Sky;
 
 public sealed class FancySkyColors
 {

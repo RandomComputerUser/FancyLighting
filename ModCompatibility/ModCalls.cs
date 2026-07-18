@@ -1,4 +1,10 @@
-﻿namespace FancyLighting.ModCompatibility;
+﻿#region
+
+using FancyLighting.Core.Sky;
+
+#endregion
+
+namespace FancyLighting.ModCompatibility;
 
 internal static class ModCalls
 {

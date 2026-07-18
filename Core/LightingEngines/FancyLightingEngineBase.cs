@@ -1,8 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿#region
+
+using System.Runtime.CompilerServices;
 using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
 
-namespace FancyLighting.LightingEngines;
+#endregion
+
+namespace FancyLighting.Core.LightingEngines;
 
 public abstract class FancyLightingEngineBase : ICustomLightingEngine
 {

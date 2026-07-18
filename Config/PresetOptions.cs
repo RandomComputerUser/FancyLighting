@@ -1,4 +1,8 @@
-﻿using FancyLighting.Config.Enums;
+﻿#region
+
+using FancyLighting.Config.Enums;
+
+#endregion
 
 namespace FancyLighting.Config;
 

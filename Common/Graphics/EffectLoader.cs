@@ -1,6 +1,10 @@
-﻿using ReLogic.Content;
+﻿#region
 
-namespace FancyLighting.Utils;
+using ReLogic.Content;
+
+#endregion
+
+namespace FancyLighting.Common.Graphics;
 
 internal static class EffectLoader
 {

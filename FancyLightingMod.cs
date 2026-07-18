@@ -1,8 +1,11 @@
+#region
+
 using System.Reflection;
+using FancyLighting.Config;
 using FancyLighting.Config.Enums;
-using FancyLighting.LightingEngines;
+using FancyLighting.Core.LightingEngines;
+using FancyLighting.Core.Sky;
 using FancyLighting.ModCompatibility;
-using FancyLighting.Utils.Accessors;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria.GameContent.Drawing;
@@ -13,6 +16,8 @@ using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 using Terraria.Map;
+
+#endregion
 
 namespace FancyLighting;
 

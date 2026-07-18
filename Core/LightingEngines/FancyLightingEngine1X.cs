@@ -1,22 +1,25 @@
-﻿using Terraria.Graphics.Light;
-using Vec2 = System.Numerics.Vector2;
+﻿#region
+
+using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
-using Vec4 = System.Numerics.Vector4;
 
-namespace FancyLighting.LightingEngines;
+#endregion
 
-public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
+namespace FancyLighting.Core.LightingEngines;
+
+public sealed class FancyLightingEngine1X : FancyLightingEngineFloatDecay
 {
-    private const int GlobalIlluminationPassCount = 2;
+    private const int GlobalIlluminationPassCount = 1;
 
     private readonly record struct LightSpread(
         int DistanceToTop,
         int DistanceToRight,
-        Vec4 LightFrom,
-        Vec4 FromLeftX,
-        Vec4 FromLeftY,
-        Vec4 FromBottomX,
-        Vec4 FromBottomY
+        float LightFromLeft,
+        float LightFromBottom,
+        float TopFromLeft,
+        float TopFromBottom,
+        float RightFromLeft,
+        float RightFromBottom
     );
 
     private readonly record struct DistanceCache(double Top, double Right);
@@ -25,7 +28,7 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
     private bool _countTemporal;
 
-    public FancyLightingEngine2X()
+    public FancyLightingEngine1X()
     {
         ComputeLightSpread(out _lightSpread);
         InitializeDecayArrays();
@@ -72,39 +75,11 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
                 distances[row] = new(
                     (value.DistanceToTop / (double)DistanceTicks)
-                        + (
-                            (
-                                (value.FromLeftX.X + value.FromLeftX.Y)
-                                + (value.FromLeftY.X + value.FromLeftY.Y)
-                            )
-                            / 2.0
-                            * distances[row].Right
-                        )
-                        + (
-                            (
-                                (value.FromBottomX.X + value.FromBottomX.Y)
-                                + (value.FromBottomY.X + value.FromBottomY.Y)
-                            )
-                            / 2.0
-                            * distances[row - 1].Top
-                        ),
+                        + (value.TopFromLeft * distances[row].Right)
+                        + (value.TopFromBottom * distances[row - 1].Top),
                     (value.DistanceToRight / (double)DistanceTicks)
-                        + (
-                            (
-                                (value.FromLeftX.Z + value.FromLeftX.W)
-                                + (value.FromLeftY.Z + value.FromLeftY.W)
-                            )
-                            / 2.0
-                            * distances[row].Right
-                        )
-                        + (
-                            (
-                                (value.FromBottomX.Z + value.FromBottomX.W)
-                                + (value.FromBottomY.Z + value.FromBottomY.W)
-                            )
-                            / 2.0
-                            * distances[row - 1].Top
-                        )
+                        + (value.RightFromLeft * distances[row].Right)
+                        + (value.RightFromBottom * distances[row - 1].Top)
                 );
             }
         }
@@ -130,11 +105,12 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f
             );
         }
 
@@ -144,11 +120,12 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f
             );
         }
 
@@ -158,77 +135,36 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
                 DoubleToIndex(distanceToTop),
                 DoubleToIndex(distanceToRight),
                 // The values below are unused and should never be used
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero,
-                Vec4.Zero
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f
             );
         }
 
-        var lightFrom = (Span<double>)stackalloc double[4 * 4];
-        var area = (Span<double>)stackalloc double[4];
+        var lightFrom = (Span<double>)stackalloc double[2 * 2];
+        var area = (Span<double>)stackalloc double[2];
 
-        var x = (Span<double>)[0.0, 0.0, 0.5, 1.0];
-        var y = (Span<double>)[0.5, 0.0, 0.0, 0.0];
+        var x = (Span<double>)[0.0, 1.0];
+        var y = (Span<double>)[0.0, 0.0];
         CalculateSubTileLightSpread(x, y, lightFrom, area, row, col);
 
         distanceToTop -=
-            (
-                (lightFrom[0] + lightFrom[1] + lightFrom[4] + lightFrom[5])
-                / 2.0
-                * leftDistanceError
-            )
-            + (
-                (lightFrom[8] + lightFrom[9] + lightFrom[12] + lightFrom[13])
-                / 2.0
-                * bottomDistanceError
-            );
+            (lightFrom[0] * leftDistanceError) + (lightFrom[2] * bottomDistanceError);
         distanceToRight -=
-            (
-                (lightFrom[2] + lightFrom[3] + lightFrom[6] + lightFrom[7])
-                / 2.0
-                * leftDistanceError
-            )
-            + (
-                (lightFrom[10] + lightFrom[11] + lightFrom[14] + lightFrom[15])
-                / 2.0
-                * bottomDistanceError
-            );
+            (lightFrom[1] * leftDistanceError) + (lightFrom[3] * bottomDistanceError);
 
         return new(
             DoubleToIndex(distanceToTop),
             DoubleToIndex(distanceToRight),
-            new(
-                (float)(area[1] - area[0]),
-                (float)area[0],
-                (float)(area[2] - area[1]),
-                (float)(area[3] - area[2])
-            ),
-            new(
-                (float)lightFrom[4],
-                (float)lightFrom[5],
-                (float)lightFrom[7],
-                (float)lightFrom[6]
-            ),
-            new(
-                (float)lightFrom[0],
-                (float)lightFrom[1],
-                (float)lightFrom[3],
-                (float)lightFrom[2]
-            ),
-            new(
-                (float)lightFrom[8],
-                (float)lightFrom[9],
-                (float)lightFrom[11],
-                (float)lightFrom[10]
-            ),
-            new(
-                (float)lightFrom[12],
-                (float)lightFrom[13],
-                (float)lightFrom[15],
-                (float)lightFrom[14]
-            )
+            (float)area[0],
+            (float)(area[1] - area[0]),
+            (float)lightFrom[0],
+            (float)lightFrom[2],
+            (float)lightFrom[1],
+            (float)lightFrom[3]
         );
     }
 
@@ -362,7 +298,7 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
         if (doUpperRight || doUpperLeft || doLowerRight || doLowerLeft)
         {
             var circle = _circles[lightRange];
-            var workingLights = (Span<Vec2>)stackalloc Vec2[lightRange + 1];
+            var workingLights = (Span<float>)stackalloc float[lightRange + 1];
 
             if (doUpperLeft)
             {
@@ -443,7 +379,7 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
     private void ProcessQuadrant(
         Vec3[] lightMap,
-        Span<Vec2> workingLights,
+        Span<float> workingLights,
         int[] circle,
         Vec3 color,
         int index,
@@ -460,11 +396,11 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
         var lightSpread = _lightSpread;
 
         {
-            workingLights[0] = new(1f);
+            workingLights[0] = 1f;
             var i = index + verticalChange;
             var value = 1f;
             var prevMask = lightMask[i];
-            workingLights[1] = new(prevMask[lightSpread[1].DistanceToRight]);
+            workingLights[1] = prevMask[lightSpread[1].DistanceToRight];
             for (var y = 2; y <= verticalDistance; ++y)
             {
                 i += verticalChange;
@@ -481,7 +417,7 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
                 prevMask = mask;
 
-                workingLights[y] = new(value * mask[lightSpread[y].DistanceToRight]);
+                workingLights[y] = value * mask[lightSpread[y].DistanceToRight];
             }
         }
 
@@ -492,7 +428,7 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
             var mask = lightMask[i];
 
-            Vec2 verticalLight;
+            float verticalLight;
             {
                 ref var horizontalLight = ref workingLights[0];
 
@@ -513,7 +449,8 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
             var prevMask = mask;
             for (var y = 1; y <= edge; ++y)
             {
-                ref var horizontalLight = ref workingLights[y];
+                ref var horizontalLightRef = ref workingLights[y];
+                var horizontalLight = horizontalLightRef;
 
                 mask = lightMask[i += verticalChange];
                 if (mask != solidDecay)
@@ -535,27 +472,22 @@ public sealed class FancyLightingEngine2X : FancyLightingEngineFloatDecay
 
                 SetLight(
                     ref lightMap[i],
-                    Vec4.Dot(
-                        new(horizontalLight, verticalLight.X, verticalLight.Y),
-                        spread.LightFrom
+                    (
+                        (spread.LightFromBottom * verticalLight)
+                        + (spread.LightFromLeft * horizontalLight)
                     ) * color
                 );
 
-                var topDecay = mask[spread.DistanceToTop];
-                var rightDecay = mask[spread.DistanceToRight];
-                var outgoingLight =
+                horizontalLightRef =
                     (
-                        (
-                            (horizontalLight.X * spread.FromLeftX)
-                            + (horizontalLight.Y * spread.FromLeftY)
-                        )
-                        + (
-                            (verticalLight.X * spread.FromBottomX)
-                            + (verticalLight.Y * spread.FromBottomY)
-                        )
-                    ) * new Vec4(topDecay, topDecay, rightDecay, rightDecay);
-                horizontalLight = new(outgoingLight.Z, outgoingLight.W);
-                verticalLight = new(outgoingLight.X, outgoingLight.Y);
+                        (spread.RightFromBottom * verticalLight)
+                        + (spread.RightFromLeft * horizontalLight)
+                    ) * mask[spread.DistanceToRight];
+                verticalLight =
+                    (
+                        (spread.TopFromLeft * horizontalLight)
+                        + (spread.TopFromBottom * verticalLight)
+                    ) * mask[spread.DistanceToTop];
             }
         }
     }

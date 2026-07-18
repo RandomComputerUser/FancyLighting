@@ -1,6 +1,10 @@
-﻿using System.Diagnostics;
+﻿#region
 
-namespace FancyLighting.Utils;
+using System.Diagnostics;
+
+#endregion
+
+namespace FancyLighting.Common;
 
 internal static class PerformanceTracker
 {

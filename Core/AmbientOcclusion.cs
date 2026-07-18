@@ -1,6 +1,11 @@
-﻿using Terraria.Graphics.Capture;
+﻿#region
 
-namespace FancyLighting;
+using FancyLighting.VFX;
+using Terraria.Graphics.Capture;
+
+#endregion
+
+namespace FancyLighting.Core;
 
 public sealed class AmbientOcclusion
 {

@@ -1,7 +1,12 @@
-﻿using FancyLighting.Config.Enums;
+﻿#region
+
+using FancyLighting.Config.Enums;
+using FancyLighting.VFX;
 using ReLogic.Content;
 
-namespace FancyLighting;
+#endregion
+
+namespace FancyLighting.Core;
 
 public sealed class PostProcessing
 {

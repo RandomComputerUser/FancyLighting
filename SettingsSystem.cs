@@ -1,7 +1,11 @@
-﻿using FancyLighting.Config.Enums;
-using FancyLighting.Utils.Accessors;
+﻿#region
+
+using FancyLighting.Config;
+using FancyLighting.Config.Enums;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
+
+#endregion
 
 namespace FancyLighting;
 

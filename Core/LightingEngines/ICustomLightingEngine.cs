@@ -1,6 +1,10 @@
-﻿using Terraria.Graphics.Light;
+﻿#region
 
-namespace FancyLighting.LightingEngines;
+using Terraria.Graphics.Light;
+
+#endregion
+
+namespace FancyLighting.Core.LightingEngines;
 
 public interface ICustomLightingEngine
 {
