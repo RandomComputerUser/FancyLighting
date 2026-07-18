@@ -97,7 +97,7 @@ public static class FancySkyClouds
             const float Layer4Scale = (1.00f + 1.15f) / 2f;
             const float Layer5Scale = (1.16f + 1.30f) / 2f;
 
-            const float Layer1Mult = 0.75f;
+            const float Layer1Mult = 0.6f;
             const float Layer2Mult = 1f;
             const float Layer3Mult = 1f;
             const float Layer4Mult = 1f;
