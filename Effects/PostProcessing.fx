@@ -2,7 +2,9 @@ sampler ScreenSampler : register(s0);
 sampler DitherSampler : register(s4);
 sampler BloomBlurSampler : register(s4);
 
-float2 DitherCoordMult;
+#define DITHER_TEXTURE_SIZE 32
+
+float BrightnessMult;
 float GammaRatio;
 float OutputGamma;
 float Exposure;
@@ -76,15 +78,15 @@ float3 LinearToSrgb(float3 color)
 
 // Dithering in sRGB isn't technically correct but the difference is too small to matter (around 10^-5)
 // Also dark colors in sRGB are mapped linearly so there is no difference for dark colors
-float3 DitherNoise(float2 coords)
+float3 DitherNoise(float2 position)
 {
     return (
-        (1.0 / 256) * tex2D(DitherSampler, coords * DitherCoordMult).r - 0.5 / 255
+        (1.0 / 256) * tex2D(DitherSampler, (1.0 / DITHER_TEXTURE_SIZE) * position).r - 0.5 / 255
     ).xxx;
 }
 
 // Input color should be in output gamma
-float3 Dither(float3 color, float2 coords)
+float3 Dither(float3 color, float2 position)
 {
     float3 lo = (1.0 / 255) * floor(255 * color);
     float3 hi = lo + 1.0 / 255;
@@ -92,7 +94,7 @@ float3 Dither(float3 color, float2 coords)
     float3 hiLinear = pow(hi, OutputGamma);
 
     float3 t = (pow(color, OutputGamma) - loLinear) / (hiLinear - loLinear);
-    float rand = (255.0 / 256) * tex2D(DitherSampler, DitherCoordMult * coords).r;
+    float rand = (255.0 / 256) * tex2D(DitherSampler, position).r;
     float3 selector = step(t, rand);
 
     return lerp(hi, lo, selector);
@@ -103,7 +105,21 @@ float Luminance(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
-float4 GammaToLinearNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+void Blit_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = position;
+}
+
+float4 Brighten_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    return BrightnessMult * tex2D(ScreenSampler, coords);
+}
+
+float4 GammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
@@ -114,7 +130,7 @@ float4 GammaToLinearNoAlpha(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
@@ -125,29 +141,33 @@ float4 GammaToLinear(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 GammaToGammaDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGammaDitherNoAlpha_PS(
+    float2 coords : TEXCOORD0, float2 position : SV_Position
+) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
 
-    return float4(Dither(pow(color.rgb, GammaRatio), coords), 1);
+    return float4(Dither(pow(color.rgb, GammaRatio), position), 1);
 }
 
-float4 GammaToGammaDither(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGammaDither_PS(
+    float2 coords : TEXCOORD0, float2 position : SV_Position
+) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
     color.rgb = pow(color.rgb, GammaRatio);
-    return float4(Dither(color.rgb, coords), color.a);
+    return float4(Dither(color.rgb, position), color.a);
 }
 
-float4 GammaToGammaNoDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGammaNoDitherNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
 
     return float4(pow(color.rgb, GammaRatio), 1);
 }
 
-float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToGammaNoDither_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
 
@@ -155,26 +175,28 @@ float4 GammaToGammaNoDither(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 GammaToSrgbDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToSrgbDitherNoAlpha_PS(
+    float2 coords : TEXCOORD0, float2 position : SV_Position
+) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
     return float4(
         LinearToSrgb(
             pow(color.rgb, GammaRatio)
-        ) + DitherNoise(coords),
+        ) + DitherNoise(position),
         1
     );
 }
 
-float4 GammaToSrgbNoDitherNoAlpha(float2 coords : TEXCOORD0) : COLOR0
+float4 GammaToSrgbNoDitherNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     
     return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), 1);
 }
 
-float4 BloomComposite(float2 coords : TEXCOORD0) : COLOR0
+float4 BloomComposite_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     float4 bloomColor = tex2D(BloomBlurSampler, coords);
@@ -215,14 +237,14 @@ float3 ToneMapColorNeutralLms(float3 x)
     return saturate(mul(x, LmsD65ToSrgb));
 }
 
-float4 ToneMapNeutralLms(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralLms_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorNeutralLms(color.rgb);
     return color;
 }
 
-float4 ToneMapNeutralLmsVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralLmsVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     // Color grade before tone mapping to prevent artifacts caused by out-of-gamut colors
@@ -240,14 +262,14 @@ float3 ToneMapColorNeutralOld(float3 x)
     return saturate(mul(x, SqrtAcescgToSrgb));
 }
 
-float4 ToneMapNeutralOld(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralOld_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorNeutralOld(color.rgb);
     return color;
 }
 
-float4 ToneMapNeutralOldVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNeutralOldVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorNeutralOld(color.rgb);
@@ -267,14 +289,14 @@ float3 ToneMapColorFilmicSrgb(float3 x)
     );
 }
 
-float4 ToneMapFilmicSrgb(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapFilmicSrgb_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorFilmicSrgb(color.rgb);
     return color;
 }
 
-float4 ToneMapFilmicSrgbVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapFilmicSrgbVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorFilmicSrgb(color.rgb);
@@ -282,92 +304,170 @@ float4 ToneMapFilmicSrgbVibranceBoost(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 VibranceBoost(float2 coords : TEXCOORD0) : COLOR0
+float4 VibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = max(MakeVibrant(max(color.rgb, 0.0)), 0);
     return color;
 }
 
-technique Technique1
+technique BrightenPixelOnly
 {
-    pass GammaToLinearNoAlpha
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToLinearNoAlpha();
+        PixelShader = compile ps_3_0 Brighten_PS();
     }
+}
 
-    pass GammaToLinear
+technique Brighten
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToLinear();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 Brighten_PS();
     }
+}
 
-    pass GammaToGammaDitherNoAlpha
+technique GammaToLinearNoAlpha
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToGammaDitherNoAlpha();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToLinearNoAlpha_PS();
     }
+}
 
-    pass GammaToGammaDither
+technique GammaToLinear
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToGammaDither();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToLinear_PS();
     }
+}
 
-    pass GammaToGammaNoDitherNoAlpha
+technique GammaToGammaDitherNoAlpha
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToGammaNoDitherNoAlpha();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToGammaDitherNoAlpha_PS();
     }
+}
 
-    pass GammaToGammaNoDither
+technique GammaToGammaDither
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToGammaNoDither();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToGammaDither_PS();
     }
-    
-    pass GammaToSrgbDitherNoAlpha
+}
+
+technique GammaToGammaNoDitherNoAlpha
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToSrgbDitherNoAlpha();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToGammaNoDitherNoAlpha_PS();
     }
-    
-    pass GammaToSrgbNoDitherNoAlpha
+}
+
+technique GammaToGammaNoDither
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 GammaToSrgbNoDitherNoAlpha();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToGammaNoDither_PS();
     }
-    
-    pass BloomComposite
+}
+
+technique GammaToSrgbDitherNoAlpha
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 BloomComposite();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToSrgbDitherNoAlpha_PS();
     }
-    
-    pass ToneMapNeutralLms
+}
+
+technique GammaToSrgbNoDitherNoAlpha
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapNeutralLms();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 GammaToSrgbNoDitherNoAlpha_PS();
     }
-    
-    pass ToneMapNeutralLmsVibranceBoost
+}
+
+technique BloomComposite
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapNeutralLmsVibranceBoost();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 BloomComposite_PS();
     }
-    
-    pass ToneMapNeutralOld
+}
+
+technique ToneMapNeutralLms
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapNeutralOld();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapNeutralLms_PS();
     }
-    
-    pass ToneMapNeutralOldVibranceBoost
+}
+
+technique ToneMapNeutralLmsVibranceBoost
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapNeutralOldVibranceBoost();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapNeutralLmsVibranceBoost_PS();
     }
-    
-    pass ToneMapFilmicSrgb
+}
+
+technique ToneMapNeutralOld
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapFilmicSrgb();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapNeutralOld_PS();
     }
-    
-    pass ToneMapFilmicSrgbVibranceBoost
+}
+
+technique ToneMapNeutralOldVibranceBoost
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 ToneMapFilmicSrgbVibranceBoost();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapNeutralOldVibranceBoost_PS();
     }
-    
-    pass VibranceBoost
+}
+
+technique ToneMapFilmicSrgb
+{    
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 VibranceBoost();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapFilmicSrgb_PS();
+    }
+}
+
+technique ToneMapFilmicSrgbVibranceBoost
+{    
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 ToneMapFilmicSrgbVibranceBoost_PS();
+    }
+}
+
+technique VibranceBoost
+{    
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 VibranceBoost_PS();
     }
 }

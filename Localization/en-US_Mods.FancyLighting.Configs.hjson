@@ -2,22 +2,25 @@ CompatibilityConfig: {
 	DisplayName: Compatibility Settings
 
 	Headers: {
+		General: General
 		SmoothLighting: Smooth Lighting
 		FullHdrRendering: Full HDR Rendering
 		FancyLightingEngine: Fancy Lighting Engine
 	}
 
-	# Smooth Lighting
+	# General
 	
-	DisableGlowEffectOptimizations: {
-		Label: Disable Glow Effect Optimizations
+	DisableRenderingOptimizations: {
+		Label: Disable Rendering Optimizations
 		Tooltip:
 			'''
-			Disable optimizations used when rendering glow effects
+			Disable some riskier rendering optimizations
 
 			{$Snippets.PossiblePerformanceImpact}
 			'''
 	}
+
+	# Smooth Lighting
 
 	DisableHdrDuringBossFights: {
 		Label: Disable HDRR During Boss Fights and Events

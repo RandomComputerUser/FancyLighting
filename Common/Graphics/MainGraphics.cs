@@ -23,13 +23,6 @@ internal static class MainGraphics
         return renderTarget;
     }
 
-    public static SamplerState GetSamplerState() =>
-        SpriteBatchAccessors.samplerState(Main.spriteBatch) ?? SamplerState.LinearClamp;
-
-    public static RasterizerState GetRasterizerState() =>
-        SpriteBatchAccessors.rasterizerState(Main.spriteBatch)
-        ?? RasterizerState.CullCounterClockwise;
-
     public static Matrix GetTransformMatrix() =>
         SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
 

@@ -1,9 +1,5 @@
-﻿#region
-
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
-
-#endregion
 
 namespace FancyLighting.Utils;
 

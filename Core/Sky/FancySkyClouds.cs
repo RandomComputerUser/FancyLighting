@@ -1,10 +1,6 @@
-﻿#region
-
-using System.Reflection;
+﻿using System.Reflection;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-
-#endregion
 
 namespace FancyLighting.Core.Sky;
 
@@ -12,19 +8,14 @@ public static class FancySkyClouds
 {
     private static SamplerState _samplerState = SamplerState.LinearClamp;
 
-    private static SpriteBatchEffect _cloudShadingEffect;
-    private static SpriteBatchEffect _cloudShadingWrapEffect;
+    private static FancyEffect _cloudShadingEffect;
+    private static FancyEffect _cloudShadingWrapEffect;
 
     internal static void Load()
     {
-        _cloudShadingEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/Cloud",
-            "CloudShading"
-        );
-        _cloudShadingWrapEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/Cloud",
-            "CloudShadingWrap"
-        );
+        var effect = EffectLoader.Load("CloudShading");
+        _cloudShadingEffect = new(effect, "CloudShading");
+        _cloudShadingWrapEffect = new(effect, "CloudShadingWrap");
 
         AddHooks();
     }
@@ -33,12 +24,6 @@ public static class FancySkyClouds
     {
         On_Main.DrawSurfaceBG += _Main_DrawSurfaceBG;
         IL_Main.DrawSurfaceBG += IL_Main_DrawSurfaceBG;
-    }
-
-    internal static void Unload()
-    {
-        SpriteBatchEffectLoader.UnloadEffect(ref _cloudShadingEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _cloudShadingWrapEffect);
     }
 
     private static void _Main_DrawSurfaceBG(On_Main.orig_DrawSurfaceBG orig, Main self)
@@ -244,13 +229,14 @@ public static class FancySkyClouds
             .SetParameter("ShadingStrength", mult * cloudShadingStrength);
 
         Main.spriteBatch.End();
+        effect.ApplyPass();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             newSamplerState,
             DepthStencilState.Default,
             rasterizerState,
-            effect.ApplyTechnique(),
+            effect.Effect,
             transformMatrix
         );
     }

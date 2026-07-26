@@ -12,6 +12,9 @@ internal static class TextureUtils
             ? SurfaceFormat.HalfVector4
             : SurfaceFormat.Rgba1010102;
 
+    public static void MatchSizeAndFormat(ref RenderTarget2D target, Texture2D other) =>
+        MakeSize(ref target, other.Width, other.Height, other.Format);
+
     public static void MakeSize(
         ref RenderTarget2D target,
         int width,
@@ -45,32 +48,6 @@ internal static class TextureUtils
         }
     }
 
-    public static void MakeAtLeastSize(
-        ref Texture2D texture,
-        int width,
-        int height,
-        SurfaceFormat format
-    )
-    {
-        if (
-            texture is null
-            || texture.GraphicsDevice != Main.graphics.GraphicsDevice
-            || texture.Width < width
-            || texture.Height < height
-            || texture.Format != format
-        )
-        {
-            if (texture is not null)
-            {
-                width = Math.Max(width, texture.Width);
-                height = Math.Max(height, texture.Height);
-            }
-
-            texture?.Dispose();
-            texture = new(Main.graphics.GraphicsDevice, width, height, false, format);
-        }
-    }
-
     public static void EnsureFormat(ref RenderTarget2D target, SurfaceFormat format)
     {
         if (
@@ -99,5 +76,46 @@ internal static class TextureUtils
             multisampleCount,
             usage
         );
+    }
+
+    public static void MakeAtLeastSize(
+        ref Texture2D texture,
+        int width,
+        int height,
+        SurfaceFormat format,
+        int maxExtraPixels = -1
+    )
+    {
+        var createNewTexture = false;
+
+        if (
+            texture is null
+            || texture.GraphicsDevice != Main.graphics.GraphicsDevice
+            || texture.Format != format
+            || (
+                maxExtraPixels >= 0
+                && (
+                    texture.Width > width + maxExtraPixels
+                    || texture.Height > height + maxExtraPixels
+                )
+            )
+        )
+        {
+            createNewTexture = true;
+        }
+        else if (texture.Width < width || texture.Height < height)
+        {
+            width = Math.Max(width, texture.Width);
+            height = Math.Max(height, texture.Height);
+            createNewTexture = true;
+        }
+
+        if (!createNewTexture)
+        {
+            return;
+        }
+
+        texture?.Dispose();
+        texture = new(Main.graphics.GraphicsDevice, width, height, false, format);
     }
 }

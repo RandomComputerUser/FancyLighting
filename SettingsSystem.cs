@@ -1,11 +1,7 @@
-﻿#region
-
-using FancyLighting.Config;
+﻿using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
-
-#endregion
 
 namespace FancyLighting;
 
@@ -15,6 +11,7 @@ internal sealed class SettingsSystem : ModSystem
         new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
 
     internal static bool _hiDef;
+    internal static bool _lightOnly;
     internal static bool _useSkyLightLuma;
     internal static bool _useFancyClouds;
 
@@ -48,6 +45,9 @@ internal sealed class SettingsSystem : ModSystem
             1
         );
         _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
+        _lightOnly =
+            LightingConfig.Instance?.SmoothLightingEnabled() is true
+            && DeveloperConfig.Instance?.RenderOnlyLight is true;
         _useSkyLightLuma = LightingConfig.Instance?.UseSkyLightLuma() is true;
         _useFancyClouds = LightingConfig.Instance?.FancySkyLightingEnabled() is true;
         ColorUtils._gamma = PostProcessing.ContentGamma();

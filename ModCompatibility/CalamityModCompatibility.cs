@@ -1,11 +1,7 @@
-﻿#region
-
-using System.Reflection;
+﻿using System.Reflection;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-
-#endregion
 
 namespace FancyLighting.ModCompatibility;
 

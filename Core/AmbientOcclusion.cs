@@ -1,9 +1,5 @@
-﻿#region
-
-using FancyLighting.VFX;
+﻿using FancyLighting.VFX;
 using Terraria.Graphics.Capture;
-
-#endregion
 
 namespace FancyLighting.Core;
 
@@ -20,12 +16,12 @@ public sealed class AmbientOcclusion
 
     internal bool _drawingTileEntities;
 
-    private Shader _extractInverseAlphaShader;
-    private Shader _extractInverseMultipliedAlphaShader;
-    private Shader _toneMappingShader;
-    private Shader _toneMappingDefaultShader;
-    private Shader _glowMaskShader;
-    private Shader _enhancedGlowMaskShader;
+    private readonly FullscreenEffect _extractInverseAlphaShader;
+    private readonly FullscreenEffect _extractInverseMultipliedAlphaShader;
+    private readonly FullscreenEffect _toneMappingShader;
+    private readonly FullscreenEffect _toneMappingDefaultShader;
+    private readonly FullscreenEffect _glowMaskShader;
+    private readonly FullscreenEffect _enhancedGlowMaskShader;
 
     private readonly BlurRenderer _blurRenderer = new(true, false);
 
@@ -66,14 +62,8 @@ public sealed class AmbientOcclusion
         _cameraModeTarget1?.Dispose();
         _cameraModeTarget2?.Dispose();
         _tileEntityTarget?.Dispose();
-        EffectLoader.UnloadEffect(ref _extractInverseAlphaShader);
-        EffectLoader.UnloadEffect(ref _extractInverseMultipliedAlphaShader);
-        EffectLoader.UnloadEffect(ref _toneMappingShader);
-        EffectLoader.UnloadEffect(ref _toneMappingDefaultShader);
-        EffectLoader.UnloadEffect(ref _glowMaskShader);
-        EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
 
-        _blurRenderer.Unload();
+        _blurRenderer?.Dispose();
     }
 
     internal RenderTarget2D ApplyAmbientOcclusion(
@@ -383,7 +373,7 @@ public sealed class AmbientOcclusion
 
             Main.spriteBatch.Begin(
                 SpriteSortMode.Immediate,
-                BlendStates.Multiply,
+                CustomBlendStates.Multiply,
                 SamplerState.PointClamp,
                 DepthStencilState.None,
                 RasterizerState.CullNone
@@ -467,7 +457,7 @@ public sealed class AmbientOcclusion
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
-            BlendStates.MultiplyColorByAlpha,
+            CustomBlendStates.MultiplyColorByAlpha,
             SamplerState.PointClamp,
             DepthStencilState.None,
             RasterizerState.CullNone

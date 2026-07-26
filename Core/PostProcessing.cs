@@ -1,10 +1,6 @@
-﻿#region
-
-using FancyLighting.Config.Enums;
+﻿using FancyLighting.Config.Enums;
 using FancyLighting.VFX;
 using ReLogic.Content;
-
-#endregion
 
 namespace FancyLighting.Core;
 
@@ -21,22 +17,24 @@ public sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
-    private Shader _gammaToLinearNoAlphaShader;
-    private Shader _gammaToLinearShader;
-    private Shader _gammaToGammaDitherNoAlphaShader;
-    private Shader _gammaToGammaDitherShader;
-    private Shader _gammaToGammaNoDitherNoAlphaShader;
-    private Shader _gammaToGammaNoDitherShader;
-    private Shader _gammaToSrgbDitherNoAlphaShader;
-    private Shader _gammaToSrgbNoDitherNoAlphaShader;
-    private Shader _bloomCompositeShader;
-    private Shader _toneMapNeutralLmsShader;
-    private Shader _toneMapNeutralLmsVibranceBoostShader;
-    private Shader _toneMapNeutralOldShader;
-    private Shader _toneMapNeutralOldVibranceBoostShader;
-    private Shader _toneMapFilmicSrgbShader;
-    private Shader _toneMapFilmicSrgbVibranceBoostShader;
-    private Shader _vibranceBoostShader;
+    private readonly FancyEffect _brightenPixelOnlyEffect;
+    private readonly FullscreenEffect _brightenEffect;
+    private readonly FullscreenEffect _gammaToLinearNoAlphaEffect;
+    private readonly FullscreenEffect _gammaToLinearEffect;
+    private readonly FullscreenEffect _gammaToGammaDitherNoAlphaEffect;
+    private readonly FullscreenEffect _gammaToGammaDitherEffect;
+    private readonly FullscreenEffect _gammaToGammaNoDitherNoAlphaEffect;
+    private readonly FullscreenEffect _gammaToGammaNoDitherEffect;
+    private readonly FullscreenEffect _gammaToSrgbDitherNoAlphaEffect;
+    private readonly FullscreenEffect _gammaToSrgbNoDitherNoAlphaEffect;
+    private readonly FullscreenEffect _bloomCompositeEffect;
+    private readonly FullscreenEffect _toneMapNeutralLmsEffect;
+    private readonly FullscreenEffect _toneMapNeutralLmsVibranceBoostEffect;
+    private readonly FullscreenEffect _toneMapNeutralOldEffect;
+    private readonly FullscreenEffect _toneMapNeutralOldVibranceBoostEffect;
+    private readonly FullscreenEffect _toneMapFilmicSrgbEffect;
+    private readonly FullscreenEffect _toneMapFilmicSrgbVibranceBoostEffect;
+    private readonly FullscreenEffect _vibranceBoostEffect;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
@@ -49,93 +47,39 @@ public sealed class PostProcessing
             )
             .Value;
 
-        _gammaToLinearNoAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToLinearNoAlpha"
-        );
-        _gammaToLinearShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToLinear"
-        );
-        _gammaToGammaDitherNoAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToGammaDitherNoAlpha"
-        );
-        _gammaToGammaDitherShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToGammaDither"
-        );
-        _gammaToGammaNoDitherNoAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToGammaNoDitherNoAlpha"
-        );
-        _gammaToGammaNoDitherShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToGammaNoDither"
-        );
-        _gammaToSrgbDitherNoAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgbDitherNoAlpha"
-        );
-        _gammaToSrgbNoDitherNoAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "GammaToSrgbNoDitherNoAlpha"
-        );
-        _bloomCompositeShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "BloomComposite"
-        );
-        _toneMapNeutralLmsShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "ToneMapNeutralLms"
-        );
-        _toneMapNeutralLmsVibranceBoostShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
+        var effect = EffectLoader.Load("PostProcessing");
+        _brightenPixelOnlyEffect = new(effect, "BrightenPixelOnly");
+        _brightenEffect = new(effect, "Brighten");
+        _gammaToLinearNoAlphaEffect = new(effect, "GammaToLinearNoAlpha");
+        _gammaToLinearEffect = new(effect, "GammaToLinear");
+        _gammaToGammaDitherNoAlphaEffect = new(effect, "GammaToGammaDitherNoAlpha");
+        _gammaToGammaDitherEffect = new(effect, "GammaToGammaDither");
+        _gammaToGammaNoDitherNoAlphaEffect = new(effect, "GammaToGammaNoDitherNoAlpha");
+        _gammaToGammaNoDitherEffect = new(effect, "GammaToGammaNoDither");
+        _gammaToSrgbDitherNoAlphaEffect = new(effect, "GammaToSrgbDitherNoAlpha");
+        _gammaToSrgbNoDitherNoAlphaEffect = new(effect, "GammaToSrgbNoDitherNoAlpha");
+        _bloomCompositeEffect = new(effect, "BloomComposite");
+        _toneMapNeutralLmsEffect = new(effect, "ToneMapNeutralLms");
+        _toneMapNeutralLmsVibranceBoostEffect = new(
+            effect,
             "ToneMapNeutralLmsVibranceBoost"
         );
-        _toneMapNeutralOldShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "ToneMapNeutralOld"
-        );
-        _toneMapNeutralOldVibranceBoostShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
+        _toneMapNeutralOldEffect = new(effect, "ToneMapNeutralOld");
+        _toneMapNeutralOldVibranceBoostEffect = new(
+            effect,
             "ToneMapNeutralOldVibranceBoost"
         );
-        _toneMapFilmicSrgbShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "ToneMapFilmicSrgb"
-        );
-        _toneMapFilmicSrgbVibranceBoostShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
+        _toneMapFilmicSrgbEffect = new(effect, "ToneMapFilmicSrgb");
+        _toneMapFilmicSrgbVibranceBoostEffect = new(
+            effect,
             "ToneMapFilmicSrgbVibranceBoost"
         );
-        _vibranceBoostShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/PostProcessing",
-            "VibranceBoost"
-        );
+        _vibranceBoostEffect = new(effect, "VibranceBoost");
     }
 
     internal void Unload()
     {
-        _ditherNoise?.Dispose();
-        EffectLoader.UnloadEffect(ref _gammaToLinearNoAlphaShader);
-        EffectLoader.UnloadEffect(ref _gammaToLinearShader);
-        EffectLoader.UnloadEffect(ref _gammaToGammaDitherNoAlphaShader);
-        EffectLoader.UnloadEffect(ref _gammaToGammaDitherShader);
-        EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherNoAlphaShader);
-        EffectLoader.UnloadEffect(ref _gammaToGammaNoDitherShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbDitherNoAlphaShader);
-        EffectLoader.UnloadEffect(ref _gammaToSrgbNoDitherNoAlphaShader);
-        EffectLoader.UnloadEffect(ref _bloomCompositeShader);
-        EffectLoader.UnloadEffect(ref _toneMapNeutralLmsShader);
-        EffectLoader.UnloadEffect(ref _toneMapNeutralLmsVibranceBoostShader);
-        EffectLoader.UnloadEffect(ref _toneMapNeutralOldShader);
-        EffectLoader.UnloadEffect(ref _toneMapNeutralOldVibranceBoostShader);
-        EffectLoader.UnloadEffect(ref _toneMapFilmicSrgbShader);
-        EffectLoader.UnloadEffect(ref _toneMapFilmicSrgbVibranceBoostShader);
-        EffectLoader.UnloadEffect(ref _vibranceBoostShader);
-
-        _blurRenderer.Unload();
+        _blurRenderer?.Dispose();
     }
 
     internal static float ContentGamma() =>
@@ -157,17 +101,21 @@ public sealed class PostProcessing
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
-    internal void ApplyGammaNoAlphaShader(float exposure, float gamma) =>
-        _gammaToLinearNoAlphaShader
-            .SetParameter("Exposure", exposure)
-            .SetParameter("GammaRatio", gamma)
-            .Apply();
+    internal FancyEffect GetBrightenPixelOnlyEffect(float brightness) =>
+        _brightenPixelOnlyEffect.SetParameter("BrightnessMult", brightness);
 
-    internal void ApplyGammaShader(float exposure, float gamma) =>
-        _gammaToLinearShader
+    internal FullscreenEffect GetBrightenEffect(float brightness) =>
+        _brightenEffect.SetParameter("BrightnessMult", brightness);
+
+    internal FullscreenEffect GetGammaNoAlphaEffect(float exposure, float gamma) =>
+        _gammaToLinearNoAlphaEffect
             .SetParameter("Exposure", exposure)
-            .SetParameter("GammaRatio", gamma)
-            .Apply();
+            .SetParameter("GammaRatio", gamma);
+
+    internal FullscreenEffect GetGammaEffect(float exposure, float gamma) =>
+        _gammaToLinearEffect
+            .SetParameter("Exposure", exposure)
+            .SetParameter("GammaRatio", gamma);
 
     internal RenderTarget2D Blur(RenderTarget2D src, RenderTarget2D dst, int radius) =>
         _blurRenderer.RenderBlur(src, dst, radius, false);
@@ -276,7 +224,7 @@ public sealed class PostProcessing
                     var backgroundBrightness = ColorUtils.GammaToLinear(
                         CalculateHiDefBackgroundBrightness()
                     );
-                    (gameCameraMode ? _gammaToLinearShader : _gammaToLinearNoAlphaShader)
+                    (gameCameraMode ? _gammaToLinearEffect : _gammaToLinearNoAlphaEffect)
                         .SetParameter("Exposure", exposure * backgroundBrightness)
                         .SetParameter("GammaRatio", gamma)
                         .Apply();
@@ -305,8 +253,8 @@ public sealed class PostProcessing
 
                 (
                     separateBackground || gameCameraMode
-                        ? _gammaToLinearShader
-                        : _gammaToLinearNoAlphaShader
+                        ? _gammaToLinearEffect
+                        : _gammaToLinearNoAlphaEffect
                 )
                     .SetParameter("Exposure", exposure)
                     .SetParameter("GammaRatio", gamma)
@@ -363,63 +311,49 @@ public sealed class PostProcessing
                     DepthStencilState.None,
                     RasterizerState.CullNone
                 );
-                _bloomCompositeShader
-                    .SetParameter("BloomStrength", bloomStrength)
-                    .Apply();
+                _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);
 
                 MainGraphics.ResetSavedTextures();
                 MainGraphics.SetTexture(4, bloomTarget, SamplerState.LinearClamp);
-
-                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
+                Blitter.Blit(currTarget, nextTarget, _bloomCompositeEffect);
                 MainGraphics.RestoreSavedTextures();
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
 
-            Shader toneMappingShader;
+            FullscreenEffect toneMappingEffect;
             if (PreferencesConfig.Instance.VibranceBoost == 0)
             {
-                toneMappingShader = tmo switch
+                toneMappingEffect = tmo switch
                 {
-                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsShader,
-                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldShader,
-                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbShader,
+                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsEffect,
+                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldEffect,
+                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbEffect,
                     _ => null,
                 };
             }
             else
             {
-                toneMappingShader = tmo switch
+                toneMappingEffect = tmo switch
                 {
-                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsVibranceBoostShader,
-                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldVibranceBoostShader,
-                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbVibranceBoostShader,
-                    _ => _vibranceBoostShader,
+                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsVibranceBoostEffect,
+                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldVibranceBoostEffect,
+                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbVibranceBoostEffect,
+                    _ => _vibranceBoostEffect,
                 };
 
                 var (params1, params2) = CalculateVibranceBoostParameters(
                     Math.Clamp(PreferencesConfig.Instance.VibranceIncrease(), -0.2, 0.2)
                 );
 
-                toneMappingShader
+                toneMappingEffect
                     .SetParameter("VibranceBoostParams1", params1)
                     .SetParameter("VibranceBoostParams2", params2);
             }
 
-            if (toneMappingShader is not null)
+            if (toneMappingEffect is not null)
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Immediate,
-                    BlendState.Opaque,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
-                toneMappingShader.Apply();
-                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
+                Blitter.Blit(currTarget, nextTarget, toneMappingEffect);
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
@@ -427,15 +361,6 @@ public sealed class PostProcessing
 
         if (customGamma || srgb)
         {
-            Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Immediate,
-                BlendState.Opaque,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-
             var outputGamma = gameCameraMode
                 ? DefaultGamma
                 : PreferencesConfig.Instance.OutputGamma();
@@ -444,39 +369,29 @@ public sealed class PostProcessing
                 gamma /= outputGamma;
             }
 
-            // in camera mode, the background can be transparent, so we can't use the no-alpha shader
-            // otherwise using the no-alpha shader makes things simpler
-            var shader = srgb
+            // in camera mode, the background can be transparent, so we can't use the no-alpha effect
+            // otherwise using the no-alpha shader makes things effect
+            var effect = srgb
                 ? disableDither
-                    ? _gammaToSrgbNoDitherNoAlphaShader
-                    : _gammaToSrgbDitherNoAlphaShader
+                    ? _gammaToSrgbNoDitherNoAlphaEffect
+                    : _gammaToSrgbDitherNoAlphaEffect
                 : disableDither
                     ? gameCameraMode
-                        ? _gammaToGammaNoDitherShader
-                        : _gammaToGammaNoDitherNoAlphaShader
+                        ? _gammaToGammaNoDitherEffect
+                        : _gammaToGammaNoDitherNoAlphaEffect
                     : gameCameraMode
-                        ? _gammaToGammaDitherShader
-                        : _gammaToGammaDitherNoAlphaShader;
-            shader
-                .SetParameter(
-                    "DitherCoordMult",
-                    new Vector2(
-                        (float)-currTarget.Width / _ditherNoise.Width,
-                        (float)-currTarget.Height / _ditherNoise.Height
-                    )
-                ) // Multiply by -1 so that it's different from the dithering in smooth lighting
+                        ? _gammaToGammaDitherEffect
+                        : _gammaToGammaDitherNoAlphaEffect;
+            effect
                 .SetParameter("GammaRatio", gamma)
-                .SetParameter("OutputGamma", outputGamma)
-                .Apply();
+                .SetParameter("OutputGamma", outputGamma);
 
             MainGraphics.ResetSavedTextures();
             if (!disableDither)
             {
                 MainGraphics.SetTexture(4, _ditherNoise, SamplerState.PointWrap);
             }
-
-            Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
+            Blitter.Blit(currTarget, nextTarget, effect);
             MainGraphics.RestoreSavedTextures();
 
             (currTarget, nextTarget) = (nextTarget, currTarget);

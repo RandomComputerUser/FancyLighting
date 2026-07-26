@@ -1,11 +1,10 @@
-#region
-
 using System.Reflection;
 using FancyLighting.Config;
 using FancyLighting.Config.Enums;
 using FancyLighting.Core.LightingEngines;
 using FancyLighting.Core.Sky;
 using FancyLighting.ModCompatibility;
+using FancyLighting.VFX;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Terraria.GameContent.Drawing;
@@ -16,8 +15,6 @@ using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 using Terraria.Map;
-
-#endregion
 
 namespace FancyLighting;
 
@@ -46,7 +43,7 @@ public sealed class FancyLightingMod : Mod
     private FieldInfo _field_filterFrameBuffer2;
 
     internal static RenderTarget2D _cameraModeTarget;
-    internal static Rectangle _cameraModeArea;
+    internal static RenderTarget2D _cameraModeTmpTarget;
     private CaptureBiome _cameraModeBiome;
 
     private RenderTarget2D _tmpTarget1;
@@ -161,7 +158,9 @@ public sealed class FancyLightingMod : Mod
 
         _doingFilterManagerCapture = false;
 
+        Blitter.Load();
         SpriteBatchEffectLoader.Load();
+        BlurRenderer.Load();
 
         _smoothLightingInstance = new();
         _ambientOcclusionInstance = new();
@@ -196,11 +195,11 @@ public sealed class FancyLightingMod : Mod
             _tmpTarget2?.Dispose();
             _tmpTarget3?.Dispose();
             _cameraModeTarget = null;
+            _cameraModeTmpTarget = null;
             _tmpScreenTarget1?.Dispose();
             _tmpScreenTarget2?.Dispose();
             _backgroundTarget?.Dispose();
 
-            FancySkyClouds.Unload();
             FancySkyLighting.Unload();
             _fancySkyRenderingInstance?.Unload();
             _fancySkyColorsInstance?.Unload();
@@ -218,9 +217,11 @@ public sealed class FancyLightingMod : Mod
             PerformanceTracker.Unload();
             PresetOptions.Unload();
 
-            BlendStates.Unload();
             MainGraphics.Unload();
+            CustomBlendStates.Unload();
+            BlurRenderer.Unload();
             SpriteBatchEffectLoader.Unload();
+            Blitter.Unload();
         });
 
         base.Unload();
@@ -933,9 +934,9 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var samplerState = MainGraphics.GetSamplerState();
-        var transform = MainGraphics.GetTransformMatrix();
-        var rasterizerState = MainGraphics.GetRasterizerState();
+        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
+        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
+        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
@@ -1101,19 +1102,8 @@ public sealed class FancyLightingMod : Mod
     private void _Main_RenderWater(On_Main.orig_RenderWater orig, Main self)
     {
         if (
-            LightingConfig.Instance.SmoothLightingEnabled()
-            && DeveloperConfig.Instance.RenderOnlyLight
-            && !LightingConfig.Instance.DrawOverbright()
-        )
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(Main.waterTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            Main.graphics.GraphicsDevice.SetRenderTarget(null);
-            return;
-        }
-
-        if (
-            !LightingConfig.Instance.SmoothLightingEnabled()
+            Main.drawToScreen
+            || !LightingConfig.Instance.SmoothLightingEnabled()
             || (
                 SpiritReforgedCompatibility._disableCustomLiquidRendering
                 && !DeveloperConfig.Instance.RenderOnlyLight
@@ -1128,7 +1118,7 @@ public sealed class FancyLightingMod : Mod
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
-        var optimized = !CompatibilityConfig.Instance.DisableGlowEffectOptimizations;
+        var optimized = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1238,11 +1228,6 @@ public sealed class FancyLightingMod : Mod
             _preventTileParticles = false;
         }
 
-        if (Main.drawToScreen)
-        {
-            return;
-        }
-
         _smoothLightingInstance.DrawSmoothLighting(
             tileTarget,
             useGlowMasks ? _tmpTarget2 : null,
@@ -1309,7 +1294,7 @@ public sealed class FancyLightingMod : Mod
     // Cave backgrounds
     private void _Main_RenderBackground(On_Main.orig_RenderBackground orig, Main self)
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (Main.drawToScreen || !LightingConfig.Instance.SmoothLightingEnabled())
         {
             orig(self);
             return;
@@ -1327,11 +1312,6 @@ public sealed class FancyLightingMod : Mod
 
         _smoothLightingInstance.CalculateSmoothLighting();
         orig(self);
-
-        if (Main.drawToScreen)
-        {
-            return;
-        }
 
         _smoothLightingInstance.DrawSmoothLighting(
             Main.instance.backgroundTarget,
@@ -1454,7 +1434,7 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_RenderTiles(On_Main.orig_RenderTiles orig, Main self)
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (Main.drawToScreen || !LightingConfig.Instance.SmoothLightingEnabled())
         {
             orig(self);
             return;
@@ -1464,7 +1444,7 @@ public sealed class FancyLightingMod : Mod
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
-        var optimized = !CompatibilityConfig.Instance.DisableGlowEffectOptimizations;
+        var optimized = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1572,11 +1552,6 @@ public sealed class FancyLightingMod : Mod
             OverrideLightColor = false;
         }
 
-        if (Main.drawToScreen)
-        {
-            return;
-        }
-
         _smoothLightingInstance.DrawSmoothLighting(
             tileTarget,
             useGlowMasks ? _tmpTarget2 : null,
@@ -1600,7 +1575,7 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_RenderTiles2(On_Main.orig_RenderTiles2 orig, Main self)
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (Main.drawToScreen || !LightingConfig.Instance.SmoothLightingEnabled())
         {
             orig(self);
             return;
@@ -1610,7 +1585,7 @@ public sealed class FancyLightingMod : Mod
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
-        var optimized = !CompatibilityConfig.Instance.DisableGlowEffectOptimizations;
+        var optimized = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1710,11 +1685,6 @@ public sealed class FancyLightingMod : Mod
         {
             _preventTileParticles = false;
             OverrideLightColor = false;
-        }
-
-        if (Main.drawToScreen)
-        {
-            return;
         }
 
         _smoothLightingInstance.DrawSmoothLighting(
@@ -1741,10 +1711,10 @@ public sealed class FancyLightingMod : Mod
 
     private void _Main_RenderWalls(On_Main.orig_RenderWalls orig, Main self)
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
+        if (Main.drawToScreen || !LightingConfig.Instance.SmoothLightingEnabled())
         {
             orig(self);
-            if (LightingConfig.Instance.AmbientOcclusionEnabled())
+            if (!Main.drawToScreen && LightingConfig.Instance.AmbientOcclusionEnabled())
             {
                 _ambientOcclusionInstance.ApplyAmbientOcclusion();
                 Main.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -1753,22 +1723,11 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (
-            DeveloperConfig.Instance.RenderOnlyLight
-            && !LightingConfig.Instance.DrawOverbright()
-        )
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(Main.instance.wallTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            Main.graphics.GraphicsDevice.SetRenderTarget(null);
-            return;
-        }
-
         ref var tileTarget = ref Main.instance.wallTarget;
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
-        var optimized = !CompatibilityConfig.Instance.DisableGlowEffectOptimizations;
+        var optimized = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
 
         _smoothLightingInstance.CalculateSmoothLighting();
 
@@ -1868,11 +1827,6 @@ public sealed class FancyLightingMod : Mod
         {
             _preventTileParticles = false;
             OverrideLightColor = false;
-        }
-
-        if (Main.drawToScreen)
-        {
-            return;
         }
 
         var doAmbientOcclusion = LightingConfig.Instance.AmbientOcclusionEnabled();
@@ -1943,8 +1897,8 @@ public sealed class FancyLightingMod : Mod
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
 
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
-        var samplerState = MainGraphics.GetSamplerState();
-        var transform = MainGraphics.GetTransformMatrix();
+        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
+        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
         if (doDepthOfField && !hiDef)
@@ -2708,7 +2662,6 @@ public sealed class FancyLightingMod : Mod
 
         if (_inCameraMode)
         {
-            _cameraModeArea = area;
             _cameraModeBiome = settings.Biome;
             _cameraModeDrawBackground = settings.CaptureBackground;
             ModContent.GetInstance<SettingsSystem>().SettingsUpdate();

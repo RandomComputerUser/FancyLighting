@@ -1,12 +1,8 @@
-﻿#region
-
-using FancyLighting.Core.Sky;
+﻿using FancyLighting.Core.Sky;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using ReLogic.Content;
 using Terraria.Graphics.Light;
 using Terraria.ID;
-
-#endregion
 
 namespace FancyLighting.Core;
 
@@ -14,18 +10,14 @@ public sealed class SmoothLighting
 {
     internal const float NormalMapGradientBaseMult = 1.5f;
 
+    private readonly Texture2D _ditherNoise;
+
     private Texture2D _colors;
     private RenderTarget2D _colorsHiRes;
-
     private RenderTarget2D _prevColorsHiRes;
-    private Rectangle _prevLightMapTileArea;
-
-    private readonly Texture2D _ditherNoise;
-    private readonly Texture2D _grayPixel;
 
     private Rectangle _lightMapTileArea;
-
-    private RenderTarget2D _drawTarget;
+    private Rectangle _prevLightMapTileArea;
 
     private Vector3[] _lights;
     private bool[] _hasLight;
@@ -41,53 +33,50 @@ public sealed class SmoothLighting
     private bool _smoothLightingHiResComplete;
     private bool _useAlphaChannelAsSkyLightLuma;
 
-    internal RenderTarget2D _cameraModeTarget1;
-    internal RenderTarget2D _cameraModeTarget2;
-
     internal bool CanDrawSmoothLighting =>
         _smoothLightingComplete && LightingConfig.Instance.SmoothLightingEnabled();
 
-    private Shader _bicubicFilteringShader;
-    private Shader _bicubicFilteringWithAlphaShader;
+    private readonly FullscreenEffect _bicubicFilteringEffect;
+    private readonly FullscreenEffect _bicubicFilteringWithAlphaEffect;
 
-    private Shader _normalsShader;
-    private Shader _normalsOverbrightShader;
-    private Shader _normalsOverbrightFancySkyShader;
-    private Shader _normalsOverbrightAmbientOcclusionShader;
-    private Shader _normalsOverbrightLightOnlyShader;
-    private Shader _normalsOverbrightLightOnlyFancySkyShader;
-    private Shader _normalsOverbrightLightOnlyOpaqueShader;
-    private Shader _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader;
-    private Shader _overbrightShader;
-    private Shader _overbrightAmbientOcclusionShader;
-    private Shader _overbrightLightOnlyShader;
-    private Shader _overbrightLightOnlyOpaqueShader;
-    private Shader _overbrightLightOnlyOpaqueAmbientOcclusionShader;
-    private Shader _overbrightMaxShader;
-    private Shader _inverseOverbrightMaxHiDefShader;
-    private Shader _brightenShader;
-    private Shader _glowMaskShader;
-    private Shader _enhancedGlowMaskShader;
+    private readonly FullscreenEffect _smoothEffect;
+    private readonly FullscreenEffect _smoothAmbientOcclusionEffect;
+    private readonly FullscreenEffect _smoothOpaqueLightOnlyEffect;
+    private readonly FullscreenEffect _smoothEnhancedGlowEffect;
+    private readonly FullscreenEffect _smoothEnhancedGlowAmbientOcclusionEffect;
+    private readonly FullscreenEffect _smoothDitheredEffect;
+    private readonly FullscreenEffect _smoothDitheredAmbientOcclusionEffect;
+    private readonly FullscreenEffect _smoothDitheredOpaqueLightOnlyEffect;
+    private readonly FullscreenEffect _smoothDitheredEnhancedGlowEffect;
+    private readonly FullscreenEffect _smoothDitheredEnhancedGlowAmbientOcclusionEffect;
+    private readonly FullscreenEffect _normalsEffect;
+    private readonly FullscreenEffect _normalsAmbientOcclusionEffect;
+    private readonly FullscreenEffect _normalsOpaqueLightOnlyEffect;
+    private readonly FullscreenEffect _normalsFancySkyEffect;
+    private readonly FullscreenEffect _normalsEnhancedGlowEffect;
+    private readonly FullscreenEffect _normalsEnhancedGlowAmbientOcclusionEffect;
+    private readonly FullscreenEffect _normalsEnhancedGlowFancySkyEffect;
+    private readonly FullscreenEffect _normalsDitheredEffect;
+    private readonly FullscreenEffect _normalsDitheredAmbientOcclusionEffect;
+    private readonly FullscreenEffect _normalsDitheredOpaqueLightOnlyEffect;
+    private readonly FullscreenEffect _normalsDitheredFancySkyEffect;
+    private readonly FullscreenEffect _normalsDitheredEnhancedGlowEffect;
+    private readonly FullscreenEffect _normalsDitheredEnhancedGlowAmbientOcclusionEffect;
+    private readonly FullscreenEffect _normalsDitheredEnhancedGlowFancySkyEffect;
+    private readonly FullscreenEffect _overbrightMaxEffect;
+    private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
 
-    private SpriteBatchEffect _tileEntitySmoothEffect;
-    private SpriteBatchEffect _tileEntitySmoothDitheredEffect;
-    private SpriteBatchEffect _tileEntityNormalsEffect;
-    private SpriteBatchEffect _tileEntityNormalsSmoothEffect;
-    private SpriteBatchEffect _tileEntityNormalsSmoothDitheredEffect;
-    private SpriteBatchEffect _tileEntityNormalsFancySkyEffect;
-    private SpriteBatchEffect _tileEntityNormalsFancySkySmoothEffect;
-    private SpriteBatchEffect _tileEntityNormalsFancySkySmoothDitheredEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlyEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlySmoothEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlySmoothDitheredEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlyFancySkyEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlyFancySkySmoothEffect;
-    private SpriteBatchEffect _tileEntityNormalsLightOnlyFancySkySmoothDitheredEffect;
-    private SpriteBatchEffect _tileEntityLightOnlyEffect;
-    private SpriteBatchEffect _tileEntityLightOnlySmoothEffect;
-    private SpriteBatchEffect _tileEntityLightOnlySmoothDitheredEffect;
+    private readonly SpriteBatchEffect _tileEntityLightOnlyEffect;
+    private readonly SpriteBatchEffect _tileEntityNormalsEffect;
+    private readonly SpriteBatchEffect _tileEntityNormalsFancySkyEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothNormalsEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothNormalsFancySkyEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothDitheredEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothDitheredNormalsEffect;
+    private readonly SpriteBatchEffect _tileEntitySmoothDitheredNormalsFancySkyEffect;
 
-    private SpriteBatchEffect _syncHdrEffect;
+    private readonly FullscreenEffect _syncHdrEffect;
 
     internal bool ReadyForHdrSync =>
         _smoothLightingHiResComplete && _prevColorsHiRes is not null;
@@ -193,185 +182,119 @@ public sealed class SmoothLighting
                 AssetRequestMode.ImmediateLoad
             )
             .Value;
-        _grayPixel = ModContent
-            .Request<Texture2D>(
-                "FancyLighting/Effects/GrayPixel",
-                AssetRequestMode.ImmediateLoad
-            )
-            .Value;
 
-        _bicubicFilteringShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Upscaling",
-            "BicubicFiltering"
-        );
-        _bicubicFilteringWithAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Upscaling",
-            "BicubicFilteringWithAlpha"
-        );
+        var effect = EffectLoader.Load("Upscaling");
+        _bicubicFilteringEffect = new(effect, "BicubicFiltering");
+        _bicubicFilteringWithAlphaEffect = new(effect, "BicubicFilteringWithAlpha");
 
-        _normalsShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "Normals"
+        effect = EffectLoader.Load("SmoothLighting");
+        _smoothEffect = new(effect, "Smooth", EffectFeatures.LightOnly);
+        _smoothAmbientOcclusionEffect = new(
+            effect,
+            "SmoothAmbientOcclusion",
+            EffectFeatures.All
         );
-        _normalsOverbrightShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbright",
-            true
+        _smoothOpaqueLightOnlyEffect = new(effect, "SmoothOpaqueLightOnly");
+        _smoothEnhancedGlowEffect = new(effect, "SmoothEnhancedGlow");
+        _smoothEnhancedGlowAmbientOcclusionEffect = new(
+            effect,
+            "SmoothEnhancedGlowAmbientOcclusion",
+            EffectFeatures.HiDef
         );
-        _normalsOverbrightFancySkyShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightFancySky",
-            true
+        _smoothDitheredEffect = new(effect, "SmoothDithered", EffectFeatures.LightOnly);
+        _smoothDitheredAmbientOcclusionEffect = new(
+            effect,
+            "SmoothDitheredAmbientOcclusion",
+            EffectFeatures.LightOnly
         );
-        _normalsOverbrightAmbientOcclusionShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightAmbientOcclusion",
-            true
+        _smoothDitheredOpaqueLightOnlyEffect = new(
+            effect,
+            "SmoothDitheredOpaqueLightOnly"
         );
-        _normalsOverbrightLightOnlyShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightLightOnly",
-            true
+        _smoothDitheredEnhancedGlowEffect = new(effect, "SmoothDitheredEnhancedGlow");
+        _smoothDitheredEnhancedGlowAmbientOcclusionEffect = new(
+            effect,
+            "SmoothDitheredEnhancedGlowAmbientOcclusion"
         );
-        _normalsOverbrightLightOnlyFancySkyShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightLightOnlyFancySky",
-            true
+        _normalsEffect = new(effect, "Normals", EffectFeatures.LightOnly);
+        _normalsAmbientOcclusionEffect = new(
+            effect,
+            "NormalsAmbientOcclusion",
+            EffectFeatures.All
         );
-        _normalsOverbrightLightOnlyOpaqueShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightLightOnlyOpaque",
-            true
+        _normalsOpaqueLightOnlyEffect = new(effect, "NormalsOpaqueLightOnly");
+        _normalsFancySkyEffect = new(effect, "NormalsFancySky", EffectFeatures.LightOnly);
+        _normalsEnhancedGlowEffect = new(effect, "NormalsEnhancedGlow");
+        _normalsEnhancedGlowAmbientOcclusionEffect = new(
+            effect,
+            "NormalsEnhancedGlowAmbientOcclusion",
+            EffectFeatures.HiDef
         );
-        _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "NormalsOverbrightLightOnlyOpaqueAmbientOcclusion",
-            true
+        _normalsEnhancedGlowFancySkyEffect = new(effect, "NormalsEnhancedGlowFancySky");
+        _normalsDitheredEffect = new(effect, "NormalsDithered", EffectFeatures.LightOnly);
+        _normalsDitheredAmbientOcclusionEffect = new(
+            effect,
+            "NormalsDitheredAmbientOcclusion",
+            EffectFeatures.LightOnly
         );
-        _overbrightShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "Overbright",
-            true
+        _normalsDitheredOpaqueLightOnlyEffect = new(
+            effect,
+            "NormalsDitheredOpaqueLightOnly"
         );
-        _overbrightAmbientOcclusionShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "OverbrightAmbientOcclusion",
-            true
+        _normalsDitheredFancySkyEffect = new(
+            effect,
+            "NormalsDitheredFancySky",
+            EffectFeatures.LightOnly
         );
-        _overbrightLightOnlyShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "OverbrightLightOnly",
-            true
+        _normalsDitheredEnhancedGlowEffect = new(effect, "NormalsDitheredEnhancedGlow");
+        _normalsDitheredEnhancedGlowAmbientOcclusionEffect = new(
+            effect,
+            "NormalsDitheredEnhancedGlowAmbientOcclusion"
         );
-        _overbrightLightOnlyOpaqueShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "OverbrightLightOnlyOpaque",
-            true
+        _normalsDitheredEnhancedGlowFancySkyEffect = new(
+            effect,
+            "NormalsDitheredEnhancedGlowFancySky"
         );
-        _overbrightLightOnlyOpaqueAmbientOcclusionShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "OverbrightLightOnlyOpaqueAmbientOcclusion",
-            true
-        );
-        _overbrightMaxShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "OverbrightMax",
-            true
-        );
-        _inverseOverbrightMaxHiDefShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "InverseOverbrightMaxHiDef"
-        );
-        _brightenShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "Brighten"
-        );
-        _glowMaskShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "GlowMask"
-        );
-        _enhancedGlowMaskShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "EnhancedGlowMask"
-        );
+        _overbrightMaxEffect = new(effect, "OverbrightMax", EffectFeatures.HiDef);
+        _inverseOverbrightMaxHiDefEffect = new(effect, "InverseOverbrightMaxHiDef");
 
-        _tileEntitySmoothEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "Smooth"
+        effect = EffectLoader.Load("TileEntityLighting");
+        _tileEntityLightOnlyEffect = new(effect, "LightOnly");
+        _tileEntityNormalsEffect = new(effect, "Normals", EffectFeatures.LightOnly);
+        _tileEntityNormalsFancySkyEffect = new(
+            effect,
+            "NormalsFancySky",
+            EffectFeatures.LightOnly
         );
-        _tileEntitySmoothDitheredEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "SmoothDithered"
+        _tileEntitySmoothEffect = new(effect, "Smooth", EffectFeatures.LightOnly);
+        _tileEntitySmoothNormalsEffect = new(
+            effect,
+            "SmoothNormals",
+            EffectFeatures.LightOnly
         );
-        _tileEntityNormalsEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "Normals"
+        _tileEntitySmoothNormalsFancySkyEffect = new(
+            effect,
+            "SmoothNormalsFancySky",
+            EffectFeatures.LightOnly
         );
-        _tileEntityNormalsSmoothEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsSmooth"
+        _tileEntitySmoothDitheredEffect = new(
+            effect,
+            "SmoothDithered",
+            EffectFeatures.LightOnly
         );
-        _tileEntityNormalsSmoothDitheredEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsSmoothDithered"
+        _tileEntitySmoothDitheredNormalsEffect = new(
+            effect,
+            "SmoothDitheredNormals",
+            EffectFeatures.LightOnly
         );
-        _tileEntityNormalsFancySkyEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsFancySky"
-        );
-        _tileEntityNormalsFancySkySmoothEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsFancySkySmooth"
-        );
-        _tileEntityNormalsFancySkySmoothDitheredEffect =
-            SpriteBatchEffectLoader.LoadEffect(
-                "FancyLighting/Effects/TileEntityLighting",
-                "NormalsFancySkySmoothDithered"
-            );
-        _tileEntityNormalsLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsLightOnly"
-        );
-        _tileEntityNormalsLightOnlySmoothEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsLightOnlySmooth"
-        );
-        _tileEntityNormalsLightOnlySmoothDitheredEffect =
-            SpriteBatchEffectLoader.LoadEffect(
-                "FancyLighting/Effects/TileEntityLighting",
-                "NormalsLightOnlySmoothDithered"
-            );
-        _tileEntityNormalsLightOnlyFancySkyEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "NormalsLightOnlyFancySky"
-        );
-        _tileEntityNormalsLightOnlyFancySkySmoothEffect =
-            SpriteBatchEffectLoader.LoadEffect(
-                "FancyLighting/Effects/TileEntityLighting",
-                "NormalsLightOnlyFancySkySmooth"
-            );
-        _tileEntityNormalsLightOnlyFancySkySmoothDitheredEffect =
-            SpriteBatchEffectLoader.LoadEffect(
-                "FancyLighting/Effects/TileEntityLighting",
-                "NormalsLightOnlyFancySkySmoothDithered"
-            );
-        _tileEntityLightOnlyEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "LightOnly"
-        );
-        _tileEntityLightOnlySmoothEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "LightOnlySmooth"
-        );
-        _tileEntityLightOnlySmoothDitheredEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/TileEntityLighting",
-            "LightOnlySmoothDithered"
+        _tileEntitySmoothDitheredNormalsFancySkyEffect = new(
+            effect,
+            "SmoothDitheredNormalsFancySky",
+            EffectFeatures.LightOnly
         );
 
-        _syncHdrEffect = SpriteBatchEffectLoader.LoadEffect(
-            "FancyLighting/Effects/HdrSync",
-            "SyncHdr"
-        );
+        effect = EffectLoader.Load("HdrSync");
+        _syncHdrEffect = new(effect, "SyncHdr");
     }
 
     internal void Unload()
@@ -379,77 +302,12 @@ public sealed class SmoothLighting
         TileLightModifiers = null;
         PostUpdateLightMap = null;
 
-        _drawTarget?.Dispose();
         _colors?.Dispose();
         _colorsHiRes?.Dispose();
         _prevColorsHiRes?.Dispose();
-        _cameraModeTarget1?.Dispose();
-        _cameraModeTarget2?.Dispose();
-
-        _ditherNoise?.Dispose();
-        _grayPixel?.Dispose();
-
-        EffectLoader.UnloadEffect(ref _bicubicFilteringShader);
-        EffectLoader.UnloadEffect(ref _bicubicFilteringWithAlphaShader);
-
-        EffectLoader.UnloadEffect(ref _normalsShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightFancySkyShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightAmbientOcclusionShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyFancySkyShader);
-        EffectLoader.UnloadEffect(ref _normalsOverbrightLightOnlyOpaqueShader);
-        EffectLoader.UnloadEffect(
-            ref _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
-        );
-        EffectLoader.UnloadEffect(ref _overbrightShader);
-        EffectLoader.UnloadEffect(ref _overbrightAmbientOcclusionShader);
-        EffectLoader.UnloadEffect(ref _overbrightLightOnlyShader);
-        EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueShader);
-        EffectLoader.UnloadEffect(ref _overbrightLightOnlyOpaqueAmbientOcclusionShader);
-        EffectLoader.UnloadEffect(ref _overbrightMaxShader);
-        EffectLoader.UnloadEffect(ref _inverseOverbrightMaxHiDefShader);
-        EffectLoader.UnloadEffect(ref _brightenShader);
-        EffectLoader.UnloadEffect(ref _glowMaskShader);
-        EffectLoader.UnloadEffect(ref _enhancedGlowMaskShader);
-
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntitySmoothEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntitySmoothDitheredEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsSmoothEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsSmoothDitheredEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsFancySkyEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsFancySkySmoothEffect);
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityNormalsFancySkySmoothDitheredEffect
-        );
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsLightOnlyEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityNormalsLightOnlySmoothEffect);
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityNormalsLightOnlySmoothDitheredEffect
-        );
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityNormalsLightOnlyFancySkyEffect
-        );
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityNormalsLightOnlyFancySkySmoothEffect
-        );
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityNormalsLightOnlyFancySkySmoothDitheredEffect
-        );
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityLightOnlyEffect);
-        SpriteBatchEffectLoader.UnloadEffect(ref _tileEntityLightOnlySmoothEffect);
-        SpriteBatchEffectLoader.UnloadEffect(
-            ref _tileEntityLightOnlySmoothDitheredEffect
-        );
-
-        SpriteBatchEffectLoader.UnloadEffect(ref _syncHdrEffect);
     }
 
     internal void InvalidateSmoothLighting() => _smoothLightingComplete = false;
-
-    internal void ApplyBrightenShader(float brightness) =>
-        _brightenShader.SetParameter("BrightnessMult", brightness).Apply();
 
     private static bool ShouldTileShine(ushort type, short frameX, float shimmerAlpha)
     {
@@ -1294,17 +1152,12 @@ public sealed class SmoothLighting
         bool doHiResLightingRender = false
     )
     {
-        if (!LightingConfig.Instance.SmoothLightingEnabled())
-        {
-            return;
-        }
-
         if (!_smoothLightingLightMapValid)
         {
             return;
         }
 
-        if (!cameraMode && _smoothLightingComplete)
+        if (_smoothLightingComplete)
         {
             return;
         }
@@ -1346,6 +1199,14 @@ public sealed class SmoothLighting
         {
             return;
         }
+
+        TextureUtils.MakeAtLeastSize(
+            ref _colors,
+            height,
+            width,
+            TextureUtils.LightMapFormat,
+            2
+        );
 
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
@@ -1405,34 +1266,21 @@ public sealed class SmoothLighting
 
         var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
         var scale = doBicubicUpscaling ? 0.25f : 1f;
-        var transformation = CalculateLightMapMatrixTransform(
-            lightMapTexture,
-            scale,
-            _lightMapTileArea,
-            Vector2.Zero
-        );
+        TexturePosition
+            .FromTextureTileCoords(
+                lightMapTexture,
+                _lightMapTileArea.X,
+                _lightMapTileArea.Y,
+                scale,
+                true
+            )
+            .WorldToTextureTransform(out var transformation);
         PostUpdateLightMap?.Invoke(
             lightMapTexture,
             transformation,
             _lightMapTileArea,
             cameraMode
         );
-    }
-
-    private Matrix CalculateLightMapMatrixTransform(
-        Texture2D lightMapTexture,
-        float scale,
-        Rectangle lightMapTileArea,
-        Vector2 offset
-    )
-    {
-        var transformation = Matrix.Identity;
-        transformation.Right = new(0f, 1f / (16f * scale * lightMapTexture.Height), 0f);
-        transformation.Up = new(1f / (16f * scale * lightMapTexture.Width), 0f, 0f);
-        var origin = (16f * new Vector2(lightMapTileArea.X, lightMapTileArea.Y)) - offset;
-        var translation = -Vector2.Transform(origin, transformation);
-        transformation.Translation = new Vector3(translation.X, translation.Y, 0f);
-        return transformation;
     }
 
     private void CalculateSmoothLightingHdr(
@@ -1559,13 +1407,6 @@ public sealed class SmoothLighting
         }
         Main.shimmerAlpha = shimmerAlpha;
 
-        TextureUtils.MakeAtLeastSize(
-            ref _colors,
-            height,
-            width,
-            SurfaceFormat.HalfVector4
-        );
-
         _colors.SetData(0, new(0, 0, height, width), _finalLightsHiDef, 0, length);
 
         _smoothLightingComplete = !cameraMode;
@@ -1680,13 +1521,6 @@ public sealed class SmoothLighting
         }
         Main.shimmerAlpha = shimmerAlpha;
 
-        TextureUtils.MakeAtLeastSize(
-            ref _colors,
-            height,
-            width,
-            SurfaceFormat.Rgba1010102
-        );
-
         _colors.SetData(0, new(0, 0, height, width), _finalLights, 0, length);
 
         _smoothLightingComplete = !cameraMode;
@@ -1715,44 +1549,29 @@ public sealed class SmoothLighting
             TextureUtils.LightMapFormat
         );
 
-        var shader = _useAlphaChannelAsSkyLightLuma
-            ? _bicubicFilteringWithAlphaShader
-            : _bicubicFilteringShader;
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_colorsHiRes);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.LinearClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        shader
+        var effect = _useAlphaChannelAsSkyLightLuma
+            ? _bicubicFilteringWithAlphaEffect
+            : _bicubicFilteringEffect;
+        effect
             .SetParameter("LightMapSize", lights.Size())
-            .SetParameter("PixelSize", new Vector2(1f / lights.Width, 1f / lights.Height))
-            .Apply();
-        Main.spriteBatch.Draw(
-            lights,
-            Vector2.Zero,
-            null,
-            Color.White,
-            0f,
-            Vector2.Zero,
-            4f,
-            SpriteEffects.None,
-            0f
-        );
-        Main.spriteBatch.End();
+            .SetParameter(
+                "PixelSize",
+                new Vector2(1f / lights.Width, 1f / lights.Height)
+            );
+        Blitter.Blit(lights, _colorsHiRes, effect);
     }
 
     internal void DrawSmoothLighting(
-        RenderTarget2D target,
-        RenderTarget2D outputTarget,
+        Texture2D src,
+        RenderTarget2D dst,
         bool background,
-        bool disableNormalMaps = false,
-        bool doScaling = false,
+        bool disableNormalMaps,
+        bool doScaling,
+        bool overbrightPass = false,
         bool invertOverbright = false,
-        RenderTarget2D ambientOcclusionTarget = null
+        Texture2D glow = null,
+        Texture2D lightedGlow = null,
+        Texture2D ambientOcclusion = null
     )
     {
         if (!_smoothLightingComplete)
@@ -1760,217 +1579,52 @@ public sealed class SmoothLighting
             return;
         }
 
-        Vector2 offset;
-        var tmpTarget = outputTarget;
-        if (tmpTarget is null)
-        {
-            TextureUtils.MakeSize(
-                ref _drawTarget,
-                target.Width,
-                target.Height,
-                TextureUtils.ScreenFormat
-            );
-            tmpTarget = _drawTarget;
-            offset = new(Main.offScreenRange);
-        }
-        else
-        {
-            offset =
-                (tmpTarget.Size() - new Vector2(Main.screenWidth, Main.screenHeight))
-                / 2f;
-        }
-
-        var lightMapTexture = _colors;
-
         ApplySmoothLighting(
-            lightMapTexture,
-            tmpTarget,
-            16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y),
-            Main.screenPosition - offset,
-            doScaling && !FancyLightingMod._isGameInCameraMode
-                ? new Vector2(
-                    Main.GameViewMatrix.TransformationMatrix.M11,
-                    Main.GameViewMatrix.TransformationMatrix.M22
-                )
-                : Vector2.One,
-            target,
+            src,
+            dst,
+            doScaling
+                ? TexturePosition.GetScreenPosition(src)
+                : TexturePosition.GetTileTargetPosition(src),
             background,
             disableNormalMaps,
-            doScaling,
+            overbrightPass,
             invertOverbright,
-            ambientOcclusionTarget
+            glow,
+            lightedGlow,
+            ambientOcclusion
         );
-
-        if (outputTarget is not null)
-        {
-            return;
-        }
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(target);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-    }
-
-    internal RenderTarget2D GetCameraModeRenderTarget(RenderTarget2D screenTarget)
-    {
-        TextureUtils.MakeSize(
-            ref _cameraModeTarget1,
-            screenTarget.Width,
-            screenTarget.Height,
-            TextureUtils.ScreenFormat
-        );
-        return _cameraModeTarget1;
-    }
-
-    internal void DrawSmoothLightingCameraMode(
-        RenderTarget2D worldTarget,
-        RenderTarget2D screenTarget,
-        bool background,
-        bool skipFinalPass = false,
-        bool disableNormalMaps = false,
-        bool doOverbrightMax = false,
-        bool invertOverbright = false,
-        RenderTarget2D ambientOcclusionTarget = null,
-        Texture2D glow = null,
-        Texture2D lightedGlow = null
-    )
-    {
-        var lightMapTexture = _colors;
-
-        TextureUtils.MakeSize(
-            ref _cameraModeTarget2,
-            16 * lightMapTexture.Height,
-            16 * lightMapTexture.Width,
-            TextureUtils.ScreenFormat
-        );
-
-        ApplySmoothLighting(
-            lightMapTexture,
-            _cameraModeTarget2,
-            16f * new Vector2(_lightMapTileArea.X, _lightMapTileArea.Y),
-            16f
-                * new Vector2(
-                    FancyLightingMod._cameraModeArea.X,
-                    FancyLightingMod._cameraModeArea.Y
-                ),
-            Vector2.One,
-            worldTarget,
-            background,
-            disableNormalMaps,
-            doOverbrightMax,
-            invertOverbright,
-            ambientOcclusionTarget
-        );
-
-        if (skipFinalPass)
-        {
-            return;
-        }
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(_cameraModeTarget1);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(screenTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
-        Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(_cameraModeTarget1, Vector2.Zero, Color.White);
-        if (glow is null)
-        {
-            Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
-        }
-        else
-        {
-            MainGraphics.ResetSavedTextures();
-
-            if (lightedGlow is null)
-            {
-                _glowMaskShader
-                    .SetParameter(
-                        "GlowCoordMult",
-                        new Vector2(
-                            (float)_cameraModeTarget2.Width / glow.Width,
-                            (float)_cameraModeTarget2.Height / glow.Height
-                        )
-                    )
-                    .Apply();
-            }
-            else
-            {
-                _enhancedGlowMaskShader
-                    .SetParameter(
-                        "GlowCoordMult",
-                        new Vector2(
-                            (float)_cameraModeTarget2.Width / glow.Width,
-                            (float)_cameraModeTarget2.Height / glow.Height
-                        )
-                    )
-                    .SetParameter(
-                        "LightedGlowCoordMult",
-                        new Vector2(
-                            (float)_cameraModeTarget2.Width / lightedGlow.Width,
-                            (float)_cameraModeTarget2.Height / lightedGlow.Height
-                        )
-                    )
-                    .Apply();
-                MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
-            }
-
-            MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
-            Main.spriteBatch.Draw(_cameraModeTarget2, Vector2.Zero, Color.White);
-            MainGraphics.RestoreSavedTextures();
-        }
-        Main.spriteBatch.End();
     }
 
     private void ApplySmoothLighting(
-        Texture2D lightMapTexture,
-        RenderTarget2D outputTarget,
-        Vector2 lightMapPosition,
-        Vector2 worldPosition,
-        Vector2 zoom,
-        RenderTarget2D worldTarget,
+        Texture2D src,
+        RenderTarget2D dst,
+        TexturePosition position,
         bool background,
         bool disableNormalMaps,
-        bool doScaling,
+        bool overbrightPass,
         bool invertOverbright,
-        RenderTarget2D ambientOcclusionTarget
+        Texture2D glow,
+        Texture2D lightedGlow,
+        Texture2D ambientOcclusion
     )
     {
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
-        var simulateNormalMaps =
-            !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var doSimpleRender = !(simulateNormalMaps || doOverbright);
-        var doAmbientOcclusion = background && ambientOcclusionTarget is not null;
-        var doDithering = doOverbright && !hiDef;
-        var doFancySky = _useAlphaChannelAsSkyLightLuma && !background;
 
-        var lightMapScale = 16f;
+        var normalsEffectFlag =
+            !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
+        var ditheredEffectFlag =
+            !DeveloperConfig.Instance.DisableDithering && doOverbright && !hiDef;
+        var enhancedGlowEffectFlag = !lightOnly && lightedGlow is not null;
+        var ambientOcclusionEffectFlag = background && ambientOcclusion is not null;
+        var fancySkyEffectFlag = _useAlphaChannelAsSkyLightLuma && !background;
+        var opaqueEffectFlag = lightOnly && background && ambientOcclusion is null;
 
+        var lightMapTexture = _colors;
+        var lightMapScale = 1f;
         if (doBicubicUpscaling)
         {
             if (!_smoothLightingHiResComplete)
@@ -1980,111 +1634,81 @@ public sealed class SmoothLighting
             }
 
             lightMapTexture = _colorsHiRes;
-            lightMapScale = 4f;
+            lightMapScale = 0.25f;
         }
 
-        // We need to correct for the orientation of the light map texture
-        // In the light map texture, X and Y are flipped compared to world coordinates
-
-        var lightMapCenter =
-            lightMapPosition
-            + (
-                0.5f
-                * lightMapScale
-                * new Vector2(lightMapTexture.Height, lightMapTexture.Width)
-            );
-        var worldCenter =
-            worldPosition + (0.5f * new Vector2(worldTarget.Width, worldTarget.Height));
-        var position =
-            (zoom * (lightMapCenter - worldCenter))
-            + (0.5f * new Vector2(worldTarget.Width, worldTarget.Height));
-        var rotation = -MathHelper.PiOver2;
-        var origin = 0.5f * new Vector2(lightMapTexture.Width, lightMapTexture.Height);
-        var scale = lightMapScale * new Vector2(zoom.Y, zoom.X);
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(outputTarget);
-
-        if (doSimpleRender)
-        {
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.Opaque,
-                SamplerState.LinearClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            Main.spriteBatch.Draw(
+        position.TextureToWorldTransform(out var tileToWorldTransform);
+        TexturePosition
+            .FromTextureTileCoords(
                 lightMapTexture,
-                position,
-                null,
-                Color.White,
-                rotation,
-                origin,
-                scale,
-                SpriteEffects.FlipHorizontally,
-                0f
-            );
-            Main.spriteBatch.End();
-
-            if (!lightOnly)
-            {
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendStates.MultiplyColor,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
-                Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
-            }
-
-            return;
-        }
-
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.LinearClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
+                _lightMapTileArea.X,
+                _lightMapTileArea.Y,
+                lightMapScale,
+                true
+            )
+            .WorldToTextureTransform(out var lightMapTransform);
+        Matrix.Multiply(
+            ref tileToWorldTransform,
+            ref lightMapTransform,
+            out lightMapTransform
         );
 
-        var shader = simulateNormalMaps
-            ? doOverbright
-                ? lightOnly
-                    ? background
-                        ? doAmbientOcclusion
-                            ? _normalsOverbrightLightOnlyOpaqueAmbientOcclusionShader
-                            : _normalsOverbrightLightOnlyOpaqueShader
-                        : doFancySky
-                            ? _normalsOverbrightLightOnlyFancySkyShader
-                            : _normalsOverbrightLightOnlyShader
-                    : doAmbientOcclusion
-                        ? _normalsOverbrightAmbientOcclusionShader
-                        : doFancySky
-                            ? _normalsOverbrightFancySkyShader
-                            : _normalsOverbrightShader
-                : _normalsShader
-            : doScaling // doOverbright is guaranteed to be true here
-                ? invertOverbright // if doScaling is true we're doing post-processing
-                    ? _inverseOverbrightMaxHiDefShader
-                    : _overbrightMaxShader
-                : lightOnly
-                    ? background
-                        ? doAmbientOcclusion
-                            ? _overbrightLightOnlyOpaqueAmbientOcclusionShader
-                            : _overbrightLightOnlyOpaqueShader
-                        : _overbrightLightOnlyShader
-                    : doAmbientOcclusion
-                        ? _overbrightAmbientOcclusionShader
-                        : _overbrightShader;
+        var effect = overbrightPass
+            ? invertOverbright
+                ? _inverseOverbrightMaxHiDefEffect
+                : _overbrightMaxEffect
+            : normalsEffectFlag
+                ? ditheredEffectFlag
+                    ? enhancedGlowEffectFlag
+                        ? fancySkyEffectFlag
+                            ? _normalsDitheredEnhancedGlowFancySkyEffect
+                            : ambientOcclusionEffectFlag
+                                ? _normalsDitheredEnhancedGlowAmbientOcclusionEffect
+                                : _normalsDitheredEnhancedGlowEffect
+                        : fancySkyEffectFlag
+                            ? _normalsDitheredFancySkyEffect
+                            : ambientOcclusionEffectFlag
+                                ? _normalsDitheredAmbientOcclusionEffect
+                                : opaqueEffectFlag
+                                    ? _normalsDitheredOpaqueLightOnlyEffect
+                                    : _normalsDitheredEffect
+                    : enhancedGlowEffectFlag
+                        ? fancySkyEffectFlag
+                            ? _normalsEnhancedGlowFancySkyEffect
+                            : ambientOcclusionEffectFlag
+                                ? _normalsEnhancedGlowAmbientOcclusionEffect
+                                : _normalsEnhancedGlowEffect
+                        : fancySkyEffectFlag
+                            ? _normalsFancySkyEffect
+                            : ambientOcclusionEffectFlag
+                                ? _normalsAmbientOcclusionEffect
+                                : opaqueEffectFlag
+                                    ? _normalsOpaqueLightOnlyEffect
+                                    : _normalsEffect
+                : ditheredEffectFlag
+                    ? enhancedGlowEffectFlag
+                        ? ambientOcclusionEffectFlag
+                            ? _smoothDitheredEnhancedGlowAmbientOcclusionEffect
+                            : _smoothDitheredEnhancedGlowEffect
+                        : ambientOcclusionEffectFlag
+                            ? _smoothDitheredAmbientOcclusionEffect
+                            : opaqueEffectFlag
+                                ? _smoothDitheredOpaqueLightOnlyEffect
+                                : _smoothDitheredEffect
+                    : enhancedGlowEffectFlag
+                        ? ambientOcclusionEffectFlag
+                            ? _smoothEnhancedGlowAmbientOcclusionEffect
+                            : _smoothEnhancedGlowEffect
+                        : ambientOcclusionEffectFlag
+                            ? _smoothAmbientOcclusionEffect
+                            : opaqueEffectFlag
+                                ? _smoothOpaqueLightOnlyEffect
+                                : _smoothEffect;
 
         var gamma = PostProcessing.ContentGamma();
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
         var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-        var normalMapGradientMult =
-            16f * NormalMapGradientBaseMult * overbrightMult * zoom;
+        var normalMapGradientMult = 16f * NormalMapGradientBaseMult * overbrightMult;
         var normalMapStrength = Math.Clamp(
             PreferencesConfig.Instance.NormalMapsMultiplier(),
             0f,
@@ -2096,37 +1720,27 @@ public sealed class SmoothLighting
             normalMapStrength *= 0.85f;
         }
 
-        var worldCoordMult =
-            new Vector2(scale.Y, scale.X)
-            * new Vector2(lightMapTexture.Height, lightMapTexture.Width)
-            / new Vector2(worldTarget.Width, worldTarget.Height);
-
-        shader
+        effect
+            .SetParameter("LightMapTransform", lightMapTransform)
             .SetParameter("Gamma", gamma)
             .SetParameter("ReciprocalGamma", 1f / gamma)
             .SetParameter(
                 "NormalMapResolution",
                 new Vector2(
-                    normalMapResolution / worldTarget.Width,
-                    normalMapResolution / worldTarget.Height
+                    normalMapResolution / src.Width,
+                    normalMapResolution / src.Height
                 )
             )
             .SetParameter("NormalMapGradientMult", normalMapGradientMult)
-            .SetParameter("NormalMapStrength", normalMapStrength)
-            .SetParameter("WorldCoordMult", worldCoordMult)
-            .SetParameter(
-                "WorldCoordOffset",
-                (position / new Vector2(worldTarget.Width, worldTarget.Height))
-                    - (worldCoordMult * new Vector2(0.5f))
-            );
+            .SetParameter("NormalMapStrength", normalMapStrength);
 
-        if (doFancySky)
+        if (fancySkyEffectFlag)
         {
             var hour = GameTimeUtils.CalculateCurrentHour();
             var (skyLightAngle, skyLightMult, _) =
                 FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
-            var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult * zoom;
-            shader.SetParameter(
+            var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult;
+            effect.SetParameter(
                 "SkyLightGradient",
                 -normalMapSkyGradientMult
                     * new Vector2(
@@ -2137,111 +1751,25 @@ public sealed class SmoothLighting
         }
 
         MainGraphics.ResetSavedTextures();
-        MainGraphics.SetTexture(4, worldTarget, SamplerState.PointClamp);
-        if (doAmbientOcclusion)
+        MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+        if (glow is not null)
         {
-            MainGraphics.SetTexture(5, ambientOcclusionTarget, SamplerState.PointClamp);
+            MainGraphics.SetTexture(5, glow, SamplerState.PointClamp);
+        }
+        if (lightedGlow is not null)
+        {
+            MainGraphics.SetTexture(6, lightedGlow, SamplerState.PointClamp);
+        }
+        if (ambientOcclusion is not null)
+        {
+            MainGraphics.SetTexture(7, ambientOcclusion, SamplerState.PointClamp);
+        }
+        if (ditheredEffectFlag)
+        {
+            MainGraphics.SetTexture(8, _ditherNoise, SamplerState.PointWrap);
         }
 
-        if (doDithering)
-        {
-            shader
-                .SetParameter(
-                    "DitherCoordMult",
-                    new Vector2(
-                        4f * zoom.Y * lightMapTexture.Width / _ditherNoise.Width,
-                        4f * zoom.X * lightMapTexture.Height / _ditherNoise.Height
-                    )
-                )
-                .Apply();
-            MainGraphics.SetTexture(
-                6,
-                DeveloperConfig.Instance.DisableDithering ? _grayPixel : _ditherNoise,
-                SamplerState.PointWrap
-            );
-        }
-
-        shader.Apply();
-        Main.spriteBatch.Draw(
-            lightMapTexture,
-            position,
-            null,
-            Color.White,
-            rotation,
-            origin,
-            scale,
-            SpriteEffects.FlipHorizontally,
-            0f
-        );
-        Main.spriteBatch.End();
-        MainGraphics.RestoreSavedTextures();
-
-        if (!doOverbright && !lightOnly)
-        {
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendStates.MultiplyColor,
-                SamplerState.PointClamp,
-                DepthStencilState.None,
-                RasterizerState.CullNone
-            );
-            Main.spriteBatch.Draw(worldTarget, Vector2.Zero, Color.White);
-            Main.spriteBatch.End();
-        }
-    }
-
-    internal void DrawGlow(
-        Texture2D lighted,
-        Texture2D glow,
-        Texture2D lightedGlow = null
-    )
-    {
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-
-        MainGraphics.ResetSavedTextures();
-
-        if (lightedGlow is null)
-        {
-            _glowMaskShader
-                .SetParameter(
-                    "GlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / glow.Width,
-                        (float)lighted.Height / glow.Height
-                    )
-                )
-                .Apply();
-        }
-        else
-        {
-            _enhancedGlowMaskShader
-                .SetParameter(
-                    "GlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / glow.Width,
-                        (float)lighted.Height / glow.Height
-                    )
-                )
-                .SetParameter(
-                    "LightedGlowCoordMult",
-                    new Vector2(
-                        (float)lighted.Width / lightedGlow.Width,
-                        (float)lighted.Height / lightedGlow.Height
-                    )
-                )
-                .Apply();
-            MainGraphics.SetTexture(5, lightedGlow, SamplerState.PointClamp);
-        }
-
-        MainGraphics.SetTexture(4, glow, SamplerState.PointClamp);
-        Main.spriteBatch.Draw(lighted, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
+        Blitter.Blit(src, dst, effect);
         MainGraphics.RestoreSavedTextures();
     }
 
@@ -2250,60 +1778,44 @@ public sealed class SmoothLighting
         ref RenderTarget2D tmpTarget
     )
     {
-        var smoothLighting = LightingConfig.Instance.UseTileEntitySmoothLighting;
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
-        var doNormals =
-            LightingConfig.Instance.SimulateNormalMaps
-            && LightingConfig.Instance.SimulateTileEntityNormals;
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
-        var doDithering =
+
+        var smoothEffectFlag = LightingConfig.Instance.UseTileEntitySmoothLighting;
+        var ditheredEffectFlag =
             !DeveloperConfig.Instance.DisableDithering
-            && smoothLighting
+            && smoothEffectFlag
             && doOverbright
             && !hiDef;
-        var doFancySky = _useAlphaChannelAsSkyLightLuma;
-        var needsLightMap = smoothLighting || doNormals;
+        var normalsEffectFlag =
+            LightingConfig.Instance.SimulateNormalMaps
+            && LightingConfig.Instance.SimulateTileEntityNormals;
+        var fancySkyEffectFlag = doOverbright && _useAlphaChannelAsSkyLightLuma;
+
+        var needsLightMap = smoothEffectFlag || normalsEffectFlag;
         var cameraMode = FancyLightingMod._isGameInCameraMode;
 
-        var effect = lightOnly
-            ? doOverbright
-                ? doNormals
-                    ? doFancySky
-                        ? smoothLighting
-                            ? doDithering
-                                ? _tileEntityNormalsLightOnlyFancySkySmoothDitheredEffect
-                                : _tileEntityNormalsLightOnlyFancySkySmoothEffect
-                            : _tileEntityNormalsLightOnlyFancySkyEffect
-                        : smoothLighting
-                            ? doDithering
-                                ? _tileEntityNormalsLightOnlySmoothDitheredEffect
-                                : _tileEntityNormalsLightOnlySmoothEffect
-                            : _tileEntityNormalsLightOnlyEffect
-                    : smoothLighting
-                        ? doDithering
-                            ? _tileEntityLightOnlySmoothDitheredEffect
-                            : _tileEntityLightOnlySmoothEffect
-                        : _tileEntityLightOnlyEffect
-                : null
-            : doNormals
-                ? doFancySky
-                    ? smoothLighting
-                        ? doDithering
-                            ? _tileEntityNormalsFancySkySmoothDitheredEffect
-                            : _tileEntityNormalsFancySkySmoothEffect
-                        : _tileEntityNormalsFancySkyEffect
-                    : smoothLighting
-                        ? doDithering
-                            ? _tileEntityNormalsSmoothDitheredEffect
-                            : _tileEntityNormalsSmoothEffect
-                        : _tileEntityNormalsEffect
-                : smoothLighting
-                    ? doDithering
-                        ? _tileEntitySmoothDitheredEffect
-                        : _tileEntitySmoothEffect
+        var effect = smoothEffectFlag
+            ? ditheredEffectFlag
+                ? normalsEffectFlag
+                    ? fancySkyEffectFlag
+                        ? _tileEntitySmoothDitheredNormalsFancySkyEffect
+                        : _tileEntitySmoothDitheredNormalsEffect
+                    : _tileEntitySmoothDitheredEffect
+                : normalsEffectFlag
+                    ? fancySkyEffectFlag
+                        ? _tileEntitySmoothNormalsFancySkyEffect
+                        : _tileEntitySmoothNormalsEffect
+                    : _tileEntitySmoothEffect
+            : normalsEffectFlag
+                ? fancySkyEffectFlag
+                    ? _tileEntityNormalsFancySkyEffect
+                    : _tileEntityNormalsEffect
+                : lightOnly
+                    ? _tileEntityLightOnlyEffect
                     : null;
 
         if (effect is null)
@@ -2330,17 +1842,7 @@ public sealed class SmoothLighting
                     screenTarget.Height,
                     TextureUtils.ScreenFormat
                 );
-
-                Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.Opaque,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
-                Main.spriteBatch.Draw(screenTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
+                Blitter.Blit(screenTarget, tmpTarget);
 
                 RenderHiResLighting(_colors);
                 _smoothLightingHiResComplete = true;
@@ -2350,16 +1852,28 @@ public sealed class SmoothLighting
 
             var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
             var lightMapScale = doBicubicUpscaling ? 0.25f : 1f;
-            var lightMapTransform = CalculateLightMapMatrixTransform(
-                lightMapTexture,
-                lightMapScale,
-                _lightMapTileArea,
-                Main.Camera.UnscaledPosition
+            TexturePosition
+                .GetScreenPosition(screenTarget)
+                .VertexToWorldTransform(out var tileToWorldTransform);
+            TexturePosition
+                .FromTextureTileCoords(
+                    lightMapTexture,
+                    _lightMapTileArea.X,
+                    _lightMapTileArea.Y,
+                    lightMapScale,
+                    true
+                )
+                .WorldToTextureTransform(out var lightMapTransform);
+            Matrix.Multiply(
+                ref tileToWorldTransform,
+                ref lightMapTransform,
+                out lightMapTransform
             );
+
             effect.SetParameter("LightMapMatrixTransform", lightMapTransform);
         }
 
-        if (doNormals)
+        if (normalsEffectFlag)
         {
             var zoom = cameraMode ? 1f : Main.GameViewMatrix.Zoom.X;
 
@@ -2379,7 +1893,7 @@ public sealed class SmoothLighting
                 .SetParameter("NormalMapGradientMult", normalMapGradientMult)
                 .SetParameter("NormalMapStrength", normalMapStrength);
 
-            if (doFancySky)
+            if (fancySkyEffectFlag)
             {
                 var zoomWithFlipping = cameraMode
                     ? Vector2.One
@@ -2445,70 +1959,45 @@ public sealed class SmoothLighting
 
     internal void DoHdrSync(
         RenderTarget2D tileTarget,
-        Vector2 tilesPosition,
-        ref RenderTarget2D tmpTarget
+        RenderTarget2D dst,
+        Vector2 tilesPosition
     )
     {
-        if (tileTarget is not { Width: > 0, Height: > 0 })
-        {
-            return;
-        }
-
-        var prevMatrixTransform = CalculateLightMapMatrixTransform(
-            _prevColorsHiRes,
-            0.25f,
-            _prevLightMapTileArea,
-            Vector2.Zero
+        TexturePosition
+            .GetTileTargetPosition(tileTarget, tilesPosition)
+            .TextureToWorldTransform(out var tileToWorldTransform);
+        TexturePosition
+            .FromTextureTileCoords(
+                _prevColorsHiRes,
+                _prevLightMapTileArea.X,
+                _prevLightMapTileArea.Y,
+                0.25f,
+                true
+            )
+            .WorldToTextureTransform(out var prevMatrixTransform);
+        TexturePosition
+            .FromTextureTileCoords(
+                _colorsHiRes,
+                _lightMapTileArea.X,
+                _lightMapTileArea.Y,
+                0.25f,
+                true
+            )
+            .WorldToTextureTransform(out var currMatrixTransform);
+        Matrix.Multiply(
+            ref tileToWorldTransform,
+            ref prevMatrixTransform,
+            out prevMatrixTransform
         );
-        var currMatrixTransform = CalculateLightMapMatrixTransform(
-            _colorsHiRes,
-            0.25f,
-            _lightMapTileArea,
-            Vector2.Zero
-        );
-
-        var tileTargetTransform = Matrix.Identity;
-        tileTargetTransform.Translation = new(tilesPosition.X, tilesPosition.Y, 0f);
-        tileTargetTransform.M11 = tileTarget.Width;
-        tileTargetTransform.M22 = tileTarget.Height;
-
-        prevMatrixTransform = tileTargetTransform * prevMatrixTransform;
-        currMatrixTransform = tileTargetTransform * currMatrixTransform;
-
-        TextureUtils.MakeSize(
-            ref tmpTarget,
-            tileTarget.Width,
-            tileTarget.Height,
-            TextureUtils.ScreenFormat
+        Matrix.Multiply(
+            ref tileToWorldTransform,
+            ref currMatrixTransform,
+            out currMatrixTransform
         );
 
         _syncHdrEffect.SetParameter("PrevLightMapMatrixTransform", prevMatrixTransform);
         _syncHdrEffect.SetParameter("CurrLightMapMatrixTransform", currMatrixTransform);
 
-        SpriteBatchEffectLoader.ApplyEffect(_syncHdrEffect);
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tmpTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(tileTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
-
-        SpriteBatchEffectLoader.ClearEffect();
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(tmpTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
+        Blitter.Blit(tileTarget, dst, _syncHdrEffect);
     }
 }

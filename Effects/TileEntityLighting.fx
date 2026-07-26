@@ -19,25 +19,27 @@ struct VertexShaderInput
 {
     float4 Position : POSITION0;
     float4 Color : COLOR0;
-    float2 TexCoord : TEXCOORD0;
+    float2 TileTexCoord : TEXCOORD0;
 };
 
-struct VertexShaderOutput
+struct PixelShaderInput
 {
     float4 Position : SV_Position;
     float4 Color : COLOR0;
-    float2 TexCoord : TEXCOORD0;
-    float2 LightMapTexCoord : TEXCOORD1;
+    float2 TileTexCoord : TEXCOORD0;
+    float2 LightTexCoord : TEXCOORD1;
 };
 
-struct GlowVertexShaderOutput
+struct GlowPixelShaderInput
 {
     float4 Position : SV_Position;
     float4 Color : COLOR0;
-    float2 TexCoord : TEXCOORD0;
-    float2 LightMapTexCoord : TEXCOORD1;
+    float2 TileTexCoord : TEXCOORD0;
+    float2 LightTexCoord : TEXCOORD1;
     float2 GlowTexCoord : TEXCOORD2;
 };
+
+/* Helper functions *********************************************************************/
 
 float Square(float x)
 {
@@ -55,13 +57,13 @@ float Luma(float3 color)
 }
 
 // Not technically correct because it ignores gamma, but cheap and decent quality
-float3 Dithered(float3 color, float2 position)
+float3 Dithered(float2 position, float3 color)
 {
     float noise
         = (1.0 / 256) * tex2D(DitherSampler, (1.0 / DITHER_TEXTURE_SIZE) * position).r
         - 0.5 / 255;
     
-    color.rgb += noise;
+    color += noise;
     
     return color;
 }
@@ -74,12 +76,12 @@ struct SamplingTransform
 };
 
 // Assumes only rotation and/or flipping and no scaling or stretching
-SamplingTransform CalculateSamplingTransform(float2 texCoord)
+SamplingTransform CalculateSamplingTransform(float2 tileCoord)
 {
     SamplingTransform output;
 
-    float2 partialX = Zoom * ddx(texCoord);
-    float2 partialY = Zoom * ddy(texCoord);
+    float2 partialX = Zoom * ddx(tileCoord);
+    float2 partialY = Zoom * ddy(tileCoord);
     
     float2 texelSize = float2(
         length(float2(partialX.x, partialY.x)),
@@ -113,10 +115,9 @@ float SampleForNormal(float2 texCoord, float fallback)
     return color.a < 1 ? fallback : saturate(Luma(color.rgb));
 }
 
-float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff)
+float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff, float4 tileColor)
 {
-    float4 color = tex2D(TextureSampler, texCoord);
-    float luma = saturate(Luma(color.rgb));
+    float luma = saturate(Luma(tileColor.rgb));
     
     float leftLuma = SampleForNormal(texCoord - float2(diff.x, 0), luma);
     float rightLuma = SampleForNormal(texCoord + float2(diff.x, 0), luma);
@@ -139,7 +140,7 @@ float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff)
     float mult = 1 - maxLuma;
     return float3(
         mult * Gradient(horizontalColorDiff, verticalColorDiff),
-        color.a < 1.0 ? 0.0 : 1.0
+        tileColor.a < 1.0 ? 0.0 : 1.0
     );
 }
 
@@ -156,12 +157,17 @@ float4 NormalsLightGradientFancySky(float luma, float alpha)
     );
 }
 
-float NormalsMultiplier(float2 texCoord, float2 lightMapTexCoord)
+float NormalsMultiplier(
+    float2 tileCoord, 
+    float2 lightCoord,
+    float4 tileColor,
+    float3 lightColor
+)
 {
-    SamplingTransform samplingTransform = CalculateSamplingTransform(texCoord);
+    SamplingTransform samplingTransform = CalculateSamplingTransform(tileCoord);
     float2 diff = samplingTransform.TexelSize * NormalMapResolution;
     
-    float luma = Luma(tex2D(LightSampler, lightMapTexCoord).rgb);
+    float luma = Luma(lightColor);
     float2 lightGradient = NormalsLightGradient(luma);
     lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
     float lightGradientLength = length(lightGradient);
@@ -174,7 +180,9 @@ float NormalsMultiplier(float2 texCoord, float2 lightMapTexCoord)
     lightGradient /= lightGradientLength;
     lightGradientLength /= luma;
     
-    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(texCoord, diff);
+    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(
+        tileCoord, diff, tileColor
+    );
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     surfaceGradient = surfaceGradientLength == 0
@@ -190,14 +198,18 @@ float NormalsMultiplier(float2 texCoord, float2 lightMapTexCoord)
     );
 }
 
-float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
+float NormalsMultiplierFancySky(
+    float2 tileCoord, 
+    float2 lightCoord,
+    float4 tileColor,
+    float4 lightColor
+)
 {
-    SamplingTransform samplingTransform = CalculateSamplingTransform(texCoord);
+    SamplingTransform samplingTransform = CalculateSamplingTransform(tileCoord);
     float2 diff = samplingTransform.TexelSize * NormalMapResolution;
     
-    float4 light = tex2D(LightSampler, lightMapTexCoord);
-    float luma = Luma(light.rgb);
-    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, light.a);
+    float luma = Luma(lightColor.rgb);
+    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
     
     float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
     lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
@@ -216,7 +228,9 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
         skyLightGradientLength + length(lightAndSkyLightGradient.xy)
     );
     
-    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(texCoord, diff);
+    float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(
+        tileCoord, diff, tileColor
+    );
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     surfaceGradient = surfaceGradientLength == 0
@@ -234,225 +248,275 @@ float NormalsMultiplierFancySky(float2 texCoord, float2 lightMapTexCoord)
     );
 }
 
-float4 SmoothLightingColor(in GlowVertexShaderOutput input, float lightMult)
+float4 SmoothLightingColor(
+    GlowPixelShaderInput input,
+    float4 tileColor,
+    float3 lightColor,
+    float lightMult
+)
 {
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float3 lightColor =
-        input.Color.a
-        * lightMult
-        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
+    lightColor = input.Color.a * lightMult * saturate(lightColor);
     
-    float3 primary = lightColor * texColor.rgb;
+    float3 smoothColor = lightColor * tileColor.rgb;
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
-    float4 glow = input.Color * texColor;
-    float3 bright = max(primary, glow.rgb);
+    float4 glow = input.Color * tileColor;
+    float3 bright = max(smoothColor, glow.rgb);
     
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-        ? input.Color * texColor
+        ? input.Color * tileColor
         : float4(
-            lerp(primary.rgb, bright, step(2.0 / 255, selector)),
+            lerp(smoothColor.rgb, bright, step(2.0 / 255, selector)),
             glow.a
         );
 }
 
-float4 SmoothLightingColorDithered(in GlowVertexShaderOutput input, float lightMult)
+float4 SmoothLightingColorDithered(
+    GlowPixelShaderInput input,
+    float4 tileColor,
+    float3 lightColor,
+    float lightMult
+)
 {
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float3 lightColor =
-        input.Color.a
-        * lightMult
-        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
+    lightColor = input.Color.a * lightMult * saturate(lightColor);
     
-    float3 primary = Dithered(lightColor * texColor.rgb, input.Position);
+    float3 smoothColor = Dithered(input.Position, lightColor * tileColor.rgb);
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
-    float4 glow = input.Color * texColor;
-    float3 bright = max(primary, glow.rgb);
+    float4 glow = input.Color * tileColor;
+    float3 bright = max(smoothColor, glow.rgb);
     
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
-        ? input.Color * texColor
+        ? input.Color * tileColor
         : float4(
-            lerp(primary.rgb, bright, step(2.0 / 255, selector)),
+            lerp(smoothColor.rgb, bright, step(2.0 / 255, selector)),
             glow.a
         );
 }
 
-float4 SmoothLightingColorLightOnly(in VertexShaderOutput input, float lightMult)
+float4 SmoothLightingColorLightOnly(
+    PixelShaderInput input,
+    float4 tileColor,
+    float3 lightColor,
+    float lightMult
+)
 {
-    float alpha = tex2D(TextureSampler, input.TexCoord).a;
-    float3 lightColor =
-        input.Color.a
-        * lightMult
-        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
+    float alpha = tileColor.a;
+    lightColor = input.Color.a * lightMult * saturate(lightColor);
     
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * alpha
         : float4(lightColor, input.Color.a) * alpha;
 }
 
-float4 SmoothLightingColorLightOnlyDithered(in VertexShaderOutput input, float lightMult)
+float4 SmoothLightingColorDitheredLightOnly(
+    PixelShaderInput input,
+    float4 tileColor,
+    float3 lightColor,
+    float lightMult
+)
 {
-    float alpha = tex2D(TextureSampler, input.TexCoord).a;
-    float3 lightColor =
-        input.Color.a
-        * lightMult
-        * saturate(tex2D(LightSampler, input.LightMapTexCoord).rgb);
+    float alpha = tileColor.a;
+    lightColor = input.Color.a * lightMult * saturate(lightColor);
     
     float4 result = float4(lightColor, input.Color.a) * alpha;
-    result.rgb = Dithered(result.rgb, input.Position);
+    result.rgb = Dithered(input.Position, result.rgb);
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * alpha
         : result;
 }
 
-VertexShaderOutput SmoothLightingVS(in VertexShaderInput input)
+/* Vertex shaders ***********************************************************************/
+
+PixelShaderInput SmoothLighting_VS(VertexShaderInput input)
 {
-    VertexShaderOutput output;
+    PixelShaderInput output;
     
     output.Position = mul(input.Position, MatrixTransform);
     output.Color = input.Color;
-    output.TexCoord = input.TexCoord;
-    output.LightMapTexCoord = mul(input.Position, LightMapMatrixTransform);
+    output.TileTexCoord = input.TileTexCoord;
+    output.LightTexCoord = mul(output.Position, LightMapMatrixTransform);
     
     return output;
 }
 
-GlowVertexShaderOutput SmoothLightingGlowVS(in VertexShaderInput input)
+GlowPixelShaderInput SmoothLightingGlow_VS(VertexShaderInput input)
 {
-    GlowVertexShaderOutput output;
+    GlowPixelShaderInput output;
     
     output.Position = mul(input.Position, MatrixTransform);
     output.Color = input.Color;
-    output.TexCoord = input.TexCoord;
-    output.LightMapTexCoord = mul(input.Position, LightMapMatrixTransform);
+    output.TileTexCoord = input.TileTexCoord;
+    output.LightTexCoord = mul(output.Position, LightMapMatrixTransform);
     output.GlowTexCoord = float2(0.5, -0.5) * output.Position + 0.5;
     
     return output;
 }
 
-float4 SmoothPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    return SmoothLightingColor(input, 1);
-}
+/* Pixel shaders ************************************************************************/
 
-float4 SmoothDitheredPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    return SmoothLightingColorDithered(input, 1);
-}
-
-float4 NormalsPS(in VertexShaderOutput input) : COLOR0
-{
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor = input.Color;
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-
-    return lightColor * float4(mult.xxx, 1) * texColor;
-}
-
-float4 NormalsSmoothPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColor(input, mult);
-}
-
-float4 NormalsSmoothDitheredPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorDithered(input, mult);
-}
-
-float4 NormalsFancySkyPS(in VertexShaderOutput input) : COLOR0
-{
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-
-    return lightColor * float4(mult.xxx, 1) * texColor;
-}
-
-float4 NormalsFancySkySmoothPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColor(input, mult);
-}
-
-float4 NormalsFancySkySmoothDitheredPS(in GlowVertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorDithered(input, mult);
-}
-
-float4 NormalsLightOnlyPS(in VertexShaderOutput input) : COLOR0
-{
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor = input.Color;
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    
-    return lightColor * float4(mult.xxx, 1) * texColor.a;
-}
-
-float4 NormalsLightOnlySmoothPS(in VertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorLightOnly(input, mult);
-}
-
-float4 NormalsLightOnlySmoothDitheredPS(in VertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplier(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorLightOnlyDithered(input, mult);
-}
-
-float4 NormalsLightOnlyFancySkyPS(in VertexShaderOutput input) : COLOR0
-{
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    
-    return lightColor * float4(mult.xxx, 1) * texColor.a;
-}
-
-float4 NormalsLightOnlyFancySkySmoothPS(in VertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorLightOnly(input, mult);
-}
-
-float4 NormalsLightOnlyFancySkySmoothDitheredPS(in VertexShaderOutput input) : COLOR0
-{
-    float mult = NormalsMultiplierFancySky(input.TexCoord, input.LightMapTexCoord);
-    return SmoothLightingColorLightOnlyDithered(input, mult);
-}
-
-float4 LightOnlyPS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
+float4 LightOnly_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 {
     return color * tex2D(TextureSampler, texCoord).a;
 }
 
-float4 LightOnlySmoothPS(in VertexShaderOutput input) : COLOR0
+float4 Normals_PS(PixelShaderInput input) : COLOR0
 {
-    return SmoothLightingColorLightOnly(input, 1);
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+
+    return lightColor * float4(mult.xxx, 1) * tileColor;
 }
 
-float4 LightOnlySmoothDitheredPS(in VertexShaderOutput input) : COLOR0
+float4 NormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 {
-    return SmoothLightingColorLightOnlyDithered(input, 1);
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+    
+    return lightColor * float4(mult.xxx, 1) * tileColor.a;
 }
 
-technique Smooth
+float4 NormalsFancySky_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+
+    return lightColor * float4(mult.xxx, 1) * tileColor;
+}
+
+float4 NormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = input.Color;
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+    
+    return lightColor * float4(mult.xxx, 1) * tileColor.a;
+}
+
+float4 Smooth_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    return SmoothLightingColor(input, tileColor, lightColor.rgb, 1);
+}
+
+float4 SmoothLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    return SmoothLightingColorLightOnly(input, tileColor, lightColor.rgb, 1);
+}
+
+float4 SmoothNormals_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+    return SmoothLightingColor(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothNormalsLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+    return SmoothLightingColorLightOnly(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothNormalsFancySky_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+    return SmoothLightingColor(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothNormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+    return SmoothLightingColorLightOnly(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothDithered_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    return SmoothLightingColorDithered(input, tileColor, lightColor.rgb, 1);
+}
+
+float4 SmoothDitheredLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    return SmoothLightingColorDitheredLightOnly(input, tileColor, lightColor.rgb, 1);
+}
+
+float4 SmoothDitheredNormals_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+    return SmoothLightingColorDithered(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothDitheredNormalsLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor.rgb
+    );
+    return SmoothLightingColorDitheredLightOnly(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothDitheredNormalsFancySky_PS(GlowPixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+    return SmoothLightingColorDithered(input, tileColor, lightColor.rgb, mult);
+}
+
+float4 SmoothDitheredNormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, input.LightTexCoord, tileColor, lightColor
+    );
+    return SmoothLightingColorDitheredLightOnly(input, tileColor, lightColor.rgb, mult);
+}
+
+/* Techniques ***************************************************************************/
+
+technique LightOnly
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 SmoothPS();
-    }
-}
-
-technique SmoothDithered
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 SmoothDitheredPS();
+        PixelShader = compile ps_3_0 LightOnly_PS();
     }
 }
 
@@ -460,53 +524,8 @@ technique Normals
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsPS();
-    }
-}
-
-technique NormalsSmooth
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 NormalsSmoothPS();
-    }
-}
-
-technique NormalsSmoothDithered
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 NormalsSmoothDitheredPS();
-    }
-}
-
-technique NormalsFancySky
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsFancySkyPS();
-    }
-}
-
-technique NormalsFancySkySmooth
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 NormalsFancySkySmoothPS();
-    }
-}
-
-technique NormalsFancySkySmoothDithered
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SmoothLightingGlowVS();
-        PixelShader = compile ps_3_0 NormalsFancySkySmoothDitheredPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 Normals_PS();
     }
 }
 
@@ -514,78 +533,132 @@ technique NormalsLightOnly
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlyPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 NormalsLightOnly_PS();
     }
 }
 
-technique NormalsLightOnlySmooth
+technique NormalsFancySky
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlySmoothPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 NormalsFancySky_PS();
     }
 }
 
-technique NormalsLightOnlySmoothDithered
+technique NormalsFancySkyLightOnly
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlySmoothDitheredPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 NormalsFancySkyLightOnly_PS();
     }
 }
 
-technique NormalsLightOnlyFancySky
+technique Smooth
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlyFancySkyPS();
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 Smooth_PS();
     }
 }
 
-technique NormalsLightOnlyFancySkySmooth
+technique SmoothLightOnly
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlyFancySkySmoothPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothLightOnly_PS();
     }
 }
 
-technique NormalsLightOnlyFancySkySmoothDithered
+technique SmoothNormals
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 NormalsLightOnlyFancySkySmoothDitheredPS();
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 SmoothNormals_PS();
     }
 }
 
-technique LightOnly
+technique SmoothNormalsLightOnly
 {
     pass Pass1
     {
-        PixelShader = compile ps_3_0 LightOnlyPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothNormalsLightOnly_PS();
     }
 }
 
-technique LightOnlySmooth
+technique SmoothNormalsFancySky
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 LightOnlySmoothPS();
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 SmoothNormalsFancySky_PS();
     }
 }
 
-technique LightOnlySmoothDithered
+technique SmoothNormalsFancySkyLightOnly
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLightingVS();
-        PixelShader = compile ps_3_0 LightOnlySmoothDitheredPS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothNormalsFancySkyLightOnly_PS();
+    }
+}
+
+technique SmoothDithered
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 SmoothDithered_PS();
+    }
+}
+
+technique SmoothDitheredLightOnly
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothDitheredLightOnly_PS();
+    }
+}
+
+technique SmoothDitheredNormals
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 SmoothDitheredNormals_PS();
+    }
+}
+
+technique SmoothDitheredNormalsLightOnly
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothDitheredNormalsLightOnly_PS();
+    }
+}
+
+technique SmoothDitheredNormalsFancySky
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLightingGlow_VS();
+        PixelShader = compile ps_3_0 SmoothDitheredNormalsFancySky_PS();
+    }
+}
+technique SmoothDitheredNormalsFancySkyLightOnly
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 SmoothDitheredNormalsFancySkyLightOnly_PS();
     }
 }

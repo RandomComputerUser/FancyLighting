@@ -27,6 +27,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Made the *Bicubic* render mode a little brighter
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
+- Tweaked the appearance of ambient occlusion in some cases
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
 - Added the *Neutral (LMS)* TMO, which is the new default

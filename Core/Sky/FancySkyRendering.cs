@@ -1,19 +1,15 @@
-﻿#region
-
-using FancyLighting.ColorProfiles.SkyColor;
+﻿using FancyLighting.ColorProfiles.SkyColor;
 using ReLogic.Content;
-
-#endregion
 
 namespace FancyLighting.Core.Sky;
 
 public sealed class FancySkyRendering
 {
-    private Texture2D _ditherNoise;
+    private readonly Texture2D _ditherNoise;
 
-    private Shader _skyShader;
-    private Shader _skyDitheredShader;
-    private Shader _sunShader;
+    private readonly FullscreenEffect _skyShader;
+    private readonly FullscreenEffect _skyDitheredShader;
+    private readonly FancyEffect _sunShader;
 
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
@@ -69,11 +65,6 @@ public sealed class FancySkyRendering
     internal void Unload()
     {
         PreDrawSky = null;
-        _ditherNoise?.Dispose();
-        _ditherNoise = null;
-        EffectLoader.UnloadEffect(ref _skyShader);
-        EffectLoader.UnloadEffect(ref _skyDitheredShader);
-        EffectLoader.UnloadEffect(ref _sunShader);
     }
 
     // Draw sky
@@ -101,9 +92,9 @@ public sealed class FancySkyRendering
             ? PostProcessing.DefaultGamma
             : PostProcessing.ContentGamma();
 
-        var samplerState = MainGraphics.GetSamplerState();
-        var transformMatrix = MainGraphics.GetTransformMatrix();
-        var rasterizerState = MainGraphics.GetRasterizerState();
+        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
+        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
+        var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
         var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
@@ -238,10 +229,10 @@ public sealed class FancySkyRendering
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
 
-        var samplerState = MainGraphics.GetSamplerState();
-        var transform = MainGraphics.GetTransformMatrix();
+        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
+        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
+        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         var origTransform = transform;
-        var rasterizerState = MainGraphics.GetRasterizerState();
         Main.spriteBatch.End();
 
         if (!Main.gameMenu && !FancyLightingMod._isGameInCameraMode)

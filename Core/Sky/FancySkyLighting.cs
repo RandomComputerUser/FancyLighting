@@ -1,8 +1,4 @@
-﻿#region
-
-using Terraria.Graphics.Light;
-
-#endregion
+﻿using Terraria.Graphics.Light;
 
 namespace FancyLighting.Core.Sky;
 

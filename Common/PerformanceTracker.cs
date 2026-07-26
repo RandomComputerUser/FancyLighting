@@ -1,8 +1,4 @@
-﻿#region
-
-using System.Diagnostics;
-
-#endregion
+﻿using System.Diagnostics;
 
 namespace FancyLighting.Common;
 

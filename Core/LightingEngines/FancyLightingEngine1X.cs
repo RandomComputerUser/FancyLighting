@@ -1,9 +1,5 @@
-﻿#region
-
-using Terraria.Graphics.Light;
+﻿using Terraria.Graphics.Light;
 using Vec3 = System.Numerics.Vector3;
-
-#endregion
 
 namespace FancyLighting.Core.LightingEngines;
 

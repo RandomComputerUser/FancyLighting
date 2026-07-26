@@ -96,7 +96,7 @@ float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
     );
 }
 
-float4 CloudShadingColor(in VertexShaderOutput input, bool wrap)
+float4 CloudShadingColor(VertexShaderOutput input, bool wrap)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
     
@@ -110,12 +110,12 @@ float4 CloudShadingColor(in VertexShaderOutput input, bool wrap)
     );
 }
 
-float4 CloudShadingPS(in VertexShaderOutput input) : COLOR0
+float4 CloudShading_PS(VertexShaderOutput input) : COLOR0
 {
     return CloudShadingColor(input, false);
 }
 
-float4 CloudShadingWrapPS(in VertexShaderOutput input) : COLOR0
+float4 CloudShadingWrap_PS(VertexShaderOutput input) : COLOR0
 {
     return CloudShadingColor(input, true);
 }
@@ -124,7 +124,7 @@ technique CloudShading
 {
     pass Pass1
     {
-        PixelShader = compile ps_3_0 CloudShadingPS();
+        PixelShader = compile ps_3_0 CloudShading_PS();
     }
 }
 
@@ -132,6 +132,6 @@ technique CloudShadingWrap
 {
     pass Pass1
     {
-        PixelShader = compile ps_3_0 CloudShadingWrapPS();
+        PixelShader = compile ps_3_0 CloudShadingWrap_PS();
     }
 }

@@ -22,16 +22,14 @@ float4 Cubic(float v)
 
 float3 BicubicColor(float2 coords)
 {
-    float2 texCoords = LightMapSize * coords - 0.5;
-
-    float2 fxy = frac(texCoords);
-    texCoords -= fxy;
+    float2 fxy = frac(coords);
+    coords -= fxy;
     fxy *= CUBIC_MULT;
 
     float4 xcubic = Cubic(fxy.x);
     float4 ycubic = Cubic(fxy.y);
 
-    float4 c = texCoords.xxyy + float2(-0.5, 1.5).xyxy;
+    float4 c = coords.xxyy + float2(-0.5, 1.5).xyxy;
 
     float4 s = float4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
     float4 offset = c + float4(xcubic.yw, ycubic.yw) / s;
@@ -51,16 +49,14 @@ float3 BicubicColor(float2 coords)
 
 float4 BicubicColorWithAlpha(float2 coords)
 {
-    float2 texCoords = LightMapSize * coords - 0.5;
-
-    float2 fxy = frac(texCoords);
-    texCoords -= fxy;
+    float2 fxy = frac(coords);
+    coords -= fxy;
     fxy *= CUBIC_MULT;
 
     float4 xcubic = Cubic(fxy.x);
     float4 ycubic = Cubic(fxy.y);
 
-    float4 c = texCoords.xxyy + float2(-0.5, 1.5).xyxy;
+    float4 c = coords.xxyy + float2(-0.5, 1.5).xyxy;
 
     float4 s = float4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
     float4 offset = c + float4(xcubic.yw, ycubic.yw) / s;
@@ -78,14 +74,25 @@ float4 BicubicColorWithAlpha(float2 coords)
     return lerp(lerp(sample3, sample2, sx), lerp(sample1, sample0, sx), sy);
 }
 
-float4 BicubicFiltering(float2 coords : TEXCOORD0) : COLOR0
+void Bicubic_VS(
+    float4 position : POSITION0,
+    float2 texCoord : TEXCOORD0,
+    out float4 screenPos : SV_Position,
+    out float2 coords : TEXCOORD0
+)
+{
+    screenPos = position;
+    coords = LightMapSize * texCoord - 0.5;
+}
+
+float4 BicubicFiltering_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float3 color = BicubicColor(coords);
     
     return float4(max(color, 0), 1);
 }
 
-float4 BicubicFilteringWithAlpha(float2 coords : TEXCOORD0) : COLOR0
+float4 BicubicFilteringWithAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = BicubicColorWithAlpha(coords);
     
@@ -93,15 +100,20 @@ float4 BicubicFilteringWithAlpha(float2 coords : TEXCOORD0) : COLOR0
 }
 
 
-technique Technique1
+technique BicubicFiltering
 {
-    pass BicubicFiltering
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 BicubicFiltering();
+        VertexShader = compile vs_3_0 Bicubic_VS();
+        PixelShader = compile ps_3_0 BicubicFiltering_PS();
     }
-    
+}
+
+technique Pass1
+{
     pass BicubicFilteringWithAlpha
     {
-        PixelShader = compile ps_3_0 BicubicFilteringWithAlpha();
+        VertexShader = compile vs_3_0 Bicubic_VS();
+        PixelShader = compile ps_3_0 BicubicFilteringWithAlpha_PS();
     }
 }

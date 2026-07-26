@@ -1,9 +1,5 @@
-﻿#region
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Terraria.ModLoader.Config;
-
-#endregion
 
 namespace FancyLighting.Config.Configs;
 

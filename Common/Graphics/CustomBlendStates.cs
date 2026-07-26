@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Common.Graphics;
 
-internal static class BlendStates
+internal static class CustomBlendStates
 {
     public static BlendState Multiply { get; private set; } =
         new()
@@ -32,11 +32,22 @@ internal static class BlendStates
             AlphaDestinationBlend = Blend.One,
             AlphaSourceBlend = Blend.Zero,
         };
+    public static BlendState TrueAdditive { get; private set; } =
+        new()
+        {
+            ColorBlendFunction = BlendFunction.Add,
+            AlphaBlendFunction = BlendFunction.Add,
+            ColorSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            AlphaSourceBlend = Blend.One,
+            AlphaDestinationBlend = Blend.One,
+        };
 
     internal static void Unload()
     {
         Multiply = null;
         MultiplyColor = null;
         MultiplyColorByAlpha = null;
+        TrueAdditive = null;
     }
 }

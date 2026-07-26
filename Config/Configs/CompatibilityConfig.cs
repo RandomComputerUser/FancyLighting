@@ -1,9 +1,5 @@
-﻿#region
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Terraria.ModLoader.Config;
-
-#endregion
 
 namespace FancyLighting.Config.Configs;
 
@@ -19,10 +15,11 @@ public sealed class CompatibilityConfig : ModConfig
         ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
     }
 
-    [Header("SmoothLighting")]
-    [DefaultValue(DefaultOptions.DisableGlowEffectOptimizations)]
-    public bool DisableGlowEffectOptimizations { get; set; }
+    [Header("General")]
+    [DefaultValue(DefaultOptions.DisableRenderingOptimizations)]
+    public bool DisableRenderingOptimizations { get; set; }
 
+    [Header("SmoothLighting")]
     [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
     public bool DisableHdrDuringBossFights { get; set; }
 

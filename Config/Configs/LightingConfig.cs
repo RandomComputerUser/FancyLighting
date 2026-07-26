@@ -1,11 +1,7 @@
-﻿#region
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using FancyLighting.Config.Enums;
 using Newtonsoft.Json;
 using Terraria.ModLoader.Config;
-
-#endregion
 
 namespace FancyLighting.Config.Configs;
 

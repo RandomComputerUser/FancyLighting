@@ -1,8 +1,4 @@
-﻿#region
-
-using FancyLighting.Core.Sky;
-
-#endregion
+﻿using FancyLighting.Core.Sky;
 
 namespace FancyLighting.ModCompatibility;
 
