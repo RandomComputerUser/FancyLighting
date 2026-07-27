@@ -54,8 +54,8 @@ public sealed class FancySkyColors
     )
     {
         if (
-            LightingConfig.Instance?.FancySkyRenderingEnabled() is true
-            || LightingConfig.Instance?.FancySkyColorsEnabled() is true
+            LightingConfig.Instance.FancySkyRenderingEnabled()
+            || LightingConfig.Instance.FancySkyColorsEnabled()
         )
         {
             // night color is normally overridden on main menu
@@ -100,7 +100,7 @@ public sealed class FancySkyColors
 
     private static void SetBaseSkyColor(ref Color bgColor)
     {
-        if (LightingConfig.Instance?.FancySkyColorsEnabled() is not true)
+        if (!LightingConfig.Instance.FancySkyColorsEnabled())
         {
             return;
         }
@@ -114,10 +114,7 @@ public sealed class FancySkyColors
 
     public Vector3 CalculateSkyColor(double hour)
     {
-        if (
-            LightingConfig.Instance?.FancySkyColorsEnabled() is not true
-            || Preset is null
-        )
+        if (!LightingConfig.Instance.FancySkyColorsEnabled() || Preset is null)
         {
             return ModContent.GetInstance<VanillaSkyLightColors>().GetColor(hour);
         }
@@ -138,7 +135,7 @@ public sealed class FancySkyColors
     internal void DrawColorProfiles()
     {
         if (
-            DeveloperConfig.Instance?.ShowFancySkyColorGradients is not true
+            !DeveloperConfig.Instance.ShowFancySkyColorGradients
             || Main.gameMenu
             || Main.gamePaused
             || Main.mapFullscreen

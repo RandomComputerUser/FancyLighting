@@ -49,12 +49,16 @@ internal static class Blitter
         FullscreenEffect effect = null,
         BlendState blendState = null,
         SamplerState samplerState = null,
-        Color? clearColor = null
+        Color? clearColor = null,
+        bool setTarget = true
     )
     {
         var device = Main.graphics.GraphicsDevice;
 
-        device.SetRenderTarget(dst);
+        if (setTarget)
+        {
+            device.SetRenderTarget(dst);
+        }
         if (clearColor.HasValue)
         {
             device.Clear(clearColor.Value);

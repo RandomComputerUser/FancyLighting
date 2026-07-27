@@ -21,6 +21,10 @@ public sealed class PostProcessing
     private readonly FullscreenEffect _brightenEffect;
     private readonly FullscreenEffect _gammaToLinearNoAlphaEffect;
     private readonly FullscreenEffect _gammaToLinearEffect;
+    private readonly FullscreenEffect _combineLayersNoAlphaEffect;
+    private readonly FullscreenEffect _combineLayersEffect;
+    private readonly FullscreenEffect _combineLayersGammaToLinearNoAlphaEffect;
+    private readonly FullscreenEffect _combineLayersGammaToLinearEffect;
     private readonly FullscreenEffect _gammaToGammaDitherNoAlphaEffect;
     private readonly FullscreenEffect _gammaToGammaDitherEffect;
     private readonly FullscreenEffect _gammaToGammaNoDitherNoAlphaEffect;
@@ -52,6 +56,13 @@ public sealed class PostProcessing
         _brightenEffect = new(effect, "Brighten");
         _gammaToLinearNoAlphaEffect = new(effect, "GammaToLinearNoAlpha");
         _gammaToLinearEffect = new(effect, "GammaToLinear");
+        _combineLayersNoAlphaEffect = new(effect, "CombineLayersNoAlpha");
+        _combineLayersEffect = new(effect, "CombineLayers");
+        _combineLayersGammaToLinearNoAlphaEffect = new(
+            effect,
+            "CombineLayersGammaToLinearNoAlpha"
+        );
+        _combineLayersGammaToLinearEffect = new(effect, "CombineLayersGammaToLinear");
         _gammaToGammaDitherNoAlphaEffect = new(effect, "GammaToGammaDitherNoAlpha");
         _gammaToGammaDitherEffect = new(effect, "GammaToGammaDither");
         _gammaToGammaNoDitherNoAlphaEffect = new(effect, "GammaToGammaNoDitherNoAlpha");
@@ -83,15 +94,13 @@ public sealed class PostProcessing
     }
 
     internal static float ContentGamma() =>
-        LightingConfig.Instance?.HiDefFeaturesEnabled() is true
-            ? HiDefGamma
-            : DefaultGamma;
+        LightingConfig.Instance.HiDefFeaturesEnabled() ? HiDefGamma : DefaultGamma;
 
     internal static float CalculateHiDefBackgroundBrightness() =>
         HiDefBrightnessScale
         * HiDefBackgroundBrightnessMult
         * (
-            InUnderworld() && !FancyLightingMod._inCameraMode
+            InUnderworld() && !MainGraphics.InCameraMode
                 ? UnderworldBackgroundBrightnessMult
                 : 1f
         )
@@ -136,25 +145,24 @@ public sealed class PostProcessing
     }
 
     internal void ApplyPostProcessing(
-        RenderTarget2D target,
-        RenderTarget2D tmpTarget,
+        ref RenderTarget2D screenTarget,
+        ref RenderTarget2D screenTargetSwap,
         RenderTarget2D backgroundTarget,
         SmoothLighting smoothLightingInstance
     )
     {
-        var currTarget = target;
-        var nextTarget = tmpTarget;
+        var currTarget = screenTarget;
+        var nextTarget = screenTargetSwap;
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
         var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfField;
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
         var separateBackground = backgroundTarget is not null && !hdrCompatBlending;
-        var cameraMode = FancyLightingMod._inCameraMode;
-        var gameCameraMode = FancyLightingMod._isGameInCameraMode;
+        var cameraMode = MainGraphics.InCameraMode;
         var customGamma =
-            (!gameCameraMode && PreferencesConfig.Instance.UseCustomGamma()) || hiDef;
-        var srgb = !gameCameraMode && PreferencesConfig.Instance.UseSrgb;
+            (!cameraMode && PreferencesConfig.Instance.UseCustomGamma()) || hiDef;
+        var srgb = !cameraMode && PreferencesConfig.Instance.UseSrgb;
         var gamma = ContentGamma();
         var tmo = PreferencesConfig.Instance.ToneMappingOperator;
         var disableDither =
@@ -166,47 +174,18 @@ public sealed class PostProcessing
         )
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
-            if (cameraMode)
-            {
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-
-                smoothLightingInstance.GetCameraModeRenderTarget(
-                    FancyLightingMod._cameraModeTarget
-                );
-                smoothLightingInstance.DrawSmoothLightingCameraMode(
-                    currTarget,
-                    nextTarget,
-                    false,
-                    false,
-                    true,
-                    true
-                );
-            }
-            else
-            {
-                smoothLightingInstance.DrawSmoothLighting(
-                    currTarget,
-                    nextTarget,
-                    false,
-                    true,
-                    true
-                );
-            }
+            smoothLightingInstance.DrawSmoothLighting(
+                currTarget,
+                nextTarget,
+                background: false,
+                disableNormalMaps: true,
+                doScaling: true,
+                overbrightPass: true
+            );
             (currTarget, nextTarget) = (nextTarget, currTarget);
 
             if (hiDef)
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Immediate,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
-
                 var exposure = 1f / HiDefBrightnessScale;
                 exposure = MathF.Pow(exposure, gamma);
                 exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
@@ -221,18 +200,23 @@ public sealed class PostProcessing
                     // The brightness of the background isn't normally affected by
                     // Lighting.GlobalBrightness (which is reduced when the player
                     // has the Darkness debuff), but I've decided to change that
-                    var backgroundBrightness = ColorUtils.GammaToLinear(
-                        CalculateHiDefBackgroundBrightness()
-                    );
-                    (gameCameraMode ? _gammaToLinearEffect : _gammaToLinearNoAlphaEffect)
-                        .SetParameter("Exposure", exposure * backgroundBrightness)
-                        .SetParameter("GammaRatio", gamma)
-                        .Apply();
-                    Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
+                    var backgroundExposure =
+                        exposure
+                        * ColorUtils.GammaToLinear(CalculateHiDefBackgroundBrightness());
 
                     if (doDepthOfField)
                     {
-                        Main.spriteBatch.End();
+                        Blitter.Blit(
+                            backgroundTarget,
+                            nextTarget,
+                            (
+                                cameraMode
+                                    ? _gammaToLinearEffect
+                                    : _gammaToLinearNoAlphaEffect
+                            )
+                                .SetParameter("Exposure", backgroundExposure)
+                                .SetParameter("GammaRatio", gamma)
+                        );
 
                         _blurRenderer.RenderBlur(
                             nextTarget,
@@ -241,44 +225,67 @@ public sealed class PostProcessing
                             false
                         );
 
-                        Main.spriteBatch.Begin(
-                            SpriteSortMode.Immediate,
-                            BlendState.AlphaBlend,
-                            SamplerState.PointClamp,
-                            DepthStencilState.None,
-                            RasterizerState.CullNone
+                        Blitter.Blit(
+                            currTarget,
+                            nextTarget,
+                            (
+                                cameraMode
+                                    ? _gammaToLinearEffect
+                                    : _gammaToLinearNoAlphaEffect
+                            )
+                                .SetParameter("Exposure", exposure)
+                                .SetParameter("GammaRatio", gamma),
+                            blendState: BlendState.AlphaBlend,
+                            setTarget: false
                         );
                     }
+                    else
+                    {
+                        MainGraphics.ResetSavedTextures();
+                        MainGraphics.SetTexture(
+                            4,
+                            backgroundTarget,
+                            SamplerState.PointClamp
+                        );
+                        Blitter.Blit(
+                            currTarget,
+                            nextTarget,
+                            (
+                                cameraMode
+                                    ? _combineLayersGammaToLinearEffect
+                                    : _combineLayersGammaToLinearNoAlphaEffect
+                            )
+                                .SetParameter("Exposure", exposure)
+                                .SetParameter("BackgroundExposure", backgroundExposure)
+                                .SetParameter("GammaRatio", gamma)
+                        );
+                        MainGraphics.RestoreSavedTextures();
+                    }
                 }
-
-                (
-                    separateBackground || gameCameraMode
-                        ? _gammaToLinearEffect
-                        : _gammaToLinearNoAlphaEffect
-                )
-                    .SetParameter("Exposure", exposure)
-                    .SetParameter("GammaRatio", gamma)
-                    .Apply();
-                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
+                else
+                {
+                    Blitter.Blit(
+                        currTarget,
+                        nextTarget,
+                        (cameraMode ? _gammaToLinearEffect : _gammaToLinearNoAlphaEffect)
+                            .SetParameter("Exposure", exposure)
+                            .SetParameter("GammaRatio", gamma)
+                    );
+                }
                 gamma = 1f;
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
             else if (separateBackground)
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Deferred,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
+                MainGraphics.ResetSavedTextures();
+                MainGraphics.SetTexture(4, backgroundTarget, SamplerState.PointClamp);
+                Blitter.Blit(
+                    currTarget,
+                    nextTarget,
+                    cameraMode ? _combineLayersEffect : _combineLayersNoAlphaEffect
                 );
-                Main.spriteBatch.Draw(backgroundTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-                Main.spriteBatch.End();
+                MainGraphics.RestoreSavedTextures();
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
@@ -303,16 +310,7 @@ public sealed class PostProcessing
                     true
                 );
 
-                Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-                Main.spriteBatch.Begin(
-                    SpriteSortMode.Immediate,
-                    BlendState.Opaque,
-                    SamplerState.PointClamp,
-                    DepthStencilState.None,
-                    RasterizerState.CullNone
-                );
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);
-
                 MainGraphics.ResetSavedTextures();
                 MainGraphics.SetTexture(4, bloomTarget, SamplerState.LinearClamp);
                 Blitter.Blit(currTarget, nextTarget, _bloomCompositeEffect);
@@ -361,7 +359,7 @@ public sealed class PostProcessing
 
         if (customGamma || srgb)
         {
-            var outputGamma = gameCameraMode
+            var outputGamma = cameraMode
                 ? DefaultGamma
                 : PreferencesConfig.Instance.OutputGamma();
             if (!srgb)
@@ -376,10 +374,10 @@ public sealed class PostProcessing
                     ? _gammaToSrgbNoDitherNoAlphaEffect
                     : _gammaToSrgbDitherNoAlphaEffect
                 : disableDither
-                    ? gameCameraMode
+                    ? cameraMode
                         ? _gammaToGammaNoDitherEffect
                         : _gammaToGammaNoDitherNoAlphaEffect
-                    : gameCameraMode
+                    : cameraMode
                         ? _gammaToGammaDitherEffect
                         : _gammaToGammaDitherNoAlphaEffect;
             effect
@@ -397,20 +395,9 @@ public sealed class PostProcessing
             (currTarget, nextTarget) = (nextTarget, currTarget);
         }
 
-        if (currTarget == target)
+        if (ReferenceEquals(currTarget, screenTargetSwap))
         {
-            return;
+            Blitter.BlitOrSwap(ref screenTargetSwap, ref screenTarget);
         }
-
-        Main.graphics.GraphicsDevice.SetRenderTarget(nextTarget);
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.Opaque,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-        Main.spriteBatch.Draw(currTarget, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
     }
 }

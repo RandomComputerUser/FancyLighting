@@ -75,7 +75,7 @@ public sealed class FancySkyRendering
         bool artificial
     )
     {
-        if (LightingConfig.Instance?.FancySkyRenderingEnabled() is not true || artificial)
+        if (!LightingConfig.Instance.FancySkyRenderingEnabled() || artificial)
         {
             orig(self, sceneArea, artificial);
             return;

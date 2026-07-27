@@ -1,4 +1,5 @@
 sampler ScreenSampler : register(s0);
+sampler BackgroundSampler : register(s0);
 sampler DitherSampler : register(s4);
 sampler BloomBlurSampler : register(s4);
 
@@ -8,6 +9,7 @@ float BrightnessMult;
 float GammaRatio;
 float OutputGamma;
 float Exposure;
+float BackgroundExposure;
 float BloomStrength;
 
 float4 VibranceBoostParams1;
@@ -116,29 +118,64 @@ void Blit_VS(
 
 float4 Brighten_PS(float2 coords : TEXCOORD0) : COLOR0
 {
-    return BrightnessMult * tex2D(ScreenSampler, coords);
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb *= BrightnessMult;
+    return color;
+}
+
+float3 GammaToLinearColor(float3 color, float exposure)
+{
+    color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
+    color.rgb = pow(color.rgb, GammaRatio);
+    color.rgb = min(color.rgb, 10000); // prevent infinity
+    color.rgb *= exposure;
+    return color;
 }
 
 float4 GammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
-    color.rgb = pow(color.rgb, GammaRatio);
-    color.rgb = min(color.rgb, 10000); // prevent infinity
-    color.rgb *= Exposure;
-    color.a = 1;
-    return color;
+    color.rgb = GammaToLinearColor(color.rgb, Exposure);
+    return float4(color.rgb, 1);
 }
 
 float4 GammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
-    color.a = saturate(color.a);
-    color.rgb = pow(color.rgb, GammaRatio);
-    color.rgb = min(color.rgb, 10000); // prevent infinity
-    color.rgb *= Exposure;
+    color.rgb = GammaToLinearColor(color.rgb, Exposure);
     return color;
+}
+
+float4 CombineLayersNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 foregroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    return float4((1 - foregroundColor.a) * backgroundColor.rgb + foregroundColor.rgb, 1);
+}
+
+float4 CombineLayers_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 foregroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
+}
+
+float4 CombineLayersGammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 foregroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
+    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
+    return float4((1 - foregroundColor.a) * backgroundColor.rgb + foregroundColor.rgb, 1);
+}
+
+float4 CombineLayersGammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 foregroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
+    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
+    return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
 }
 
 float4 GammaToGammaDitherNoAlpha_PS(
@@ -146,8 +183,8 @@ float4 GammaToGammaDitherNoAlpha_PS(
 ) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-
-    return float4(Dither(pow(color.rgb, GammaRatio), position), 1);
+    color.rgb = Dither(pow(color.rgb, GammaRatio), position);
+    return float4(color.rgb, 1);
 }
 
 float4 GammaToGammaDither_PS(
@@ -155,22 +192,20 @@ float4 GammaToGammaDither_PS(
 ) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    
-    color.rgb = pow(color.rgb, GammaRatio);
-    return float4(Dither(color.rgb, position), color.a);
+    color.rgb = Dither(pow(color.rgb, GammaRatio), position);
+    return color;
 }
 
 float4 GammaToGammaNoDitherNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-
-    return float4(pow(color.rgb, GammaRatio), 1);
+    color.rgb = pow(color.rgb, GammaRatio);
+    return float4(color.rgb, 1);
 }
 
 float4 GammaToGammaNoDither_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-
     color.rgb = pow(color.rgb, GammaRatio);
     return color;
 }
@@ -180,20 +215,15 @@ float4 GammaToSrgbDitherNoAlpha_PS(
 ) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    
-    return float4(
-        LinearToSrgb(
-            pow(color.rgb, GammaRatio)
-        ) + DitherNoise(position),
-        1
-    );
+    color.rgb = LinearToSrgb(pow(color.rgb, GammaRatio)) + DitherNoise(position);
+    return float4(color.rgb, 1);
 }
 
 float4 GammaToSrgbNoDitherNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    
-    return float4(LinearToSrgb(pow(color.rgb, GammaRatio)), 1);
+    color.rgb = LinearToSrgb(pow(color.rgb, GammaRatio));
+    return float4(color.rgb, 1);
 }
 
 float4 BloomComposite_PS(float2 coords : TEXCOORD0) : COLOR0
@@ -343,6 +373,42 @@ technique GammaToLinear
     {
         VertexShader = compile vs_3_0 Blit_VS();
         PixelShader = compile ps_3_0 GammaToLinear_PS();
+    }
+}
+
+technique CombineLayersNoAlpha
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 CombineLayersNoAlpha_PS();
+    }
+}
+
+technique CombineLayers
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 CombineLayers_PS();
+    }
+}
+
+technique CombineLayersGammaToLinearNoAlpha
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 CombineLayersGammaToLinearNoAlpha_PS();
+    }
+}
+
+technique CombineLayersGammaToLinear
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 CombineLayersGammaToLinear_PS();
     }
 }
 

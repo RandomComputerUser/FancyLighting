@@ -4,20 +4,14 @@ internal class FancyEffect
 {
     public Effect Effect { get; private init; }
 
-    public EffectTechnique Technique
-    {
-        get
-        {
-            var technique = SettingsSystem._lightOnly
-                ? SettingsSystem._hiDef
-                    ? _lightOnlyHiDefTechnique
-                    : _lightOnlyTechnique
-                : SettingsSystem._hiDef
-                    ? _hiDefTechnique
-                    : _baseTechnique;
-            return technique ?? _baseTechnique;
-        }
-    }
+    public EffectTechnique Technique =>
+        SettingsSystem._lightOnly
+            ? SettingsSystem._hiDef
+                ? _lightOnlyHiDefTechnique
+                : _lightOnlyTechnique
+            : SettingsSystem._hiDef
+                ? _hiDefTechnique
+                : _baseTechnique;
 
     private readonly EffectTechnique _baseTechnique;
     private readonly EffectTechnique _hiDefTechnique;
@@ -33,20 +27,26 @@ internal class FancyEffect
         Effect = effect;
 
         _baseTechnique = effect.Techniques[techniqueName];
-        if ((features & EffectFeatures.HiDef) != 0)
-        {
-            _hiDefTechnique = effect.Techniques[techniqueName + "HiDef"];
-        }
-        if ((features & EffectFeatures.LightOnly) != 0)
-        {
-            _lightOnlyTechnique = effect.Techniques[techniqueName + "LightOnly"];
-        }
         if ((features & EffectFeatures.LightOnlyHiDef) != 0)
         {
             _lightOnlyHiDefTechnique = effect.Techniques[
                 techniqueName + "LightOnlyHiDef"
             ];
         }
+        if ((features & EffectFeatures.LightOnly) != 0)
+        {
+            _lightOnlyTechnique = effect.Techniques[techniqueName + "LightOnly"];
+            _lightOnlyHiDefTechnique ??= _lightOnlyTechnique;
+        }
+        if ((features & EffectFeatures.HiDef) != 0)
+        {
+            _hiDefTechnique = effect.Techniques[techniqueName + "HiDef"];
+            _lightOnlyHiDefTechnique ??= _hiDefTechnique;
+        }
+
+        _hiDefTechnique ??= _baseTechnique;
+        _lightOnlyTechnique ??= _baseTechnique;
+        _lightOnlyHiDefTechnique ??= _baseTechnique;
     }
 
     public EffectTechnique ApplyTechnique()

@@ -3,12 +3,10 @@ author = Rex
 version = 1.2.0
 side = Client
 homepage = https://github.com/RandomComputerUser/FancyLighting
-buildIgnore = *.html, *.js, *.md, *.py, *.sln.DotSettings.user, description_workshop.txt, icon_workshop.png, obj/*, packages/*, Properties/*
+buildIgnore = *.html, *.js, *.json, *.md, *.py, *.sln.DotSettings.user, description_workshop.txt, icon_workshop.png, packages/*
 
 hideCode = false
 hideResources = false
 includeSource = true
-
-includePDB = true
 
 sortBefore = CalamityMod, Lights, Nitrate, SpiritReforged

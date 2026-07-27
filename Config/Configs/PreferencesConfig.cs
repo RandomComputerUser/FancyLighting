@@ -42,7 +42,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public override void OnChanged()
     {
-        ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
+        ModContent.GetInstance<SettingsSystem>().OnConfigChange();
     }
 
     // General

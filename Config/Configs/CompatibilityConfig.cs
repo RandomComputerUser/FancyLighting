@@ -12,7 +12,7 @@ public sealed class CompatibilityConfig : ModConfig
 
     public override void OnChanged()
     {
-        ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
+        ModContent.GetInstance<SettingsSystem>().OnConfigChange();
     }
 
     [Header("General")]

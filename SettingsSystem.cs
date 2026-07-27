@@ -7,8 +7,10 @@ namespace FancyLighting;
 
 internal sealed class SettingsSystem : ModSystem
 {
-    internal static ParallelOptions _parallelOptions =
-        new() { MaxDegreeOfParallelism = DefaultOptions.ThreadCount };
+    internal static ParallelOptions _parallelOptions = new()
+    {
+        MaxDegreeOfParallelism = DefaultOptions.ThreadCount,
+    };
 
     internal static bool _hiDef;
     internal static bool _lightOnly;
@@ -27,12 +29,12 @@ internal sealed class SettingsSystem : ModSystem
     internal void OnConfigChange()
     {
         SettingsUpdate();
-        ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+        ModContent.GetInstance<FancyLightingMod>().OnConfigChange();
     }
 
     internal void SettingsUpdate()
     {
-        if (LightingConfig.Instance?.NeedsColorLightMode() is true)
+        if (LightingConfig.Instance.NeedsColorLightMode())
         {
             if (Lighting.Mode is not LightMode.Color)
             {
@@ -41,18 +43,18 @@ internal sealed class SettingsSystem : ModSystem
         }
 
         _parallelOptions.MaxDegreeOfParallelism = Math.Max(
-            PreferencesConfig.Instance?.ThreadCount ?? DefaultOptions.ThreadCount,
+            PreferencesConfig.Instance.ThreadCount,
             1
         );
-        _hiDef = LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
+        _hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         _lightOnly =
-            LightingConfig.Instance?.SmoothLightingEnabled() is true
-            && DeveloperConfig.Instance?.RenderOnlyLight is true;
-        _useSkyLightLuma = LightingConfig.Instance?.UseSkyLightLuma() is true;
-        _useFancyClouds = LightingConfig.Instance?.FancySkyLightingEnabled() is true;
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && DeveloperConfig.Instance.RenderOnlyLight;
+        _useSkyLightLuma = LightingConfig.Instance.UseSkyLightLuma();
+        _useFancyClouds = LightingConfig.Instance.FancySkyLightingEnabled();
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
-        PerformanceTracker.Enabled = DeveloperConfig.Instance?.MonitorPerformance is true;
+        PerformanceTracker.Enabled = DeveloperConfig.Instance.MonitorPerformance;
 
         var needsPostProcessing = NeedsPostProcessing(true) || NeedsCapture();
         if (needsPostProcessing && !_prevNeedsPostProcessing)
@@ -71,13 +73,13 @@ internal sealed class SettingsSystem : ModSystem
         var hdrDisabled = HdrDisabled();
         if (
             hdrDisabled != _prevHdrDisabled
-            && LightingConfig.Instance?.SmoothLightingEnabled() is true
-            && LightingConfig.Instance?.LightMapRenderMode
+            && LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.LightMapRenderMode
                 is RenderMode.BicubicOverbright
                     or RenderMode.EnhancedHdr
         )
         {
-            ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+            ModContent.GetInstance<FancyLightingMod>().OnConfigChange();
         }
         _prevHdrDisabled = hdrDisabled;
     }
@@ -97,11 +99,6 @@ internal sealed class SettingsSystem : ModSystem
         TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
-    internal static bool ModifyCameraModeRendering() =>
-        LightingConfig.Instance?.SmoothLightingEnabled() is true
-        || LightingConfig.Instance?.AmbientOcclusionEnabled() is true
-        || PreferencesConfig.Instance?.DepthOfField is true;
-
     internal static bool PostProcessingAllowed() =>
         !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
 
@@ -111,39 +108,35 @@ internal sealed class SettingsSystem : ModSystem
     private static bool IsEventOccurring() => Main.invasionProgressNearInvasion;
 
     internal static bool NeedsPostProcessing(bool force = false) =>
-        PreferencesConfig.Instance is not null
-        && LightingConfig.Instance is not null
-        && (
-            (
-                (force || !FancyLightingMod._isGameInCameraMode)
-                && (
-                    PreferencesConfig.Instance.UseCustomGamma()
-                    || PreferencesConfig.Instance.UseSrgb
-                )
+        (
+            (force || !MainGraphics.InCameraMode)
+            && (
+                PreferencesConfig.Instance.UseCustomGamma()
+                || PreferencesConfig.Instance.UseSrgb
             )
-            || (
-                LightingConfig.Instance.SmoothLightingEnabled()
-                && LightingConfig.Instance.DrawOverbright()
-            )
+        )
+        || (
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright()
         );
 
     private static bool NeedsCapture() =>
         (
-            LightingConfig.Instance?.SmoothLightingEnabled() is true
+            LightingConfig.Instance.SmoothLightingEnabled()
             && (
                 (
-                    LightingConfig.Instance?.SimulateNormalMaps is true
-                    && LightingConfig.Instance?.SimulateTileEntityNormals is true
-                ) || LightingConfig.Instance?.UseTileEntitySmoothLighting is true
+                    LightingConfig.Instance.SimulateNormalMaps
+                    && LightingConfig.Instance.SimulateTileEntityNormals
+                ) || LightingConfig.Instance.UseTileEntitySmoothLighting
             )
-        ) || PreferencesConfig.Instance?.DepthOfField is true;
+        ) || PreferencesConfig.Instance.DepthOfField;
 
     internal static bool HdrEnhancedAlphaBlendingDisabled() =>
-        CompatibilityConfig.Instance?.DisableHdrEnhancedAlphaBlending is true
-        && LightingConfig.Instance?.HiDefFeaturesEnabled() is true;
+        CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending
+        && LightingConfig.Instance.HiDefFeaturesEnabled();
 
     internal static bool HdrDisabled() =>
-        CompatibilityConfig.Instance?.DisableHdrDuringBossFights is true
+        CompatibilityConfig.Instance.DisableHdrDuringBossFights
         && (IsBossFightOccurring() || IsEventOccurring());
 
     private static void DoNothing() { }
