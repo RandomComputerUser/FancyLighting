@@ -254,8 +254,8 @@ float4 SmoothLighting(
     bool normals,
     bool dithered,
     bool enhancedGlow,
-    bool ambientOcclusion,
     bool fancySky,
+    bool ambientOcclusion,
     bool opaque,
     bool lightOnly,
     bool hiDef
@@ -671,29 +671,23 @@ float4 NormalsDitheredEnhancedGlowFancySky_PS(PixelShaderInput input) : COLOR0
 
 float4 OverbrightMax_PS(PixelShaderInput input) : COLOR0
 {
-    float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
-    float3 lightColor = tex2D(LightSampler, input.LightTexCoord).rgb;
+    float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
-    return Dithered(
-        input.Position,
-        float4(max(lightColor, 1), 1) * tileColor
-    );
+    return max(lightColor, 1);
 }
 
-float4 OverbrightMaxHiDef_PS(PixelShaderInput input) : COLOR0
+float4 OverbrightMaxDithered_PS(PixelShaderInput input) : COLOR0
 {
-    float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
-    float3 lightColor = tex2D(LightSampler, input.LightTexCoord).rgb;
+    float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
-    return float4(max(lightColor, 1), 1) * tileColor;
+    return Dithered(input.Position, max(lightColor, 1));
 }
 
 float4 InverseOverbrightMaxHiDef_PS(PixelShaderInput input) : COLOR0
 {
-    float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
-    float3 lightColor = tex2D(LightSampler, input.LightTexCoord).rgb;
+    float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
-    return tileColor / float4(max(lightColor, 1), 1);
+    return 1.0 / max(lightColor, 1);
 }
 
 /* Techniques ***************************************************************************/
@@ -1067,12 +1061,12 @@ technique OverbrightMax
     }
 }
 
-technique OverbrightMaxHiDef
+technique OverbrightMaxDithered
 {
     pass Pass1
     {
         VertexShader = compile vs_3_0 SmoothLighting_VS();
-        PixelShader = compile ps_3_0 OverbrightMaxHiDef_PS();
+        PixelShader = compile ps_3_0 OverbrightMaxDithered_PS();
     }
 }
 

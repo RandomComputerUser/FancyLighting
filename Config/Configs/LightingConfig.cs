@@ -36,7 +36,7 @@ public sealed class LightingConfig : ModConfig
         SmoothLightingEnabled()
         && DrawOverbright()
         && SettingsSystem.PostProcessingAllowed()
-        && FancyLightingMod._doingFilterManagerCapture;
+        && MainGraphics.DoingCapture;
 
     public bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled()

@@ -998,7 +998,10 @@ public sealed class FancyLightingMod : Mod
 
             if (!usedTmpTarget)
             {
-                Blitter.Blit(MainGraphics.ScreenTarget, MainGraphics.ScreenTargetSwap);
+                Blitter.BlitOrSwap(
+                    ref MainGraphics.ScreenTarget,
+                    ref MainGraphics.ScreenTargetSwap
+                );
                 usedTmpTarget = true;
             }
 

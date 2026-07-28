@@ -64,6 +64,7 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowAmbientOcclusionEffect;
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowFancySkyEffect;
     private readonly FullscreenEffect _overbrightMaxEffect;
+    private readonly FullscreenEffect _overbrightMaxDitheredEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
 
     private readonly SpriteBatchEffect _tileEntityLightOnlyEffect;
@@ -255,7 +256,8 @@ public sealed class SmoothLighting
             effect,
             "NormalsDitheredEnhancedGlowFancySky"
         );
-        _overbrightMaxEffect = new(effect, "OverbrightMax", EffectFeatures.HiDef);
+        _overbrightMaxEffect = new(effect, "OverbrightMax");
+        _overbrightMaxDitheredEffect = new(effect, "OverbrightMaxDithered");
         _inverseOverbrightMaxHiDefEffect = new(effect, "InverseOverbrightMaxHiDef");
 
         effect = EffectLoader.Load("TileEntityLighting");
@@ -1589,9 +1591,10 @@ public sealed class SmoothLighting
             !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
         var ditheredEffectFlag =
             !DeveloperConfig.Instance.DisableDithering && doOverbright && !hiDef;
-        var enhancedGlowEffectFlag = !lightOnly && lightedGlow is not null;
-        var ambientOcclusionEffectFlag = background && ambientOcclusion is not null;
-        var fancySkyEffectFlag = _useAlphaChannelAsSkyLightLuma && !background;
+        var enhancedGlowEffectFlag = lightedGlow is not null;
+        var fancySkyEffectFlag =
+            !overbrightPass && _useAlphaChannelAsSkyLightLuma && !background;
+        var ambientOcclusionEffectFlag = ambientOcclusion is not null;
         var opaqueEffectFlag = lightOnly && background && ambientOcclusion is null;
 
         var lightMapTexture = _colors;
@@ -1631,7 +1634,9 @@ public sealed class SmoothLighting
         var effect = overbrightPass
             ? invertOverbright
                 ? _inverseOverbrightMaxHiDefEffect
-                : _overbrightMaxEffect
+                : ditheredEffectFlag
+                    ? _overbrightMaxDitheredEffect
+                    : _overbrightMaxEffect
             : normalsEffectFlag
                 ? ditheredEffectFlag
                     ? enhancedGlowEffectFlag
@@ -1726,7 +1731,11 @@ public sealed class SmoothLighting
         }
 
         MainGraphics.ResetSavedTextures();
-        MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+
+        if (src is not null)
+        {
+            MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+        }
         if (glow is not null)
         {
             MainGraphics.SetTexture(5, glow, SamplerState.PointClamp);
@@ -1744,7 +1753,17 @@ public sealed class SmoothLighting
             MainGraphics.SetTexture(8, _ditherNoise, SamplerState.PointWrap);
         }
 
-        Blitter.Blit(src, dst, effect);
+        Blitter.Blit(
+            src ?? lightMapTexture,
+            dst,
+            effect,
+            blendState: dst is null
+                ? src is null
+                    ? CustomBlendStates.MultiplyColor
+                    : BlendState.AlphaBlend
+                : BlendState.Opaque,
+            setTarget: dst is not null
+        );
         MainGraphics.RestoreSavedTextures();
     }
 

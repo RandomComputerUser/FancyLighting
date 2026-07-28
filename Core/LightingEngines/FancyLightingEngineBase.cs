@@ -148,7 +148,7 @@ public abstract class FancyLightingEngineBase : ICustomLightingEngine
         _initialBrightnessCutoff = LowLightLevel;
 
         var cutoff =
-            FancyLightingMod._inCameraMode ? CameraModeCutoff
+            MainGraphics.InCameraMode ? CameraModeCutoff
             : LightingConfig.Instance.FancyLightingEngineUseTemporal
                 ? (float)
                     Math.Clamp(

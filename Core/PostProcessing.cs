@@ -175,14 +175,13 @@ public sealed class PostProcessing
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
             smoothLightingInstance.DrawSmoothLighting(
-                currTarget,
-                nextTarget,
+                null,
+                null,
                 background: false,
                 disableNormalMaps: true,
                 doScaling: true,
                 overbrightPass: true
             );
-            (currTarget, nextTarget) = (nextTarget, currTarget);
 
             if (hiDef)
             {

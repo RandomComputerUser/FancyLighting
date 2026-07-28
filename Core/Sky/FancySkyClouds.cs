@@ -38,7 +38,7 @@ public static class FancySkyClouds
 
         var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
 
-        var zoomWithFlipping = FancyLightingMod._isGameInCameraMode
+        var zoomWithFlipping = MainGraphics.InCameraMode
             ? Vector2.One
             : new Vector2(1f, MathF.Sign(Main.GameViewMatrix.TransformationMatrix.M22));
 
@@ -196,6 +196,7 @@ public static class FancySkyClouds
         _samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        Main.spriteBatch.End();
 
         var newSamplerState = _samplerState;
         if (wrap)
@@ -227,8 +228,6 @@ public static class FancySkyClouds
         effect
             .SetParameter("Scale", 2f * scale)
             .SetParameter("ShadingStrength", mult * cloudShadingStrength);
-
-        Main.spriteBatch.End();
         effect.ApplyPass();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
