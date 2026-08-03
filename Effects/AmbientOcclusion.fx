@@ -58,7 +58,7 @@ float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
 float4 TilesAndTiles2_PS(float2 tileCoord : TEXCOORD0, float2 tile2Coord : TEXCOORD1) : COLOR0
 {
     float brightness = 1 - max(
-        tex2D(TileSampler, tileCoord).a;
+        tex2D(TileSampler, tileCoord).a,
         NONSOLID_OCCLUSION_MULT * tex2D(Tile2Sampler, tile2Coord).a
     );
     return float4(0, 0, 0, brightness);
