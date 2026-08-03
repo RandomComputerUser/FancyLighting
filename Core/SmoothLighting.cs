@@ -1914,10 +1914,7 @@ public sealed class SmoothLighting
         return (effect, usedTmpTarget);
     }
 
-    internal void ApplyTileEntityEffect(
-        SpriteBatchEffect effect,
-        RenderTarget2D glow = null
-    )
+    internal void ApplyTileEntityEffect(FancyEffect effect, RenderTarget2D glow = null)
     {
         var doDithering =
             !DeveloperConfig.Instance.DisableDithering
