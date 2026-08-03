@@ -6,7 +6,8 @@ namespace FancyLighting.Common.Graphics;
 
 internal static class SpriteBatchEffectLoader
 {
-    private static SpriteBatchEffect _activeEffect;
+    private static FancyEffect _activeEffect;
+    private static BlendState _activeBlendState;
 
     private static Hook _hook_SpriteBatch_PrepRenderState;
     private static Hook _hook_TileBatch_DrawBatch;
@@ -74,6 +75,7 @@ internal static class SpriteBatchEffectLoader
     internal static void Unload()
     {
         _activeEffect = null;
+        _activeBlendState = null;
 
         _hook_SpriteBatch_PrepRenderState?.Dispose();
         _hook_TileBatch_DrawBatch?.Dispose();
@@ -84,9 +86,15 @@ internal static class SpriteBatchEffectLoader
         _hook_TileBatch_SortedDrawBatch = null;
     }
 
-    internal static void ApplyEffect(SpriteBatchEffect effect) => _activeEffect = effect;
+    internal static void Apply(FancyEffect effect) => _activeEffect = effect;
 
-    public static void ClearEffect() => _activeEffect = null;
+    internal static void Apply(BlendState blendState) => _activeBlendState = blendState;
+
+    public static void Reset()
+    {
+        _activeEffect = null;
+        _activeBlendState = null;
+    }
 
     private delegate void orig_SpriteBatch_PrepRenderState(SpriteBatch self);
 
@@ -104,9 +112,18 @@ internal static class SpriteBatchEffectLoader
 
         if (SpriteBatchAccessors.customEffect(self) is null)
         {
-            SetMatrixTransform(self, _activeEffect);
+            if (_activeEffect is SpriteBatchEffect spriteBatchEffect)
+            {
+                SetMatrixTransform(self, spriteBatchEffect);
+            }
+
             _activeEffect.ApplyTechnique();
             SpriteBatchAccessors.customEffect(self) = _activeEffect.Effect;
+        }
+
+        if (_activeBlendState is not null)
+        {
+            SpriteBatchAccessors.blendState(self) = _activeBlendState;
         }
     }
 

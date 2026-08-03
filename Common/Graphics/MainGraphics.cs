@@ -6,6 +6,7 @@ namespace FancyLighting.Common.Graphics;
 internal static class MainGraphics
 {
     public static bool DoingCapture { get; private set; }
+
     public static RenderTarget2D ScreenTarget;
     public static RenderTarget2D ScreenTargetSwap;
 
@@ -58,7 +59,7 @@ internal static class MainGraphics
             ScreenTargetSwap = Main.screenTargetSwap;
         }
 
-        DoingCapture = true;
+        DoingCapture = ScreenTarget is not null && ScreenTargetSwap is not null;
     }
 
     internal static void EndCapture_Pre() => DoingCapture = false;
@@ -67,10 +68,13 @@ internal static class MainGraphics
     {
         if (!CompatibilityConfig.Instance.DisableRenderingOptimizations)
         {
-            if (InCameraMode && _captureCamera is not null)
+            if (InCameraMode)
             {
-                _field_filterFrameBuffer1?.SetValue(_captureCamera, ScreenTarget);
-                _field_filterFrameBuffer2?.SetValue(_captureCamera, ScreenTargetSwap);
+                if (_captureCamera is not null)
+                {
+                    _field_filterFrameBuffer1?.SetValue(_captureCamera, ScreenTarget);
+                    _field_filterFrameBuffer2?.SetValue(_captureCamera, ScreenTargetSwap);
+                }
             }
             else
             {

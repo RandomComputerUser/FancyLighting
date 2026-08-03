@@ -47,16 +47,6 @@ void TilesAndTiles2_VS(
     tile2Coord = mul(homogeneousTexCoord, MatrixTransform2).xy;
 }
 
-void TileEntity_VS(
-    float4 position : POSITION0,
-    inout float2 texCoord : TEXCOORD0,
-    inout float4 color : COLOR0,
-    out float4 screenPos : SV_Position
-)
-{
-    screenPos = mul(position, MatrixTransform);
-}
-
 /* Pixel shaders ************************************************************************/
 
 float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
@@ -67,8 +57,10 @@ float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
 
 float4 TilesAndTiles2_PS(float2 tileCoord : TEXCOORD0, float2 tile2Coord : TEXCOORD1) : COLOR0
 {
-    float brightness = 1 - tex2D(TileSampler, tileCoord).a;
-    brightness *= 1 - NONSOLID_OCCLUSION_MULT * tex2D(Tile2Sampler, tile2Coord).a;
+    float brightness = 1 - max(
+        tex2D(TileSampler, tileCoord).a;
+        NONSOLID_OCCLUSION_MULT * tex2D(Tile2Sampler, tile2Coord).a
+    );
     return float4(0, 0, 0, brightness);
 }
 
@@ -136,7 +128,6 @@ technique TileEntity
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 TileEntity_VS();
         PixelShader = compile ps_3_0 TileEntity_PS();
     }
 }

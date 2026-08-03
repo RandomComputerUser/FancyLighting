@@ -667,8 +667,6 @@ float4 NormalsDitheredEnhancedGlowFancySky_PS(PixelShaderInput input) : COLOR0
     );
 }
 
-/* Misc pixel shaders *******************************************************************/
-
 float4 OverbrightMax_PS(PixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);

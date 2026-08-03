@@ -6,6 +6,9 @@ internal static class SpriteBatchAccessors
 {
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "customEffect")]
     public static extern ref Effect customEffect(SpriteBatch obj);
+    
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "blendState")]
+    public static extern ref BlendState blendState(SpriteBatch obj);
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "samplerState")]
     public static extern ref SamplerState samplerState(SpriteBatch obj);

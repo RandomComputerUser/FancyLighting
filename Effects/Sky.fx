@@ -1,7 +1,7 @@
 sampler TextureSampler : register(s0);
 sampler DitherSampler : register(s0);
 
-float2 DitherCoordMult;
+#define DITHER_TEXTURE_SIZE 32
 
 float HighSkyLevel;
 float LowSkyLevel;
@@ -11,6 +11,8 @@ float3 LowSkyColor;
 float Gamma;
 float InverseGamma;
 
+/* Helper functions *********************************************************************/
+
 float Smootherstep(float min, float max, float x)
 {
     float t = (x - min) / (max - min);
@@ -19,10 +21,10 @@ float Smootherstep(float min, float max, float x)
 }
 
 // Not technically correct because it ignores gamma, but cheap and decent quality
-float4 Dithered(float4 color, float2 coords)
+float4 Dithered(float2 position, float4 color)
 {
     float noise
-        = (255.0 / 256 / 255) * tex2D(DitherSampler, coords * DitherCoordMult).r
+        = (1.0 / 256) * tex2D(DitherSampler, (1.0 / DITHER_TEXTURE_SIZE) * position).r
         - 0.5 / 255;
     
     color.rgb += noise;
@@ -36,21 +38,34 @@ float4 CalculateSkyColor(float2 coords)
     return float4(pow(lerp(HighSkyColor, LowSkyColor, t), InverseGamma), 1);
 }
 
-float4 Sky(float2 coords : TEXCOORD0) : COLOR0
+/* Vertex shaders ***********************************************************************/
+
+void Blit_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    out float4 screenPos : SV_Position
+)
 {
-    return CalculateSkyColor(coords);
+    screenPos = position;
 }
 
-float4 SkyDithered(float2 coords : TEXCOORD0) : COLOR0
+/* Pixel shaders ************************************************************************/
+
+float4 Sky_PS(float2 texCoord : TEXCOORD0) : COLOR0
 {
-    return Dithered(CalculateSkyColor(coords), coords);
+    return CalculateSkyColor(texCoord);
 }
 
-float4 Sun(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
+float4 SkyDithered_PS(float2 texCoord : TEXCOORD0, float4 position : SV_Position) : COLOR0
+{
+    return Dithered(position, CalculateSkyColor(texCoord));
+}
+
+float4 Sun_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 {
     const float brightness = 1.1;
 
-    float4 baseColor = tex2D(TextureSampler, coords);
+    float4 baseColor = tex2D(TextureSampler, texCoord);
     baseColor.rgb = pow(baseColor.rgb, Gamma);
     baseColor.rgb += (120 / brightness) * pow(baseColor.rgb, 12);
     
@@ -62,9 +77,9 @@ float4 Sun(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     return color * baseColor;
 }
 
-float4 SunHiDef(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
+float4 SunHiDef_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 {
-    float4 baseColor = tex2D(TextureSampler, coords);
+    float4 baseColor = tex2D(TextureSampler, texCoord);
     baseColor.rgb = pow(baseColor.rgb, Gamma);
     baseColor.rgb *= (
         1
@@ -82,25 +97,38 @@ float4 SunHiDef(float4 color : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     return color * baseColor;
 }
 
-technique Technique1
+/* Techniques ***************************************************************************/
+
+technique Sky
 {   
-    pass Sky
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 Sky();
-    } 
-      
-    pass SkyDithered
-    {
-        PixelShader = compile ps_3_0 SkyDithered();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 Sky_PS();
     }
-    
-    pass Sun
+}
+
+technique SkyDithered
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 Sun();
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 SkyDithered_PS();
     }
-    
-    pass SunHiDef
+}
+
+technique Sun
+{
+    pass Pass1
     {
-        PixelShader = compile ps_3_0 SunHiDef();
+        PixelShader = compile ps_3_0 Sun_PS();
+    }
+}
+
+technique SunHiDef
+{
+    pass Pass1
+    {
+        PixelShader = compile ps_3_0 SunHiDef_PS();
     }
 }

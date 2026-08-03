@@ -1611,26 +1611,6 @@ public sealed class SmoothLighting
             lightMapScale = 0.25f;
         }
 
-        var position = doScaling
-            ? TexturePosition.GetScreenPosition(src)
-            : TexturePosition.GetTileTargetPosition(src);
-
-        position.TextureToWorldTransform(out var tileToWorldTransform);
-        TexturePosition
-            .FromTextureTileCoords(
-                lightMapTexture,
-                _lightMapTileArea.X,
-                _lightMapTileArea.Y,
-                lightMapScale,
-                true
-            )
-            .WorldToTextureTransform(out var lightMapTransform);
-        Matrix.Multiply(
-            ref tileToWorldTransform,
-            ref lightMapTransform,
-            out lightMapTransform
-        );
-
         var effect = overbrightPass
             ? invertOverbright
                 ? _inverseOverbrightMaxHiDefEffect
@@ -1685,6 +1665,31 @@ public sealed class SmoothLighting
                                 ? _smoothOpaqueLightOnlyEffect
                                 : _smoothEffect;
 
+        if (src is not null)
+        {
+            var position = doScaling
+                ? TexturePosition.GetScreenPosition(src)
+                : TexturePosition.GetTileTargetPosition(src);
+
+            position.TextureToWorldTransform(out var tileToWorldTransform);
+            TexturePosition
+                .FromTextureTileCoords(
+                    lightMapTexture,
+                    _lightMapTileArea.X,
+                    _lightMapTileArea.Y,
+                    lightMapScale,
+                    true
+                )
+                .WorldToTextureTransform(out var lightMapTransform);
+            Matrix.Multiply(
+                ref tileToWorldTransform,
+                ref lightMapTransform,
+                out lightMapTransform
+            );
+
+            effect.SetParameter("LightMapTransform", lightMapTransform);
+        }
+
         var gamma = PostProcessing.ContentGamma();
         var normalMapResolution = fineNormalMaps ? 1f : 2f;
         var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
@@ -1701,7 +1706,6 @@ public sealed class SmoothLighting
         }
 
         effect
-            .SetParameter("LightMapTransform", lightMapTransform)
             .SetParameter("Gamma", gamma)
             .SetParameter("ReciprocalGamma", 1f / gamma)
             .SetParameter(
@@ -1925,7 +1929,7 @@ public sealed class SmoothLighting
             ? _colorsHiRes
             : _colors;
 
-        SpriteBatchEffectLoader.ApplyEffect(effect);
+        SpriteBatchEffectLoader.Apply(effect);
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
         if (glow is not null)

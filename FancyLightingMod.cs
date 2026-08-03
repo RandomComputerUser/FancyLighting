@@ -1008,7 +1008,7 @@ public sealed class FancyLightingMod : Mod
             _preventTileParticles = true;
             try
             {
-                DrawTileEntities(self);
+                orig(self, solidLayer, forRenderTargets, intoRenderTargets);
             }
             finally
             {
@@ -1024,36 +1024,9 @@ public sealed class FancyLightingMod : Mod
 
         var glowTarget = useGlowMasks ? _tmpScreenTarget : null;
         _smoothLightingInstance.ApplyTileEntityEffect(effect, glowTarget);
-        DrawTileEntities(self);
-        SpriteBatchEffectLoader.ClearEffect();
+        orig(self, solidLayer, forRenderTargets, intoRenderTargets);
+        SpriteBatchEffectLoader.Reset();
         MainGraphics.RestoreSavedTextures();
-    }
-
-    private static void DrawTileEntities(TileDrawing self)
-    {
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            Main.DefaultSamplerState,
-            DepthStencilState.None,
-            Main.Rasterizer,
-            null,
-            Main.Transform
-        );
-
-        TileDrawingAccessors.DrawMultiTileVines(self);
-        TileDrawingAccessors.DrawMultiTileGrass(self);
-        TileDrawingAccessors.DrawVoidLenses(self);
-        TileDrawingAccessors.DrawTeleportationPylons(self);
-        TileDrawingAccessors.DrawMasterTrophies(self);
-        TileDrawingAccessors.DrawGrass(self);
-        TileDrawingAccessors.DrawAnyDirectionalGrass(self);
-        TileDrawingAccessors.DrawTrees(self);
-        TileDrawingAccessors.DrawVines(self);
-        TileDrawingAccessors.DrawReverseVines(self);
-        TileDrawingAccessors.DrawCustom(self, false);
-
-        Main.spriteBatch.End();
     }
 
     // Liquids
@@ -2548,7 +2521,7 @@ public sealed class FancyLightingMod : Mod
         PerformanceTracker.StartTiming("Delta Time");
         PerformanceTracker.DisplayStatistics(false);
 
-        SpriteBatchEffectLoader.ClearEffect();
+        SpriteBatchEffectLoader.Reset();
 
         ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
         MainGraphics.ResetCaptureInfo();

@@ -7,9 +7,9 @@ public sealed class FancySkyRendering
 {
     private readonly Texture2D _ditherNoise;
 
-    private readonly FullscreenEffect _skyShader;
-    private readonly FullscreenEffect _skyDitheredShader;
-    private readonly FancyEffect _sunShader;
+    private readonly FullscreenEffect _skyEffect;
+    private readonly FullscreenEffect _skyDitheredEffect;
+    private readonly FancyEffect _sunEffect;
 
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
@@ -47,12 +47,10 @@ public sealed class FancySkyRendering
             )
             .Value;
 
-        _skyShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sky");
-        _skyDitheredShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/Sky",
-            "SkyDithered"
-        );
-        _sunShader = EffectLoader.LoadEffect("FancyLighting/Effects/Sky", "Sun", true);
+        var effect = EffectLoader.Load("Sky");
+        _skyEffect = new(effect, "Sky");
+        _skyDitheredEffect = new(effect, "SkyDithered");
+        _sunEffect = new(effect, "Sun", EffectFeatures.HiDef);
 
         AddHooks();
     }
@@ -75,7 +73,11 @@ public sealed class FancySkyRendering
         bool artificial
     )
     {
-        if (!LightingConfig.Instance.FancySkyRenderingEnabled() || artificial)
+        if (
+            !LightingConfig.Instance.FancySkyRenderingEnabled()
+            || !MainGraphics.DoingCapture
+            || artificial
+        )
         {
             orig(self, sceneArea, artificial);
             return;
@@ -98,7 +100,7 @@ public sealed class FancySkyRendering
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
-        var target = MainGraphics.GetRenderTarget() ?? Main.screenTarget;
+        var target = MainGraphics.ScreenTarget;
 
         var hour = GameTimeUtils.CalculateCurrentHour();
         var skyColorMult =
@@ -149,43 +151,14 @@ public sealed class FancySkyRendering
             (highLevel, lowLevel) = (1f - lowLevel, 1f - highLevel);
         }
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.Opaque,
-            SamplerState.PointWrap,
-            DepthStencilState.None,
-            RasterizerState.CullNone
-        );
-
-        var scale = new Vector2(
-            (float)target.Width / _ditherNoise.Width,
-            (float)target.Height / _ditherNoise.Height
-        );
-
-        (
-            doDithering
-                ? _skyDitheredShader.SetParameter("DitherCoordMult", scale)
-                : _skyShader
-        )
+        var effect = doDithering ? _skyDitheredEffect : _skyEffect;
+        effect
             .SetParameter("HighSkyLevel", highLevel)
             .SetParameter("LowSkyLevel", lowLevel)
             .SetParameter("HighSkyColor", highSkyColor)
             .SetParameter("LowSkyColor", lowSkyColor)
-            .SetParameter("InverseGamma", 1f / gamma)
-            .Apply();
-
-        Main.spriteBatch.Draw(
-            _ditherNoise,
-            Vector2.Zero,
-            null,
-            Color.White,
-            0f,
-            Vector2.Zero,
-            scale,
-            SpriteEffects.None,
-            0f
-        );
-        Main.spriteBatch.End();
+            .SetParameter("InverseGamma", 1f / gamma);
+        Blitter.Blit(_ditherNoise, null, effect, setTarget: false);
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -219,10 +192,10 @@ public sealed class FancySkyRendering
         Color moonColor,
         Color sunColor,
         float tempMushroomInfluence,
-        SmoothLighting smoothLightingInstance
+        PostProcessing postProcessingInstance
     )
     {
-        if (_sunShader is null)
+        if (_sunEffect is null)
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;
@@ -250,31 +223,34 @@ public sealed class FancySkyRendering
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Immediate,
-            BlendState.AlphaBlend,
-            SamplerState.LinearClamp,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Effect effect = null;
         if (Main.dayTime)
         {
             var gamma = MainGraphics.DoingCapture
                 ? PostProcessing.ContentGamma()
                 : PostProcessing.DefaultGamma;
-            _sunShader
+            effect = _sunEffect
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)
-                .Apply();
+                .Effect;
         }
         else if (hiDef)
         {
-            smoothLightingInstance.ApplyBrightenShader(1.5f);
+            effect = postProcessingInstance.GetBrightenPixelOnlyEffect(1.5f).Effect;
         }
+
+        Main.spriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.LinearClamp,
+            DepthStencilState.None,
+            rasterizerState,
+            effect,
+            transform
+        );
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();
+
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,

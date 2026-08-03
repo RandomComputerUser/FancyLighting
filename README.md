@@ -27,7 +27,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Made the *Bicubic* render mode a little brighter
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
-- Tweaked the appearance of ambient occlusion in some cases
+- Tweaked the appearance of Ambient Occlusion
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
 - Added the *Neutral (LMS)* TMO, which is the new default
@@ -46,7 +46,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering
 - Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
-- Fixed a minor bug with ambient occlusion when using full HDR rendering
+- Fixed a minor bug with Ambient Occlusion when using full HDR rendering
 - Added compatibility with screen flipping from sources other than the Gravitation buff
 - Optimized Smooth Lighting
 - Improved unloading
