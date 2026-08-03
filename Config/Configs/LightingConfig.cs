@@ -35,7 +35,7 @@ public sealed class LightingConfig : ModConfig
     public bool OverbrightOverrideBackground() =>
         SmoothLightingEnabled()
         && DrawOverbright()
-        && SettingsSystem.PostProcessingAllowed()
+        && !Main.gameMenu
         && MainGraphics.DoingCapture;
 
     public bool HiDefFeaturesEnabled() =>

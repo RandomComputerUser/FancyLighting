@@ -8,6 +8,8 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
     private static FullscreenEffect _blurUpsampleAlphaEffect;
 
     private RenderTarget2D[] _blurTargets;
+    private int _baseWidth;
+    private int _baseHeight;
 
     public bool AlphaOnly { get; private init; } = alphaOnly;
     public bool SupportsAdditiveBlend { get; private init; } = supportAdditiveBlend;
@@ -32,6 +34,9 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
     public void Dispose()
     {
         DisposeBlurTargets();
+        _blurTargets = null;
+        _baseWidth = 0;
+        _baseHeight = 0;
     }
 
     private void EnsureBlurTargets(
@@ -44,8 +49,8 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         if (
             _blurTargets is not null
             && _blurTargets.Length >= targetCount
-            && _blurTargets[0]?.Width == width
-            && _blurTargets[0]?.Height == height
+            && _baseWidth == width
+            && _baseHeight == height
             && _blurTargets[0]?.Format == format
         )
         {
@@ -75,6 +80,9 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
                     : RenderTargetUsage.PlatformContents
             );
         }
+
+        _baseWidth = width;
+        _baseHeight = height;
     }
 
     private void DisposeBlurTargets()
@@ -88,15 +96,13 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         {
             target?.Dispose();
         }
-
-        _blurTargets = null;
     }
 
-    public RenderTarget2D RenderBlur(
+    public RenderTarget2D Blur(
         RenderTarget2D src,
         RenderTarget2D dst,
         int passCount,
-        bool additiveBlend
+        bool additiveBlend = false
     )
     {
         additiveBlend = additiveBlend && SupportsAdditiveBlend;

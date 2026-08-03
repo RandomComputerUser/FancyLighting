@@ -99,9 +99,6 @@ internal sealed class SettingsSystem : ModSystem
         TextureUtils.EnsureFormat(ref Main.screenTargetSwap, format);
     }
 
-    internal static bool PostProcessingAllowed() =>
-        !(Main.gameMenu || Main.mapFullscreen || Main.drawToScreen);
-
     private static bool IsBossFightOccurring() =>
         BigProgressBarSystemAccessors._currentBar(Main.BigBossProgressBar) is not null;
 

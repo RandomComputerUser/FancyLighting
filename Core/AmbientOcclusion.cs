@@ -5,65 +5,126 @@ namespace FancyLighting.Core;
 
 public sealed class AmbientOcclusion
 {
-    private RenderTarget2D _blurTarget;
-
-    private RenderTarget2D _drawTarget;
-
-    private RenderTarget2D _cameraModeTarget1;
-    private RenderTarget2D _cameraModeTarget2;
-
-    private RenderTarget2D _tileEntityTarget;
+    private RenderTarget2D _ambientOcclusionTarget;
 
     internal bool _drawingTileEntities;
 
-    private readonly FullscreenEffect _extractInverseAlphaShader;
-    private readonly FullscreenEffect _extractInverseMultipliedAlphaShader;
-    private readonly FullscreenEffect _toneMappingShader;
-    private readonly FullscreenEffect _toneMappingDefaultShader;
-    private readonly FullscreenEffect _glowMaskShader;
-    private readonly FullscreenEffect _enhancedGlowMaskShader;
+    private readonly FullscreenEffect _tilesEffect;
+    private readonly FullscreenEffect _tilesAndTiles2Effect;
+    private readonly SpriteBatchEffect _tileEntityEffect;
+    private readonly FullscreenEffect _toneCurveEffect;
+    private readonly FullscreenEffect _toneCurveDefaultEffect;
 
     private readonly BlurRenderer _blurRenderer = new(true, false);
 
     internal AmbientOcclusion()
     {
-        _extractInverseAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "ExtractInverseAlpha"
-        );
-        _extractInverseMultipliedAlphaShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "ExtractInverseMultipliedAlpha"
-        );
-        _toneMappingShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "ToneMapping",
-            true
-        );
-        _toneMappingDefaultShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/AmbientOcclusion",
-            "ToneMappingDefault",
-            true
-        );
-        _glowMaskShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "GlowMask"
-        );
-        _enhancedGlowMaskShader = EffectLoader.LoadEffect(
-            "FancyLighting/Effects/LightRendering",
-            "EnhancedGlowMask"
-        );
+        var effect = EffectLoader.Load("AmbientOcclusion");
+        _tilesEffect = new(effect, "Tiles");
+        _tilesAndTiles2Effect = new(effect, "TilesAndTiles2");
+        _tileEntityEffect = new(effect, "TileEntity");
+        _toneCurveEffect = new(effect, "ToneCurve", EffectFeatures.HiDef);
+        _toneCurveDefaultEffect = new(effect, "ToneCurveDefault", EffectFeatures.HiDef);
     }
 
     internal void Unload()
     {
-        _blurTarget?.Dispose();
-        _drawTarget?.Dispose();
-        _cameraModeTarget1?.Dispose();
-        _cameraModeTarget2?.Dispose();
-        _tileEntityTarget?.Dispose();
+        _ambientOcclusionTarget?.Dispose();
 
         _blurRenderer?.Dispose();
+    }
+
+    internal RenderTarget2D DrawAmbientOcclusion(
+        RenderTarget2D wallTarget,
+        RenderTarget2D tileTarget,
+        Vector2 tilePosition,
+        RenderTarget2D tile2Target,
+        Vector2 tile2Position,
+        bool tileEntities,
+        bool doScaling
+    )
+    {
+        TextureUtils.MakeSize(
+            ref _ambientOcclusionTarget,
+            wallTarget.Width,
+            wallTarget.Height,
+            SurfaceFormat.Color
+        );
+
+        var effect = tile2Target is null ? _tilesEffect : _tilesAndTiles2Effect;
+
+        var wallTexturePosition = doScaling
+            ? TexturePosition.GetScreenPosition(wallTarget)
+            : TexturePosition.GetTileTargetPosition(wallTarget);
+        wallTexturePosition.TextureToWorldTransform(out var wallToWorldTransform);
+
+        {
+            var tileTexturePosition = doScaling
+                ? wallTexturePosition
+                : TexturePosition.GetTileTargetPosition(tileTarget, tilePosition);
+            tileTexturePosition.WorldToTextureTransform(out var tileMatrixTransform);
+            Matrix.Multiply(
+                ref wallToWorldTransform,
+                ref tileMatrixTransform,
+                out tileMatrixTransform
+            );
+            effect.SetParameter("MatrixTransform", tileMatrixTransform);
+        }
+
+        MainGraphics.ResetSavedTextures();
+
+        if (tile2Target is not null)
+        {
+            var tile2TexturePosition = doScaling
+                ? wallTexturePosition
+                : TexturePosition.GetTileTargetPosition(tile2Target, tile2Position);
+            tile2TexturePosition.WorldToTextureTransform(out var tile2MatrixTransform);
+            Matrix.Multiply(
+                ref wallToWorldTransform,
+                ref tile2MatrixTransform,
+                out tile2MatrixTransform
+            );
+            effect.SetParameter("MatrixTransform2", tile2MatrixTransform);
+
+            MainGraphics.SetTexture(4, tile2Target, SamplerState.PointClamp);
+        }
+
+        Blitter.Blit(tileTarget, _ambientOcclusionTarget, effect);
+        MainGraphics.RestoreSavedTextures();
+
+        if (tileEntities)
+        {
+            var prevPreventTileParticles = FancyLightingMod._preventTileParticles;
+            _drawingTileEntities = true;
+            FancyLightingMod._preventTileParticles = true;
+            try
+            {
+                Main.instance.TilesRenderer.PostDrawTiles(false, false, false);
+                Main.instance.TilesRenderer.PostDrawTiles(true, false, false);
+            }
+            finally
+            {
+                FancyLightingMod._preventTileParticles = prevPreventTileParticles;
+                _drawingTileEntities = false;
+            }
+        }
+
+        var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
+        var power = PreferencesConfig.Instance.AmbientOcclusionPower();
+        var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
+
+        var blurTarget = _blurRenderer.Blur(_ambientOcclusionTarget, null, radius);
+
+        effect = power == 2f ? _toneCurveDefaultEffect : _toneCurveEffect;
+        effect.SetParameter("BlurPower", power).SetParameter("BlurMult", mult);
+        Blitter.Blit(
+            blurTarget,
+            _ambientOcclusionTarget,
+            effect,
+            samplerState: SamplerState.LinearClamp
+        );
+
+        return _ambientOcclusionTarget;
     }
 
     internal RenderTarget2D ApplyAmbientOcclusion(
@@ -411,7 +472,7 @@ public sealed class AmbientOcclusion
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
 
-        var blurTarget = _blurRenderer.RenderBlur(target, null, radius, false);
+        var blurTarget = _blurRenderer.Blur(target, null, radius, false);
 
         var shader = power == 2f ? _toneMappingDefaultShader : _toneMappingShader;
 

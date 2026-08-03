@@ -22,6 +22,16 @@ internal static class CustomBlendStates
             AlphaDestinationBlend = Blend.One,
             AlphaSourceBlend = Blend.Zero,
         };
+    public static BlendState MultiplyAlpha { get; private set; } =
+        new()
+        {
+            ColorBlendFunction = BlendFunction.Add,
+            ColorDestinationBlend = Blend.Zero,
+            ColorSourceBlend = Blend.Zero,
+            AlphaBlendFunction = BlendFunction.Add,
+            AlphaDestinationBlend = Blend.SourceAlpha,
+            AlphaSourceBlend = Blend.Zero,
+        };
     public static BlendState TrueAdditive { get; private set; } =
         new()
         {
@@ -37,6 +47,7 @@ internal static class CustomBlendStates
     {
         MultiplyColor = null;
         MultiplyColorByAlpha = null;
+        MultiplyAlpha = null;
         TrueAdditive = null;
     }
 }

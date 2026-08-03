@@ -127,7 +127,7 @@ public sealed class PostProcessing
             .SetParameter("GammaRatio", gamma);
 
     internal RenderTarget2D Blur(RenderTarget2D src, RenderTarget2D dst, int radius) =>
-        _blurRenderer.RenderBlur(src, dst, radius, false);
+        _blurRenderer.Blur(src, dst, radius);
 
     private static (Vector4, Vector2) CalculateVibranceBoostParameters(double boost)
     {
@@ -217,11 +217,10 @@ public sealed class PostProcessing
                                 .SetParameter("GammaRatio", gamma)
                         );
 
-                        _blurRenderer.RenderBlur(
+                        _blurRenderer.Blur(
                             nextTarget,
                             nextTarget,
-                            PreferencesConfig.Instance.DepthOfFieldRadius,
-                            false
+                            PreferencesConfig.Instance.DepthOfFieldRadius
                         );
 
                         Blitter.Blit(
@@ -302,11 +301,11 @@ public sealed class PostProcessing
                     1f
                 );
 
-                var bloomTarget = _blurRenderer.RenderBlur(
+                var bloomTarget = _blurRenderer.Blur(
                     currTarget,
                     null,
                     PreferencesConfig.Instance.BloomRadius,
-                    true
+                    additiveBlend: true
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);

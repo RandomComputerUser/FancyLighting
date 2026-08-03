@@ -724,10 +724,7 @@ public sealed class FancyLightingMod : Mod
     {
         MainGraphics.EndCapture_Pre();
 
-        if (
-            (!SettingsSystem.PostProcessingAllowed() && !MainGraphics.InCameraMode)
-            || !SettingsSystem.NeedsPostProcessing()
-        )
+        if (!SettingsSystem.NeedsPostProcessing())
         {
             MainGraphics.EndCapture_Post();
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
@@ -967,7 +964,6 @@ public sealed class FancyLightingMod : Mod
             (solidLayer || intoRenderTargets)
             || _ambientOcclusionInstance._drawingTileEntities
             || !LightingConfig.Instance.SmoothLightingEnabled()
-            || !SettingsSystem.PostProcessingAllowed()
             || !MainGraphics.DoingCapture
         )
         {
@@ -1847,9 +1843,8 @@ public sealed class FancyLightingMod : Mod
         var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
 
         if (
-            _inCameraMode
-            || !SettingsSystem.PostProcessingAllowed()
-            || !_doingFilterManagerCapture
+            MainGraphics.InCameraMode
+            || !MainGraphics.DoingCapture
             || !(doOverbright || doDepthOfField)
         )
         {

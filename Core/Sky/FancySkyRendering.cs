@@ -82,15 +82,16 @@ public sealed class FancySkyRendering
         }
 
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
+        var hiDef =
+            LightingConfig.Instance.HiDefFeaturesEnabled() && MainGraphics.DoingCapture;
         var doDithering =
             !DeveloperConfig.Instance.DisableDithering
             && LightingConfig.Instance.SmoothLightingEnabled()
             && doOverbright
             && !hiDef;
-        var gamma = Main.gameMenu
-            ? PostProcessing.DefaultGamma
-            : PostProcessing.ContentGamma();
+        var gamma = MainGraphics.DoingCapture
+            ? PostProcessing.ContentGamma()
+            : PostProcessing.DefaultGamma;
 
         var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
@@ -140,7 +141,7 @@ public sealed class FancySkyRendering
 
         if (
             !Main.gameMenu
-            && !FancyLightingMod._isGameInCameraMode
+            && !MainGraphics.InCameraMode
             && Main.BackgroundViewMatrix.TransformationMatrix.M22 < 0f
         )
         {
@@ -227,7 +228,8 @@ public sealed class FancySkyRendering
             return;
         }
 
-        var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled() && !Main.gameMenu;
+        var hiDef =
+            LightingConfig.Instance.HiDefFeaturesEnabled() && MainGraphics.DoingCapture;
 
         var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
@@ -235,7 +237,7 @@ public sealed class FancySkyRendering
         var origTransform = transform;
         Main.spriteBatch.End();
 
-        if (!Main.gameMenu && !FancyLightingMod._isGameInCameraMode)
+        if (!Main.gameMenu && !MainGraphics.InCameraMode)
         {
             // shift sun/moon downward
             transform.Translation += 25f * transform.Up;
@@ -259,9 +261,9 @@ public sealed class FancySkyRendering
         );
         if (Main.dayTime)
         {
-            var gamma = Main.gameMenu
-                ? PostProcessing.DefaultGamma
-                : PostProcessing.ContentGamma();
+            var gamma = MainGraphics.DoingCapture
+                ? PostProcessing.ContentGamma()
+                : PostProcessing.DefaultGamma;
             _sunShader
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)
