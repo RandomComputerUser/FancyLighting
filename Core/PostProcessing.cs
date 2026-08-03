@@ -366,7 +366,7 @@ public sealed class PostProcessing
             }
 
             // in camera mode, the background can be transparent, so we can't use the no-alpha effect
-            // otherwise using the no-alpha shader makes things effect
+            // otherwise using the no-alpha effect makes things simpler
             var effect = srgb
                 ? disableDither
                     ? _gammaToSrgbNoDitherNoAlphaEffect
