@@ -67,7 +67,7 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _overbrightMaxDitheredEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
 
-    private readonly SpriteBatchEffect _tileEntityLightOnlyEffect;
+    private readonly FancyEffect _tileEntityLightOnlyEffect;
     private readonly SpriteBatchEffect _tileEntityNormalsEffect;
     private readonly SpriteBatchEffect _tileEntityNormalsFancySkyEffect;
     private readonly SpriteBatchEffect _tileEntitySmoothEffect;
@@ -1771,7 +1771,7 @@ public sealed class SmoothLighting
         MainGraphics.RestoreSavedTextures();
     }
 
-    internal (SpriteBatchEffect, bool) GetTileEntityEffect(
+    internal (FancyEffect, bool) GetTileEntityEffect(
         ref RenderTarget2D screenTarget,
         ref RenderTarget2D tmpTarget
     )
