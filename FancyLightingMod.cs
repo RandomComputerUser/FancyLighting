@@ -943,7 +943,7 @@ public sealed class FancyLightingMod : Mod
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
 
-        var screenTarget = MainGraphics.ScreenTarget;
+        ref var screenTarget = ref MainGraphics.ScreenTarget;
 
         if (doOverbright)
         {
@@ -963,7 +963,8 @@ public sealed class FancyLightingMod : Mod
             else
             {
                 // doOverbright must be true here
-                Blitter.Blit(screenTarget, _backgroundTarget);
+                Blitter.BlitOrSwap(ref screenTarget, ref _backgroundTarget);
+                MainGraphics.AssignScreenTargets();
             }
 
             if (doOverbright)
@@ -977,7 +978,8 @@ public sealed class FancyLightingMod : Mod
 
         if (!hdrCompatBlending)
         {
-            Blitter.Blit(screenTarget, _backgroundTarget);
+            Blitter.BlitOrSwap(ref screenTarget, ref _backgroundTarget);
+            MainGraphics.AssignScreenTargets();
             Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             return;
