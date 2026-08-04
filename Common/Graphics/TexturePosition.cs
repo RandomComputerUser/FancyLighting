@@ -10,10 +10,11 @@ public record struct TexturePosition(
     {
         var transform = Main.GameViewMatrix.TransformationMatrix;
         MatrixUtils.Invert2x2HomogeneousTransformation(ref transform);
+        var topLeft = Vector2.Transform(Vector2.Zero, transform);
         return new(
-            Vector2.Transform(Vector2.Zero, transform) + Main.screenPosition,
-            Vector2.Transform(new Vector2(screenTarget.Width, 0f), transform),
-            Vector2.Transform(new Vector2(0f, screenTarget.Height), transform)
+            topLeft + Main.screenPosition,
+            Vector2.Transform(new Vector2(screenTarget.Width, 0f), transform) - topLeft,
+            Vector2.Transform(new Vector2(0f, screenTarget.Height), transform) - topLeft
         );
     }
 
