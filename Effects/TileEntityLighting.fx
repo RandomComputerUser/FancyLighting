@@ -11,7 +11,7 @@ float4x4 LightMapMatrixTransform;
 float Zoom;
 
 float NormalMapResolution;
-float2 NormalMapGradientMult;
+float NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
 

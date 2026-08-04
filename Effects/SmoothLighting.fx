@@ -15,7 +15,7 @@ float Gamma;
 float ReciprocalGamma;
 
 float2 NormalMapResolution;
-float2 NormalMapGradientMult;
+float NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
 
