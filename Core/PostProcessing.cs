@@ -129,6 +129,18 @@ public sealed class PostProcessing
     internal RenderTarget2D Blur(RenderTarget2D src, RenderTarget2D dst, int radius) =>
         _blurRenderer.Blur(src, dst, radius);
 
+    internal void BlitTwo(
+        RenderTarget2D foreground,
+        RenderTarget2D background,
+        RenderTarget2D dst
+    )
+    {
+        MainGraphics.ResetSavedTextures();
+        MainGraphics.SetTexture(4, background, SamplerState.PointClamp);
+        Blitter.Blit(foreground, dst, _combineLayersEffect);
+        MainGraphics.RestoreSavedTextures();
+    }
+
     private static (Vector4, Vector2) CalculateVibranceBoostParameters(double boost)
     {
         boost *= 4.0;
@@ -174,14 +186,17 @@ public sealed class PostProcessing
         )
         {
             smoothLightingInstance.CalculateSmoothLighting(cameraMode);
-            smoothLightingInstance.DrawSmoothLighting(
-                null,
-                null,
-                background: false,
-                disableNormalMaps: true,
-                doScaling: true,
-                overbrightPass: true
-            );
+            if (smoothLightingInstance.CanDrawSmoothLighting)
+            {
+                smoothLightingInstance.DrawSmoothLighting(
+                    screenTarget,
+                    null,
+                    background: false,
+                    disableNormalMaps: true,
+                    doScaling: true,
+                    overbrightPass: true
+                );
+            }
 
             if (hiDef)
             {
@@ -396,6 +411,7 @@ public sealed class PostProcessing
         if (ReferenceEquals(currTarget, screenTargetSwap))
         {
             Blitter.BlitOrSwap(ref screenTargetSwap, ref screenTarget);
+            MainGraphics.AssignScreenTargets();
         }
     }
 }

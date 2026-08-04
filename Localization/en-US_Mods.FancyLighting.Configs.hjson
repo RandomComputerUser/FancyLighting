@@ -21,7 +21,7 @@ CompatibilityConfig: {
 	}
 
 	# Smooth Lighting
-
+	
 	DisableHdrDuringBossFights: {
 		Label: Disable HDRR During Boss Fights and Events
 		Tooltip:

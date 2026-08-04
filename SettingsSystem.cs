@@ -29,7 +29,7 @@ internal sealed class SettingsSystem : ModSystem
     internal void OnConfigChange()
     {
         SettingsUpdate();
-        ModContent.GetInstance<FancyLightingMod>().OnConfigChange();
+        ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
     }
 
     internal void SettingsUpdate()
@@ -79,7 +79,7 @@ internal sealed class SettingsSystem : ModSystem
                     or RenderMode.EnhancedHdr
         )
         {
-            ModContent.GetInstance<FancyLightingMod>().OnConfigChange();
+            ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
         }
         _prevHdrDisabled = hdrDisabled;
     }

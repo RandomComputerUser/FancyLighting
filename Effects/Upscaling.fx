@@ -1,9 +1,7 @@
 sampler LightSampler : register(s0);
-sampler DitherSampler : register(s4);
 
 float2 LightMapSize;
 float2 PixelSize;
-float2 DitherCoordMult;
 
 #define CUBIC_MULT 0.5503212081491045 // 1 / cbrt(6)
 
@@ -99,7 +97,6 @@ float4 BicubicFilteringWithAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
     return max(color, 0);
 }
 
-
 technique BicubicFiltering
 {
     pass Pass1
@@ -109,9 +106,9 @@ technique BicubicFiltering
     }
 }
 
-technique Pass1
+technique BicubicFilteringWithAlpha
 {
-    pass BicubicFilteringWithAlpha
+    pass Pass1
     {
         VertexShader = compile vs_3_0 Bicubic_VS();
         PixelShader = compile ps_3_0 BicubicFilteringWithAlpha_PS();

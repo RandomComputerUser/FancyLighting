@@ -26,6 +26,12 @@ struct PixelShaderInput
     float2 LightTexCoord : TEXCOORD1;
 };
 
+struct LightMapOnlyPixelShaderInput
+{
+    float4 Position : SV_Position;
+    float2 LightTexCoord : TEXCOORD1;
+};
+
 /* Helper functions *********************************************************************/
 
 float Square(float x)
@@ -330,7 +336,7 @@ float4 SmoothLighting(
     return color;
 }
 
-/* Vertex shader ************************************************************************/
+/* Vertex shaders ***********************************************************************/
 
 PixelShaderInput SmoothLighting_VS(
     float4 position : SV_Position, float2 texCoord : TEXCOORD0
@@ -340,6 +346,18 @@ PixelShaderInput SmoothLighting_VS(
     
     output.Position = position;
     output.TileTexCoord = texCoord;
+    output.LightTexCoord = mul(float4(texCoord, 0, 1), LightMapTransform).xy;
+    
+    return output;
+}
+
+LightMapOnlyPixelShaderInput LightMapOnly_VS(
+    float4 position : SV_Position, float2 texCoord : TEXCOORD0
+)
+{
+    LightMapOnlyPixelShaderInput output;
+    
+    output.Position = position;
     output.LightTexCoord = mul(float4(texCoord, 0, 1), LightMapTransform).xy;
     
     return output;
@@ -667,21 +685,35 @@ float4 NormalsDitheredEnhancedGlowFancySky_PS(PixelShaderInput input) : COLOR0
     );
 }
 
-float4 OverbrightMax_PS(PixelShaderInput input) : COLOR0
+float4 LightColor_PS(LightMapOnlyPixelShaderInput input) : COLOR0
+{
+    float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
+
+    return saturate(lightColor);
+}
+
+float4 LightColorDithered_PS(LightMapOnlyPixelShaderInput input) : COLOR0
+{
+    float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
+
+    return Dithered(input.Position, saturate(lightColor));
+}
+
+float4 OverbrightMax_PS(LightMapOnlyPixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
     return max(lightColor, 1);
 }
 
-float4 OverbrightMaxDithered_PS(PixelShaderInput input) : COLOR0
+float4 OverbrightMaxDithered_PS(LightMapOnlyPixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
     return Dithered(input.Position, max(lightColor, 1));
 }
 
-float4 InverseOverbrightMaxHiDef_PS(PixelShaderInput input) : COLOR0
+float4 InverseOverbrightMaxHiDef_PS(LightMapOnlyPixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
@@ -1050,11 +1082,29 @@ technique NormalsDitheredEnhancedGlowFancySky
     }
 }
 
+technique LightColor
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
+        PixelShader = compile ps_3_0 LightColor_PS();
+    }
+}
+
+technique LightColorDithered
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
+        PixelShader = compile ps_3_0 LightColorDithered_PS();
+    }
+}
+
 technique OverbrightMax
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
         PixelShader = compile ps_3_0 OverbrightMax_PS();
     }
 }
@@ -1063,7 +1113,7 @@ technique OverbrightMaxDithered
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
         PixelShader = compile ps_3_0 OverbrightMaxDithered_PS();
     }
 }
@@ -1072,7 +1122,7 @@ technique InverseOverbrightMaxHiDef
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
         PixelShader = compile ps_3_0 InverseOverbrightMaxHiDef_PS();
     }
 }

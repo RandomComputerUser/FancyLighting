@@ -27,7 +27,7 @@ internal static class TextureUtils
 
         if (
             target is null
-            || target.GraphicsDevice != Main.graphics.GraphicsDevice
+            || !ReferenceEquals(target.GraphicsDevice, Main.graphics.GraphicsDevice)
             || target.Width != width
             || target.Height != height
             || target.Format != format
@@ -52,7 +52,7 @@ internal static class TextureUtils
     {
         if (
             target is null
-            || target.GraphicsDevice != Main.graphics.GraphicsDevice
+            || !ReferenceEquals(target.GraphicsDevice, Main.graphics.GraphicsDevice)
             || target.Format == format
         )
         {
@@ -90,7 +90,7 @@ internal static class TextureUtils
 
         if (
             texture is null
-            || texture.GraphicsDevice != Main.graphics.GraphicsDevice
+            || !ReferenceEquals(texture.GraphicsDevice, Main.graphics.GraphicsDevice)
             || texture.Format != format
             || (
                 maxExtraPixels >= 0

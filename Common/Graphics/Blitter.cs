@@ -7,6 +7,17 @@ internal static class Blitter
 
     internal static void Load()
     {
+        _basicBlitEffect = new(EffectLoader.Load("Blit"), "Blit");
+    }
+
+    internal static void Unload()
+    {
+        _fullscreenTriangle?.Dispose();
+        _fullscreenTriangle = null;
+    }
+
+    private static void LoadFullscreenTriangle()
+    {
         _fullscreenTriangle = new(
             Main.graphics.GraphicsDevice,
             VertexPositionTexture.VertexDeclaration,
@@ -21,14 +32,6 @@ internal static class Blitter
                     new(new(3f, 1f, 0f), new(2f, 0f)),
                 ]
         );
-
-        _basicBlitEffect = new(EffectLoader.Load("Blit"), "Blit");
-    }
-
-    internal static void Unload()
-    {
-        _fullscreenTriangle?.Dispose();
-        _fullscreenTriangle = null;
     }
 
     public static void BlitOrSwap(ref RenderTarget2D src, ref RenderTarget2D dst)
@@ -62,6 +65,11 @@ internal static class Blitter
         if (clearColor.HasValue)
         {
             device.Clear(clearColor.Value);
+        }
+
+        if (_fullscreenTriangle is null)
+        {
+            LoadFullscreenTriangle();
         }
 
         device.BlendState = blendState ?? BlendState.Opaque;

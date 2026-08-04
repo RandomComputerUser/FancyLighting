@@ -62,7 +62,7 @@ internal static class PerformanceTracker
 
     private static Dictionary<string, StatTracker> _stats = new();
 
-    private static long _lastDisplayTime = 0;
+    private static long _lastDisplayTime;
 
     public const double DisplayIntervalSeconds = 10.0;
 

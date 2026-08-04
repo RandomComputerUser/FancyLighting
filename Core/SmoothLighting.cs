@@ -30,11 +30,9 @@ public sealed class SmoothLighting
 
     private bool _smoothLightingLightMapValid;
     private bool _smoothLightingComplete;
-    private bool _smoothLightingHiResComplete;
     private bool _useAlphaChannelAsSkyLightLuma;
 
-    internal bool CanDrawSmoothLighting =>
-        _smoothLightingComplete && LightingConfig.Instance.SmoothLightingEnabled();
+    internal bool CanDrawSmoothLighting => _smoothLightingComplete;
 
     private readonly FullscreenEffect _bicubicFilteringEffect;
     private readonly FullscreenEffect _bicubicFilteringWithAlphaEffect;
@@ -63,6 +61,8 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowEffect;
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowAmbientOcclusionEffect;
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowFancySkyEffect;
+    private readonly FullscreenEffect _lightColorEffect;
+    private readonly FullscreenEffect _lightColorDitheredEffect;
     private readonly FullscreenEffect _overbrightMaxEffect;
     private readonly FullscreenEffect _overbrightMaxDitheredEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
@@ -80,7 +80,7 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _syncHdrEffect;
 
     internal bool ReadyForHdrSync =>
-        _smoothLightingHiResComplete && _prevColorsHiRes is not null;
+        _colorsHiRes is not null && _prevColorsHiRes is not null;
 
     /// <summary>
     /// Modify the lighting of a tile.
@@ -108,7 +108,7 @@ public sealed class SmoothLighting
     /// Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting.
     /// In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
     /// </remarks>
-    public static TileLightModifier[] TileLightModifiers = null;
+    public static TileLightModifier[] TileLightModifiers;
 
     /// <summary>
     /// Set custom tile lighting for a particular tile type.
@@ -168,15 +168,6 @@ public sealed class SmoothLighting
 
     internal SmoothLighting()
     {
-        _lightMapTileArea = new(0, 0, 0, 0);
-
-        _smoothLightingLightMapValid = false;
-        _smoothLightingComplete = false;
-        _smoothLightingHiResComplete = false;
-        _useAlphaChannelAsSkyLightLuma = false;
-
-        _tmpLights = null;
-
         _ditherNoise = ModContent
             .Request<Texture2D>(
                 "FancyLighting/Effects/DitherNoise",
@@ -256,6 +247,8 @@ public sealed class SmoothLighting
             effect,
             "NormalsDitheredEnhancedGlowFancySky"
         );
+        _lightColorEffect = new(effect, "LightColor");
+        _lightColorDitheredEffect = new(effect, "LightColorDithered");
         _overbrightMaxEffect = new(effect, "OverbrightMax");
         _overbrightMaxDitheredEffect = new(effect, "OverbrightMaxDithered");
         _inverseOverbrightMaxHiDefEffect = new(effect, "InverseOverbrightMaxHiDef");
@@ -1149,24 +1142,23 @@ public sealed class SmoothLighting
         }
     }
 
-    internal void CalculateSmoothLighting(
-        bool cameraMode = false,
-        bool doHiResLightingRender = false
-    )
+    internal bool CalculateSmoothLighting(bool cameraMode = false)
     {
+        var switchedTargets = false;
+
         if (!_smoothLightingLightMapValid)
         {
-            return;
+            return switchedTargets;
         }
 
         if (_smoothLightingComplete)
         {
-            return;
+            return switchedTargets;
         }
 
         if (Main.tile.Height == 0 || Main.tile.Width == 0)
         {
-            return;
+            return switchedTargets;
         }
 
         var xmin = _lightMapTileArea.X;
@@ -1179,27 +1171,27 @@ public sealed class SmoothLighting
         var clampedXmax = Math.Clamp(xmin + width, 0, Main.tile.Width);
         if (clampedXmax - clampedXmin < 1)
         {
-            return;
+            return switchedTargets;
         }
 
         var clampedStart = Math.Clamp(clampedXmin - xmin, 0, width);
         var clampedEnd = Math.Clamp(clampedXmax - clampedXmin, 0, width);
         if (clampedEnd - clampedStart < 1)
         {
-            return;
+            return switchedTargets;
         }
 
         var clampedYmin = Math.Clamp(ymin, 0, Main.tile.Height);
         var clampedYmax = Math.Clamp(ymax, 0, Main.tile.Height);
         if (clampedYmax - clampedYmin < 1)
         {
-            return;
+            return switchedTargets;
         }
 
         var offset = clampedYmin - ymin;
         if (offset < 0 || offset >= height)
         {
-            return;
+            return switchedTargets;
         }
 
         TextureUtils.MakeAtLeastSize(
@@ -1224,8 +1216,7 @@ public sealed class SmoothLighting
                 clampedEnd,
                 offset,
                 width,
-                height,
-                cameraMode
+                height
             );
         }
         else
@@ -1238,8 +1229,7 @@ public sealed class SmoothLighting
                 clampedEnd,
                 offset,
                 width,
-                height,
-                cameraMode
+                height
             );
 
             _colorsHiRes?.Dispose();
@@ -1249,21 +1239,22 @@ public sealed class SmoothLighting
         }
         PerformanceTracker.StopTiming("Smooth Lighting (Light Map Texture)");
 
-        var invokeEvent = PostUpdateLightMap != null;
-
-        if (doBicubicUpscaling && (doHiResLightingRender || invokeEvent))
+        if (doBicubicUpscaling)
         {
             RenderHiResLighting(_colors);
-            _smoothLightingHiResComplete = true;
+            switchedTargets = true;
         }
         else
         {
-            _smoothLightingHiResComplete = false;
+            _colorsHiRes?.Dispose();
+            _colorsHiRes = null;
+            _prevColorsHiRes?.Dispose();
+            _prevColorsHiRes = null;
         }
 
-        if (!invokeEvent)
+        if (PostUpdateLightMap == null)
         {
-            return;
+            return switchedTargets;
         }
 
         var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
@@ -1283,6 +1274,8 @@ public sealed class SmoothLighting
             _lightMapTileArea,
             cameraMode
         );
+
+        return switchedTargets;
     }
 
     private void CalculateSmoothLightingHdr(
@@ -1293,8 +1286,7 @@ public sealed class SmoothLighting
         int clampedEnd,
         int offset,
         int width,
-        int height,
-        bool cameraMode
+        int height
     )
     {
         var skyLightArea = FancySkyLighting._lightMapArea;
@@ -1411,7 +1403,7 @@ public sealed class SmoothLighting
 
         _colors.SetData(0, new(0, 0, height, width), _finalLightsHiDef, 0, length);
 
-        _smoothLightingComplete = !cameraMode;
+        _smoothLightingComplete = true;
         _useAlphaChannelAsSkyLightLuma = useLuma;
     }
 
@@ -1423,8 +1415,7 @@ public sealed class SmoothLighting
         int clampedEnd,
         int offset,
         int width,
-        int height,
-        bool cameraMode
+        int height
     )
     {
         var length = width * height;
@@ -1525,7 +1516,7 @@ public sealed class SmoothLighting
 
         _colors.SetData(0, new(0, 0, height, width), _finalLights, 0, length);
 
-        _smoothLightingComplete = !cameraMode;
+        _smoothLightingComplete = true;
         _useAlphaChannelAsSkyLightLuma = false;
     }
 
@@ -1574,6 +1565,7 @@ public sealed class SmoothLighting
         bool background,
         bool disableNormalMaps,
         bool doScaling,
+        bool lightColorPass = false,
         bool overbrightPass = false,
         bool invertOverbright = false,
         Texture2D glow = null,
@@ -1586,157 +1578,157 @@ public sealed class SmoothLighting
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
+        var srcUsed = !lightColorPass && !overbrightPass;
 
         var normalsEffectFlag =
-            !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
+            srcUsed && !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
         var ditheredEffectFlag =
             !DeveloperConfig.Instance.DisableDithering && doOverbright && !hiDef;
         var enhancedGlowEffectFlag = lightedGlow is not null;
         var fancySkyEffectFlag =
-            !overbrightPass && _useAlphaChannelAsSkyLightLuma && !background;
+            normalsEffectFlag && !background && _useAlphaChannelAsSkyLightLuma;
         var ambientOcclusionEffectFlag = ambientOcclusion is not null;
-        var opaqueEffectFlag = lightOnly && background && ambientOcclusion is null;
+        var opaqueEffectFlag =
+            srcUsed && lightOnly && background && ambientOcclusion is null;
 
         var lightMapTexture = _colors;
         var lightMapScale = 1f;
-        if (doBicubicUpscaling)
+        if (doBicubicUpscaling && _colorsHiRes is not null)
         {
-            if (!_smoothLightingHiResComplete)
-            {
-                RenderHiResLighting(lightMapTexture);
-                _smoothLightingHiResComplete = true;
-            }
-
             lightMapTexture = _colorsHiRes;
             lightMapScale = 0.25f;
         }
 
-        var effect = overbrightPass
-            ? invertOverbright
-                ? _inverseOverbrightMaxHiDefEffect
-                : ditheredEffectFlag
-                    ? _overbrightMaxDitheredEffect
-                    : _overbrightMaxEffect
-            : normalsEffectFlag
-                ? ditheredEffectFlag
-                    ? enhancedGlowEffectFlag
-                        ? fancySkyEffectFlag
-                            ? _normalsDitheredEnhancedGlowFancySkyEffect
+        var effect = lightColorPass
+            ? ditheredEffectFlag
+                ? _lightColorDitheredEffect
+                : _lightColorEffect
+            : overbrightPass
+                ? invertOverbright
+                    ? _inverseOverbrightMaxHiDefEffect
+                    : ditheredEffectFlag
+                        ? _overbrightMaxDitheredEffect
+                        : _overbrightMaxEffect
+                : normalsEffectFlag
+                    ? ditheredEffectFlag
+                        ? enhancedGlowEffectFlag
+                            ? fancySkyEffectFlag
+                                ? _normalsDitheredEnhancedGlowFancySkyEffect
+                                : ambientOcclusionEffectFlag
+                                    ? _normalsDitheredEnhancedGlowAmbientOcclusionEffect
+                                    : _normalsDitheredEnhancedGlowEffect
+                            : fancySkyEffectFlag
+                                ? _normalsDitheredFancySkyEffect
+                                : ambientOcclusionEffectFlag
+                                    ? _normalsDitheredAmbientOcclusionEffect
+                                    : opaqueEffectFlag
+                                        ? _normalsDitheredOpaqueLightOnlyEffect
+                                        : _normalsDitheredEffect
+                        : enhancedGlowEffectFlag
+                            ? fancySkyEffectFlag
+                                ? _normalsEnhancedGlowFancySkyEffect
+                                : ambientOcclusionEffectFlag
+                                    ? _normalsEnhancedGlowAmbientOcclusionEffect
+                                    : _normalsEnhancedGlowEffect
+                            : fancySkyEffectFlag
+                                ? _normalsFancySkyEffect
+                                : ambientOcclusionEffectFlag
+                                    ? _normalsAmbientOcclusionEffect
+                                    : opaqueEffectFlag
+                                        ? _normalsOpaqueLightOnlyEffect
+                                        : _normalsEffect
+                    : ditheredEffectFlag
+                        ? enhancedGlowEffectFlag
+                            ? ambientOcclusionEffectFlag
+                                ? _smoothDitheredEnhancedGlowAmbientOcclusionEffect
+                                : _smoothDitheredEnhancedGlowEffect
                             : ambientOcclusionEffectFlag
-                                ? _normalsDitheredEnhancedGlowAmbientOcclusionEffect
-                                : _normalsDitheredEnhancedGlowEffect
-                        : fancySkyEffectFlag
-                            ? _normalsDitheredFancySkyEffect
-                            : ambientOcclusionEffectFlag
-                                ? _normalsDitheredAmbientOcclusionEffect
+                                ? _smoothDitheredAmbientOcclusionEffect
                                 : opaqueEffectFlag
-                                    ? _normalsDitheredOpaqueLightOnlyEffect
-                                    : _normalsDitheredEffect
-                    : enhancedGlowEffectFlag
-                        ? fancySkyEffectFlag
-                            ? _normalsEnhancedGlowFancySkyEffect
+                                    ? _smoothDitheredOpaqueLightOnlyEffect
+                                    : _smoothDitheredEffect
+                        : enhancedGlowEffectFlag
+                            ? ambientOcclusionEffectFlag
+                                ? _smoothEnhancedGlowAmbientOcclusionEffect
+                                : _smoothEnhancedGlowEffect
                             : ambientOcclusionEffectFlag
-                                ? _normalsEnhancedGlowAmbientOcclusionEffect
-                                : _normalsEnhancedGlowEffect
-                        : fancySkyEffectFlag
-                            ? _normalsFancySkyEffect
-                            : ambientOcclusionEffectFlag
-                                ? _normalsAmbientOcclusionEffect
+                                ? _smoothAmbientOcclusionEffect
                                 : opaqueEffectFlag
-                                    ? _normalsOpaqueLightOnlyEffect
-                                    : _normalsEffect
-                : ditheredEffectFlag
-                    ? enhancedGlowEffectFlag
-                        ? ambientOcclusionEffectFlag
-                            ? _smoothDitheredEnhancedGlowAmbientOcclusionEffect
-                            : _smoothDitheredEnhancedGlowEffect
-                        : ambientOcclusionEffectFlag
-                            ? _smoothDitheredAmbientOcclusionEffect
-                            : opaqueEffectFlag
-                                ? _smoothDitheredOpaqueLightOnlyEffect
-                                : _smoothDitheredEffect
-                    : enhancedGlowEffectFlag
-                        ? ambientOcclusionEffectFlag
-                            ? _smoothEnhancedGlowAmbientOcclusionEffect
-                            : _smoothEnhancedGlowEffect
-                        : ambientOcclusionEffectFlag
-                            ? _smoothAmbientOcclusionEffect
-                            : opaqueEffectFlag
-                                ? _smoothOpaqueLightOnlyEffect
-                                : _smoothEffect;
+                                    ? _smoothOpaqueLightOnlyEffect
+                                    : _smoothEffect;
 
-        if (src is not null)
+        var position = doScaling
+            ? TexturePosition.GetScreenPosition(src)
+            : TexturePosition.GetTileTargetPosition(src);
+
+        position.TextureToWorldTransform(out var tileToWorldTransform);
+        TexturePosition
+            .FromTextureTileCoords(
+                lightMapTexture,
+                _lightMapTileArea.X,
+                _lightMapTileArea.Y,
+                lightMapScale,
+                true
+            )
+            .WorldToTextureTransform(out var lightMapTransform);
+        Matrix.Multiply(
+            ref tileToWorldTransform,
+            ref lightMapTransform,
+            out lightMapTransform
+        );
+
+        effect.SetParameter("LightMapTransform", lightMapTransform);
+
+        if (normalsEffectFlag)
         {
-            var position = doScaling
-                ? TexturePosition.GetScreenPosition(src)
-                : TexturePosition.GetTileTargetPosition(src);
-
-            position.TextureToWorldTransform(out var tileToWorldTransform);
-            TexturePosition
-                .FromTextureTileCoords(
-                    lightMapTexture,
-                    _lightMapTileArea.X,
-                    _lightMapTileArea.Y,
-                    lightMapScale,
-                    true
-                )
-                .WorldToTextureTransform(out var lightMapTransform);
-            Matrix.Multiply(
-                ref tileToWorldTransform,
-                ref lightMapTransform,
-                out lightMapTransform
+            var normalMapResolution = fineNormalMaps ? 1f : 2f;
+            var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
+            var normalMapGradientMult = 16f * NormalMapGradientBaseMult * overbrightMult;
+            var normalMapStrength = Math.Clamp(
+                PreferencesConfig.Instance.NormalMapsMultiplier(),
+                0f,
+                1f
             );
 
-            effect.SetParameter("LightMapTransform", lightMapTransform);
+            if (background)
+            {
+                normalMapStrength *= 0.85f;
+            }
+
+            effect
+                .SetParameter(
+                    "NormalMapResolution",
+                    new Vector2(
+                        normalMapResolution / src.Width,
+                        normalMapResolution / src.Height
+                    )
+                )
+                .SetParameter("NormalMapGradientMult", normalMapGradientMult)
+                .SetParameter("NormalMapStrength", normalMapStrength);
+
+            if (fancySkyEffectFlag)
+            {
+                var hour = GameTimeUtils.CalculateCurrentHour();
+                var (skyLightAngle, skyLightMult, _) =
+                    FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
+                var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult;
+                effect.SetParameter(
+                    "SkyLightGradient",
+                    -normalMapSkyGradientMult
+                        * new Vector2(
+                            (float)Math.Cos(skyLightAngle),
+                            (float)Math.Sin(skyLightAngle)
+                        )
+                );
+            }
         }
 
         var gamma = PostProcessing.ContentGamma();
-        var normalMapResolution = fineNormalMaps ? 1f : 2f;
-        var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-        var normalMapGradientMult = 16f * NormalMapGradientBaseMult * overbrightMult;
-        var normalMapStrength = Math.Clamp(
-            PreferencesConfig.Instance.NormalMapsMultiplier(),
-            0f,
-            1f
-        );
-
-        if (background)
-        {
-            normalMapStrength *= 0.85f;
-        }
-
-        effect
-            .SetParameter("Gamma", gamma)
-            .SetParameter("ReciprocalGamma", 1f / gamma)
-            .SetParameter(
-                "NormalMapResolution",
-                new Vector2(
-                    normalMapResolution / src.Width,
-                    normalMapResolution / src.Height
-                )
-            )
-            .SetParameter("NormalMapGradientMult", normalMapGradientMult)
-            .SetParameter("NormalMapStrength", normalMapStrength);
-
-        if (fancySkyEffectFlag)
-        {
-            var hour = GameTimeUtils.CalculateCurrentHour();
-            var (skyLightAngle, skyLightMult, _) =
-                FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
-            var normalMapSkyGradientMult = (float)skyLightMult * overbrightMult;
-            effect.SetParameter(
-                "SkyLightGradient",
-                -normalMapSkyGradientMult
-                    * new Vector2(
-                        (float)Math.Cos(skyLightAngle),
-                        (float)Math.Sin(skyLightAngle)
-                    )
-            );
-        }
+        effect.SetParameter("Gamma", gamma).SetParameter("ReciprocalGamma", 1f / gamma);
 
         MainGraphics.ResetSavedTextures();
 
-        if (src is not null)
+        if (srcUsed)
         {
             MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
         }
@@ -1758,13 +1750,17 @@ public sealed class SmoothLighting
         }
 
         Blitter.Blit(
-            src ?? lightMapTexture,
+            srcUsed ? src : lightMapTexture,
             dst,
             effect,
             blendState: dst is null
-                ? src is null
-                    ? CustomBlendStates.MultiplyColor
-                    : BlendState.AlphaBlend
+                ? lightColorPass
+                    ? lightOnly
+                        ? BlendState.Opaque
+                        : CustomBlendStates.MultiplyColor
+                    : overbrightPass
+                        ? CustomBlendStates.MultiplyColor
+                        : BlendState.AlphaBlend
                 : BlendState.Opaque,
             setTarget: dst is not null
         );
@@ -1825,20 +1821,16 @@ public sealed class SmoothLighting
 
         if (needsLightMap)
         {
-            CalculateSmoothLighting(cameraMode);
+            var switchedTargets = CalculateSmoothLighting(cameraMode);
 
-            if (_colors is null)
+            if (!_smoothLightingComplete)
             {
                 return (null, false);
             }
 
-            if (doBicubicUpscaling && !_smoothLightingHiResComplete)
+            if (switchedTargets)
             {
                 Blitter.BlitOrSwap(ref screenTarget, ref tmpTarget);
-
-                RenderHiResLighting(_colors);
-                _smoothLightingHiResComplete = true;
-
                 usedTmpTarget = true;
             }
 

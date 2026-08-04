@@ -68,7 +68,7 @@ public sealed class LightingConfig : ModConfig
 
     public override void OnChanged()
     {
-        ModContent.GetInstance<SettingsSystem>().OnConfigChange();
+        ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
     }
 
     private void CopyFrom(PresetOptions options)

@@ -1,5 +1,5 @@
 sampler ScreenSampler : register(s0);
-sampler BackgroundSampler : register(s0);
+sampler BackgroundSampler : register(s4);
 sampler DitherSampler : register(s4);
 sampler BloomBlurSampler : register(s4);
 
@@ -70,6 +70,8 @@ static const float3x3 SqrtAcescgToSrgb =
     -0.03728355, -0.00469806,  1.07174366
 };
 
+/* Helper functions *********************************************************************/
+
 float3 LinearToSrgb(float3 color)
 {
     float3 lowPart = 12.92 * color;
@@ -107,6 +109,8 @@ float Luminance(float3 color)
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
 
+/* Vertex shaders ***********************************************************************/
+
 void Blit_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
@@ -115,6 +119,8 @@ void Blit_VS(
 {
     screenPos = position;
 }
+
+/* Pixel shaders ************************************************************************/
 
 float4 Brighten_PS(float2 coords : TEXCOORD0) : COLOR0
 {
@@ -149,21 +155,21 @@ float4 GammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
 float4 CombineLayersNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 foregroundColor = tex2D(ScreenSampler, coords);
-    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(BackgroundSampler, coords);
     return float4((1 - foregroundColor.a) * backgroundColor.rgb + foregroundColor.rgb, 1);
 }
 
 float4 CombineLayers_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 foregroundColor = tex2D(ScreenSampler, coords);
-    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(BackgroundSampler, coords);
     return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
 }
 
 float4 CombineLayersGammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 foregroundColor = tex2D(ScreenSampler, coords);
-    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(BackgroundSampler, coords);
     foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
     backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
     return float4((1 - foregroundColor.a) * backgroundColor.rgb + foregroundColor.rgb, 1);
@@ -172,7 +178,7 @@ float4 CombineLayersGammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
 float4 CombineLayersGammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 foregroundColor = tex2D(ScreenSampler, coords);
-    float4 backgroundColor = tex2D(ScreenSampler, coords);
+    float4 backgroundColor = tex2D(BackgroundSampler, coords);
     foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
     backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
     return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
@@ -340,6 +346,8 @@ float4 VibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
     color.rgb = max(MakeVibrant(max(color.rgb, 0.0)), 0);
     return color;
 }
+
+/* Techniques ***************************************************************************/
 
 technique BrightenPixelOnly
 {

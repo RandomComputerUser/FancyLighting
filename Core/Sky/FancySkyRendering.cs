@@ -73,11 +73,7 @@ public sealed class FancySkyRendering
         bool artificial
     )
     {
-        if (
-            !LightingConfig.Instance.FancySkyRenderingEnabled()
-            || !MainGraphics.DoingCapture
-            || artificial
-        )
+        if (!LightingConfig.Instance.FancySkyRenderingEnabled() || artificial)
         {
             orig(self, sceneArea, artificial);
             return;
@@ -100,7 +96,7 @@ public sealed class FancySkyRendering
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
-        var target = MainGraphics.ScreenTarget;
+        var target = MainGraphics.ScreenTarget ?? Main.screenTarget;
 
         var hour = GameTimeUtils.CalculateCurrentHour();
         var skyColorMult =

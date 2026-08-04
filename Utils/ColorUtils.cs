@@ -30,10 +30,7 @@ internal static class ColorUtils
 
         textureRgba1010102.SetData([new Rgba1010102(1f, 0f, 0f, 0f)]);
 
-        Main.graphics.GraphicsDevice.SetRenderTarget(targetColor);
-        Main.spriteBatch.Begin();
-        Main.spriteBatch.Draw(textureRgba1010102, Vector2.Zero, Color.White);
-        Main.spriteBatch.End();
+        Blitter.Blit(textureRgba1010102, targetColor);
         Main.graphics.GraphicsDevice.SetRenderTarget(null);
 
         var colors = new Color[1];

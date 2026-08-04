@@ -12,7 +12,7 @@ public sealed class DeveloperConfig : ModConfig
 
     public override void OnChanged()
     {
-        ModContent.GetInstance<SettingsSystem>().OnConfigChange();
+        ModContent.GetInstance<SettingsSystem>()?.OnConfigChange();
     }
 
     [Header("General")]

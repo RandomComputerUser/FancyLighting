@@ -1,5 +1,4 @@
 ﻿using FancyLighting.VFX;
-using Terraria.Graphics.Capture;
 
 namespace FancyLighting.Core;
 
