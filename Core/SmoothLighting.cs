@@ -1573,6 +1573,16 @@ public sealed class SmoothLighting
         Texture2D ambientOcclusion = null
     )
     {
+        if (src is null)
+        {
+            if (dst is not null)
+            {
+                Main.graphics.GraphicsDevice.SetRenderTarget(dst);
+            }
+
+            return;
+        }
+
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();

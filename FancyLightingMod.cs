@@ -1130,12 +1130,7 @@ public sealed class FancyLightingMod : Mod
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.graphics.GraphicsDevice.SetRenderTarget(Main.instance.backWaterTarget);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-
-            if (CompatibilityConfig.Instance.DisableRenderingOptimizations)
-            {
-                Main.graphics.GraphicsDevice.SetRenderTarget(null);
-            }
-
+            Main.graphics.GraphicsDevice.SetRenderTarget(null);
             return;
         }
 
@@ -1626,11 +1621,7 @@ public sealed class FancyLightingMod : Mod
             lightedGlow: enhancedGlowMasks ? _tmpTarget3 : null,
             ambientOcclusion: ambientOcclusion
         );
-
-        if (!optimize)
-        {
-            Main.graphics.GraphicsDevice.SetRenderTarget(null);
-        }
+        Main.graphics.GraphicsDevice.SetRenderTarget(null);
     }
 
     private void DoSmoothLightingCameraMode(
@@ -1921,6 +1912,15 @@ public sealed class FancyLightingMod : Mod
         _smoothLightingInstance.CalculateSmoothLighting();
         if (!_smoothLightingInstance.ReadyForHdrSync)
         {
+            Main.spriteBatch.Begin(
+                SpriteSortMode.Deferred,
+                BlendState.AlphaBlend,
+                Main.DefaultSamplerState,
+                DepthStencilState.None,
+                Main.Rasterizer,
+                null,
+                Main.Transform
+            );
             return;
         }
 
