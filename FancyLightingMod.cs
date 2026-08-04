@@ -906,6 +906,8 @@ public sealed class FancyLightingMod : Mod
         bool flat
     )
     {
+        orig(self, flat);
+
         var doOverbright =
             LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright();
