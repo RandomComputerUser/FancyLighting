@@ -64,7 +64,6 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _lightColorEffect;
     private readonly FullscreenEffect _lightColorDitheredEffect;
     private readonly FullscreenEffect _overbrightMaxEffect;
-    private readonly FullscreenEffect _overbrightMaxDitheredEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
 
     private readonly FancyEffect _tileEntityLightOnlyEffect;
@@ -249,8 +248,7 @@ public sealed class SmoothLighting
         );
         _lightColorEffect = new(effect, "LightColor");
         _lightColorDitheredEffect = new(effect, "LightColorDithered");
-        _overbrightMaxEffect = new(effect, "OverbrightMax");
-        _overbrightMaxDitheredEffect = new(effect, "OverbrightMaxDithered");
+        _overbrightMaxEffect = new(effect, "OverbrightMax", EffectFeatures.HiDef);
         _inverseOverbrightMaxHiDefEffect = new(effect, "InverseOverbrightMaxHiDef");
 
         effect = EffectLoader.Load("TileEntityLighting");
@@ -1588,10 +1586,13 @@ public sealed class SmoothLighting
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var srcUsed = !lightColorPass && !overbrightPass;
+        var srcUsed = !lightColorPass && !(overbrightPass && hiDef);
 
         var normalsEffectFlag =
-            srcUsed && !disableNormalMaps && LightingConfig.Instance.SimulateNormalMaps;
+            !lightColorPass
+            && !overbrightPass
+            && !disableNormalMaps
+            && LightingConfig.Instance.SimulateNormalMaps;
         var ditheredEffectFlag =
             !DeveloperConfig.Instance.DisableDithering && doOverbright && !hiDef;
         var enhancedGlowEffectFlag = lightedGlow is not null;
@@ -1599,7 +1600,11 @@ public sealed class SmoothLighting
             normalsEffectFlag && !background && _useAlphaChannelAsSkyLightLuma;
         var ambientOcclusionEffectFlag = ambientOcclusion is not null;
         var opaqueEffectFlag =
-            srcUsed && lightOnly && background && ambientOcclusion is null;
+            !lightColorPass
+            && !overbrightPass
+            && lightOnly
+            && background
+            && ambientOcclusion is null;
 
         var lightMapTexture = _colors;
         var lightMapScale = 1f;
@@ -1616,9 +1621,7 @@ public sealed class SmoothLighting
             : overbrightPass
                 ? invertOverbright
                     ? _inverseOverbrightMaxHiDefEffect
-                    : ditheredEffectFlag
-                        ? _overbrightMaxDitheredEffect
-                        : _overbrightMaxEffect
+                    : _overbrightMaxEffect
                 : normalsEffectFlag
                     ? ditheredEffectFlag
                         ? enhancedGlowEffectFlag

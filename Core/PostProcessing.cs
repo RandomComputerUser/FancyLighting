@@ -189,13 +189,18 @@ public sealed class PostProcessing
             if (smoothLightingInstance.CanDrawSmoothLighting)
             {
                 smoothLightingInstance.DrawSmoothLighting(
-                    screenTarget,
-                    null,
+                    currTarget,
+                    hiDef ? null : nextTarget,
                     background: false,
                     disableNormalMaps: true,
                     doScaling: true,
                     overbrightPass: true
                 );
+
+                if (!hiDef)
+                {
+                    (currTarget, nextTarget) = (nextTarget, currTarget);
+                }
             }
 
             if (hiDef)
