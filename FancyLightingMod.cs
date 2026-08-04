@@ -22,6 +22,8 @@ public sealed class FancyLightingMod : Mod
     internal static bool _preventTileParticles;
     private static bool _makePartialLiquidTranslucent;
     private static bool _suppressRenderBlack;
+    private static bool _useWhiteLightMap;
+    private static bool _useBlackLightMap;
 
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
@@ -53,8 +55,6 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
-    private bool _useWhiteLightMap;
-
     private void UseBlackLightMap(bool enable)
     {
         if (enable == _useBlackLightMap)
@@ -67,8 +67,6 @@ public sealed class FancyLightingMod : Mod
             _useBlackLightMap = enable;
         }
     }
-
-    private bool _useBlackLightMap;
 
     private bool OverrideLightMap(bool doOverride, Vector3[] overrideLights)
     {
@@ -129,6 +127,12 @@ public sealed class FancyLightingMod : Mod
         {
             return;
         }
+
+        _preventTileParticles = false;
+        _makePartialLiquidTranslucent = false;
+        _suppressRenderBlack = false;
+        _useWhiteLightMap = false;
+        _useBlackLightMap = false;
 
         SpriteBatchEffectLoader.Load();
         BlurRenderer.Load();
@@ -346,7 +350,14 @@ public sealed class FancyLightingMod : Mod
         On_LightMap.Blur += _LightMap_Blur;
 
         // Force these methods to be recompiled
-        // Otherwise our hooks for On_LightingEngine.ProcessBlur and On_LightMap.Blur may fail to be applied due to inlining
+        // Otherwise some hooks may fail to be applied due to inlining
+        IL_Main.DrawTileEntities += _ => { };
+        IL_Main.RenderBackground += _ => { };
+        IL_Main.RenderWater += _ => { };
+        IL_Main.RenderBlack += _ => { };
+        IL_Main.RenderTiles += _ => { };
+        IL_Main.RenderTiles2 += _ => { };
+        IL_Main.RenderWalls += _ => { };
         IL_LightingEngine.ProcessBlur += _ => { };
         IL_LightingEngine.ProcessArea += _ => { };
     }
@@ -467,7 +478,7 @@ public sealed class FancyLightingMod : Mod
         {
             var cursor = new ILCursor(context);
 
-            var overrideLightColorField = typeof(FancyLightingMod)
+            var useWhiteLightMapField = typeof(FancyLightingMod)
                 .GetField(
                     nameof(_useWhiteLightMap),
                     BindingFlags.NonPublic | BindingFlags.Static
@@ -482,7 +493,7 @@ public sealed class FancyLightingMod : Mod
                 return false;
             }
             */
-            cursor.Emit(OpCodes.Ldsfld, overrideLightColorField);
+            cursor.Emit(OpCodes.Ldsfld, useWhiteLightMapField);
             cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
             cursor.Emit(OpCodes.Ldc_I4_0);
             cursor.Emit(OpCodes.Ret);
@@ -500,7 +511,7 @@ public sealed class FancyLightingMod : Mod
         {
             var cursor = new ILCursor(context);
 
-            var overrideLightColorField = typeof(FancyLightingMod)
+            var useWhiteLightMapField = typeof(FancyLightingMod)
                 .GetField(
                     nameof(_useWhiteLightMap),
                     BindingFlags.NonPublic | BindingFlags.Static
@@ -515,7 +526,7 @@ public sealed class FancyLightingMod : Mod
                 return true;
             }
             */
-            cursor.Emit(OpCodes.Ldsfld, overrideLightColorField);
+            cursor.Emit(OpCodes.Ldsfld, useWhiteLightMapField);
             cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Ret);
@@ -987,6 +998,8 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
+        _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
+
         var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
         var effect = doDepthOfField
             ? cameraMode
@@ -1026,7 +1039,6 @@ public sealed class FancyLightingMod : Mod
             MainGraphics.AssignScreenTargets();
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
         if (_smoothLightingInstance.CanDrawSmoothLighting)
         {
             _smoothLightingInstance.DrawSmoothLighting(
@@ -1035,7 +1047,8 @@ public sealed class FancyLightingMod : Mod
                 background: false,
                 disableNormalMaps: true,
                 doScaling: true,
-                overbrightPass: true
+                overbrightPass: true,
+                invertOverbright: true
             );
         }
     }
@@ -1473,7 +1486,7 @@ public sealed class FancyLightingMod : Mod
                     ? Main.instance.tile2Target
                     : null,
                 tileEntityShadows: LightingConfig.Instance.DoTileEntityAmbientOcclusion,
-                cameraMode: false
+                cameraMode: true
             );
 
             if (!smoothLighting)

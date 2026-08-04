@@ -241,11 +241,7 @@ public sealed class PostProcessing
                         Blitter.Blit(
                             currTarget,
                             nextTarget,
-                            (
-                                cameraMode
-                                    ? _gammaToLinearEffect
-                                    : _gammaToLinearNoAlphaEffect
-                            )
+                            _gammaToLinearEffect
                                 .SetParameter("Exposure", exposure)
                                 .SetParameter("GammaRatio", gamma),
                             blendState: BlendState.AlphaBlend,
