@@ -12,8 +12,8 @@ public record struct TexturePosition(
         MatrixUtils.Invert2x2HomogeneousTransformation(ref transform);
         return new(
             Vector2.Transform(Vector2.Zero, transform) + Main.screenPosition,
-            Vector2.Transform(new Vector2(screenTarget.Height, 0f), transform),
-            Vector2.Transform(new Vector2(screenTarget.Height, 0f), transform)
+            Vector2.Transform(new Vector2(screenTarget.Width, 0f), transform),
+            Vector2.Transform(new Vector2(0f, screenTarget.Height), transform)
         );
     }
 
@@ -21,7 +21,7 @@ public record struct TexturePosition(
         new(
             Main.screenPosition - new Vector2(Main.offScreenRange, Main.offScreenRange),
             new Vector2(tileTarget.Width, 0f),
-            new Vector2(tileTarget.Height, 0f)
+            new Vector2(0f, tileTarget.Height)
         );
 
     public static TexturePosition GetTileTargetPosition(
@@ -31,7 +31,7 @@ public record struct TexturePosition(
         new(
             tilesPosition,
             new Vector2(tileTarget.Width, 0f),
-            new Vector2(tileTarget.Height, 0f)
+            new Vector2(0f, tileTarget.Height)
         );
 
     public static TexturePosition FromTextureTileCoords(
