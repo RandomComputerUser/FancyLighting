@@ -54,13 +54,11 @@ public sealed class PreferencesConfig : ModConfig
     public int ThreadCount
     {
         get => _threadCount;
-        set
-        {
+        set =>
             _threadCount =
                 value is DefaultOptions.ThreadCount
                     ? DefaultOptions.RuntimeDefaultThreadCount
                     : value;
-        }
     }
 
     private int _threadCount;

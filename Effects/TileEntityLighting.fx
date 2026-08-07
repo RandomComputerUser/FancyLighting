@@ -1,7 +1,7 @@
 sampler TextureSampler : register(s0);
-sampler LightSampler : register(s4);
-sampler GlowSampler : register(s5);
-sampler DitherSampler : register(s6);
+sampler LightSampler : register(s8);
+sampler GlowSampler : register(s9);
+sampler DitherSampler : register(s10);
 
 #define DITHER_TEXTURE_SIZE 32
 
@@ -326,6 +326,16 @@ float4 SmoothLightingColorDitheredLightOnly(
 
 /* Vertex shaders ***********************************************************************/
 
+void SpriteBatch_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    inout float4 color : COLOR0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = mul(position, MatrixTransform);
+}
+
 PixelShaderInput SmoothLighting_VS(VertexShaderInput input)
 {
     PixelShaderInput output;
@@ -516,6 +526,7 @@ technique LightOnly
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 LightOnly_PS();
     }
 }

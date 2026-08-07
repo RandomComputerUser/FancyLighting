@@ -49,18 +49,18 @@ internal class FancyEffect
         _lightOnlyHiDefTechnique ??= _baseTechnique;
     }
 
-    public EffectTechnique ApplyTechnique()
+    public FancyEffect ApplyTechnique()
     {
         Effect.CurrentTechnique = Technique;
-        return Technique;
+        return this;
     }
 
-    public EffectPass ApplyPass()
+    public FancyEffect ApplyPass()
     {
         Effect.CurrentTechnique = Technique;
         var pass = Effect.CurrentTechnique.Passes[0];
         pass.Apply();
-        return pass;
+        return this;
     }
 
     public FancyEffect SetParameter(string parameterName, float value)

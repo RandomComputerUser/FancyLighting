@@ -1,6 +1,6 @@
 sampler TextureSampler : register(s0);
-sampler PrevLightSampler : register(s4);
-sampler CurrLightSampler : register(s5);
+sampler PrevLightSampler : register(s8);
+sampler CurrLightSampler : register(s9);
 
 float4x4 PrevLightMapMatrixTransform;
 float4x4 CurrLightMapMatrixTransform;

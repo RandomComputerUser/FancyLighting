@@ -786,17 +786,7 @@ public sealed class FancyLightingMod : Mod
                 ? null
                 : _backgroundTarget;
 
-        if (CompatibilityConfig.Instance.DisableRenderingOptimizations)
-        {
-            MainGraphics.EndCapture_Post();
-            _postProcessingInstance.ApplyPostProcessing(
-                ref screenTarget1,
-                ref screenTarget2,
-                backgroundTarget,
-                _smoothLightingInstance
-            );
-        }
-        else
+        if (SettingsSystem._optimizeRendering)
         {
             _postProcessingInstance.ApplyPostProcessing(
                 ref MainGraphics.ScreenTarget,
@@ -808,6 +798,16 @@ public sealed class FancyLightingMod : Mod
             screenTarget1 = MainGraphics.ScreenTarget;
             screenTarget2 = MainGraphics.ScreenTargetSwap;
             MainGraphics.EndCapture_Post();
+        }
+        else
+        {
+            MainGraphics.EndCapture_Post();
+            _postProcessingInstance.ApplyPostProcessing(
+                ref screenTarget1,
+                ref screenTarget2,
+                backgroundTarget,
+                _smoothLightingInstance
+            );
         }
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
@@ -1477,14 +1477,18 @@ public sealed class FancyLightingMod : Mod
         if (ambientOcclusion)
         {
             TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, MainGraphics.ScreenTarget);
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, MainGraphics.ScreenTarget);
+            if (LightingConfig.Instance.DoNonSolidAmbientOcclusion)
+            {
+                TextureUtils.MatchSizeAndFormat(
+                    ref _tmpTarget2,
+                    MainGraphics.ScreenTarget
+                );
+            }
 
             ambientOcclusionTarget = _ambientOcclusionInstance.DrawAmbientOcclusion(
-                Main.instance.wallTarget,
-                Main.instance.tileTarget,
-                LightingConfig.Instance.DoNonSolidAmbientOcclusion
-                    ? Main.instance.tile2Target
-                    : null,
+                MainGraphics.ScreenTarget,
+                _tmpTarget1,
+                LightingConfig.Instance.DoNonSolidAmbientOcclusion ? _tmpTarget2 : null,
                 tileEntityShadows: LightingConfig.Instance.DoTileEntityAmbientOcclusion,
                 cameraMode: true
             );
@@ -1534,7 +1538,7 @@ public sealed class FancyLightingMod : Mod
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
-        var optimize = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
+        var optimize = SettingsSystem._optimizeRendering;
 
         _smoothLightingInstance.CalculateSmoothLighting();
         if (!_smoothLightingInstance.CanDrawSmoothLighting)
@@ -1543,9 +1547,9 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
+        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, tileTarget);
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, tileTarget);
             TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, tileTarget);
 
             if (optimize)
@@ -1661,11 +1665,12 @@ public sealed class FancyLightingMod : Mod
             drawAction();
             Main.tileBatch.End();
             Main.spriteBatch.End();
+            return;
         }
 
+        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, screenTarget);
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, screenTarget);
             TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, screenTarget);
 
             UseBlackLightMap(true);

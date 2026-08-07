@@ -10,17 +10,16 @@ public record struct TexturePosition(
     {
         var transform = Main.GameViewMatrix.TransformationMatrix;
         MatrixUtils.Invert2x2HomogeneousTransformation(ref transform);
-        var topLeft = Vector2.Transform(Vector2.Zero, transform);
         return new(
-            topLeft + Main.screenPosition,
-            Vector2.Transform(new Vector2(screenTarget.Width, 0f), transform) - topLeft,
-            Vector2.Transform(new Vector2(0f, screenTarget.Height), transform) - topLeft
+            new Vector2(transform.M41, transform.M42) + Main.screenPosition,
+            screenTarget.Width * new Vector2(transform.M11, transform.M12),
+            screenTarget.Height * new Vector2(transform.M21, transform.M22)
         );
     }
 
     public static TexturePosition GetTileTargetPosition(Texture2D tileTarget) =>
         new(
-            Main.screenPosition - new Vector2(Main.offScreenRange, Main.offScreenRange),
+            Main.screenPosition - new Vector2(Main.offScreenRange),
             new Vector2(tileTarget.Width, 0f),
             new Vector2(0f, tileTarget.Height)
         );

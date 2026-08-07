@@ -1,7 +1,7 @@
 sampler OccluderSampler : register(s0);
 
 sampler TileSampler : register(s0);
-sampler Tile2Sampler : register(s4);
+sampler Tile2Sampler : register(s8);
 
 float4x4 MatrixTransform;
 float4x4 MatrixTransform2;
@@ -21,6 +21,16 @@ void Blit_VS(
 )
 {
     screenPos = position;
+}
+
+void SpriteBatch_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    inout float4 color : COLOR0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = mul(position, MatrixTransform);
 }
 
 void Tiles_VS(
@@ -128,6 +138,7 @@ technique TileEntity
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 TileEntity_PS();
     }
 }

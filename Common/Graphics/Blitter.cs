@@ -36,13 +36,13 @@ internal static class Blitter
 
     public static void BlitOrSwap(ref RenderTarget2D src, ref RenderTarget2D dst)
     {
-        if (CompatibilityConfig.Instance.DisableRenderingOptimizations)
+        if (SettingsSystem._optimizeRendering)
         {
-            Blit(src, dst);
+            (src, dst) = (dst, src);
         }
         else
         {
-            (src, dst) = (dst, src);
+            Blit(src, dst);
         }
     }
 
@@ -76,8 +76,11 @@ internal static class Blitter
         device.DepthStencilState = DepthStencilState.None;
         device.RasterizerState = RasterizerState.CullNone;
 
-        device.Textures[0] = src;
-        device.SamplerStates[0] = samplerState ?? SamplerState.PointClamp;
+        if (src is not null)
+        {
+            device.Textures[0] = src;
+            device.SamplerStates[0] = samplerState ?? SamplerState.PointClamp;
+        }
 
         (effect ?? _basicBlitEffect).ApplyPass();
         device.SetVertexBuffer(_fullscreenTriangle);

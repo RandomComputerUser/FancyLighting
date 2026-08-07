@@ -1,11 +1,11 @@
 sampler TextureSampler : register(s0);
 
 sampler TileSampler : register(s0);
-sampler LightSampler : register(s4);
-sampler GlowSampler : register(s5);
-sampler LightedGlowSampler : register(s6);
-sampler AmbientOcclusionSampler : register(s7);
-sampler DitherSampler : register(s8);
+sampler LightSampler : register(s8);
+sampler GlowSampler : register(s9);
+sampler LightedGlowSampler : register(s10);
+sampler AmbientOcclusionSampler : register(s11);
+sampler DitherSampler : register(s12);
 
 #define DITHER_TEXTURE_SIZE 32
 
@@ -291,7 +291,7 @@ float4 SmoothLighting(
                 tileCoord,
                 lightCoord,
                 tileColor,
-                lightColorMult * lightColor
+                lightColor
             );
         }
         else
@@ -300,7 +300,7 @@ float4 SmoothLighting(
                 tileCoord,
                 lightCoord,
                 tileColor,
-                lightColorMult * lightColor.rgb
+                lightColor.rgb
             );
         }
     }

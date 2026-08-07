@@ -228,7 +228,7 @@ public static class FancySkyClouds
         effect
             .SetParameter("Scale", 2f * scale)
             .SetParameter("ShadingStrength", mult * cloudShadingStrength);
-        effect.ApplyPass();
+        effect.ApplyTechnique();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,

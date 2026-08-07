@@ -74,7 +74,7 @@ internal static class MainGraphics
 
     public static void AssignScreenTargets()
     {
-        if (CompatibilityConfig.Instance.DisableRenderingOptimizations)
+        if (!SettingsSystem._optimizeRendering)
         {
             return;
         }
@@ -167,11 +167,28 @@ internal static class MainGraphics
 
     public static void RestoreSavedTextures()
     {
-        while (_savedTextures.TryPop(out var textureInfo))
+        if (SettingsSystem._optimizeRendering)
         {
-            Main.graphics.GraphicsDevice.Textures[textureInfo.slot] = textureInfo.texture;
-            Main.graphics.GraphicsDevice.SamplerStates[textureInfo.slot] =
-                textureInfo.samplerState;
+            while (_savedTextures.TryPop(out var textureInfo))
+            {
+                if (
+                    Main.graphics.GraphicsDevice.Textures[textureInfo.slot]
+                    is RenderTarget2D
+                )
+                {
+                    Main.graphics.GraphicsDevice.Textures[textureInfo.slot] = null;
+                }
+            }
+        }
+        else
+        {
+            while (_savedTextures.TryPop(out var textureInfo))
+            {
+                Main.graphics.GraphicsDevice.Textures[textureInfo.slot] =
+                    textureInfo.texture;
+                Main.graphics.GraphicsDevice.SamplerStates[textureInfo.slot] =
+                    textureInfo.samplerState;
+            }
         }
     }
 }

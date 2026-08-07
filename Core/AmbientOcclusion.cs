@@ -10,7 +10,7 @@ public sealed class AmbientOcclusion
 
     private readonly FullscreenEffect _tilesEffect;
     private readonly FullscreenEffect _tilesAndTiles2Effect;
-    private readonly FancyEffect _tileEntityEffect;
+    private readonly SpriteBatchEffect _tileEntityEffect;
     private readonly FullscreenEffect _toneCurveEffect;
     private readonly FullscreenEffect _toneCurveDefaultEffect;
 
@@ -92,7 +92,7 @@ public sealed class AmbientOcclusion
             if (tile2Target is not null)
             {
                 effect.SetParameter("MatrixTransform2", Matrix.Identity);
-                MainGraphics.SetTexture(4, tile2Target, SamplerState.PointClamp);
+                MainGraphics.SetTexture(8, tile2Target, SamplerState.PointClamp);
             }
         }
         else
@@ -130,7 +130,7 @@ public sealed class AmbientOcclusion
                 );
                 effect.SetParameter("MatrixTransform2", tile2MatrixTransform);
 
-                MainGraphics.SetTexture(4, tile2Target, SamplerState.PointClamp);
+                MainGraphics.SetTexture(8, tile2Target, SamplerState.PointClamp);
             }
         }
 
@@ -139,17 +139,22 @@ public sealed class AmbientOcclusion
 
         if (tileEntityShadows)
         {
-            var prevPreventTileParticles = FancyLightingMod._preventTileParticles;
-            var currentZoom = Main.GameViewMatrix.Zoom;
             var currentScreenPosition = Main.screenPosition;
+            var currentMatrixZoom = Main.GameViewMatrix.Zoom;
+            var currentMatrixEffects = Main.GameViewMatrix.Effects;
+            var currentRasterizerState = Main.Rasterizer;
+
+            var prevPreventTileParticles = FancyLightingMod._preventTileParticles;
             _drawingTileEntities = true;
             FancyLightingMod._preventTileParticles = true;
             try
             {
                 if (!cameraMode)
                 {
-                    Main.GameViewMatrix.Zoom = Vector2.One;
                     Main.screenPosition -= new Vector2(Main.offScreenRange);
+                    Main.GameViewMatrix.Zoom = Vector2.One;
+                    Main.GameViewMatrix.Effects = SpriteEffects.None;
+                    Main.Rasterizer = RasterizerState.CullNone;
                 }
 
                 SpriteBatchEffectLoader.Apply(_tileEntityEffect);
@@ -160,9 +165,12 @@ public sealed class AmbientOcclusion
             finally
             {
                 _drawingTileEntities = false;
-                Main.screenPosition = currentScreenPosition;
-                Main.GameViewMatrix.Zoom = currentZoom;
                 FancyLightingMod._preventTileParticles = prevPreventTileParticles;
+
+                Main.Rasterizer = currentRasterizerState;
+                Main.GameViewMatrix.Effects = currentMatrixEffects;
+                Main.GameViewMatrix.Zoom = currentMatrixZoom;
+                Main.screenPosition = currentScreenPosition;
             }
         }
 

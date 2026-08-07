@@ -66,7 +66,7 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _overbrightMaxEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
 
-    private readonly FancyEffect _tileEntityLightOnlyEffect;
+    private readonly SpriteBatchEffect _tileEntityLightOnlyEffect;
     private readonly SpriteBatchEffect _tileEntityNormalsEffect;
     private readonly SpriteBatchEffect _tileEntityNormalsFancySkyEffect;
     private readonly SpriteBatchEffect _tileEntitySmoothEffect;
@@ -1705,7 +1705,7 @@ public sealed class SmoothLighting
 
             if (background)
             {
-                normalMapStrength *= 0.85f;
+                normalMapStrength *= 0.75f;
             }
 
             effect
@@ -1743,23 +1743,23 @@ public sealed class SmoothLighting
 
         if (srcUsed)
         {
-            MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+            MainGraphics.SetTexture(8, lightMapTexture, SamplerState.LinearClamp);
         }
         if (glow is not null)
         {
-            MainGraphics.SetTexture(5, glow, SamplerState.PointClamp);
+            MainGraphics.SetTexture(9, glow, SamplerState.PointClamp);
         }
         if (lightedGlow is not null)
         {
-            MainGraphics.SetTexture(6, lightedGlow, SamplerState.PointClamp);
+            MainGraphics.SetTexture(10, lightedGlow, SamplerState.PointClamp);
         }
         if (ambientOcclusion is not null)
         {
-            MainGraphics.SetTexture(7, ambientOcclusion, SamplerState.PointClamp);
+            MainGraphics.SetTexture(11, ambientOcclusion, SamplerState.PointClamp);
         }
         if (ditheredEffectFlag)
         {
-            MainGraphics.SetTexture(8, _ditherNoise, SamplerState.PointWrap);
+            MainGraphics.SetTexture(12, _ditherNoise, SamplerState.PointWrap);
         }
 
         Blitter.Blit(
@@ -1780,7 +1780,7 @@ public sealed class SmoothLighting
         MainGraphics.RestoreSavedTextures();
     }
 
-    internal (FancyEffect, bool) GetTileEntityEffect(
+    internal (SpriteBatchEffect, bool) GetTileEntityEffect(
         ref RenderTarget2D screenTarget,
         ref RenderTarget2D tmpTarget
     )
@@ -1919,7 +1919,10 @@ public sealed class SmoothLighting
         return (effect, usedTmpTarget);
     }
 
-    internal void ApplyTileEntityEffect(FancyEffect effect, RenderTarget2D glow = null)
+    internal void ApplyTileEntityEffect(
+        SpriteBatchEffect effect,
+        RenderTarget2D glow = null
+    )
     {
         var doDithering =
             !DeveloperConfig.Instance.DisableDithering
@@ -1933,22 +1936,22 @@ public sealed class SmoothLighting
 
         SpriteBatchEffectLoader.Apply(effect);
         MainGraphics.ResetSavedTextures();
-        MainGraphics.SetTexture(4, lightMapTexture, SamplerState.LinearClamp);
+        MainGraphics.SetTexture(8, lightMapTexture, SamplerState.LinearClamp);
         if (glow is not null)
         {
-            MainGraphics.SetTexture(5, glow, SamplerState.PointClamp);
+            MainGraphics.SetTexture(9, glow, SamplerState.PointClamp);
         }
 
         if (doDithering)
         {
-            MainGraphics.SetTexture(6, _ditherNoise, SamplerState.PointWrap);
+            MainGraphics.SetTexture(10, _ditherNoise, SamplerState.PointWrap);
         }
     }
 
     internal void BindHdrSyncTextures()
     {
-        MainGraphics.SetTexture(4, _prevColorsHiRes, SamplerState.LinearClamp);
-        MainGraphics.SetTexture(5, _colorsHiRes, SamplerState.LinearClamp);
+        MainGraphics.SetTexture(8, _prevColorsHiRes, SamplerState.LinearClamp);
+        MainGraphics.SetTexture(9, _colorsHiRes, SamplerState.LinearClamp);
     }
 
     internal void DoHdrSync(

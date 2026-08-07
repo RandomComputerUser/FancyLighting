@@ -48,5 +48,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
 - Fixed a minor bug with Ambient Occlusion when using full HDR rendering
 - Added compatibility with screen flipping from sources other than the Gravitation buff
-- Optimized Smooth Lighting
+- Significantly optimized rendering
 - Improved unloading

@@ -1,7 +1,7 @@
 sampler ScreenSampler : register(s0);
-sampler BackgroundSampler : register(s4);
-sampler DitherSampler : register(s4);
-sampler BloomBlurSampler : register(s4);
+sampler BackgroundSampler : register(s8);
+sampler DitherSampler : register(s8);
+sampler BloomBlurSampler : register(s8);
 
 #define DITHER_TEXTURE_SIZE 32
 

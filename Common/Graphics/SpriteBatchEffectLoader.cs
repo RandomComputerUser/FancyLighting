@@ -6,7 +6,7 @@ namespace FancyLighting.Common.Graphics;
 
 internal static class SpriteBatchEffectLoader
 {
-    private static FancyEffect _activeEffect;
+    private static SpriteBatchEffect _activeEffect;
     private static BlendState _activeBlendState;
 
     private static Hook _hook_SpriteBatch_PrepRenderState;
@@ -74,8 +74,7 @@ internal static class SpriteBatchEffectLoader
 
     internal static void Unload()
     {
-        _activeEffect = null;
-        _activeBlendState = null;
+        Reset();
 
         _hook_SpriteBatch_PrepRenderState?.Dispose();
         _hook_TileBatch_DrawBatch?.Dispose();
@@ -86,7 +85,7 @@ internal static class SpriteBatchEffectLoader
         _hook_TileBatch_SortedDrawBatch = null;
     }
 
-    internal static void Apply(FancyEffect effect) => _activeEffect = effect;
+    internal static void Apply(SpriteBatchEffect effect) => _activeEffect = effect;
 
     internal static void Apply(BlendState blendState) => _activeBlendState = blendState;
 
@@ -103,28 +102,52 @@ internal static class SpriteBatchEffectLoader
         SpriteBatch self
     )
     {
-        orig(self);
-
-        if (!ReferenceEquals(self, Main.spriteBatch) || _activeEffect is null)
+        if (!ReferenceEquals(self, Main.spriteBatch))
         {
+            orig(self);
             return;
-        }
-
-        if (SpriteBatchAccessors.customEffect(self) is null)
-        {
-            if (_activeEffect is SpriteBatchEffect spriteBatchEffect)
-            {
-                SetMatrixTransform(self, spriteBatchEffect);
-            }
-
-            _activeEffect.ApplyTechnique();
-            SpriteBatchAccessors.customEffect(self) = _activeEffect.Effect;
         }
 
         if (_activeBlendState is not null)
         {
             SpriteBatchAccessors.blendState(self) = _activeBlendState;
         }
+
+        if (_activeEffect is null)
+        {
+            orig(self);
+            return;
+        }
+
+        var currEffect = SpriteBatchAccessors.customEffect(self);
+        if (currEffect is not null && !ReferenceEquals(currEffect, _activeEffect.Effect))
+        {
+            orig(self);
+            return;
+        }
+
+        if (SettingsSystem._optimizeRendering)
+        {
+            // Code adapted from SpriteBatch code
+
+            var device = self.GraphicsDevice;
+
+            device.BlendState = SpriteBatchAccessors.blendState(self);
+            device.SamplerStates[0] = SpriteBatchAccessors.samplerState(self);
+            device.DepthStencilState = SpriteBatchAccessors.depthStencilState(self);
+            device.RasterizerState = SpriteBatchAccessors.rasterizerState(self);
+
+            device.SetVertexBuffer(SpriteBatchAccessors.vertexBuffer(self));
+            device.Indices = SpriteBatchAccessors.indexBuffer(self);
+        }
+        else
+        {
+            orig(self);
+        }
+
+        SetMatrixTransform(self, _activeEffect);
+        _activeEffect.ApplyTechnique();
+        SpriteBatchAccessors.customEffect(self) = _activeEffect.Effect;
     }
 
     private delegate void orig_TileBatch_DrawBatch(TileBatch self);
@@ -157,12 +180,9 @@ internal static class SpriteBatchEffectLoader
         orig(self);
     }
 
-    internal static void SetMatrixTransform(
+    private static void SetMatrixTransform(
         SpriteBatch spriteBatch,
         SpriteBatchEffect effect
-    )
-    {
-        var transformMatrix = SpriteBatchAccessors.transformMatrix(spriteBatch);
-        effect.SetSpriteBatchTransform(transformMatrix);
-    }
+    ) =>
+        effect.SetSpriteBatchTransform(SpriteBatchAccessors.transformMatrix(spriteBatch));
 }

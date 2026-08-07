@@ -154,7 +154,7 @@ public sealed class FancySkyRendering
             .SetParameter("HighSkyColor", highSkyColor)
             .SetParameter("LowSkyColor", lowSkyColor)
             .SetParameter("InverseGamma", 1f / gamma);
-        Blitter.Blit(_ditherNoise, null, effect, setTarget: false);
+        Blitter.Blit(doDithering ? _ditherNoise : null, null, effect, setTarget: false);
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -228,6 +228,7 @@ public sealed class FancySkyRendering
             effect = _sunEffect
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma)
+                .ApplyTechnique()
                 .Effect;
         }
         else if (hiDef)

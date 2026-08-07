@@ -12,6 +12,7 @@ internal sealed class SettingsSystem : ModSystem
         MaxDegreeOfParallelism = DefaultOptions.ThreadCount,
     };
 
+    internal static bool _optimizeRendering;
     internal static bool _hiDef;
     internal static bool _lightOnly;
     internal static bool _useSkyLightLuma;
@@ -46,6 +47,7 @@ internal sealed class SettingsSystem : ModSystem
             PreferencesConfig.Instance.ThreadCount,
             1
         );
+        _optimizeRendering = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
         _hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         _lightOnly =
             LightingConfig.Instance.SmoothLightingEnabled()

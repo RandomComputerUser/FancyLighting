@@ -111,7 +111,9 @@ public sealed class PostProcessing
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
     internal FancyEffect GetBrightenPixelOnlyEffect(float brightness) =>
-        _brightenPixelOnlyEffect.SetParameter("BrightnessMult", brightness);
+        _brightenPixelOnlyEffect
+            .SetParameter("BrightnessMult", brightness)
+            .ApplyTechnique();
 
     internal FullscreenEffect GetBrightenEffect(float brightness) =>
         _brightenEffect.SetParameter("BrightnessMult", brightness);
@@ -136,7 +138,7 @@ public sealed class PostProcessing
     )
     {
         MainGraphics.ResetSavedTextures();
-        MainGraphics.SetTexture(4, background, SamplerState.PointClamp);
+        MainGraphics.SetTexture(8, background, SamplerState.PointClamp);
         Blitter.Blit(foreground, dst, _combineLayersEffect);
         MainGraphics.RestoreSavedTextures();
     }
@@ -257,7 +259,7 @@ public sealed class PostProcessing
                     {
                         MainGraphics.ResetSavedTextures();
                         MainGraphics.SetTexture(
-                            4,
+                            8,
                             backgroundTarget,
                             SamplerState.PointClamp
                         );
@@ -293,7 +295,7 @@ public sealed class PostProcessing
             else if (separateBackground)
             {
                 MainGraphics.ResetSavedTextures();
-                MainGraphics.SetTexture(4, backgroundTarget, SamplerState.PointClamp);
+                MainGraphics.SetTexture(8, backgroundTarget, SamplerState.PointClamp);
                 Blitter.Blit(
                     currTarget,
                     nextTarget,
@@ -326,7 +328,7 @@ public sealed class PostProcessing
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);
                 MainGraphics.ResetSavedTextures();
-                MainGraphics.SetTexture(4, bloomTarget, SamplerState.LinearClamp);
+                MainGraphics.SetTexture(8, bloomTarget, SamplerState.LinearClamp);
                 Blitter.Blit(currTarget, nextTarget, _bloomCompositeEffect);
                 MainGraphics.RestoreSavedTextures();
 
@@ -401,7 +403,7 @@ public sealed class PostProcessing
             MainGraphics.ResetSavedTextures();
             if (!disableDither)
             {
-                MainGraphics.SetTexture(4, _ditherNoise, SamplerState.PointWrap);
+                MainGraphics.SetTexture(8, _ditherNoise, SamplerState.PointWrap);
             }
             Blitter.Blit(currTarget, nextTarget, effect);
             MainGraphics.RestoreSavedTextures();
