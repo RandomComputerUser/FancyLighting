@@ -1844,6 +1844,7 @@ public sealed class SmoothLighting
             if (switchedTargets)
             {
                 Blitter.BlitOrSwap(ref screenTarget, ref tmpTarget);
+                MainGraphics.AssignScreenTargets();
                 usedTmpTarget = true;
             }
 
