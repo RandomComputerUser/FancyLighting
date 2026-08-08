@@ -22,13 +22,13 @@ internal static class CustomBlendStates
             AlphaDestinationBlend = Blend.One,
             AlphaSourceBlend = Blend.Zero,
         };
-    public static BlendState MinAlpha { get; private set; } =
+    public static BlendState MaxAlpha { get; private set; } =
         new()
         {
             ColorBlendFunction = BlendFunction.Add,
             ColorDestinationBlend = Blend.Zero,
             ColorSourceBlend = Blend.Zero,
-            AlphaBlendFunction = BlendFunction.Min,
+            AlphaBlendFunction = BlendFunction.Max,
             AlphaDestinationBlend = Blend.One,
             AlphaSourceBlend = Blend.One,
         };
@@ -47,7 +47,7 @@ internal static class CustomBlendStates
     {
         MultiplyColor = null;
         MultiplyColorByAlpha = null;
-        MinAlpha = null;
+        MaxAlpha = null;
         TrueAdditive = null;
     }
 }

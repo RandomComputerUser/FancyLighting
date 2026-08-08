@@ -1,4 +1,5 @@
-﻿using FancyLighting.VFX;
+﻿using FancyLighting.Config;
+using FancyLighting.VFX;
 
 namespace FancyLighting.Core;
 
@@ -158,7 +159,7 @@ public sealed class AmbientOcclusion
                 }
 
                 SpriteBatchEffectLoader.Apply(_tileEntityEffect);
-                SpriteBatchEffectLoader.Apply(CustomBlendStates.MinAlpha);
+                SpriteBatchEffectLoader.Apply(CustomBlendStates.MaxAlpha);
                 Main.instance.TilesRenderer.PostDrawTiles(false, false, false);
                 SpriteBatchEffectLoader.Reset();
             }
@@ -180,7 +181,11 @@ public sealed class AmbientOcclusion
 
         var blurTarget = _blurRenderer.Blur(_ambientOcclusionTarget, null, radius);
 
-        effect = power == 2f ? _toneCurveDefaultEffect : _toneCurveEffect;
+        effect =
+            PreferencesConfig.Instance.AmbientOcclusionIntensity
+            == DefaultOptions.AmbientOcclusionIntensity
+                ? _toneCurveDefaultEffect
+                : _toneCurveEffect;
         effect.SetParameter("BlurPower", power).SetParameter("BlurMult", mult);
         Blitter.Blit(
             blurTarget,
