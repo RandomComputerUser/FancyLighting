@@ -265,7 +265,7 @@ float4 SmoothLightingColor(
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * tileColor
         : float4(
-            lerp(smoothColor.rgb, bright, step(2.0 / 255, selector)),
+            lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
             glow.a
         );
 }
@@ -287,7 +287,7 @@ float4 SmoothLightingColorDithered(
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * tileColor
         : float4(
-            lerp(smoothColor.rgb, bright, step(2.0 / 255, selector)),
+            lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
             glow.a
         );
 }
