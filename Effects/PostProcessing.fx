@@ -98,7 +98,7 @@ float3 Dither(float3 color, float2 position)
     float3 hiLinear = pow(hi, OutputGamma);
 
     float3 t = (pow(color, OutputGamma) - loLinear) / (hiLinear - loLinear);
-    float rand = (255.0 / 256) * tex2D(DitherSampler, position).r;
+    float rand = (255.0 / 256) * tex2D(DitherSampler, (1.0 / DITHER_TEXTURE_SIZE) * position).r;
     float3 selector = step(t, rand);
 
     return lerp(hi, lo, selector);
