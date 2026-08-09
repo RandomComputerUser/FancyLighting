@@ -264,6 +264,13 @@ float3 MakeVibrant(float3 x)
 	return result;
 }
 
+float4 VibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    float4 color = tex2D(ScreenSampler, coords);
+    color.rgb = max(MakeVibrant(max(color.rgb, 0.0)), 0);
+    return color;
+}
+
 float3 ToneMapColorNeutralLms(float3 x)
 {
     const float c1 = 2.05;
@@ -276,15 +283,6 @@ float3 ToneMapColorNeutralLms(float3 x)
 float4 ToneMapNeutralLms_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorNeutralLms(color.rgb);
-    return color;
-}
-
-float4 ToneMapNeutralLmsVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    // Color grade before tone mapping to prevent artifacts caused by out-of-gamut colors
-    color.rgb = MakeVibrant(max(color.rgb, 0.0));
     color.rgb = ToneMapColorNeutralLms(color.rgb);
     return color;
 }
@@ -305,14 +303,6 @@ float4 ToneMapNeutralOld_PS(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float4 ToneMapNeutralOldVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorNeutralOld(color.rgb);
-    color.rgb = saturate(MakeVibrant(color.rgb));
-    return color;
-}
-
 float3 ToneMapColorFilmicSrgb(float3 x)
 {
     const float c1 = 1.46666666667;
@@ -329,21 +319,6 @@ float4 ToneMapFilmicSrgb_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
     color.rgb = ToneMapColorFilmicSrgb(color.rgb);
-    return color;
-}
-
-float4 ToneMapFilmicSrgbVibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorFilmicSrgb(color.rgb);
-    color.rgb = saturate(MakeVibrant(color.rgb));
-    return color;
-}
-
-float4 VibranceBoost_PS(float2 coords : TEXCOORD0) : COLOR0
-{
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = max(MakeVibrant(max(color.rgb, 0.0)), 0);
     return color;
 }
 
@@ -483,21 +458,21 @@ technique BloomComposite
     }
 }
 
+technique VibranceBoost
+{    
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 VibranceBoost_PS();
+    }
+}
+
 technique ToneMapNeutralLms
 {    
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
         PixelShader = compile ps_3_0 ToneMapNeutralLms_PS();
-    }
-}
-
-technique ToneMapNeutralLmsVibranceBoost
-{    
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapNeutralLmsVibranceBoost_PS();
     }
 }
 
@@ -509,39 +484,11 @@ technique ToneMapNeutralOld
         PixelShader = compile ps_3_0 ToneMapNeutralOld_PS();
     }
 }
-
-technique ToneMapNeutralOldVibranceBoost
-{    
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapNeutralOldVibranceBoost_PS();
-    }
-}
-
 technique ToneMapFilmicSrgb
 {    
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
         PixelShader = compile ps_3_0 ToneMapFilmicSrgb_PS();
-    }
-}
-
-technique ToneMapFilmicSrgbVibranceBoost
-{    
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapFilmicSrgbVibranceBoost_PS();
-    }
-}
-
-technique VibranceBoost
-{    
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 VibranceBoost_PS();
     }
 }

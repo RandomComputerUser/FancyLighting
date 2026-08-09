@@ -32,13 +32,10 @@ public sealed class PostProcessing
     private readonly FullscreenEffect _gammaToSrgbDitherNoAlphaEffect;
     private readonly FullscreenEffect _gammaToSrgbNoDitherNoAlphaEffect;
     private readonly FullscreenEffect _bloomCompositeEffect;
-    private readonly FullscreenEffect _toneMapNeutralLmsEffect;
-    private readonly FullscreenEffect _toneMapNeutralLmsVibranceBoostEffect;
-    private readonly FullscreenEffect _toneMapNeutralOldEffect;
-    private readonly FullscreenEffect _toneMapNeutralOldVibranceBoostEffect;
-    private readonly FullscreenEffect _toneMapFilmicSrgbEffect;
-    private readonly FullscreenEffect _toneMapFilmicSrgbVibranceBoostEffect;
     private readonly FullscreenEffect _vibranceBoostEffect;
+    private readonly FullscreenEffect _toneMapNeutralLmsEffect;
+    private readonly FullscreenEffect _toneMapNeutralOldEffect;
+    private readonly FullscreenEffect _toneMapFilmicSrgbEffect;
 
     private readonly BlurRenderer _blurRenderer = new(false, true);
 
@@ -69,23 +66,11 @@ public sealed class PostProcessing
         _gammaToGammaNoDitherEffect = new(effect, "GammaToGammaNoDither");
         _gammaToSrgbDitherNoAlphaEffect = new(effect, "GammaToSrgbDitherNoAlpha");
         _gammaToSrgbNoDitherNoAlphaEffect = new(effect, "GammaToSrgbNoDitherNoAlpha");
+        _vibranceBoostEffect = new(effect, "VibranceBoost");
         _bloomCompositeEffect = new(effect, "BloomComposite");
         _toneMapNeutralLmsEffect = new(effect, "ToneMapNeutralLms");
-        _toneMapNeutralLmsVibranceBoostEffect = new(
-            effect,
-            "ToneMapNeutralLmsVibranceBoost"
-        );
         _toneMapNeutralOldEffect = new(effect, "ToneMapNeutralOld");
-        _toneMapNeutralOldVibranceBoostEffect = new(
-            effect,
-            "ToneMapNeutralOldVibranceBoost"
-        );
         _toneMapFilmicSrgbEffect = new(effect, "ToneMapFilmicSrgb");
-        _toneMapFilmicSrgbVibranceBoostEffect = new(
-            effect,
-            "ToneMapFilmicSrgbVibranceBoost"
-        );
-        _vibranceBoostEffect = new(effect, "VibranceBoost");
     }
 
     internal void Unload()
@@ -309,6 +294,20 @@ public sealed class PostProcessing
 
         if (hiDef)
         {
+            if (PreferencesConfig.Instance.VibranceBoost != 0)
+            {
+                var (params1, params2) = CalculateVibranceBoostParameters(
+                    Math.Clamp(PreferencesConfig.Instance.VibranceIncrease(), -0.2, 0.2)
+                );
+
+                _vibranceBoostEffect
+                    .SetParameter("VibranceBoostParams1", params1)
+                    .SetParameter("VibranceBoostParams2", params2);
+                Blitter.Blit(currTarget, nextTarget, _vibranceBoostEffect);
+
+                (currTarget, nextTarget) = (nextTarget, currTarget);
+            }
+
             if (doBloom)
             {
                 // https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom
@@ -335,35 +334,13 @@ public sealed class PostProcessing
                 (currTarget, nextTarget) = (nextTarget, currTarget);
             }
 
-            FullscreenEffect toneMappingEffect;
-            if (PreferencesConfig.Instance.VibranceBoost == 0)
+            var toneMappingEffect = tmo switch
             {
-                toneMappingEffect = tmo switch
-                {
-                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsEffect,
-                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldEffect,
-                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbEffect,
-                    _ => null,
-                };
-            }
-            else
-            {
-                toneMappingEffect = tmo switch
-                {
-                    ToneMappingPreset.NeutralLms => _toneMapNeutralLmsVibranceBoostEffect,
-                    ToneMappingPreset.NeutralOld => _toneMapNeutralOldVibranceBoostEffect,
-                    ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbVibranceBoostEffect,
-                    _ => _vibranceBoostEffect,
-                };
-
-                var (params1, params2) = CalculateVibranceBoostParameters(
-                    Math.Clamp(PreferencesConfig.Instance.VibranceIncrease(), -0.2, 0.2)
-                );
-
-                toneMappingEffect
-                    .SetParameter("VibranceBoostParams1", params1)
-                    .SetParameter("VibranceBoostParams2", params2);
-            }
+                ToneMappingPreset.NeutralLms => _toneMapNeutralLmsEffect,
+                ToneMappingPreset.NeutralOld => _toneMapNeutralOldEffect,
+                ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbEffect,
+                _ => null,
+            };
 
             if (toneMappingEffect is not null)
             {
