@@ -836,10 +836,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        if (
-            !LightingConfig.Instance.HiDefFeaturesEnabled()
-            || !LightingConfig.Instance.OverbrightOverrideBackground()
-        )
+        if (!LightingConfig.Instance.HiDefFeaturesEnabled() || !MainGraphics.DoingCapture)
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;
