@@ -1490,6 +1490,8 @@ public sealed class FancyLightingMod : Mod
 
             if (!smoothLighting)
             {
+                Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget1);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
                 orig(self);
@@ -1501,6 +1503,17 @@ public sealed class FancyLightingMod : Mod
                     null,
                     blendState: CustomBlendStates.MultiplyColorByAlpha,
                     setTarget: false
+                );
+
+                Blitter.BlitOrSwap(
+                    ref MainGraphics.ScreenTarget,
+                    ref MainGraphics.ScreenTargetSwap
+                );
+                MainGraphics.AssignScreenTargets();
+                _postProcessingInstance.BlitTwo(
+                    _tmpTarget1,
+                    MainGraphics.ScreenTargetSwap,
+                    MainGraphics.ScreenTarget
                 );
 
                 Main.tileBatch.Begin();
@@ -1647,7 +1660,6 @@ public sealed class FancyLightingMod : Mod
         RenderTarget2D ambientOcclusion = null
     )
     {
-        ref var screenTarget = ref MainGraphics.ScreenTarget;
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
             useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
@@ -1663,16 +1675,17 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, screenTarget);
+        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, MainGraphics.ScreenTarget);
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, screenTarget);
+            TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, MainGraphics.ScreenTarget);
 
             UseBlackLightMap(true);
             _preventTileParticles = true;
             try
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget2);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
                 drawAction();
@@ -1687,9 +1700,13 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MatchSizeAndFormat(ref _tmpTarget3, screenTarget);
+                TextureUtils.MatchSizeAndFormat(
+                    ref _tmpTarget3,
+                    MainGraphics.ScreenTarget
+                );
 
                 Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget3);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
                 drawAction();
@@ -1704,6 +1721,7 @@ public sealed class FancyLightingMod : Mod
         try
         {
             Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget1);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             Main.tileBatch.Begin();
             Main.spriteBatch.Begin();
             drawAction();
@@ -1722,7 +1740,7 @@ public sealed class FancyLightingMod : Mod
             ref MainGraphics.ScreenTargetSwap
         );
         MainGraphics.AssignScreenTargets();
-        Blitter.Blit(MainGraphics.ScreenTargetSwap, screenTarget);
+        Blitter.Blit(MainGraphics.ScreenTargetSwap, MainGraphics.ScreenTarget);
         _smoothLightingInstance.DrawSmoothLighting(
             _tmpTarget1,
             null,

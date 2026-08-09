@@ -15,6 +15,7 @@ internal static class MainGraphics
     public static CaptureBiome CameraModeBiome { get; private set; }
     private static object _captureCamera;
 
+    private static FieldInfo _field_activeSettings;
     private static FieldInfo _field_filterFrameBuffer1;
     private static FieldInfo _field_filterFrameBuffer2;
 
@@ -99,6 +100,16 @@ internal static class MainGraphics
         object self
     )
     {
+        _field_activeSettings ??= self.GetType()
+            .GetField("_activeSettings", BindingFlags.NonPublic | BindingFlags.Instance)
+            .AssertNotNull();
+
+        if (_field_activeSettings.GetValue(self) is null)
+        {
+            orig(self);
+            return;
+        }
+
         _field_filterFrameBuffer1 ??= self.GetType()
             .GetField(
                 "_filterFrameBuffer1",
