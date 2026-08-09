@@ -634,12 +634,10 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (!SettingsSystem._hiDef)
+        if (SettingsSystem._hiDef)
         {
-            return;
+            lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
         }
-
-        lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
     }
 
     private static void _TileLightScanner_ApplyLiquidLight(
