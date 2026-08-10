@@ -782,75 +782,54 @@ public sealed class SmoothLighting
                                         + (upperRightMult + rightMult + lowerRightMult)
                                     );
 
-                                ref var light = ref lights[i];
-
-                                ref var upperLeft = ref myColors[i - myHeight - 1];
-                                ref var left = ref myColors[i - myHeight];
-                                ref var lowerLeft = ref myColors[i - myHeight + 1];
-                                ref var upper = ref myColors[i - 1];
-                                ref var middle = ref myColors[i];
-                                ref var lower = ref myColors[i + 1];
-                                ref var upperRight = ref myColors[i + myHeight - 1];
-                                ref var right = ref myColors[i + myHeight];
-                                ref var lowerRight = ref myColors[i + myHeight + 1];
-
-                                // Faster to do it separately for each component
-                                light.X =
-                                    (
+                                lights[i] = (
+                                    mult
+                                    * (
                                         (
-                                            (upperLeftMult * upperLeft.X)
-                                            + (leftMult * left.X)
-                                            + (lowerLeftMult * lowerLeft.X)
+                                            (
+                                                upperLeftMult
+                                                * myColors[i - myHeight - 1]
+                                                    .ToSystemVector3()
+                                            )
+                                            + (
+                                                leftMult
+                                                * myColors[i - myHeight].ToSystemVector3()
+                                            )
+                                            + (
+                                                lowerLeftMult
+                                                * myColors[i - myHeight + 1]
+                                                    .ToSystemVector3()
+                                            )
                                         )
                                         + (
-                                            (upperMult * upper.X)
-                                            + (middleMult * middle.X)
-                                            + (lowerMult * lower.X)
+                                            (
+                                                upperMult
+                                                * myColors[i - 1].ToSystemVector3()
+                                            )
+                                            + (middleMult * myColors[i].ToSystemVector3())
+                                            + (
+                                                lowerMult
+                                                * myColors[i + 1].ToSystemVector3()
+                                            )
                                         )
                                         + (
-                                            (upperRightMult * upperRight.X)
-                                            + (rightMult * right.X)
-                                            + (lowerRightMult * lowerRight.X)
+                                            (
+                                                upperRightMult
+                                                * myColors[i + myHeight - 1]
+                                                    .ToSystemVector3()
+                                            )
+                                            + (
+                                                rightMult
+                                                * myColors[i + myHeight].ToSystemVector3()
+                                            )
+                                            + (
+                                                lowerRightMult
+                                                * myColors[i + myHeight + 1]
+                                                    .ToSystemVector3()
+                                            )
                                         )
-                                    ) * mult;
-
-                                light.Y =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Y)
-                                            + (leftMult * left.Y)
-                                            + (lowerLeftMult * lowerLeft.Y)
-                                        )
-                                        + (
-                                            (upperMult * upper.Y)
-                                            + (middleMult * middle.Y)
-                                            + (lowerMult * lower.Y)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Y)
-                                            + (rightMult * right.Y)
-                                            + (lowerRightMult * lowerRight.Y)
-                                        )
-                                    ) * mult;
-
-                                light.Z =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Z)
-                                            + (leftMult * left.Z)
-                                            + (lowerLeftMult * lowerLeft.Z)
-                                        )
-                                        + (
-                                            (upperMult * upper.Z)
-                                            + (middleMult * middle.Z)
-                                            + (lowerMult * lower.Z)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Z)
-                                            + (rightMult * right.Z)
-                                            + (lowerRightMult * lowerRight.Z)
-                                        )
-                                    ) * mult;
+                                    )
+                                ).ToXnaVector3();
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -969,75 +948,54 @@ public sealed class SmoothLighting
                                         + (upperRightMult + rightMult + lowerRightMult)
                                     );
 
-                                ref var light = ref lights[i];
-
-                                ref var upperLeft = ref myColors[i - myHeight - 1];
-                                ref var left = ref myColors[i - myHeight];
-                                ref var lowerLeft = ref myColors[i - myHeight + 1];
-                                ref var upper = ref myColors[i - 1];
-                                ref var middle = ref myColors[i];
-                                ref var lower = ref myColors[i + 1];
-                                ref var upperRight = ref myColors[i + myHeight - 1];
-                                ref var right = ref myColors[i + myHeight];
-                                ref var lowerRight = ref myColors[i + myHeight + 1];
-
-                                // Faster to do it separately for each component
-                                light.X =
-                                    (
+                                lights[i] = (
+                                    mult
+                                    * (
                                         (
-                                            (upperLeftMult * upperLeft.X)
-                                            + (leftMult * left.X)
-                                            + (lowerLeftMult * lowerLeft.X)
+                                            (
+                                                upperLeftMult
+                                                * myColors[i - myHeight - 1]
+                                                    .ToSystemVector3()
+                                            )
+                                            + (
+                                                leftMult
+                                                * myColors[i - myHeight].ToSystemVector3()
+                                            )
+                                            + (
+                                                lowerLeftMult
+                                                * myColors[i - myHeight + 1]
+                                                    .ToSystemVector3()
+                                            )
                                         )
                                         + (
-                                            (upperMult * upper.X)
-                                            + (middleMult * middle.X)
-                                            + (lowerMult * lower.X)
+                                            (
+                                                upperMult
+                                                * myColors[i - 1].ToSystemVector3()
+                                            )
+                                            + (middleMult * myColors[i].ToSystemVector3())
+                                            + (
+                                                lowerMult
+                                                * myColors[i + 1].ToSystemVector3()
+                                            )
                                         )
                                         + (
-                                            (upperRightMult * upperRight.X)
-                                            + (rightMult * right.X)
-                                            + (lowerRightMult * lowerRight.X)
+                                            (
+                                                upperRightMult
+                                                * myColors[i + myHeight - 1]
+                                                    .ToSystemVector3()
+                                            )
+                                            + (
+                                                rightMult
+                                                * myColors[i + myHeight].ToSystemVector3()
+                                            )
+                                            + (
+                                                lowerRightMult
+                                                * myColors[i + myHeight + 1]
+                                                    .ToSystemVector3()
+                                            )
                                         )
-                                    ) * mult;
-
-                                light.Y =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Y)
-                                            + (leftMult * left.Y)
-                                            + (lowerLeftMult * lowerLeft.Y)
-                                        )
-                                        + (
-                                            (upperMult * upper.Y)
-                                            + (middleMult * middle.Y)
-                                            + (lowerMult * lower.Y)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Y)
-                                            + (rightMult * right.Y)
-                                            + (lowerRightMult * lowerRight.Y)
-                                        )
-                                    ) * mult;
-
-                                light.Z =
-                                    (
-                                        (
-                                            (upperLeftMult * upperLeft.Z)
-                                            + (leftMult * left.Z)
-                                            + (lowerLeftMult * lowerLeft.Z)
-                                        )
-                                        + (
-                                            (upperMult * upper.Z)
-                                            + (middleMult * middle.Z)
-                                            + (lowerMult * lower.Z)
-                                        )
-                                        + (
-                                            (upperRightMult * upperRight.Z)
-                                            + (rightMult * right.Z)
-                                            + (lowerRightMult * lowerRight.Z)
-                                        )
-                                    ) * mult;
+                                    )
+                                ).ToXnaVector3();
                             }
                             catch (IndexOutOfRangeException)
                             {
@@ -1067,39 +1025,29 @@ public sealed class SmoothLighting
 
                         try
                         {
-                            ref var light = ref lights[i];
-
-                            ref var upperLeft = ref myColors[i - myHeight - 1];
-                            ref var left = ref myColors[i - myHeight];
-                            ref var lowerLeft = ref myColors[i - myHeight + 1];
-                            ref var upper = ref myColors[i - 1];
-                            ref var middle = ref myColors[i];
-                            ref var lower = ref myColors[i + 1];
-                            ref var upperRight = ref myColors[i + myHeight - 1];
-                            ref var right = ref myColors[i + myHeight];
-                            ref var lowerRight = ref myColors[i + myHeight + 1];
-
-                            // Faster to do it separately for each component
-                            light.X =
-                                (
-                                    (upperLeft.X + (2f * left.X) + lowerLeft.X)
-                                    + (2f * (upper.X + (2f * middle.X) + lower.X))
-                                    + (upperRight.X + (2f * right.X) + lowerRight.X)
-                                ) * (1f / 16f);
-
-                            light.Y =
-                                (
-                                    (upperLeft.Y + (2f * left.Y) + lowerLeft.Y)
-                                    + (2f * (upper.Y + (2f * middle.Y) + lower.Y))
-                                    + (upperRight.Y + (2f * right.Y) + lowerRight.Y)
-                                ) * (1f / 16f);
-
-                            light.Z =
-                                (
-                                    (upperLeft.Z + (2f * left.Z) + lowerLeft.Z)
-                                    + (2f * (upper.Z + (2f * middle.Z) + lower.Z))
-                                    + (upperRight.Z + (2f * right.Z) + lowerRight.Z)
-                                ) * (1f / 16f);
+                            lights[i] = (
+                                (1f / 16f)
+                                * (
+                                    (
+                                        myColors[i - myHeight - 1].ToSystemVector3()
+                                        + (2f * myColors[i - myHeight].ToSystemVector3())
+                                        + myColors[i - myHeight + 1].ToSystemVector3()
+                                    )
+                                    + (
+                                        2f
+                                        * (
+                                            myColors[i - 1].ToSystemVector3()
+                                            + (2f * myColors[i].ToSystemVector3())
+                                            + myColors[i + 1].ToSystemVector3()
+                                        )
+                                    )
+                                    + (
+                                        myColors[i + myHeight - 1].ToSystemVector3()
+                                        + (2f * myColors[i + myHeight].ToSystemVector3())
+                                        + myColors[i + myHeight + 1].ToSystemVector3()
+                                    )
+                                )
+                            ).ToXnaVector3();
                         }
                         catch (IndexOutOfRangeException)
                         {
