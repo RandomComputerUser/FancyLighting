@@ -358,6 +358,8 @@ public sealed class FancyLightingMod : Mod
         IL_Main.RenderTiles += _ => { };
         IL_Main.RenderTiles2 += _ => { };
         IL_Main.RenderWalls += _ => { };
+        IL_Main.DoDraw += _ => { };
+        IL_Main.DrawCapture += _ => { };
         IL_LightingEngine.ProcessBlur += _ => { };
         IL_LightingEngine.ProcessArea += _ => { };
     }
