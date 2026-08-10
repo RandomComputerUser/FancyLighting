@@ -309,7 +309,7 @@ public sealed class FancyLightingMod : Mod
         IL_WorldMap.UpdateLighting += IL_WorldMap_UpdateLighting;
 
         // Tile Light Scanner hooks
-        On_TileLightScanner.GetTileLight += _TileLightScanner_GetTileLight;
+        IL_TileLightScanner.GetTileLight += IL_TileLightScanner_GetTileLight;
         On_TileLightScanner.ApplySurfaceLight += _TileLightScanner_ApplySurfaceLight;
         On_TileLightScanner.ApplyHellLight += _TileLightScanner_ApplyHellLight;
         On_TileLightScanner.ApplyLiquidLight += _TileLightScanner_ApplyLiquidLight;
@@ -587,20 +587,47 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
-    private static void _TileLightScanner_GetTileLight(
-        On_TileLightScanner.orig_GetTileLight orig,
-        TileLightScanner self,
-        int x,
-        int y,
-        out Vector3 outputColor
-    )
+    private static void IL_TileLightScanner_GetTileLight(ILContext context)
     {
-        if (SettingsSystem._useSkyLightLuma)
+        try
         {
-            FancySkyLighting.SetSkyLightLuma(x, y, 0f);
-        }
+            var cursor = new ILCursor(context);
 
-        orig(self, x, y, out outputColor);
+            var settingsSystemUseSkyLightLumaField = typeof(SettingsSystem)
+                .GetField(
+                    nameof(SettingsSystem._useSkyLightLuma),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var fancySkyLightingSetSkyLightLumaMethod = typeof(FancySkyLighting)
+                .GetMethod(
+                    nameof(FancySkyLighting.SetSkyLightLuma),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            // Instance method
+            // Args are: (int x, int y, out Vector3 outputColor)
+            /*
+            if (SettingsSystem._useSkyLightLuma)
+            {
+                FancySkyLighting.SetSkyLightLuma(x, y, 0f);
+            }
+            */
+            cursor.Emit(OpCodes.Ldsfld, settingsSystemUseSkyLightLumaField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.Emit(OpCodes.Ldarg_2);
+            cursor.Emit(OpCodes.Ldc_R4, 0f);
+            cursor.Emit(OpCodes.Call, fancySkyLightingSetSkyLightLumaMethod);
+            cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
     private static void _TileLightScanner_ApplySurfaceLight(

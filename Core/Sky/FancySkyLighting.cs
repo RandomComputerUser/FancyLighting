@@ -19,7 +19,7 @@ public static class FancySkyLighting
         ArrayUtils.MakeAtLeastSize(ref _skyLightLuma, length);
     }
 
-    public static void SetSkyLightLuma(int x, int y, float luma)
+    internal static void SetSkyLightLuma(int x, int y, float luma)
     {
         var row = y - _lightMapArea.Y;
         var col = x - _lightMapArea.X;
