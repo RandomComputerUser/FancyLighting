@@ -206,11 +206,6 @@ float NormalsMultiplierFancySky(
     lightGradient /= lightGradientLength;
     lightGradientLength /= luma;
     
-    float skyLightGradientLength = length(lightAndSkyLightGradient.zw);
-    float shininess = skyLightGradientLength / (
-        skyLightGradientLength + length(lightAndSkyLightGradient.xy)
-    );
-    
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     surfaceGradient = surfaceGradientLength == 0
@@ -218,9 +213,7 @@ float NormalsMultiplierFancySky(
         : surfaceGradient / surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
     
-    float lightMult = dot(lightGradient, surfaceGradient);
-    lightMult += (0.3 + 0.1 * lightMult) * shininess * Square(lightMult);
-    lightMult = 1.0 + NormalMapStrength * lightMult;
+    float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
     return lerp(
         1.0,
         lightMult,
