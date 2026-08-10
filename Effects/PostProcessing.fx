@@ -257,8 +257,12 @@ float3 MakeVibrant(float3 x)
 
 	float minComponent = min(x.r, min(x.g, x.b));
 	float saturation = saturate(1 - minComponent / luminance);
-	float targetSaturation = SaturationCurve(saturation);
+	if (saturation <= 0)
+	{
+	    return x;
+	}
 	
+	float targetSaturation = SaturationCurve(saturation);
 	float mult = targetSaturation / saturation;
 	float3 result = max(lerp(luminance.xxx, x, mult), 0.0);
 	return result;
