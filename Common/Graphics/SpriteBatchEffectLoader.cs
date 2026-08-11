@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using MonoMod.RuntimeDetour;
 using Terraria.Graphics;
 
 namespace FancyLighting.Common.Graphics;
@@ -8,10 +7,6 @@ internal static class SpriteBatchEffectLoader
 {
     private static SpriteBatchEffect _activeEffect;
     private static BlendState _activeBlendState;
-
-    private static Hook _hook_SpriteBatch_PrepRenderState;
-    private static Hook _hook_TileBatch_DrawBatch;
-    private static Hook _hook_TileBatch_SortedDrawBatch;
 
     internal static void Load()
     {
@@ -23,11 +18,7 @@ internal static class SpriteBatchEffectLoader
         {
             try
             {
-                _hook_SpriteBatch_PrepRenderState = new(
-                    detourMethod,
-                    _SpriteBatch_PrepRenderState,
-                    true
-                );
+                MonoModHooks.Add(detourMethod, _SpriteBatch_PrepRenderState);
             }
             catch (Exception)
             {
@@ -43,7 +34,7 @@ internal static class SpriteBatchEffectLoader
         {
             try
             {
-                _hook_TileBatch_DrawBatch = new(detourMethod, _TileBatch_DrawBatch, true);
+                MonoModHooks.Add(detourMethod, _TileBatch_DrawBatch);
             }
             catch (Exception)
             {
@@ -59,11 +50,7 @@ internal static class SpriteBatchEffectLoader
         {
             try
             {
-                _hook_TileBatch_SortedDrawBatch = new(
-                    detourMethod,
-                    _TileBatch_SortedDrawBatch,
-                    true
-                );
+                MonoModHooks.Add(detourMethod, _TileBatch_SortedDrawBatch);
             }
             catch (Exception)
             {
@@ -75,14 +62,6 @@ internal static class SpriteBatchEffectLoader
     internal static void Unload()
     {
         Reset();
-
-        _hook_SpriteBatch_PrepRenderState?.Dispose();
-        _hook_TileBatch_DrawBatch?.Dispose();
-        _hook_TileBatch_SortedDrawBatch?.Dispose();
-
-        _hook_SpriteBatch_PrepRenderState = null;
-        _hook_TileBatch_DrawBatch = null;
-        _hook_TileBatch_SortedDrawBatch = null;
     }
 
     internal static void Apply(SpriteBatchEffect effect) => _activeEffect = effect;

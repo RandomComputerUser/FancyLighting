@@ -1,15 +1,10 @@
 ﻿using System.Reflection;
-using MonoMod.RuntimeDetour;
 using Terraria.Graphics.Effects;
 
 namespace FancyLighting.ModCompatibility;
 
 internal static class LightsCompatibility
 {
-    private static Hook _hook_NewScreenTarget;
-    private static Hook _hook_UseLightAndShadow;
-    private static Hook _hook_UseBloom;
-
     private static RenderTarget2D _lightsTarget1;
     private static RenderTarget2D _lightsTarget2;
 
@@ -30,7 +25,7 @@ internal static class LightsCompatibility
         {
             try
             {
-                _hook_NewScreenTarget = new(detourMethod, _NewScreenTarget, true);
+                MonoModHooks.Add(detourMethod, _NewScreenTarget);
             }
             catch (Exception)
             {
@@ -46,7 +41,7 @@ internal static class LightsCompatibility
         {
             try
             {
-                _hook_UseLightAndShadow = new(detourMethod, _UseLightAndShadow, true);
+                MonoModHooks.Add(detourMethod, _UseLightAndShadow);
             }
             catch (Exception)
             {
@@ -62,7 +57,7 @@ internal static class LightsCompatibility
         {
             try
             {
-                _hook_UseBloom = new(detourMethod, _UseBloom, true);
+                MonoModHooks.Add(detourMethod, _UseBloom);
             }
             catch (Exception)
             {
@@ -73,15 +68,8 @@ internal static class LightsCompatibility
 
     internal static void Unload()
     {
-        _hook_NewScreenTarget?.Dispose();
-        _hook_UseLightAndShadow?.Dispose();
-        _hook_UseBloom?.Dispose();
         _lightsTarget1?.Dispose();
         _lightsTarget2?.Dispose();
-
-        _hook_NewScreenTarget = null;
-        _hook_UseLightAndShadow = null;
-        _hook_UseBloom = null;
         _lightsTarget1 = null;
         _lightsTarget2 = null;
     }

@@ -181,7 +181,6 @@ public sealed class FancyLightingMod : Mod
 
             SettingsSystem.EnsureRenderTargets(true);
 
-            CalamityModCompatibility.Unload();
             LightsCompatibility.Unload();
             SpiritReforgedCompatibility.Unload();
 

@@ -1,15 +1,11 @@
 ﻿using System.Reflection;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace FancyLighting.ModCompatibility;
 
 internal static class CalamityModCompatibility
 {
-    private static ILHook _ilHook_NewThreshold;
-    private static ILHook _ilHook_ChangeBlackThreshold_Delegate;
-
     internal static void Load()
     {
         if (!ModLoader.HasMod("CalamityMod"))
@@ -46,7 +42,7 @@ internal static class CalamityModCompatibility
         {
             try
             {
-                _ilHook_NewThreshold = new(detourMethod, IL_NewThreshold, true);
+                MonoModHooks.Modify(detourMethod, IL_NewThreshold);
             }
             catch (Exception)
             {
@@ -80,26 +76,13 @@ internal static class CalamityModCompatibility
         {
             try
             {
-                _ilHook_ChangeBlackThreshold_Delegate = new(
-                    detourMethod,
-                    IL_ChangeBlackThreshold_Delegate,
-                    true
-                );
+                MonoModHooks.Modify(detourMethod, IL_ChangeBlackThreshold_Delegate);
             }
             catch (Exception)
             {
                 // Unable to add the hook
             }
         }
-    }
-
-    internal static void Unload()
-    {
-        _ilHook_NewThreshold?.Dispose();
-        _ilHook_ChangeBlackThreshold_Delegate?.Dispose();
-
-        _ilHook_NewThreshold = null;
-        _ilHook_ChangeBlackThreshold_Delegate = null;
     }
 
     private static void IL_NewThreshold(ILContext context)
