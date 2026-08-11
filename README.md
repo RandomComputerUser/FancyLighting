@@ -25,6 +25,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Depth of field is no longer exclusive to full HDR rendering
 - Made the *Bicubic* render mode a little brighter
+- Improved enhanced light map blurring
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
 - Tweaked the appearance of Ambient Occlusion

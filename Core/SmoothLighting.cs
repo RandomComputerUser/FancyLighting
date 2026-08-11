@@ -1,4 +1,5 @@
-﻿using FancyLighting.Core.Sky;
+﻿using System.Runtime.CompilerServices;
+using FancyLighting.Core.Sky;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using ReLogic.Content;
 using Terraria.Graphics.Light;
@@ -757,22 +758,37 @@ public sealed class SmoothLighting
                             try
                             {
                                 var mask = myLightMasks[i];
+                                var isSolid = mask is LightMaskMode.Solid;
 
                                 var upperLeftMult =
-                                    myLightMasks[i - myHeight - 1] == mask ? 1f : 0f;
+                                    isSolid ? 0.5f
+                                    : myLightMasks[i - myHeight - 1] == mask ? 1f
+                                    : 0f;
                                 var leftMult =
-                                    myLightMasks[i - myHeight] == mask ? 2f : 0f;
+                                    isSolid || myLightMasks[i - myHeight] == mask
+                                        ? 2f
+                                        : 0f;
                                 var lowerLeftMult =
-                                    myLightMasks[i - myHeight + 1] == mask ? 1f : 0f;
-                                var upperMult = myLightMasks[i - 1] == mask ? 2f : 0f;
-                                var middleMult = mask is LightMaskMode.Solid ? 12f : 4f;
-                                var lowerMult = myLightMasks[i + 1] == mask ? 2f : 0f;
+                                    isSolid ? 0.5f
+                                    : myLightMasks[i - myHeight + 1] == mask ? 1f
+                                    : 0f;
+                                var upperMult =
+                                    isSolid || myLightMasks[i - 1] == mask ? 2f : 0f;
+                                var middleMult = isSolid ? 8f : 4f;
+                                var lowerMult =
+                                    isSolid || myLightMasks[i + 1] == mask ? 2f : 0f;
                                 var upperRightMult =
-                                    myLightMasks[i + myHeight - 1] == mask ? 1f : 0f;
+                                    isSolid ? 0.5f
+                                    : myLightMasks[i + myHeight - 1] == mask ? 1f
+                                    : 0f;
                                 var rightMult =
-                                    myLightMasks[i + myHeight] == mask ? 2f : 0f;
+                                    isSolid || myLightMasks[i + myHeight] == mask
+                                        ? 2f
+                                        : 0f;
                                 var lowerRightMult =
-                                    myLightMasks[i + myHeight + 1] == mask ? 1f : 0f;
+                                    isSolid ? 0.5f
+                                    : myLightMasks[i + myHeight + 1] == mask ? 1f
+                                    : 0f;
 
                                 var mult =
                                     1f
@@ -847,6 +863,19 @@ public sealed class SmoothLighting
                     SettingsSystem._parallelOptions,
                     (x) =>
                     {
+                        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                        static bool FilterBlur(
+                            bool nonSolid,
+                            LightMaskMode lightMask,
+                            LightMaskMode otherLightMask,
+                            int otherX,
+                            int otherY
+                        ) =>
+                            nonSolid
+                                ? otherLightMask is not LightMaskMode.Solid
+                                    || TileUtils.IsNonSolid(otherX, otherY)
+                                : otherLightMask == lightMask;
+
                         var myHeight = height;
                         var myLightMasks = lightMasks;
                         var myColors = colors;
@@ -864,81 +893,99 @@ public sealed class SmoothLighting
                             {
                                 var mask = myLightMasks[i];
                                 var isSolid = mask is LightMaskMode.Solid;
-                                var isNonSolid = TileUtils.IsNonSolid(tileX, tileY);
+                                var isNonSolid =
+                                    isSolid && TileUtils.IsNonSolid(tileX, tileY);
+                                isSolid &= !isNonSolid;
 
                                 var upperLeftMult =
-                                    myLightMasks[i - myHeight - 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX - 1, tileY - 1)
-                                            == isNonSolid
+                                    isSolid ? 0.5f
+                                    : FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i - myHeight - 1],
+                                        tileX - 1,
+                                        tileY - 1
                                     )
                                         ? 1f
-                                        : 0f;
+                                    : 0f;
                                 var leftMult =
-                                    myLightMasks[i - myHeight] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX - 1, tileY)
-                                            == isNonSolid
+                                    isSolid
+                                    || FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i - myHeight],
+                                        tileX - 1,
+                                        tileY
                                     )
                                         ? 2f
                                         : 0f;
                                 var lowerLeftMult =
-                                    myLightMasks[i - myHeight + 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX - 1, tileY + 1)
-                                            == isNonSolid
+                                    isSolid ? 0.5f
+                                    : FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i - myHeight + 1],
+                                        tileX - 1,
+                                        tileY + 1
                                     )
                                         ? 1f
-                                        : 0f;
+                                    : 0f;
                                 var upperMult =
-                                    myLightMasks[i - 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX, tileY - 1)
-                                            == isNonSolid
+                                    isSolid
+                                    || FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i - 1],
+                                        tileX,
+                                        tileY - 1
                                     )
                                         ? 2f
                                         : 0f;
-                                var middleMult = isSolid && !isNonSolid ? 12f : 4f;
+                                var middleMult = isSolid ? 8f : 4f;
                                 var lowerMult =
-                                    myLightMasks[i + 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX, tileY + 1)
-                                            == isNonSolid
+                                    isSolid
+                                    || FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i + 1],
+                                        tileX,
+                                        tileY + 1
                                     )
                                         ? 2f
                                         : 0f;
                                 var upperRightMult =
-                                    myLightMasks[i + myHeight - 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX + 1, tileY - 1)
-                                            == isNonSolid
+                                    isSolid ? 0.5f
+                                    : FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i + myHeight - 1],
+                                        tileX + 1,
+                                        tileY - 1
                                     )
                                         ? 1f
-                                        : 0f;
+                                    : 0f;
                                 var rightMult =
-                                    myLightMasks[i + myHeight] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX + 1, tileY)
-                                            == isNonSolid
+                                    isSolid
+                                    || FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i + myHeight],
+                                        tileX + 1,
+                                        tileY
                                     )
                                         ? 2f
                                         : 0f;
                                 var lowerRightMult =
-                                    myLightMasks[i + myHeight + 1] == mask
-                                    && (
-                                        !isSolid
-                                        || TileUtils.IsNonSolid(tileX + 1, tileY + 1)
-                                            == isNonSolid
+                                    isSolid ? 0.5f
+                                    : FilterBlur(
+                                        isNonSolid,
+                                        mask,
+                                        myLightMasks[i + myHeight + 1],
+                                        tileX + 1,
+                                        tileY + 1
                                     )
                                         ? 1f
-                                        : 0f;
+                                    : 0f;
 
                                 var mult =
                                     1f
