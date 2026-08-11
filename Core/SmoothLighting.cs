@@ -1723,6 +1723,7 @@ public sealed class SmoothLighting
                         ? CustomBlendStates.MultiplyColor
                         : BlendState.AlphaBlend
                 : BlendState.Opaque,
+            samplerState: srcUsed ? SamplerState.PointClamp : SamplerState.LinearClamp,
             setTarget: dst is not null
         );
         MainGraphics.RestoreSavedTextures();
