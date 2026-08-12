@@ -3,6 +3,8 @@ sampler DitherSampler : register(s0);
 
 #define DITHER_TEXTURE_SIZE 32
 
+float4x4 MatrixTransform;
+
 float HighSkyLevel;
 float LowSkyLevel;
 float3 HighSkyColor;
@@ -13,9 +15,8 @@ float InverseGamma;
 
 /* Helper functions *********************************************************************/
 
-float Smootherstep(float min, float max, float x)
+float Smootherstep(float t)
 {
-    float t = (x - min) / (max - min);
     t = saturate(t);
     return (t * t * t) * (t * (6 * t - 15) + 10);
 }
@@ -34,19 +35,30 @@ float4 Dithered(float2 position, float4 color)
 
 float4 CalculateSkyColor(float2 coords)
 {
-    float t = Smootherstep(HighSkyLevel, LowSkyLevel, coords.y);
+    float t = Smootherstep(coords.y);
     return float4(pow(lerp(HighSkyColor, LowSkyColor, t), InverseGamma), 1);
 }
 
 /* Vertex shaders ***********************************************************************/
 
-void Blit_VS(
+void SpriteBatch_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    inout float4 color : COLOR0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = mul(position, MatrixTransform);
+}
+
+void Sky_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
     out float4 screenPos : SV_Position
 )
 {
     screenPos = position;
+    texCoord.y = (texCoord.y - HighSkyLevel) / (LowSkyLevel - HighSkyLevel);
 }
 
 /* Pixel shaders ************************************************************************/
@@ -103,7 +115,7 @@ technique Sky
 {   
     pass Pass1
     {
-        VertexShader = compile vs_3_0 Blit_VS();
+        VertexShader = compile vs_3_0 Sky_VS();
         PixelShader = compile ps_3_0 Sky_PS();
     }
 }
@@ -112,7 +124,7 @@ technique SkyDithered
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 Blit_VS();
+        VertexShader = compile vs_3_0 Sky_VS();
         PixelShader = compile ps_3_0 SkyDithered_PS();
     }
 }
@@ -121,6 +133,7 @@ technique Sun
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 Sun_PS();
     }
 }
@@ -129,6 +142,7 @@ technique SunHiDef
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 SunHiDef_PS();
     }
 }

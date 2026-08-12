@@ -77,7 +77,7 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
                 0,
                 SupportsAdditiveBlend
                     ? RenderTargetUsage.PreserveContents
-                    : RenderTargetUsage.PlatformContents
+                    : RenderTargetUsage.DiscardContents
             );
         }
 

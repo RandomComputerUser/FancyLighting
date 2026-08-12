@@ -876,17 +876,22 @@ public sealed class FancyLightingMod : Mod
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
         sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightnessMult;
 
+        SpriteBatchEffectLoader.Apply(
+            _postProcessingInstance.GetBrightenSpriteBatchEffect(sunMoonBrightness)
+        );
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             samplerState,
             DepthStencilState.None,
             rasterizerState,
-            _postProcessingInstance.GetBrightenPixelOnlyEffect(sunMoonBrightness).Effect,
+            null,
             transform
         );
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();
+        SpriteBatchEffectLoader.Reset();
+
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
@@ -1034,7 +1039,7 @@ public sealed class FancyLightingMod : Mod
                     ColorUtils.GammaToLinear(brightness),
                     PostProcessing.ContentGamma()
                 )
-            : _postProcessingInstance.GetBrightenEffect(brightness);
+            : _postProcessingInstance.GetBrightenFullscreenEffect(brightness);
         Blitter.Blit(screenTarget, _backgroundTarget, effect);
 
         if (doDepthOfField)
@@ -1100,8 +1105,7 @@ public sealed class FancyLightingMod : Mod
             LightingConfig.Instance.UseTileEntitySmoothLighting
             && !DeveloperConfig.Instance.RenderOnlyLight;
         var (effect, usedTmpTarget) = _smoothLightingInstance.GetTileEntityEffect(
-            ref MainGraphics.ScreenTarget,
-            ref MainGraphics.ScreenTargetSwap
+            MainGraphics.ScreenTarget
         );
 
         if (effect is null)
@@ -1117,18 +1121,9 @@ public sealed class FancyLightingMod : Mod
                 MainGraphics.ScreenTarget
             );
 
-            if (!usedTmpTarget)
-            {
-                Blitter.BlitOrSwap(
-                    ref MainGraphics.ScreenTarget,
-                    ref MainGraphics.ScreenTargetSwap
-                );
-                MainGraphics.AssignScreenTargets();
-                usedTmpTarget = true;
-            }
-
             Main.graphics.GraphicsDevice.SetRenderTarget(_tmpScreenTarget);
             Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            usedTmpTarget = true;
 
             UseBlackLightMap(true);
             _preventTileParticles = true;
@@ -1145,6 +1140,11 @@ public sealed class FancyLightingMod : Mod
 
         if (usedTmpTarget)
         {
+            Blitter.BlitOrSwap(
+                ref MainGraphics.ScreenTarget,
+                ref MainGraphics.ScreenTargetSwap
+            );
+            MainGraphics.AssignScreenTargets();
             Blitter.Blit(MainGraphics.ScreenTargetSwap, MainGraphics.ScreenTarget);
         }
 

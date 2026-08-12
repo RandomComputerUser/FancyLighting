@@ -5,6 +5,8 @@ sampler BloomBlurSampler : register(s8);
 
 #define DITHER_TEXTURE_SIZE 32
 
+float4x4 MatrixTransform;
+
 float BrightnessMult;
 float GammaRatio;
 float OutputGamma;
@@ -118,6 +120,16 @@ void Blit_VS(
 )
 {
     screenPos = position;
+}
+
+void SpriteBatch_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    inout float4 color : COLOR0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = mul(position, MatrixTransform);
 }
 
 /* Pixel shaders ************************************************************************/
@@ -328,19 +340,20 @@ float4 ToneMapFilmicSrgb_PS(float2 coords : TEXCOORD0) : COLOR0
 
 /* Techniques ***************************************************************************/
 
-technique BrightenPixelOnly
-{
-    pass Pass1
-    {
-        PixelShader = compile ps_3_0 Brighten_PS();
-    }
-}
-
-technique Brighten
+technique BrightenFullscreen
 {
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 Brighten_PS();
+    }
+}
+
+technique BrightenSpriteBatch
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 Brighten_PS();
     }
 }
@@ -488,6 +501,7 @@ technique ToneMapNeutralOld
         PixelShader = compile ps_3_0 ToneMapNeutralOld_PS();
     }
 }
+
 technique ToneMapFilmicSrgb
 {    
     pass Pass1

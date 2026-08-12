@@ -9,13 +9,13 @@ public sealed class FancySkyRendering
 
     private readonly FullscreenEffect _skyEffect;
     private readonly FullscreenEffect _skyDitheredEffect;
-    private readonly FancyEffect _sunEffect;
+    private readonly SpriteBatchEffect _sunEffect;
 
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
 
-    private const float FadeBegin = 0.12f;
-    private const float FadeHeight = 0.24f;
+    private const float FadeBegin = 0.21f;
+    private const float FadeHeight = 0.42f;
     private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
 
     /// <summary>
@@ -98,6 +98,11 @@ public sealed class FancySkyRendering
 
         var target = MainGraphics.ScreenTarget ?? Main.screenTarget;
 
+        if (!Main.gameMenu && !MainGraphics.InCameraMode)
+        {
+            sceneArea.bgTopY = FancyAtmosphereBgTopY();
+        }
+
         var hour = GameTimeUtils.CalculateCurrentHour();
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3()
@@ -126,12 +131,8 @@ public sealed class FancySkyRendering
         highSkyColor *= skyBrightness;
         lowSkyColor *= skyBrightness;
 
-        var highLevel = (sceneArea.bgTopY + (FadeBegin * target.Width)) / target.Height;
-        if (Main.gameMenu)
-        {
-            highLevel -= 0.04f * target.Width / target.Height;
-        }
-        var lowLevel = highLevel + (FadeHeight * target.Width / target.Height);
+        var highLevel = ((float)sceneArea.bgTopY / target.Height) + FadeBegin;
+        var lowLevel = highLevel + FadeHeight;
 
         var midLevel = (highLevel + lowLevel) / 2f;
         highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
@@ -209,7 +210,8 @@ public sealed class FancySkyRendering
         if (!Main.gameMenu && !MainGraphics.InCameraMode)
         {
             // shift sun/moon downward
-            transform.Translation += 25f * transform.Up;
+            transform.Translation +=
+                25f * Main.BackgroundViewMatrix.Zoom.Y * transform.Up;
         }
 
         if (!Main.eclipse)
@@ -219,7 +221,7 @@ public sealed class FancySkyRendering
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
-        Effect effect = null;
+        SpriteBatchEffect effect = null;
         if (Main.dayTime)
         {
             var gamma = MainGraphics.DoingCapture
@@ -227,26 +229,26 @@ public sealed class FancySkyRendering
                 : PostProcessing.DefaultGamma;
             effect = _sunEffect
                 .SetParameter("Gamma", gamma)
-                .SetParameter("InverseGamma", 1f / gamma)
-                .ApplyTechnique()
-                .Effect;
+                .SetParameter("InverseGamma", 1f / gamma);
         }
         else if (hiDef)
         {
-            effect = postProcessingInstance.GetBrightenPixelOnlyEffect(1.5f).Effect;
+            effect = postProcessingInstance.GetBrightenSpriteBatchEffect(1.5f);
         }
 
+        SpriteBatchEffectLoader.Apply(effect);
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             SamplerState.LinearClamp,
             DepthStencilState.None,
             rasterizerState,
-            effect,
+            null,
             transform
         );
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();
+        SpriteBatchEffectLoader.Reset();
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -256,6 +258,18 @@ public sealed class FancySkyRendering
             rasterizerState,
             null,
             origTransform
+        );
+    }
+
+    private static int FancyAtmosphereBgTopY()
+    {
+        // This code is adapted from vanilla
+        var zoom = Main.BackgroundViewMatrix.Zoom.Y;
+        return (int)(
+            (0f - Main.screenPosition.Y)
+            / ((Main.worldSurface * 16.0) - (600.0 * zoom))
+            * 200.0
+            * zoom
         );
     }
 }

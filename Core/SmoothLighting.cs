@@ -1199,6 +1199,7 @@ public sealed class SmoothLighting
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
 
         PerformanceTracker.StartTiming("Smooth Lighting (Light Map Texture)");
+
         if (doOverbright)
         {
             CalculateSmoothLightingHdr(
@@ -1224,13 +1225,7 @@ public sealed class SmoothLighting
                 width,
                 height
             );
-
-            _colorsHiRes?.Dispose();
-            _colorsHiRes = null;
-            _prevColorsHiRes?.Dispose();
-            _prevColorsHiRes = null;
         }
-        PerformanceTracker.StopTiming("Smooth Lighting (Light Map Texture)");
 
         if (doBicubicUpscaling)
         {
@@ -1244,6 +1239,8 @@ public sealed class SmoothLighting
             _prevColorsHiRes?.Dispose();
             _prevColorsHiRes = null;
         }
+
+        PerformanceTracker.StopTiming("Smooth Lighting (Light Map Texture)");
 
         if (PostUpdateLightMap == null)
         {
@@ -1776,10 +1773,7 @@ public sealed class SmoothLighting
         MainGraphics.RestoreSavedTextures();
     }
 
-    internal (SpriteBatchEffect, bool) GetTileEntityEffect(
-        ref RenderTarget2D screenTarget,
-        ref RenderTarget2D tmpTarget
-    )
+    internal (SpriteBatchEffect, bool) GetTileEntityEffect(RenderTarget2D screenTarget)
     {
         var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
         var doOverbright = LightingConfig.Instance.DrawOverbright();
@@ -1839,8 +1833,6 @@ public sealed class SmoothLighting
 
             if (switchedTargets)
             {
-                Blitter.BlitOrSwap(ref screenTarget, ref tmpTarget);
-                MainGraphics.AssignScreenTargets();
                 usedTmpTarget = true;
             }
 
@@ -1992,7 +1984,7 @@ public sealed class SmoothLighting
         _syncHdrEffect.SetParameter("PrevLightMapMatrixTransform", prevMatrixTransform);
         _syncHdrEffect.SetParameter("CurrLightMapMatrixTransform", currMatrixTransform);
 
-        Blitter.Blit(tileTarget, tmpTarget, _syncHdrEffect);
         Blitter.BlitOrSwap(ref tmpTarget, ref tileTarget);
+        Blitter.Blit(tmpTarget, tileTarget, _syncHdrEffect);
     }
 }

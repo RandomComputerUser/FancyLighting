@@ -85,5 +85,10 @@ internal static class Blitter
         (effect ?? _basicBlitEffect).ApplyPass();
         device.SetVertexBuffer(_fullscreenTriangle);
         device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
+
+        if (src is RenderTarget2D)
+        {
+            device.Textures[0] = null;
+        }
     }
 }

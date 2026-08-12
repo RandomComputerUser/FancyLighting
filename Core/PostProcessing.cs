@@ -17,8 +17,8 @@ public sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
-    private readonly FancyEffect _brightenPixelOnlyEffect;
-    private readonly FullscreenEffect _brightenEffect;
+    private readonly FullscreenEffect _brightenFullscreenEffect;
+    private readonly SpriteBatchEffect _brightenSpriteBatchEffect;
     private readonly FullscreenEffect _gammaToLinearNoAlphaEffect;
     private readonly FullscreenEffect _gammaToLinearEffect;
     private readonly FullscreenEffect _combineLayersNoAlphaEffect;
@@ -49,8 +49,8 @@ public sealed class PostProcessing
             .Value;
 
         var effect = EffectLoader.Load("PostProcessing");
-        _brightenPixelOnlyEffect = new(effect, "BrightenPixelOnly");
-        _brightenEffect = new(effect, "Brighten");
+        _brightenFullscreenEffect = new(effect, "BrightenFullscreen");
+        _brightenSpriteBatchEffect = new(effect, "BrightenSpriteBatch");
         _gammaToLinearNoAlphaEffect = new(effect, "GammaToLinearNoAlpha");
         _gammaToLinearEffect = new(effect, "GammaToLinear");
         _combineLayersNoAlphaEffect = new(effect, "CombineLayersNoAlpha");
@@ -95,13 +95,11 @@ public sealed class PostProcessing
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
-    internal FancyEffect GetBrightenPixelOnlyEffect(float brightness) =>
-        _brightenPixelOnlyEffect
-            .SetParameter("BrightnessMult", brightness)
-            .ApplyTechnique();
+    internal FullscreenEffect GetBrightenFullscreenEffect(float brightness) =>
+        _brightenFullscreenEffect.SetParameter("BrightnessMult", brightness);
 
-    internal FullscreenEffect GetBrightenEffect(float brightness) =>
-        _brightenEffect.SetParameter("BrightnessMult", brightness);
+    internal SpriteBatchEffect GetBrightenSpriteBatchEffect(float brightness) =>
+        _brightenSpriteBatchEffect.SetParameter("BrightnessMult", brightness);
 
     internal FullscreenEffect GetGammaNoAlphaEffect(float exposure, float gamma) =>
         _gammaToLinearNoAlphaEffect
