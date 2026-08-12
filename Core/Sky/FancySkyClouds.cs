@@ -198,24 +198,9 @@ public static class FancySkyClouds
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
-        var newSamplerState = _samplerState;
-        if (wrap)
-        {
-            // Could create a new SamplerState object and change AddressU and AddressV
-            // But vanilla code just uses the builtin SamplerStates
-            if (_samplerState == SamplerState.LinearClamp)
-            {
-                newSamplerState = SamplerState.LinearWrap;
-            }
-            else if (_samplerState == SamplerState.PointClamp)
-            {
-                newSamplerState = SamplerState.PointWrap;
-            }
-            else if (_samplerState == SamplerState.AnisotropicWrap)
-            {
-                newSamplerState = SamplerState.AnisotropicWrap;
-            }
-        }
+        var newSamplerState = wrap
+            ? CustomSamplerStates.LinearWrapUClampV
+            : SamplerState.LinearClamp;
 
         var cloudShadingStrength = Math.Clamp(
             PreferencesConfig.Instance.CloudShadingMultiplier(),

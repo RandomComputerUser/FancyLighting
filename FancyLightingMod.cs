@@ -189,6 +189,7 @@ public sealed class FancyLightingMod : Mod
 
             MainGraphics.Unload();
             CustomBlendStates.Unload();
+            CustomSamplerStates.Unload();
             BlurRenderer.Unload();
             SpriteBatchEffectLoader.Unload();
             Blitter.Unload();
@@ -926,7 +927,21 @@ public sealed class FancyLightingMod : Mod
         var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
         Main.spriteBatch.End();
 
-        SeparateBackground(cameraMode: false);
+        var doSyncHdr =
+            LightingConfig.Instance.HiDefFeaturesEnabled()
+            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+            && Main.instance.tileTarget is { Width: > 0, Height: > 0 }
+            && !_smoothLightingInstance.CanDrawSmoothLighting;
+
+        var usingSeparateBackground = SeparateBackground(
+            cameraMode: false,
+            willClearBackgroundLater: doSyncHdr && _smoothLightingInstance.ReadyForHdrSync
+        );
+
+        if (doSyncHdr)
+        {
+            SyncHdrLighting(!usingSeparateBackground);
+        }
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
@@ -975,7 +990,10 @@ public sealed class FancyLightingMod : Mod
         );
     }
 
-    private void SeparateBackground(bool cameraMode)
+    private bool SeparateBackground(
+        bool cameraMode,
+        bool willClearBackgroundLater = false
+    )
     {
         var doOverbright =
             LightingConfig.Instance.SmoothLightingEnabled()
@@ -984,11 +1002,12 @@ public sealed class FancyLightingMod : Mod
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
 
-        ref var screenTarget = ref MainGraphics.ScreenTarget;
-
         if (doOverbright)
         {
-            TextureUtils.MatchSizeAndFormat(ref _backgroundTarget, screenTarget);
+            TextureUtils.MatchSizeAndFormat(
+                ref _backgroundTarget,
+                MainGraphics.ScreenTarget
+            );
         }
 
         if (!hiDef)
@@ -996,34 +1015,39 @@ public sealed class FancyLightingMod : Mod
             if (doDepthOfField)
             {
                 _postProcessingInstance.Blur(
-                    screenTarget,
-                    doOverbright ? _backgroundTarget : screenTarget,
+                    MainGraphics.ScreenTarget,
+                    doOverbright ? _backgroundTarget : MainGraphics.ScreenTarget,
                     PreferencesConfig.Instance.DepthOfFieldRadius
                 );
             }
             else
             {
                 // doOverbright must be true here
-                Blitter.BlitOrSwap(ref screenTarget, ref _backgroundTarget);
+                Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
                 MainGraphics.AssignScreenTargets();
             }
 
             if (doOverbright)
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
+                Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             }
 
-            return;
+            return doOverbright;
         }
 
         if (!hdrCompatBlending)
         {
-            Blitter.BlitOrSwap(ref screenTarget, ref _backgroundTarget);
+            Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
             MainGraphics.AssignScreenTargets();
-            Main.graphics.GraphicsDevice.SetRenderTarget(screenTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            return;
+
+            if (!willClearBackgroundLater)
+            {
+                Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            }
+
+            return true;
         }
 
         _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
@@ -1040,7 +1064,7 @@ public sealed class FancyLightingMod : Mod
                     PostProcessing.ContentGamma()
                 )
             : _postProcessingInstance.GetBrightenFullscreenEffect(brightness);
-        Blitter.Blit(screenTarget, _backgroundTarget, effect);
+        Blitter.Blit(MainGraphics.ScreenTarget, _backgroundTarget, effect);
 
         if (doDepthOfField)
         {
@@ -1059,18 +1083,18 @@ public sealed class FancyLightingMod : Mod
                     1f,
                     1f / PostProcessing.ContentGamma()
                 );
-            Blitter.Blit(_backgroundTarget, screenTarget, effect);
+            Blitter.Blit(_backgroundTarget, MainGraphics.ScreenTarget, effect);
         }
         else
         {
-            Blitter.BlitOrSwap(ref _backgroundTarget, ref screenTarget);
+            Blitter.BlitOrSwap(ref _backgroundTarget, ref MainGraphics.ScreenTarget);
             MainGraphics.AssignScreenTargets();
         }
 
         if (_smoothLightingInstance.CanDrawSmoothLighting)
         {
             _smoothLightingInstance.DrawSmoothLighting(
-                screenTarget,
+                MainGraphics.ScreenTarget,
                 null,
                 background: false,
                 disableNormalMaps: true,
@@ -1079,6 +1103,8 @@ public sealed class FancyLightingMod : Mod
                 invertOverbright: true
             );
         }
+
+        return false;
     }
 
     // Tile entities
@@ -1948,42 +1974,14 @@ public sealed class FancyLightingMod : Mod
                 self.Height
             );
             PerformanceTracker.StopTiming("Smooth Lighting (Light Map Array)");
-
-            if (
-                LightingConfig.Instance.HiDefFeaturesEnabled()
-                && !CompatibilityConfig.Instance.DisableHdrLightingSync
-            )
-            {
-                SyncHdrLighting();
-            }
         }
     }
 
-    private void SyncHdrLighting()
+    private void SyncHdrLighting(bool preserveScreenTarget)
     {
-        if (
-            MainGraphics.InCameraMode
-            || !MainGraphics.DoingCapture
-            || Main.instance.tileTarget is not { Width: > 0, Height: > 0 }
-        )
-        {
-            return;
-        }
-
-        Main.spriteBatch.End();
-
         _smoothLightingInstance.CalculateSmoothLighting();
         if (!_smoothLightingInstance.ReadyForHdrSync)
         {
-            Main.spriteBatch.Begin(
-                SpriteSortMode.Deferred,
-                BlendState.AlphaBlend,
-                Main.DefaultSamplerState,
-                DepthStencilState.None,
-                Main.Rasterizer,
-                null,
-                Main.Transform
-            );
             return;
         }
 
@@ -2025,21 +2023,19 @@ public sealed class FancyLightingMod : Mod
 
         MainGraphics.RestoreSavedTextures();
 
-        Blitter.BlitOrSwap(
-            ref MainGraphics.ScreenTarget,
-            ref MainGraphics.ScreenTargetSwap
-        );
-        MainGraphics.AssignScreenTargets();
-        Blitter.Blit(MainGraphics.ScreenTargetSwap, MainGraphics.ScreenTarget);
-
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            Main.DefaultSamplerState,
-            DepthStencilState.None,
-            Main.Rasterizer,
-            null,
-            Main.Transform
-        );
+        if (preserveScreenTarget)
+        {
+            Blitter.BlitOrSwap(
+                ref MainGraphics.ScreenTarget,
+                ref MainGraphics.ScreenTargetSwap
+            );
+            MainGraphics.AssignScreenTargets();
+            Blitter.Blit(MainGraphics.ScreenTargetSwap, MainGraphics.ScreenTarget);
+        }
+        else
+        {
+            Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
+            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+        }
     }
 }
