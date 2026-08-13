@@ -138,7 +138,7 @@ internal record PresetOptions
             SimulateNormalMaps = true,
             SimulateNonSolidNormals = true,
             SimulateTileEntityNormals = true,
-            UseTileEntitySmoothLighting = false,
+            UseTileEntitySmoothLighting = true,
             UseAmbientOcclusion = true,
             DoNonSolidAmbientOcclusion = true,
             DoTileEntityAmbientOcclusion = true,
