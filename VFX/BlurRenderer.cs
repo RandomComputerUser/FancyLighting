@@ -102,15 +102,16 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         RenderTarget2D src,
         RenderTarget2D dst,
         int passCount,
-        bool additiveBlend = false
+        bool additiveBlend = false,
+        float zoom = 1f
     )
     {
         additiveBlend = additiveBlend && SupportsAdditiveBlend;
         passCount = Math.Clamp(passCount, 1, 5);
 
         EnsureBlurTargets(
-            src.Width,
-            src.Height,
+            (int)(src.Width / zoom),
+            (int)(src.Height / zoom),
             passCount,
             AlphaOnly
                 ? SurfaceFormat.Color // SurfaceFormat.Alpha8 is not supported

@@ -217,7 +217,7 @@ public static class FancySkyClouds
 
         if (!MainGraphics.InCameraMode)
         {
-            scale *= Main.BackgroundViewMatrix.Zoom.Y;
+            scale *= Main.BackgroundViewMatrix.Zoom.X;
         }
 
         var effect = wrap ? _cloudShadingWrapEffect : _cloudShadingEffect;

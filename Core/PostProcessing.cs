@@ -111,8 +111,12 @@ public sealed class PostProcessing
             .SetParameter("Exposure", exposure)
             .SetParameter("GammaRatio", gamma);
 
-    internal RenderTarget2D Blur(RenderTarget2D src, RenderTarget2D dst, int radius) =>
-        _blurRenderer.Blur(src, dst, radius);
+    internal RenderTarget2D Blur(
+        RenderTarget2D src,
+        RenderTarget2D dst,
+        int radius,
+        float zoom = 1f
+    ) => _blurRenderer.Blur(src, dst, radius, zoom: zoom);
 
     internal void BlitTwo(
         RenderTarget2D foreground,
@@ -225,7 +229,8 @@ public sealed class PostProcessing
                         _blurRenderer.Blur(
                             nextTarget,
                             nextTarget,
-                            PreferencesConfig.Instance.DepthOfFieldRadius
+                            PreferencesConfig.Instance.DepthOfFieldRadius,
+                            zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
                         );
 
                         Blitter.Blit(
@@ -320,7 +325,8 @@ public sealed class PostProcessing
                     currTarget,
                     null,
                     PreferencesConfig.Instance.BloomRadius,
-                    additiveBlend: true
+                    additiveBlend: true,
+                    zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);

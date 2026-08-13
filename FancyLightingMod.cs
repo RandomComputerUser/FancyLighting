@@ -1071,7 +1071,8 @@ public sealed class FancyLightingMod : Mod
                 _postProcessingInstance.Blur(
                     MainGraphics.ScreenTarget,
                     doOverbright ? _backgroundTarget : MainGraphics.ScreenTarget,
-                    PreferencesConfig.Instance.DepthOfFieldRadius
+                    PreferencesConfig.Instance.DepthOfFieldRadius,
+                    zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
                 );
             }
             else
@@ -1125,7 +1126,8 @@ public sealed class FancyLightingMod : Mod
             _postProcessingInstance.Blur(
                 _backgroundTarget,
                 _backgroundTarget,
-                PreferencesConfig.Instance.DepthOfFieldRadius
+                PreferencesConfig.Instance.DepthOfFieldRadius,
+                zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
             );
 
             effect = cameraMode

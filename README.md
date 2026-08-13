@@ -25,10 +25,11 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Improved enhanced light map blurring
 - Added bright light synchronization for full HDR rendering
 - Depth of field is no longer exclusive to full HDR rendering
-- Improved vibrance boost
 - Added a new default tone mapping operator for full HDR rendering
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
+- Improved vibrance boost
+- Bloom and depth of field blur radius now scale with display zoom
 - Tweaked the appearance of Ambient Occlusion
 
 #### Settings Tweaks
