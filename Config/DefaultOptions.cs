@@ -8,6 +8,7 @@ public static class DefaultOptions
 
     // Compatibility Settings
     public const bool DisableRenderingOptimizations = false;
+    public const bool UseAccurateGlowRendering = false;
     public const bool DisableHdrDuringBossFights = false;
     public const bool DisableHdrEnhancedAlphaBlending = false;
     public const bool DisableHdrLightingSync = false;
@@ -34,7 +35,6 @@ public static class DefaultOptions
     // Smooth Lighting
     public const bool UseSmoothLighting = true;
     public const RenderMode LightMapRenderMode = RenderMode.Bicubic;
-    public const bool UseEnhancedGlowMaskSupport = false;
     public const bool UseLightMapBlurring = true;
     public const bool UseEnhancedBlurring = true;
     public const bool SimulateNormalMaps = false;

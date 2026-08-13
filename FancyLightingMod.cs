@@ -20,10 +20,13 @@ namespace FancyLighting;
 public sealed class FancyLightingMod : Mod
 {
     internal static bool _preventTileParticles;
+    private static bool _modifyParticleLighting;
     private static bool _makePartialLiquidTranslucent;
     private static bool _suppressRenderBlack;
     private static bool _useWhiteLightMap;
     private static bool _useBlackLightMap;
+
+    private static FancyLightingMod _instance;
 
     private SmoothLighting _smoothLightingInstance;
     private AmbientOcclusion _ambientOcclusionInstance;
@@ -128,7 +131,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
+        _instance = this;
+
         _preventTileParticles = false;
+        _modifyParticleLighting = false;
         _makePartialLiquidTranslucent = false;
         _suppressRenderBlack = false;
         _useWhiteLightMap = false;
@@ -194,6 +200,8 @@ public sealed class FancyLightingMod : Mod
             SpriteBatchEffectLoader.Unload();
             Blitter.Unload();
         });
+
+        _instance = null;
 
         base.Unload();
     }
@@ -454,19 +462,64 @@ public sealed class FancyLightingMod : Mod
                     BindingFlags.NonPublic | BindingFlags.Static
                 )
                 .AssertNotNull();
+            var modifyParticleLightingField = typeof(FancyLightingMod)
+                .GetField(
+                    nameof(_modifyParticleLighting),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var instanceField = typeof(FancyLightingMod)
+                .GetField(nameof(_instance), BindingFlags.NonPublic | BindingFlags.Static)
+                .AssertNotNull();
+            var useWhiteLightMapMethod = typeof(FancyLightingMod)
+                .GetMethod(
+                    nameof(UseWhiteLightMap),
+                    BindingFlags.NonPublic | BindingFlags.Instance
+                )
+                .AssertNotNull();
+            var getColorMethod = typeof(Lighting)
+                .GetMethod(
+                    nameof(Lighting.GetColor),
+                    BindingFlags.Public | BindingFlags.Static,
+                    [typeof(int), typeof(int)]
+                )
+                .AssertNotNull();
 
-            var afterIfBlockLabel = cursor.DefineLabel();
+            var afterIfBlockLabel1 = cursor.DefineLabel();
+            var afterIfBlockLabel2 = cursor.DefineLabel();
 
+            // Instance method
+            // Args are: (int j, int i, Tile tileCache, ushort typeCache, short tileFrameX, short tileFrameY, Color tileLight)
             /*
             if (_preventTileParticles)
             {
                 return;
             }
+            
+            if (_modifyParticleLighting)
+            {
+                _instance.UseWhiteLightMap(false);
+                tileLight = Lighting.GetColor(i, j);
+                _instance.UseWhiteLightMap(true);
+            }
             */
             cursor.Emit(OpCodes.Ldsfld, preventTileParticlesField);
-            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel1);
             cursor.Emit(OpCodes.Ret);
-            cursor.MarkLabel(afterIfBlockLabel);
+            cursor.MarkLabel(afterIfBlockLabel1);
+            cursor.Emit(OpCodes.Ldsfld, modifyParticleLightingField);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel2);
+            cursor.Emit(OpCodes.Ldsfld, instanceField);
+            cursor.Emit(OpCodes.Ldc_I4_0);
+            cursor.Emit(OpCodes.Callvirt, useWhiteLightMapMethod);
+            cursor.Emit(OpCodes.Ldarg_2);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.Emit(OpCodes.Call, getColorMethod);
+            cursor.Emit(OpCodes.Starg, 7);
+            cursor.Emit(OpCodes.Ldsfld, instanceField);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Callvirt, useWhiteLightMapMethod);
+            cursor.MarkLabel(afterIfBlockLabel2);
         }
         catch (Exception)
         {
@@ -1599,7 +1652,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
         var optimize = SettingsSystem._optimizeRendering;
 
         _smoothLightingInstance.CalculateSmoothLighting();
@@ -1671,6 +1724,7 @@ public sealed class FancyLightingMod : Mod
 
         UseWhiteLightMap(_smoothLightingInstance.CanDrawSmoothLighting);
         _preventTileParticles = enhancedGlowMasks;
+        _modifyParticleLighting = !enhancedGlowMasks;
         _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
         _suppressRenderBlack = enhancedGlowMasks;
         try
@@ -1681,6 +1735,7 @@ public sealed class FancyLightingMod : Mod
         {
             _suppressRenderBlack = false;
             _makePartialLiquidTranslucent = false;
+            _modifyParticleLighting = false;
             _preventTileParticles = false;
             UseWhiteLightMap(false);
         }
@@ -1716,7 +1771,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && LightingConfig.Instance.UseEnhancedGlowMaskSupport;
+            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
 
         _smoothLightingInstance.CalculateSmoothLighting(cameraMode: true);
         if (!_smoothLightingInstance.CanDrawSmoothLighting)
@@ -1771,6 +1826,7 @@ public sealed class FancyLightingMod : Mod
 
         UseWhiteLightMap(true);
         _preventTileParticles = enhancedGlowMasks;
+        _modifyParticleLighting = !enhancedGlowMasks;
         _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;
         try
         {
@@ -1785,6 +1841,7 @@ public sealed class FancyLightingMod : Mod
         finally
         {
             _makePartialLiquidTranslucent = false;
+            _modifyParticleLighting = false;
             _preventTileParticles = false;
             UseWhiteLightMap(false);
         }

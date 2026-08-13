@@ -22,6 +22,18 @@ CompatibilityConfig: {
 
 	# Smooth Lighting
 	
+	UseAccurateGlowRendering: {
+		Label: Accurate Glow Rendering
+		Tooltip:
+			'''
+			Use a more accurate technique to render tile glow effects
+
+			When disabled, glow effect brightness may differ slightly from vanilla lighting
+
+			{$Snippets.HighPerformanceImpact}
+			'''
+	}
+
 	DisableHdrDuringBossFights: {
 		Label: Disable HDRR During Boss Fights and Events
 		Tooltip:
@@ -464,18 +476,6 @@ LightingConfig: {
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
 
 			{$Snippets.VeryHighPerformanceImpact}
-			'''
-	}
-
-	UseEnhancedGlowMaskSupport: {
-		Label: Improved Glow Effect Accuracy
-		Tooltip:
-			'''
-			Use a more accurate technique to render glow effects
-
-			When disabled, glow effect brightness may differ from vanilla
-
-			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 

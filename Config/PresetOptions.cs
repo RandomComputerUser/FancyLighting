@@ -11,9 +11,6 @@ internal record PresetOptions
     public RenderMode LightMapRenderMode { get; init; } =
         DefaultOptions.LightMapRenderMode;
 
-    public bool UseEnhancedGlowMaskSupport { get; init; } =
-        DefaultOptions.UseEnhancedGlowMaskSupport;
-
     public bool UseLightMapBlurring { get; init; } = DefaultOptions.UseLightMapBlurring;
 
     public bool UseEnhancedBlurring { get; init; } = DefaultOptions.UseEnhancedBlurring;
@@ -67,7 +64,6 @@ internal record PresetOptions
     {
         UseSmoothLighting = config.UseSmoothLighting;
         LightMapRenderMode = config.LightMapRenderMode;
-        UseEnhancedGlowMaskSupport = config.UseEnhancedGlowMaskSupport;
         UseLightMapBlurring = config.UseLightMapBlurring;
         UseEnhancedBlurring = config.UseEnhancedBlurring;
         SimulateNormalMaps = config.SimulateNormalMaps;
@@ -94,7 +90,6 @@ internal record PresetOptions
         {
             UseSmoothLighting = false,
             LightMapRenderMode = RenderMode.Bilinear,
-            UseEnhancedGlowMaskSupport = false,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             SimulateNonSolidNormals = false,
@@ -116,7 +111,6 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.Bilinear,
-            UseEnhancedGlowMaskSupport = false,
             UseEnhancedBlurring = false,
             SimulateNormalMaps = false,
             SimulateNonSolidNormals = false,
@@ -140,7 +134,6 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.BicubicOverbright,
-            UseEnhancedGlowMaskSupport = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             SimulateNonSolidNormals = true,
@@ -162,7 +155,6 @@ internal record PresetOptions
         {
             UseSmoothLighting = true,
             LightMapRenderMode = RenderMode.EnhancedHdr,
-            UseEnhancedGlowMaskSupport = true,
             UseEnhancedBlurring = true,
             SimulateNormalMaps = true,
             SimulateNonSolidNormals = true,

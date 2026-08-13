@@ -221,10 +221,11 @@ float NormalsMultiplierFancySky(
     );
 }
 
-float4 Glow(float2 tileCoord, float4 smoothColor)
+float4 Glow(float2 tileCoord, float4 smoothColor, float3 tileColor, float3 lightColor)
 {
     float3 glow = tex2D(GlowSampler, tileCoord).rgb;
-    float3 bright = max(smoothColor.rgb, glow);
+    float3 level = saturate((255.0 / 254) * lightColor - (1.0 / 254));
+    float3 bright = max(smoothColor.rgb, lerp(glow, tileColor, level));
     
     return float4(
         lerp(smoothColor.rgb, bright, step(2.5 / 255, glow)),
@@ -235,8 +236,8 @@ float4 Glow(float2 tileCoord, float4 smoothColor)
 float4 EnhancedGlow(float2 tileCoord, float4 smoothColor)
 {
     float3 selector = tex2D(GlowSampler, tileCoord).rgb;
-    float4 glow = tex2D(LightedGlowSampler, tileCoord);
-    float3 bright = max(smoothColor.rgb, glow.rgb);
+    float3 glow = tex2D(LightedGlowSampler, tileCoord).rgb;
+    float3 bright = max(smoothColor.rgb, glow);
     
     return float4(
         lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
@@ -323,7 +324,7 @@ float4 SmoothLighting(
     }
     else if (!lightOnly)
     {
-        color = Glow(tileCoord, color);
+        color = Glow(tileCoord, color, tileColor.rgb, lightColor.rgb);
     }
     
     return color;

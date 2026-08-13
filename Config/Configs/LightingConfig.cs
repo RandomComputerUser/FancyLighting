@@ -69,7 +69,6 @@ public sealed class LightingConfig : ModConfig
     {
         _useSmoothLighting = options.UseSmoothLighting;
         _lightMapRenderMode = options.LightMapRenderMode;
-        _useEnhancedGlowMaskSupport = options.UseEnhancedGlowMaskSupport;
         _useLightMapBlurring = options.UseLightMapBlurring;
         _useEnhancedBlurring = options.UseEnhancedBlurring;
         _simulateNormalMaps = options.SimulateNormalMaps;
@@ -166,19 +165,6 @@ public sealed class LightingConfig : ModConfig
     }
 
     private RenderMode _lightMapRenderMode;
-
-    [DefaultValue(DefaultOptions.UseEnhancedGlowMaskSupport)]
-    public bool UseEnhancedGlowMaskSupport
-    {
-        get => _useEnhancedGlowMaskSupport;
-        set
-        {
-            _useEnhancedGlowMaskSupport = value;
-            UpdatePreset();
-        }
-    }
-
-    private bool _useEnhancedGlowMaskSupport;
 
     [DefaultValue(DefaultOptions.UseLightMapBlurring)]
     public bool UseLightMapBlurring
