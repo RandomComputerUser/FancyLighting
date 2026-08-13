@@ -20,6 +20,7 @@ internal sealed class SettingsSystem : ModSystem
 
     private bool _prevNeedsPostProcessing;
     private bool _prevSmoothLightingDisabled;
+    private bool _changedConfig;
 
     public override void Unload()
     {
@@ -27,11 +28,7 @@ internal sealed class SettingsSystem : ModSystem
         Filters.Scene.OnPostDraw -= DoNothing;
     }
 
-    internal void OnConfigChange()
-    {
-        SettingsUpdate();
-        ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
-    }
+    internal void OnConfigChange() => _changedConfig = true;
 
     internal void SettingsUpdate()
     {
@@ -74,13 +71,17 @@ internal sealed class SettingsSystem : ModSystem
 
         var smoothLightingDisabled = SmoothLightingDisabled();
         if (
-            smoothLightingDisabled != _prevSmoothLightingDisabled
-            && LightingConfig.Instance.UseSmoothLighting
+            _changedConfig
+            || (
+                smoothLightingDisabled != _prevSmoothLightingDisabled
+                && LightingConfig.Instance.UseSmoothLighting
+            )
         )
         {
             ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
         }
         _prevSmoothLightingDisabled = smoothLightingDisabled;
+        _changedConfig = false;
     }
 
     internal static void EnsureRenderTargets(bool reset = false)

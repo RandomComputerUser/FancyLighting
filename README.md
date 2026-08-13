@@ -53,9 +53,10 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering
 
-#### Bug Fixes and Optimizations
+#### Bug Fixes, Compatibility, and Optimization
 - Significantly optimized rendering
 - Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
 - Fixed a minor bug with Ambient Occlusion when using full HDR rendering
+- Fixed screen flashing after saving configs when at high resolutions
 - Added compatibility with screen flipping from sources other than the Gravitation buff
 - Made unloading more thorough
