@@ -174,9 +174,16 @@ public sealed class PostProcessing
             && LightingConfig.Instance.DrawOverbright()
         )
         {
-            smoothLightingInstance.CalculateSmoothLighting(cameraMode);
+            var switchedTargets = smoothLightingInstance.CalculateSmoothLighting(
+                cameraMode
+            );
             if (smoothLightingInstance.CanDrawSmoothLighting)
             {
+                if (switchedTargets && hiDef)
+                {
+                    Blitter.Blit(currTarget, nextTarget);
+                }
+
                 smoothLightingInstance.DrawSmoothLighting(
                     currTarget,
                     hiDef ? null : nextTarget,
@@ -186,7 +193,7 @@ public sealed class PostProcessing
                     overbrightPass: true
                 );
 
-                if (!hiDef)
+                if (!hiDef || switchedTargets)
                 {
                     (currTarget, nextTarget) = (nextTarget, currTarget);
                 }
