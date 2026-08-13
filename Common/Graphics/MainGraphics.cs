@@ -155,7 +155,7 @@ internal static class MainGraphics
     {
         CameraModeCaptureBackground = settings.CaptureBackground;
         CameraModeBiome = settings.Biome;
-        ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
+        ModContent.GetInstance<SettingsSystem>()?.SettingsUpdate();
         orig(self, area, settings);
         CameraModeBiome = null;
     }

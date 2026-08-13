@@ -804,7 +804,7 @@ public sealed class FancyLightingMod : Mod
 
         SpriteBatchEffectLoader.Reset();
 
-        ModContent.GetInstance<SettingsSystem>().SettingsUpdate();
+        ModContent.GetInstance<SettingsSystem>()?.SettingsUpdate();
         MainGraphics.ResetCaptureInfo();
 
         if (
