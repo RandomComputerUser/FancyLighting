@@ -14,40 +14,46 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.0 (2026-??-??)
+
+#### Features and Improvements
 - Added Fancy Sky Light Shading
   - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
 - Added tile entity normal maps
-- Tweaked normal maps rendering and adjusted the normal maps strength scale
-- Changed the default normal maps strength to 7 (from 3)
-- Changed the maximum normal maps strength to 10 (from 15)
 - Added a setting to apply smooth lighting to tile entities
-- Added bright light synchronization for full HDR rendering
-- Added a setting to toggle whether normal maps are rendered on non-solid tiles
-- Depth of field is no longer exclusive to full HDR rendering
+- Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter
 - Improved enhanced light map blurring
+- Added bright light synchronization for full HDR rendering
+- Depth of field is no longer exclusive to full HDR rendering
+- Improved vibrance boost
+- Added a new default tone mapping operator for full HDR rendering
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
 - Tweaked the appearance of Ambient Occlusion
-- Increased the range of the gamma setting to 100–340 (from 140–300)
-- Gamma can now be adjusted in increments of 5 (from 10)
-- Added the *Neutral (LMS)* TMO, which is the new default
-- Renamed the *Neutral* TMO to *Neutral (old WCG)* and *Filmic* to *Filmic (sRGB)*
-- Changed the exposure setting to be logarithmic and increased its range
-- Improved vibrance boost
-- Increased the default vibrance boost to 4 (from 2)
-- Increased the max vibrance boost to 15 (from 10)
-- Changed the bloom strength scale and increased its default and maximum values
-- Increased the max sky brightness boost to 15 (from 10)
+
+#### Settings Tweaks
 - Created two new configs: *Compatibility Settings* and *Developer Settings*
 - Some settings from the *Preferences* config have been moved to the new configs
 - Added tooltip lines to settings that have a major effect on performance
 - Made other improvements to settings tooltips
 - Rearranged and renamed some settings
+- Added a setting to toggle whether normal maps are rendered on non-solid tiles
+- Tweaked normal maps rendering and adjusted the normal maps strength scale
+- Changed the default normal maps strength to 7 (from 3)
+- Changed the maximum normal maps strength to 10 (from 15)
+- Increased the range of the gamma setting to 100–340 (from 140–300)
+- Gamma can now be adjusted in increments of 5 (from 10)
+- Changed the exposure setting to be logarithmic and increased its range
+- Increased the default vibrance boost to 4 (from 2)
+- Increased the max vibrance boost to 15 (from 10)
+- Changed the bloom strength scale and increased its default and maximum values
+- Increased the max sky brightness boost to 15 (from 10)
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering
+
+#### Bug Fixes and Optimizations
+- Significantly optimized rendering
 - Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
 - Fixed a minor bug with Ambient Occlusion when using full HDR rendering
 - Added compatibility with screen flipping from sources other than the Gravitation buff
-- Significantly optimized rendering
-- Improved unloading
+- Made unloading more thorough
