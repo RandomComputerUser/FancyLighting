@@ -177,6 +177,7 @@ public sealed class FancyLightingMod : Mod
             _tmpScreenTarget?.Dispose();
             _backgroundTarget?.Dispose();
 
+            FancySkyClouds.Unload();
             FancySkyLighting.Unload();
             _fancySkyRenderingInstance?.Unload();
             _fancySkyColorsInstance?.Unload();

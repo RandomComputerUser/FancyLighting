@@ -20,6 +20,13 @@ public static class FancySkyClouds
         AddHooks();
     }
 
+    internal static void Unload()
+    {
+        _samplerState = null;
+        _cloudShadingEffect = null;
+        _cloudShadingWrapEffect = null;
+    }
+
     private static void AddHooks()
     {
         On_Main.DrawSurfaceBG += _Main_DrawSurfaceBG;
