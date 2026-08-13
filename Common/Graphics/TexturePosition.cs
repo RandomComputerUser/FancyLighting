@@ -8,7 +8,10 @@ public record struct TexturePosition(
 {
     public static TexturePosition GetScreenPosition(Texture2D screenTarget)
     {
+        var viewport = new Viewport(0, 0, screenTarget.Width, screenTarget.Height);
+        Main.GameViewMatrix.SetViewportOverride(viewport);
         var transform = Main.GameViewMatrix.TransformationMatrix;
+        Main.GameViewMatrix.ClearViewportOverride();
         MatrixUtils.Invert2x2HomogeneousTransformation(ref transform);
         return new(
             new Vector2(transform.M41, transform.M42) + Main.screenPosition,
