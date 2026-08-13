@@ -7,12 +7,14 @@ float2 SkyLightGradient;
 float SkyLightMult;
 float ShadingStrength;
 
-struct VertexShaderOutput
+struct PixelShaderInput
 {
     float4 Position : SV_Position;
     float4 Color : COLOR0;
     float2 TexCoord : TEXCOORD0;
 };
+
+/* Helper functions *********************************************************************/
 
 float Square(float x)
 {
@@ -23,8 +25,6 @@ float Luma(float3 color)
 {
     return dot(color, float3(0.2126, 0.7152, 0.0722));
 }
-
-// Intentionally use gamma-encoded values for simulating normal maps
 
 float SampleTexture(float2 texCoord, bool wrap)
 {
@@ -96,7 +96,7 @@ float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
     );
 }
 
-float4 CloudShadingColor(VertexShaderOutput input, bool wrap)
+float4 CloudShadingColor(PixelShaderInput input, bool wrap)
 {
     float4 texColor = tex2D(TextureSampler, input.TexCoord);
     
@@ -110,20 +110,37 @@ float4 CloudShadingColor(VertexShaderOutput input, bool wrap)
     );
 }
 
-float4 CloudShading_PS(VertexShaderOutput input) : COLOR0
+/* Vertex shaders ***********************************************************************/
+
+void SpriteBatch_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    inout float4 color : COLOR0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = mul(position, MatrixTransform);
+}
+
+/* Pixel shaders ************************************************************************/
+
+float4 CloudShading_PS(PixelShaderInput input) : COLOR0
 {
     return CloudShadingColor(input, false);
 }
 
-float4 CloudShadingWrap_PS(VertexShaderOutput input) : COLOR0
+float4 CloudShadingWrap_PS(PixelShaderInput input) : COLOR0
 {
     return CloudShadingColor(input, true);
 }
+
+/* Techniques ***************************************************************************/
 
 technique CloudShading
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 CloudShading_PS();
     }
 }
@@ -132,6 +149,7 @@ technique CloudShadingWrap
 {
     pass Pass1
     {
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 CloudShadingWrap_PS();
     }
 }

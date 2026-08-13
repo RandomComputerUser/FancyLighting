@@ -8,8 +8,8 @@ public static class FancySkyClouds
 {
     private static SamplerState _samplerState = SamplerState.LinearClamp;
 
-    private static FancyEffect _cloudShadingEffect;
-    private static FancyEffect _cloudShadingWrapEffect;
+    private static SpriteBatchEffect _cloudShadingEffect;
+    private static SpriteBatchEffect _cloudShadingWrapEffect;
 
     internal static void Load()
     {
@@ -221,18 +221,17 @@ public static class FancySkyClouds
         }
 
         var effect = wrap ? _cloudShadingWrapEffect : _cloudShadingEffect;
-
         effect
             .SetParameter("Scale", 2f * scale)
             .SetParameter("ShadingStrength", mult * cloudShadingStrength);
-        effect.ApplyTechnique();
+        SpriteBatchEffectLoader.Apply(effect);
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
             newSamplerState,
             DepthStencilState.Default,
             rasterizerState,
-            effect.Effect,
+            null,
             transformMatrix
         );
     }
@@ -243,6 +242,7 @@ public static class FancySkyClouds
         var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
 
         Main.spriteBatch.End();
+        SpriteBatchEffectLoader.Reset();
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
