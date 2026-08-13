@@ -1876,8 +1876,6 @@ public sealed class FancyLightingMod : Mod
         Main.tileBatch.End();
         Main.spriteBatch.End();
 
-        _smoothLightingInstance.CalculateSmoothLighting();
-
         if (_smoothLightingInstance.CanDrawSmoothLighting)
         {
             _smoothLightingInstance.DrawSmoothLighting(
