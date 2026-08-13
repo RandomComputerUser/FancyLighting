@@ -23,6 +23,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter
 - Improved enhanced light map blurring
+- The setting to disable HDRR during bosses and events now affects Smooth Lighting as a whole
 - Added bright light synchronization for full HDR rendering
 - Depth of field is no longer exclusive to full HDR rendering
 - Added a new default tone mapping operator for full HDR rendering

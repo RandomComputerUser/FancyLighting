@@ -19,7 +19,7 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool _useFancyClouds;
 
     private bool _prevNeedsPostProcessing;
-    private bool _prevHdrDisabled;
+    private bool _prevSmoothLightingDisabled;
 
     public override void Unload()
     {
@@ -72,18 +72,15 @@ internal sealed class SettingsSystem : ModSystem
 
         EnsureRenderTargets();
 
-        var hdrDisabled = HdrDisabled();
+        var smoothLightingDisabled = SmoothLightingDisabled();
         if (
-            hdrDisabled != _prevHdrDisabled
-            && LightingConfig.Instance.SmoothLightingEnabled()
-            && LightingConfig.Instance.LightMapRenderMode
-                is RenderMode.BicubicOverbright
-                    or RenderMode.EnhancedHdr
+            smoothLightingDisabled != _prevSmoothLightingDisabled
+            && LightingConfig.Instance.UseSmoothLighting
         )
         {
             ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
         }
-        _prevHdrDisabled = hdrDisabled;
+        _prevSmoothLightingDisabled = smoothLightingDisabled;
     }
 
     internal static void EnsureRenderTargets(bool reset = false)
@@ -134,8 +131,8 @@ internal sealed class SettingsSystem : ModSystem
         CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending
         && LightingConfig.Instance.HiDefFeaturesEnabled();
 
-    internal static bool HdrDisabled() =>
-        CompatibilityConfig.Instance.DisableHdrDuringBossFights
+    internal static bool SmoothLightingDisabled() =>
+        CompatibilityConfig.Instance.DisableSmoothLightingDuringBossFights
         && (IsBossFightOccurring() || IsEventOccurring());
 
     private static void DoNothing() { }

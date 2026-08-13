@@ -20,11 +20,11 @@ public sealed class CompatibilityConfig : ModConfig
     public bool DisableRenderingOptimizations { get; set; }
 
     [Header("SmoothLighting")]
+    [DefaultValue(DefaultOptions.DisableSmoothLightingDuringBossFights)]
+    public bool DisableSmoothLightingDuringBossFights { get; set; }
+
     [DefaultValue(DefaultOptions.UseAccurateGlowRendering)]
     public bool UseAccurateGlowRendering { get; set; }
-
-    [DefaultValue(DefaultOptions.DisableHdrDuringBossFights)]
-    public bool DisableHdrDuringBossFights { get; set; }
 
     [Header("FullHdrRendering")]
     [DefaultValue(DefaultOptions.DisableHdrEnhancedAlphaBlending)]

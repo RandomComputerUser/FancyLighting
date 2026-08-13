@@ -21,7 +21,10 @@ public sealed class LightingConfig : ModConfig
 
     // Smooth Lighting
 
-    public bool SmoothLightingEnabled() => UseSmoothLighting && Lighting.UsingNewLighting;
+    public bool SmoothLightingEnabled() =>
+        UseSmoothLighting
+        && Lighting.UsingNewLighting
+        && !SettingsSystem.SmoothLightingDisabled();
 
     public bool UseBicubicScaling() => LightMapRenderMode is not RenderMode.Bilinear;
 
@@ -29,13 +32,10 @@ public sealed class LightingConfig : ModConfig
         LightMapRenderMode is RenderMode.BicubicOverbright;
 
     public bool DrawOverbright() =>
-        LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr
-        && !SettingsSystem.HdrDisabled();
+        LightMapRenderMode is RenderMode.BicubicOverbright or RenderMode.EnhancedHdr;
 
     public bool HiDefFeaturesEnabled() =>
-        SmoothLightingEnabled()
-        && LightMapRenderMode is RenderMode.EnhancedHdr
-        && !SettingsSystem.HdrDisabled();
+        SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
 
     // Ambient Occlusion
 

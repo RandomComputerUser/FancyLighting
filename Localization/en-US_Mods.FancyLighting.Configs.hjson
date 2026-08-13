@@ -22,6 +22,19 @@ CompatibilityConfig: {
 
 	# Smooth Lighting
 	
+	DisableSmoothLightingDuringBossFights: {
+		Label: Disable Smooth Lighting During Boss Fights and Events
+		Tooltip:
+			'''
+			Disable ${Snippets.SmoothLighting} during boss fights and events
+
+			Affects bosses with a boss health bar and events with a progress bar
+			May prevent visual issues with boss fights from other mods
+
+			{$Snippets.PerformanceBenefit}
+			'''
+	}
+
 	UseAccurateGlowRendering: {
 		Label: Accurate Glow Rendering
 		Tooltip:
@@ -31,20 +44,6 @@ CompatibilityConfig: {
 			When disabled, glow effect brightness may differ slightly from vanilla lighting
 
 			{$Snippets.HighPerformanceImpact}
-			'''
-	}
-
-	DisableHdrDuringBossFights: {
-		Label: Disable HDRR During Boss Fights and Events
-		Tooltip:
-			'''
-			Disable HDR rendering during boss fights and events
-
-			Affects bosses with a boss health bar and events with a progress bar
-			May prevent visual issues with boss fights from other mods
-
-			{$Snippets.RequireRenderModeHdr}
-			{$Snippets.PerformanceBenefit}
 			'''
 	}
 

@@ -8,8 +8,8 @@ public static class DefaultOptions
 
     // Compatibility Settings
     public const bool DisableRenderingOptimizations = false;
+    public const bool DisableSmoothLightingDuringBossFights = false;
     public const bool UseAccurateGlowRendering = false;
-    public const bool DisableHdrDuringBossFights = false;
     public const bool DisableHdrEnhancedAlphaBlending = false;
     public const bool DisableHdrLightingSync = false;
     public const bool DisableFrameTimingOptimizations = false;
