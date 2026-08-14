@@ -46,7 +46,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
 - Changed the exposure setting to be logarithmic and increased its range
-- Increased the default vibrance boost to 4 (from 2)
+- Increased the default vibrance boost to 3 (from 2)
 - Increased the max vibrance boost to 15 (from 10)
 - Changed the bloom strength scale and increased its default and maximum values
 - Increased the max sky brightness boost to 15 (from 10)
