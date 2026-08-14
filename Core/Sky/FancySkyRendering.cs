@@ -155,7 +155,13 @@ public sealed class FancySkyRendering
             .SetParameter("HighSkyColor", highSkyColor)
             .SetParameter("LowSkyColor", lowSkyColor)
             .SetParameter("InverseGamma", 1f / gamma);
-        Blitter.Blit(doDithering ? _ditherNoise : null, null, effect, setTarget: false);
+        Blitter.Blit(
+            doDithering ? _ditherNoise : null,
+            null,
+            effect,
+            samplerState: SamplerState.PointWrap,
+            setTarget: false
+        );
 
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
