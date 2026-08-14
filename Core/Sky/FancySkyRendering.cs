@@ -210,14 +210,12 @@ public sealed class FancySkyRendering
         var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
         var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
         var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
-        var origTransform = transform;
         Main.spriteBatch.End();
 
         if (!Main.gameMenu && !MainGraphics.InCameraMode)
         {
             // shift sun/moon downward
-            transform.Translation +=
-                25f * Main.BackgroundViewMatrix.Zoom.Y * transform.Up;
+            sceneArea.bgTopY += (int)Math.Round(25f * Main.BackgroundViewMatrix.Zoom.Y);
         }
 
         if (!Main.eclipse)
@@ -263,7 +261,7 @@ public sealed class FancySkyRendering
             DepthStencilState.None,
             rasterizerState,
             null,
-            origTransform
+            transform
         );
     }
 
