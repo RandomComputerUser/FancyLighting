@@ -17,7 +17,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 #### Features and Improvements
 - Added Fancy Sky Light Shading
-  - Note for mod developers: this change affects the `PostUpdateLightMap` hook in the Mod.Call() API
 - Added tile entity normal maps
 - Added a setting to apply smooth lighting to tile entities
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
@@ -60,3 +59,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Fixed screen flashing after saving configs when at high resolutions
 - Added compatibility with screen flipping from sources other than the Gravitation buff
 - Made unloading more thorough
+
+#### Mod.Call() Changes
+- Mod.Call() now returns the exception object if an exception occurs (previously, null was returned)
+- Added new remarks to the `PostUpdateLightMap` hook

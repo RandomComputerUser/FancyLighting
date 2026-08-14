@@ -1,6 +1,6 @@
 ﻿# Fancy Lighting Mod.Call() API
 
-If the call arguments do not match any valid pattern or an exception occurs, null is returned. Otherwise, the return value depends on the command.
+If an exception occurs, the exception object is returned. If the call arguments do not match any valid pattern, null is returned. Otherwise, the return value depends on the command.
 
 ### AddCustomTileLighting
 

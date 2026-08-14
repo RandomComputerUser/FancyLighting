@@ -118,9 +118,9 @@ public sealed class FancyLightingMod : Mod
         {
             return ModCalls.Call(args);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return null;
+            return ex;
         }
     }
 
