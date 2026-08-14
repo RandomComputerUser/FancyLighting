@@ -17,7 +17,6 @@ public sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
-    private readonly FullscreenEffect _brightenFullscreenEffect;
     private readonly SpriteBatchEffect _brightenSpriteBatchEffect;
     private readonly FullscreenEffect _gammaToLinearNoAlphaEffect;
     private readonly FullscreenEffect _gammaToLinearEffect;
@@ -49,7 +48,6 @@ public sealed class PostProcessing
             .Value;
 
         var effect = EffectLoader.Load("PostProcessing");
-        _brightenFullscreenEffect = new(effect, "BrightenFullscreen");
         _brightenSpriteBatchEffect = new(effect, "BrightenSpriteBatch");
         _gammaToLinearNoAlphaEffect = new(effect, "GammaToLinearNoAlpha");
         _gammaToLinearEffect = new(effect, "GammaToLinear");
@@ -95,21 +93,14 @@ public sealed class PostProcessing
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
-    internal FullscreenEffect GetBrightenFullscreenEffect(float brightness) =>
-        _brightenFullscreenEffect.SetParameter("BrightnessMult", brightness);
-
     internal SpriteBatchEffect GetBrightenSpriteBatchEffect(float brightness) =>
         _brightenSpriteBatchEffect.SetParameter("BrightnessMult", brightness);
 
-    internal FullscreenEffect GetGammaNoAlphaEffect(float exposure, float gamma) =>
-        _gammaToLinearNoAlphaEffect
-            .SetParameter("Exposure", exposure)
-            .SetParameter("GammaRatio", gamma);
+    internal FullscreenEffect GetGammaNoAlphaEffect(float gamma) =>
+        _gammaToGammaNoDitherNoAlphaEffect.SetParameter("GammaRatio", gamma);
 
-    internal FullscreenEffect GetGammaEffect(float exposure, float gamma) =>
-        _gammaToLinearEffect
-            .SetParameter("Exposure", exposure)
-            .SetParameter("GammaRatio", gamma);
+    internal FullscreenEffect GetGammaEffect(float gamma) =>
+        _gammaToGammaNoDitherEffect.SetParameter("GammaRatio", gamma);
 
     internal RenderTarget2D Blur(
         RenderTarget2D src,
@@ -157,7 +148,7 @@ public sealed class PostProcessing
 
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
-        var doDepthOfField = hiDef && PreferencesConfig.Instance.DepthOfField;
+        var depthOfField = PreferencesConfig.Instance.DepthOfField;
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
         var separateBackground = backgroundTarget is not null && !hdrCompatBlending;
         var cameraMode = MainGraphics.InCameraMode;
@@ -179,115 +170,24 @@ public sealed class PostProcessing
             );
             if (smoothLightingInstance.CanDrawSmoothLighting)
             {
-                if (switchedTargets && hiDef)
-                {
-                    Blitter.Blit(currTarget, nextTarget);
-                }
+                var inplace = hiDef && !switchedTargets;
 
                 smoothLightingInstance.DrawSmoothLighting(
                     currTarget,
-                    hiDef ? null : nextTarget,
+                    inplace ? null : nextTarget,
                     background: false,
                     disableNormalMaps: true,
                     doScaling: true,
                     overbrightPass: true
                 );
 
-                if (!hiDef || switchedTargets)
+                if (!inplace)
                 {
                     (currTarget, nextTarget) = (nextTarget, currTarget);
                 }
             }
 
-            if (hiDef)
-            {
-                var exposure = 1f / HiDefBrightnessScale;
-                exposure = MathF.Pow(exposure, gamma);
-                exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
-                exposure *= tmo switch
-                {
-                    ToneMappingPreset.FilmicSrgb => 0.75f,
-                    _ => 1f,
-                };
-
-                if (separateBackground)
-                {
-                    // The brightness of the background isn't normally affected by
-                    // Lighting.GlobalBrightness (which is reduced when the player
-                    // has the Darkness debuff), but I've decided to change that
-                    var backgroundExposure =
-                        exposure
-                        * ColorUtils.GammaToLinear(CalculateHiDefBackgroundBrightness());
-
-                    if (doDepthOfField)
-                    {
-                        Blitter.Blit(
-                            backgroundTarget,
-                            nextTarget,
-                            (
-                                cameraMode
-                                    ? _gammaToLinearEffect
-                                    : _gammaToLinearNoAlphaEffect
-                            )
-                                .SetParameter("Exposure", backgroundExposure)
-                                .SetParameter("GammaRatio", gamma)
-                        );
-
-                        _blurRenderer.Blur(
-                            nextTarget,
-                            nextTarget,
-                            PreferencesConfig.Instance.DepthOfFieldRadius,
-                            zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
-                        );
-
-                        Blitter.Blit(
-                            currTarget,
-                            nextTarget,
-                            _gammaToLinearEffect
-                                .SetParameter("Exposure", exposure)
-                                .SetParameter("GammaRatio", gamma),
-                            blendState: BlendState.AlphaBlend,
-                            setTarget: false
-                        );
-                    }
-                    else
-                    {
-                        MainGraphics.ResetSavedTextures();
-                        MainGraphics.SetTexture(
-                            8,
-                            backgroundTarget,
-                            SamplerState.PointClamp
-                        );
-                        Blitter.Blit(
-                            currTarget,
-                            nextTarget,
-                            (
-                                cameraMode
-                                    ? _combineLayersGammaToLinearEffect
-                                    : _combineLayersGammaToLinearNoAlphaEffect
-                            )
-                                .SetParameter("Exposure", exposure)
-                                .SetParameter("BackgroundExposure", backgroundExposure)
-                                .SetParameter("GammaRatio", gamma)
-                        );
-                        MainGraphics.RestoreSavedTextures();
-                    }
-                }
-                else
-                {
-                    Blitter.Blit(
-                        currTarget,
-                        nextTarget,
-                        (cameraMode ? _gammaToLinearEffect : _gammaToLinearNoAlphaEffect)
-                            .SetParameter("Exposure", exposure)
-                            .SetParameter("GammaRatio", gamma)
-                    );
-                }
-                gamma = 1f;
-
-                (currTarget, nextTarget) = (nextTarget, currTarget);
-            }
-            else if (separateBackground)
+            if (separateBackground && !hiDef)
             {
                 MainGraphics.ResetSavedTextures();
                 MainGraphics.SetTexture(8, backgroundTarget, SamplerState.PointClamp);
@@ -304,6 +204,56 @@ public sealed class PostProcessing
 
         if (hiDef)
         {
+            var exposure = 1f / HiDefBrightnessScale;
+            exposure = MathF.Pow(exposure, gamma);
+            exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
+            exposure *= tmo switch
+            {
+                ToneMappingPreset.FilmicSrgb => 0.75f,
+                _ => 1f,
+            };
+
+            if (separateBackground)
+            {
+                // The brightness of the background isn't normally affected by
+                // Lighting.GlobalBrightness (which is reduced when the player
+                // has the Darkness debuff), but I've decided to change that
+                var backgroundExposure =
+                    exposure
+                    * ColorUtils.GammaToLinear(CalculateHiDefBackgroundBrightness());
+                var backgroundGamma = depthOfField ? 1f : gamma;
+
+                MainGraphics.ResetSavedTextures();
+                MainGraphics.SetTexture(8, backgroundTarget, SamplerState.PointClamp);
+                Blitter.Blit(
+                    currTarget,
+                    nextTarget,
+                    (
+                        cameraMode
+                            ? _combineLayersGammaToLinearEffect
+                            : _combineLayersGammaToLinearNoAlphaEffect
+                    )
+                        .SetParameter("Exposure", exposure)
+                        .SetParameter("BackgroundExposure", backgroundExposure)
+                        .SetParameter("GammaRatio", gamma)
+                        .SetParameter("BackgroundGamma", backgroundGamma)
+                );
+                MainGraphics.RestoreSavedTextures();
+            }
+            else
+            {
+                Blitter.Blit(
+                    currTarget,
+                    nextTarget,
+                    (cameraMode ? _gammaToLinearEffect : _gammaToLinearNoAlphaEffect)
+                        .SetParameter("Exposure", exposure)
+                        .SetParameter("GammaRatio", gamma)
+                );
+            }
+            gamma = 1f;
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
+
             if (PreferencesConfig.Instance.VibranceBoost != 0)
             {
                 var (params1, params2) = CalculateVibranceBoostParameters(

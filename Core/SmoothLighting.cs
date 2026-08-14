@@ -65,7 +65,10 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _lightColorEffect;
     private readonly FullscreenEffect _lightColorDitheredEffect;
     private readonly FullscreenEffect _overbrightMaxEffect;
-    private readonly FullscreenEffect _inverseOverbrightMaxHiDefEffect;
+    private readonly FullscreenEffect _overbrightMaxDitheredEffect;
+    private readonly FullscreenEffect _overbrightMaxInplaceEffect;
+    private readonly FullscreenEffect _inverseOverbrightMaxEffect;
+    private readonly FullscreenEffect _inverseOverbrightMaxInplaceEffect;
 
     private readonly SpriteBatchEffect _tileEntityLightOnlyEffect;
     private readonly SpriteBatchEffect _tileEntityNormalsEffect;
@@ -249,8 +252,11 @@ public sealed class SmoothLighting
         );
         _lightColorEffect = new(effect, "LightColor");
         _lightColorDitheredEffect = new(effect, "LightColorDithered");
-        _overbrightMaxEffect = new(effect, "OverbrightMax", EffectFeatures.HiDef);
-        _inverseOverbrightMaxHiDefEffect = new(effect, "InverseOverbrightMaxHiDef");
+        _overbrightMaxEffect = new(effect, "OverbrightMax");
+        _overbrightMaxDitheredEffect = new(effect, "OverbrightMaxDithered");
+        _overbrightMaxInplaceEffect = new(effect, "OverbrightMaxInplace");
+        _inverseOverbrightMaxEffect = new(effect, "InverseOverbrightMax");
+        _inverseOverbrightMaxInplaceEffect = new(effect, "InverseOverbrightMaxInplace");
 
         effect = EffectLoader.Load("TileEntityLighting");
         _tileEntityLightOnlyEffect = new(effect, "LightOnly");
@@ -1568,6 +1574,7 @@ public sealed class SmoothLighting
             if (dst is not null)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(dst);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
             }
 
             return;
@@ -1578,7 +1585,7 @@ public sealed class SmoothLighting
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var srcUsed = !lightColorPass && !(overbrightPass && hiDef);
+        var srcUsed = !lightColorPass && !(overbrightPass && dst is null);
 
         var normalsEffectFlag =
             !lightColorPass
@@ -1612,8 +1619,19 @@ public sealed class SmoothLighting
                 : _lightColorEffect
             : overbrightPass
                 ? invertOverbright
-                    ? _inverseOverbrightMaxHiDefEffect
-                    : _overbrightMaxEffect
+                    ? (
+                        dst is null
+                            ? _inverseOverbrightMaxInplaceEffect
+                            : _inverseOverbrightMaxEffect
+                    ).SetParameter(
+                        "Brightness",
+                        PostProcessing.CalculateHiDefBackgroundBrightness()
+                    )
+                    : dst is null
+                        ? _overbrightMaxInplaceEffect
+                        : ditheredEffectFlag
+                            ? _overbrightMaxDitheredEffect
+                            : _overbrightMaxEffect
                 : normalsEffectFlag
                     ? ditheredEffectFlag
                         ? enhancedGlowEffectFlag

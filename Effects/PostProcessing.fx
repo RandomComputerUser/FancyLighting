@@ -9,6 +9,7 @@ float4x4 MatrixTransform;
 
 float BrightnessMult;
 float GammaRatio;
+float BackgroundGamma;
 float OutputGamma;
 float Exposure;
 float BackgroundExposure;
@@ -141,13 +142,18 @@ float4 Brighten_PS(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float3 GammaToLinearColor(float3 color, float exposure)
+float3 GammaToLinearColor(float3 color, float exposure, float gamma)
 {
     color.rgb = max(color.rgb, 0); // prevent NaN and negative numbers
-    color.rgb = pow(color.rgb, GammaRatio);
+    color.rgb = pow(color.rgb, gamma);
     color.rgb = min(color.rgb, 10000); // prevent infinity
     color.rgb *= exposure;
     return color;
+}
+
+float3 GammaToLinearColor(float3 color, float exposure)
+{
+    return GammaToLinearColor(color, exposure, GammaRatio);
 }
 
 float4 GammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
@@ -183,7 +189,7 @@ float4 CombineLayersGammaToLinearNoAlpha_PS(float2 coords : TEXCOORD0) : COLOR0
     float4 foregroundColor = tex2D(ScreenSampler, coords);
     float4 backgroundColor = tex2D(BackgroundSampler, coords);
     foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
-    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
+    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure, BackgroundGamma);
     return float4((1 - foregroundColor.a) * backgroundColor.rgb + foregroundColor.rgb, 1);
 }
 
@@ -192,7 +198,7 @@ float4 CombineLayersGammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
     float4 foregroundColor = tex2D(ScreenSampler, coords);
     float4 backgroundColor = tex2D(BackgroundSampler, coords);
     foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure);
-    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure);
+    backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure, BackgroundGamma);
     return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
 }
 
@@ -339,15 +345,6 @@ float4 ToneMapFilmicSrgb_PS(float2 coords : TEXCOORD0) : COLOR0
 }
 
 /* Techniques ***************************************************************************/
-
-technique BrightenFullscreen
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 Brighten_PS();
-    }
-}
 
 technique BrightenSpriteBatch
 {

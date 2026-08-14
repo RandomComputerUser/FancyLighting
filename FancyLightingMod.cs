@@ -1023,6 +1023,8 @@ public sealed class FancyLightingMod : Mod
 
         if (!MainGraphics.InCameraMode || !(doOverbright || doDepthOfField))
         {
+            _backgroundTarget?.Dispose();
+            _backgroundTarget = null;
             return;
         }
 
@@ -1056,16 +1058,21 @@ public sealed class FancyLightingMod : Mod
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
 
-        if (doOverbright)
-        {
-            TextureUtils.MatchSizeAndFormat(
-                ref _backgroundTarget,
-                MainGraphics.ScreenTarget
-            );
-        }
-
         if (!hiDef)
         {
+            if (doOverbright)
+            {
+                TextureUtils.MatchSizeAndFormat(
+                    ref _backgroundTarget,
+                    MainGraphics.ScreenTarget
+                );
+            }
+            else
+            {
+                _backgroundTarget?.Dispose();
+                _backgroundTarget = null;
+            }
+
             if (doDepthOfField)
             {
                 _postProcessingInstance.Blur(
@@ -1091,11 +1098,61 @@ public sealed class FancyLightingMod : Mod
             return doOverbright;
         }
 
-        if (!hdrCompatBlending)
+        var switchedTargets = false;
+        if (hdrCompatBlending)
+        {
+            _backgroundTarget?.Dispose();
+            _backgroundTarget = null;
+            switchedTargets = _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
+        }
+        else
+        {
+            TextureUtils.MatchSizeAndFormat(
+                ref _backgroundTarget,
+                MainGraphics.ScreenTarget
+            );
+        }
+
+        if (doDepthOfField)
+        {
+            var gamma = PostProcessing.ContentGamma();
+            var effect = cameraMode
+                ? _postProcessingInstance.GetGammaEffect(gamma)
+                : _postProcessingInstance.GetGammaNoAlphaEffect(gamma);
+            Blitter.Blit(
+                MainGraphics.ScreenTarget,
+                MainGraphics.ScreenTargetSwap,
+                effect
+            );
+
+            _postProcessingInstance.Blur(
+                MainGraphics.ScreenTargetSwap,
+                hdrCompatBlending ? MainGraphics.ScreenTargetSwap : _backgroundTarget,
+                PreferencesConfig.Instance.DepthOfFieldRadius,
+                zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
+            );
+
+            if (hdrCompatBlending)
+            {
+                effect = cameraMode
+                    ? _postProcessingInstance.GetGammaEffect(1f / gamma)
+                    : _postProcessingInstance.GetGammaNoAlphaEffect(1f / gamma);
+                Blitter.Blit(
+                    MainGraphics.ScreenTargetSwap,
+                    MainGraphics.ScreenTarget,
+                    effect
+                );
+                switchedTargets = false;
+            }
+        }
+        else if (!hdrCompatBlending)
         {
             Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
             MainGraphics.AssignScreenTargets();
+        }
 
+        if (!hdrCompatBlending)
+        {
             if (!willClearBackgroundLater)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
@@ -1105,53 +1162,22 @@ public sealed class FancyLightingMod : Mod
             return true;
         }
 
-        _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
-
-        var brightness = PostProcessing.CalculateHiDefBackgroundBrightness();
-        var effect = doDepthOfField
-            ? cameraMode
-                ? _postProcessingInstance.GetGammaEffect(
-                    ColorUtils.GammaToLinear(brightness),
-                    PostProcessing.ContentGamma()
-                )
-                : _postProcessingInstance.GetGammaNoAlphaEffect(
-                    ColorUtils.GammaToLinear(brightness),
-                    PostProcessing.ContentGamma()
-                )
-            : _postProcessingInstance.GetBrightenFullscreenEffect(brightness);
-        Blitter.Blit(MainGraphics.ScreenTarget, _backgroundTarget, effect);
-
-        if (doDepthOfField)
+        if (switchedTargets)
         {
-            _postProcessingInstance.Blur(
-                _backgroundTarget,
-                _backgroundTarget,
-                PreferencesConfig.Instance.DepthOfFieldRadius,
-                zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
+            Blitter.BlitOrSwap(
+                ref MainGraphics.ScreenTarget,
+                ref MainGraphics.ScreenTargetSwap
             );
-
-            effect = cameraMode
-                ? _postProcessingInstance.GetGammaEffect(
-                    1f,
-                    1f / PostProcessing.ContentGamma()
-                )
-                : _postProcessingInstance.GetGammaNoAlphaEffect(
-                    1f,
-                    1f / PostProcessing.ContentGamma()
-                );
-            Blitter.Blit(_backgroundTarget, MainGraphics.ScreenTarget, effect);
-        }
-        else
-        {
-            Blitter.BlitOrSwap(ref _backgroundTarget, ref MainGraphics.ScreenTarget);
             MainGraphics.AssignScreenTargets();
         }
 
         if (_smoothLightingInstance.CanDrawSmoothLighting)
         {
             _smoothLightingInstance.DrawSmoothLighting(
-                MainGraphics.ScreenTarget,
-                null,
+                switchedTargets
+                    ? MainGraphics.ScreenTargetSwap
+                    : MainGraphics.ScreenTarget,
+                switchedTargets ? MainGraphics.ScreenTarget : null,
                 background: false,
                 disableNormalMaps: true,
                 doScaling: true,
@@ -1725,7 +1751,7 @@ public sealed class FancyLightingMod : Mod
             (tileTarget, _tmpTarget1) = (_tmpTarget1, tileTarget);
         }
 
-        UseWhiteLightMap(_smoothLightingInstance.CanDrawSmoothLighting);
+        UseWhiteLightMap(true);
         _preventTileParticles = enhancedGlowMasks;
         _modifyParticleLighting = !enhancedGlowMasks;
         _makePartialLiquidTranslucent = LightingConfig.Instance.SimulateNormalMaps;

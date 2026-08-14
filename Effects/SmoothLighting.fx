@@ -19,6 +19,8 @@ float NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
 
+float Brightness;
+
 struct PixelShaderInput
 {
     float4 Position : SV_Position;
@@ -698,21 +700,37 @@ float4 OverbrightMax_PS(PixelShaderInput input) : COLOR0
     float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
 
+    return tileColor * max(lightColor, 1);
+}
+
+float4 OverbrightMaxDithered_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+
     return Dithered(input.Position, tileColor * max(lightColor, 1));
 }
 
-float4 OverbrightMaxHiDef_PS(LightMapOnlyPixelShaderInput input) : COLOR0
+float4 OverbrightMaxInplace_PS(LightMapOnlyPixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
     return max(lightColor, 1);
 }
 
-float4 InverseOverbrightMaxHiDef_PS(LightMapOnlyPixelShaderInput input) : COLOR0
+float4 InverseOverbrightMax_PS(PixelShaderInput input) : COLOR0
+{
+    float4 tileColor = tex2D(TileSampler, input.TileTexCoord);
+    float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+
+    return Brightness * tileColor / max(lightColor, 1);
+}
+
+float4 InverseOverbrightMaxInplace_PS(LightMapOnlyPixelShaderInput input) : COLOR0
 {
     float4 lightColor = tex2D(TextureSampler, input.LightTexCoord);
 
-    return 1.0 / max(lightColor, 1);
+    return Brightness / max(lightColor, 1);
 }
 
 /* Techniques ***************************************************************************/
@@ -1104,20 +1122,38 @@ technique OverbrightMax
     }
 }
 
-technique OverbrightMaxHiDef
+technique OverbrightMaxDithered
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 LightMapOnly_VS();
-        PixelShader = compile ps_3_0 OverbrightMaxHiDef_PS();
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 OverbrightMaxDithered_PS();
     }
 }
 
-technique InverseOverbrightMaxHiDef
+technique OverbrightMaxInplace
 {
     pass Pass1
     {
         VertexShader = compile vs_3_0 LightMapOnly_VS();
-        PixelShader = compile ps_3_0 InverseOverbrightMaxHiDef_PS();
+        PixelShader = compile ps_3_0 OverbrightMaxInplace_PS();
+    }
+}
+
+technique InverseOverbrightMax
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 SmoothLighting_VS();
+        PixelShader = compile ps_3_0 InverseOverbrightMax_PS();
+    }
+}
+
+technique InverseOverbrightMaxInplace
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 LightMapOnly_VS();
+        PixelShader = compile ps_3_0 InverseOverbrightMaxInplace_PS();
     }
 }
