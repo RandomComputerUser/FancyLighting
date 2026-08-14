@@ -98,11 +98,6 @@ public sealed class FancySkyRendering
 
         var target = MainGraphics.ScreenTarget ?? Main.screenTarget;
 
-        if (!Main.gameMenu && !MainGraphics.InCameraMode)
-        {
-            sceneArea.bgTopY = FancyAtmosphereBgTopY();
-        }
-
         var hour = GameTimeUtils.CalculateCurrentHour();
         var skyColorMult =
             Main.ColorOfTheSkies.ToVector3()
@@ -131,7 +126,11 @@ public sealed class FancySkyRendering
         highSkyColor *= skyBrightness;
         lowSkyColor *= skyBrightness;
 
-        var highLevel = ((float)sceneArea.bgTopY / target.Height) + FadeBegin;
+        var bgTopY =
+            Main.gameMenu || MainGraphics.InCameraMode
+                ? sceneArea.bgTopY
+                : FancyAtmosphereBgTopY();
+        var highLevel = ((float)bgTopY / target.Height) + FadeBegin;
         var lowLevel = highLevel + FadeHeight;
 
         var midLevel = (highLevel + lowLevel) / 2f;
