@@ -162,28 +162,26 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     SamplingTransform samplingTransform = CalculateSamplingTransform(tileCoord);
     float2 diff = samplingTransform.TexelSize * NormalMapResolution;
     
-    float luma = Luma(lightColor);
-    float2 lightGradient = NormalsLightGradient(luma);
-    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
-    float lightGradientLength = length(lightGradient);
-    
-    if (lightGradientLength == 0 || luma <= 0)
-    {
-        return 1.0;
-    }
-    
-    lightGradient /= lightGradientLength;
-    lightGradientLength /= luma;
-    
     float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(
         tileCoord, diff, tileColor
     );
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
-    surfaceGradient = surfaceGradientLength == 0
-        ? 0
-        : surfaceGradient / surfaceGradientLength;
+    
+    float luma = Luma(lightColor);
+    float2 lightGradient = NormalsLightGradient(luma);
+    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
+    float lightGradientLength = length(lightGradient);
+    
+    if (luma <= 0 || surfaceGradientLength == 0 || lightGradientLength == 0)
+    {
+        return 1.0;
+    }
+    
+    surfaceGradient /= surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
+    lightGradient /= lightGradientLength;
+    lightGradientLength /= luma;
     
     float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
     return lerp(
@@ -198,30 +196,27 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     SamplingTransform samplingTransform = CalculateSamplingTransform(tileCoord);
     float2 diff = samplingTransform.TexelSize * NormalMapResolution;
     
-    float luma = Luma(lightColor.rgb);
-    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
-    
-    float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
-    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
-    float lightGradientLength = length(lightGradient);
-    
-    if (lightGradientLength == 0)
-    {
-        return 1.0;
-    }
-    
-    lightGradient /= lightGradientLength;
-    lightGradientLength /= luma;
-    
     float3 surfaceGradientAndMult = NormalsSurfaceGradientAndMult(
         tileCoord, diff, tileColor
     );
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
-    surfaceGradient = surfaceGradientLength == 0
-        ? 0 
-        : surfaceGradient / surfaceGradientLength;
+    
+    float luma = Luma(lightColor.rgb);
+    float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
+    float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
+    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
+    float lightGradientLength = length(lightGradient);
+    
+    if (luma <= 0 || surfaceGradientLength == 0 || lightGradientLength == 0)
+    {
+        return 1.0;
+    }
+    
+    surfaceGradient /= surfaceGradientLength;
     surfaceGradient *= surfaceGradientAndMult.z;
+    lightGradient /= lightGradientLength;
+    lightGradientLength /= luma;
     
     float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
     return lerp(
