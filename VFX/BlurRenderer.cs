@@ -134,7 +134,7 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
 
             downsampleEffect.SetParameter(
                 "PixelSize",
-                new Vector2(1f / currBlurTarget.Width, 1f / currBlurTarget.Height)
+                new Vector2(0.5f / nextBlurTarget.Width, 0.5f / nextBlurTarget.Height)
             );
             Blitter.Blit(
                 currBlurTarget,
