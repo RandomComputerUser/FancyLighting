@@ -149,10 +149,11 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         {
             var currBlurTarget = _blurTargets[i];
             var nextBlurTarget = i == 0 ? dst! : _blurTargets[i - 1];
+            var scale = i == 0 ? zoom : 1f;
 
             upsampleEffect.SetParameter(
                 "PixelSize",
-                new Vector2(1f / nextBlurTarget.Width, 1f / nextBlurTarget.Height)
+                new Vector2(scale / nextBlurTarget.Width, scale / nextBlurTarget.Height)
             );
             Blitter.Blit(
                 currBlurTarget,

@@ -258,8 +258,9 @@ float4 GammaToSrgbNoDither_PS(float2 coords : TEXCOORD0) : COLOR0
 float4 BloomComposite_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    float4 bloomColor = tex2D(BloomBlurSampler, coords);
-    return lerp(color, bloomColor, BloomStrength);
+    float3 bloomColor = tex2D(BloomBlurSampler, coords).rgb;
+    color.rgb += BloomStrength * bloomColor;
+    return color;
 }
 
 float3 ToneMapColorNeutralLms(float3 x)

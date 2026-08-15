@@ -30,6 +30,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Slightly increased the brightness of the background when using full HDR rendering
 - Improved vibrance boost
 - Bloom and depth of field blur radius now scale with display zoom
+- Tweaked the appearance of bloom
 - Tweaked the appearance of Ambient Occlusion
 
 #### Settings Tweaks
