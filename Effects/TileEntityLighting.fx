@@ -109,26 +109,26 @@ float2 Gradient(
     return gradient;
 }
 
-float SampleForNormal(float2 texCoord, float fallback)
+float SampleForNormal(float2 tileCoord, float fallback)
 {
-    float4 color = tex2D(TextureSampler, texCoord);
+    float4 color = tex2D(TextureSampler, tileCoord);
     return color.a < 1 ? fallback : saturate(Luma(color.rgb));
 }
 
-float3 NormalsSurfaceGradientAndMult(float2 texCoord, float2 diff, float4 tileColor)
+float3 NormalsSurfaceGradientAndMult(float2 tileCoord, float2 diff, float4 tileColor)
 {
     float luma = saturate(Luma(tileColor.rgb));
     
-    float leftLuma = SampleForNormal(texCoord - float2(diff.x, 0), luma);
-    float rightLuma = SampleForNormal(texCoord + float2(diff.x, 0), luma);
-    float upLuma = SampleForNormal(texCoord - float2(0, diff.y), luma);
-    float downLuma = SampleForNormal(texCoord + float2(0, diff.y), luma);
+    float leftLuma = SampleForNormal(tileCoord - float2(diff.x, 0), luma);
+    float rightLuma = SampleForNormal(tileCoord + float2(diff.x, 0), luma);
+    float upLuma = SampleForNormal(tileCoord - float2(0, diff.y), luma);
+    float downLuma = SampleForNormal(tileCoord + float2(0, diff.y), luma);
     float positiveDiagonal
-        = SampleForNormal(texCoord - diff, luma) // up left
-        - SampleForNormal(texCoord + diff, luma); // down right
+        = SampleForNormal(tileCoord - diff, luma) // up left
+        - SampleForNormal(tileCoord + diff, luma); // down right
     float negativeDiagonal
-        = SampleForNormal(texCoord - float2(diff.x, -diff.y), luma) // down left
-        - SampleForNormal(texCoord + float2(diff.x, -diff.y), luma); // up right
+        = SampleForNormal(tileCoord - float2(diff.x, -diff.y), luma) // down left
+        - SampleForNormal(tileCoord + float2(diff.x, -diff.y), luma); // up right
 
     float horizontalColorDiff = 0.5 * (positiveDiagonal + negativeDiagonal) + (leftLuma - rightLuma);
     float verticalColorDiff = 0.5 * (positiveDiagonal - negativeDiagonal) + (upLuma - downLuma);
