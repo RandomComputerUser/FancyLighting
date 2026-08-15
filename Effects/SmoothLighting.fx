@@ -149,12 +149,7 @@ float4 NormalsLightGradientFancySky(float luma, float alpha)
     );
 }
 
-float NormalsMultiplier(
-    float2 tileCoord, 
-    float2 lightCoord,
-    float4 tileColor,
-    float3 lightColor
-)
+float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
 {
     float luma = Luma(lightColor);
     float2 lightGradient = NormalsLightGradient(luma);
@@ -185,12 +180,7 @@ float NormalsMultiplier(
     );
 }
 
-float NormalsMultiplierFancySky(
-    float2 tileCoord, 
-    float2 lightCoord,
-    float4 tileColor,
-    float4 lightColor
-)
+float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 lightColor)
 {
     float luma = Luma(lightColor.rgb);
     float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
@@ -283,21 +273,11 @@ float4 SmoothLighting(
     {
         if (fancySky)
         {
-            lightColorMult *= NormalsMultiplierFancySky(
-                tileCoord,
-                lightCoord,
-                tileColor,
-                lightColor
-            );
+            lightColorMult *= NormalsMultiplierFancySky(tileCoord, tileColor, lightColor);
         }
         else
         {
-            lightColorMult *= NormalsMultiplier(
-                tileCoord,
-                lightCoord,
-                tileColor,
-                lightColor.rgb
-            );
+            lightColorMult *= NormalsMultiplier(tileCoord, tileColor, lightColor.rgb);
         }
     }
     

@@ -23,7 +23,7 @@ public sealed class SmoothLighting
     private Vector3[] _lights;
     private bool[] _hasLight;
     private Rgba1010102[] _finalLights;
-    private HalfVector4[] _finalLightsHiDef;
+    private Vector4[] _finalLightsHiDef;
 
     internal Vector3[] _whiteLights;
     internal Vector3[] _tmpLights;
@@ -1331,8 +1331,7 @@ public sealed class SmoothLighting
                                 TileShine(ref lightColor, tile, myShimmerAlpha);
                             }
 
-                            ColorUtils.Assign(
-                                ref finalLightsHiDef[i],
+                            finalLightsHiDef[i] = new(
                                 lightColor,
                                 myUseLuma ? FancySkyLighting._skyLightLuma[i] : 1f
                             );
@@ -1381,8 +1380,7 @@ public sealed class SmoothLighting
                             }
                         }
 
-                        ColorUtils.Assign(
-                            ref _finalLightsHiDef[i],
+                        _finalLightsHiDef[i] = new(
                             lightColor,
                             useLuma ? FancySkyLighting._skyLightLuma[i] : 1f
                         );
@@ -1899,18 +1897,18 @@ public sealed class SmoothLighting
 
             if (fancySkyEffectFlag)
             {
-                var zoomWithFlipping = cameraMode
+                var screenFlipping = cameraMode
                     ? Vector2.One
                     : new Vector2(
-                        Main.GameViewMatrix.TransformationMatrix.M11,
-                        Main.GameViewMatrix.TransformationMatrix.M22
+                        Math.Sign(Main.GameViewMatrix.TransformationMatrix.M11),
+                        Math.Sign(Main.GameViewMatrix.TransformationMatrix.M22)
                     );
 
                 var hour = GameTimeUtils.CalculateCurrentHour();
                 var (skyLightAngle, skyLightMult, _) =
                     FancySkyLighting.CalculateSkyLightAngleAndMultiplier(hour);
                 var normalMapSkyGradientMult =
-                    (float)skyLightMult * overbrightMult * zoomWithFlipping;
+                    (float)skyLightMult * overbrightMult * screenFlipping;
 
                 effect.SetParameter(
                     "SkyLightGradient",
@@ -1941,7 +1939,6 @@ public sealed class SmoothLighting
             ? _colorsHiRes
             : _colors;
 
-        SpriteBatchEffectLoader.Apply(effect);
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(8, lightMapTexture, SamplerState.LinearClamp);
         if (glow is not null)
@@ -1953,6 +1950,7 @@ public sealed class SmoothLighting
         {
             MainGraphics.SetTexture(10, _ditherNoise, SamplerState.PointWrap);
         }
+        SpriteBatchEffectLoader.Apply(effect);
     }
 
     internal void BindHdrSyncTextures()
@@ -2002,7 +2000,7 @@ public sealed class SmoothLighting
         _syncHdrEffect.SetParameter("PrevLightMapMatrixTransform", prevMatrixTransform);
         _syncHdrEffect.SetParameter("CurrLightMapMatrixTransform", currMatrixTransform);
 
-        Blitter.BlitOrSwap(ref tmpTarget, ref tileTarget);
+        Blitter.BlitOrSwap(ref tileTarget, ref tmpTarget);
         Blitter.Blit(tmpTarget, tileTarget, _syncHdrEffect);
     }
 }
