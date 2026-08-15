@@ -86,9 +86,7 @@ float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
         ? 0 
         : surfaceGradient / surfaceGradientLength;
     
-    float lightMult = dot(lightGradient, surfaceGradient);
-    lightMult -= (0.3 - 0.1 * lightMult) * Square(lightMult);
-    lightMult = 1.0 + ShadingStrength * lightMult;
+    float lightMult = 1.0 + ShadingStrength * dot(lightGradient, surfaceGradient);
     return lerp(
         1.0,
         lightMult,
