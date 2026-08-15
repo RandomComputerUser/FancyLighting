@@ -1116,13 +1116,10 @@ public sealed class FancyLightingMod : Mod
         if (doDepthOfField)
         {
             var gamma = PostProcessing.ContentGamma();
-            var effect = cameraMode
-                ? _postProcessingInstance.GetGammaEffect(gamma)
-                : _postProcessingInstance.GetGammaNoAlphaEffect(gamma);
             Blitter.Blit(
                 MainGraphics.ScreenTarget,
                 MainGraphics.ScreenTargetSwap,
-                effect
+                _postProcessingInstance.GetGammaEffect(gamma)
             );
 
             _postProcessingInstance.Blur(
@@ -1134,13 +1131,10 @@ public sealed class FancyLightingMod : Mod
 
             if (hdrCompatBlending)
             {
-                effect = cameraMode
-                    ? _postProcessingInstance.GetGammaEffect(1f / gamma)
-                    : _postProcessingInstance.GetGammaNoAlphaEffect(1f / gamma);
                 Blitter.Blit(
                     MainGraphics.ScreenTargetSwap,
                     MainGraphics.ScreenTarget,
-                    effect
+                    _postProcessingInstance.GetGammaEffect(1f / gamma)
                 );
                 switchedTargets = false;
             }
