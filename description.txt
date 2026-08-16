@@ -10,8 +10,6 @@ Features:
 - Bloom and depth of field
 - Camera mode compatibility
 
-For the best performance, lower the in-game resolution to 1920x1080 or 1920x1200.
-
-If you are experiencing graphical glitches, try relaunching tModLoader with the Fancy Lighting mod enabled. Fancy Lighting may fail to fully load if the mod is disabled when tModLoader is launched.
-
 If you are running other mods alongside Fancy Lighting and experiencing issues, try enabling some settings in the Compatibility Settings config.
+
+If you are experiencing lag, try lowering the in-game resolution to 1920x1080 or 1920x1200.
