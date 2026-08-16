@@ -19,7 +19,7 @@ Add custom lighting for a particular tile type when using Smooth Lighting.
 - **Call Returns:** `bool`
     - Whether any changes were made.
 - **Remarks:**
-  - If the affect tile type already has custom lighting, it will be replaced. Only one modifier for a tile type can be active at a time.
+    - If the affect tile type already has custom lighting, it will be replaced. Only one modifier for a tile type can be active at a time.
 
 **Remarks:** Custom tile lighting affects only how tiles appear to be lit when using Smooth Lighting; there is no effect on any other part of the game. Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting. In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
 
