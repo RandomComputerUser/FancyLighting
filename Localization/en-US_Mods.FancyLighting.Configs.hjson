@@ -12,12 +12,7 @@ CompatibilityConfig: {
 	
 	DisableRenderingOptimizations: {
 		Label: Disable Rendering Optimizations
-		Tooltip:
-			'''
-			Disable some riskier rendering optimizations
-
-			{$Snippets.PossiblePerformanceImpact}
-			'''
+		Tooltip: Disable some of the riskier rendering optimizations used by this mod
 	}
 
 	# Smooth Lighting
@@ -26,7 +21,7 @@ CompatibilityConfig: {
 		Label: Disable Smooth Lighting During Boss Fights and Events
 		Tooltip:
 			'''
-			Disable ${Snippets.SmoothLighting} during boss fights and events
+			Disable {$Snippets.SmoothLighting} during boss fights and events
 
 			Affects bosses with a boss health bar and events with a progress bar
 			May prevent visual issues with boss fights from other mods
@@ -55,9 +50,9 @@ CompatibilityConfig: {
 			'''
 			Perform alpha blending between the foreground and background in a gamma-encoded color space
 
-			When this setting is not enabled, alpha blending is done in a linear color space
+			When this setting is disabled, alpha blending is done in a linear color space
 			Vanilla graphics does alpha blending in a gamma-encoded color space
-			Alpha blending in a gamma-encoded color space can make colors appear dull in affected areas
+			Alpha blending in a gamma-encoded color space can make blended colors appear dull
 			May prevent some visual issues with semitransparent objects from other mods
 
 			{$Snippets.RequireRenderModeFullHdr}
@@ -81,12 +76,7 @@ CompatibilityConfig: {
 	
 	DisableFrameTimingOptimizations: {
 		Label: Disable Frame Timing Optimizations
-		Tooltip:
-			'''
-			Disable frame timing optimizations used by the {$Snippets.FancyLightingEngine}
-
-			{$Snippets.PossiblePerformanceImpact}
-			'''
+		Tooltip: Disable frame timing optimizations used by the {$Snippets.FancyLightingEngine}
 	}
 }
 
@@ -137,7 +127,7 @@ DeveloperConfig: {
 			'''
 			Show the color gradients used by {$Snippets.FancySky}
 
-			[c/FF4000:Warning:] [c/FFA080:this obscures a large part of the screen]
+			[c/FF4000:Warning:] [c/FF9060:this obscures a large part of the screen]
 			'''
 	}
 }
@@ -168,7 +158,7 @@ PreferencesConfig: {
 			Values greater than the number of CPU hardware threads may reduce performance
 			The default value should be close to optimal
 
-			{$Snippets.PossibleSignificantPerformanceEffect}
+			{$Snippets.SignificantPerformanceEffect}
 			'''
 	}
 
@@ -424,7 +414,7 @@ PreferencesConfig: {
 			'''
 			Render depth of field blur
 
-			Applies a bokeh-like blur to the background
+			Applies a blur to the background to make it appear out of focus
 			'''
 	}
 
@@ -461,7 +451,7 @@ LightingConfig: {
 
 			Eliminates the blockiness of lighting present in vanilla graphics
 
-			[c/FFFF80:Performance impact is primarily affected by single-threaded CPU and GPU performance]
+			[c/FFFF80:The performance impact of this setting depends on single-threaded CPU and GPU performance]
 			'''
 	}
 
@@ -474,7 +464,7 @@ LightingConfig: {
 			High-dynamic-range rendering (HDRR) can display light with above 100% brightness
 			When using HDR rendering, the final image is tone mapped to standard dynamic range (SDR)
 
-			{$Snippets.VeryHighPerformanceImpact}
+			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 
@@ -543,8 +533,6 @@ LightingConfig: {
 			Use smooth lighting on tile entities
 
 			Primarily affects tiles that are affected by wind
-
-			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 
@@ -558,7 +546,7 @@ LightingConfig: {
 
 			Adds shadows on background walls in areas near foreground tiles
 
-			[c/FFFF80:Performance impact is primarily affected by GPU performance]
+			[c/FFFF80:The performance impact of this setting depends on GPU performance]
 			'''
 	}
 
@@ -593,7 +581,7 @@ LightingConfig: {
 			Spreads light more realistically with pronounced shadows
 			Has a higher performance impact the more light sources there are on-screen
 
-			[c/FFFF80:Performance impact is primarily affected by multithreaded CPU performance]
+			[c/FFFF80:The performance impact of this setting depends on multithreaded CPU performance]
 			'''
 	}
 
@@ -664,8 +652,6 @@ LightingConfig: {
 
 			Improves the shading of clouds
 			Improves the shading of normal maps when using HDR rendering
-
-			{$Snippets.HighPerformanceImpact}
 			'''
 	}
 }
@@ -801,10 +787,8 @@ ToneMappingPreset: {
 }
 
 Snippets: {
-	VeryHighPerformanceImpact: "[c/FFE080:This setting has a] [c/FFC000:very high impact] [c/FFE080:on performance]"
-	HighPerformanceImpact: "[c/FFE080:This setting has a] [c/FFC000:high impact] [c/FFE080:on performance]"
-	PossiblePerformanceImpact: "[c/FFE080:This setting may] [c/FFC000:impact] [c/FFE080:performance]"
-	PossibleSignificantPerformanceEffect: "[c/FFFF80:This setting may have a] [c/FFFF00:significant effect] [c/FFFF80:on performance]"
+	HighPerformanceImpact: "[c/FFD080:This setting has a] [c/FFA000:high impact] [c/FFD080:on performance]"
+	SignificantPerformanceEffect: "[c/FFFF80:This setting has a] [c/FFFF00:significant effect] [c/FFFF80:on performance]"
 	PerformanceBenefit: "[c/80FF80:This setting] [c/00FF00:benefits] [c/80FF80:performance]"
 	SmoothLighting: "{$LightingConfig.UseSmoothLighting.Label}"
 	RenderMode: "{$LightingConfig.LightMapRenderMode.Label}"
