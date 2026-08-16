@@ -14,10 +14,12 @@ Add custom lighting for a particular tile type when using Smooth Lighting.
             - `Tile tile`: The affected tile.
             - `int x`: The x-coordinate of the tile.
             - `int y`: The y-coordinate of the tile.
-            - `ref Vector3 lightColor`: The light color at the location of the tile, after global brightness is applied.
+            - `ref Vector3 lightColor`: The light color at the location of the tile, after being multiplied by `Lighting.GlobalBrightness`.
         - **Remarks:** It is highly recommended to avoid having side effects.
 - **Call Returns:** `bool`
     - Whether any changes were made.
+- **Remarks:**
+  - If the affect tile type already has custom lighting, it will be replaced. Only one modifier for a tile type can be active at a time.
 
 **Remarks:** Custom tile lighting affects only how tiles appear to be lit when using Smooth Lighting; there is no effect on any other part of the game. Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting. In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
 
@@ -33,10 +35,10 @@ Add a hook that runs after Smooth Lighting updates its light map texture. This e
     - `void hook(Texture2D, Matrix, Rectangle, bool)`: The hook.
         - **Parameters:**
             - `Texture2D lightMapTexture`: The texture used to sample the light map.
-            - `Matrix samplingTransformation`: A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling `lightMapTexture`.
+            - `Matrix samplingTransformation`: A transformation matrix that converts world coordinates (in pixels) to UV coordinates for sampling `lightMapTexture`.
             - `Rectangle lightMapArea`: The area of the world covered by the light map, measured in tiles.
             - `bool cameraMode`: Whether the light map is for a camera mode capture.
-        - **Remarks:** The dimensions of `lightMapTexture` may not match the dimensions of the light map in tiles. Do not rely on the values in the alpha channel of `lightMapTexture`. The alpha channel may be used by the Fancy Lighting mod for any purpose.
+        - **Remarks:** The dimensions of `lightMapTexture` may not match the dimensions of the light map in tiles. Do not rely on the values in the alpha channel of `lightMapTexture`. The alpha channel may be used by the Fancy Lighting mod for any purpose. Switching to a new render target or doing any drawing in the hook may cause graphical glitches.
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 

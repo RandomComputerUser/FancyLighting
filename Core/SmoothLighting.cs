@@ -127,18 +127,15 @@ public sealed class SmoothLighting
         TileLightModifier tileLightModifier
     )
     {
-        if (TileLightModifiers is null)
+        if (tileLightModifier is null && TileLightModifiers is null)
         {
-            if (tileLightModifier is null)
-            {
-                return false;
-            }
-
-            ArrayUtils.MakeAtLeastSizePreserveContents(
-                ref TileLightModifiers,
-                TileLoader.TileCount
-            );
+            return false;
         }
+
+        ArrayUtils.MakeAtLeastSizePreserveContents(
+            ref TileLightModifiers,
+            TileLoader.TileCount
+        );
 
         ref var activeModifier = ref TileLightModifiers[tileType];
         var changed = !ReferenceEquals(activeModifier, tileLightModifier);
@@ -147,17 +144,18 @@ public sealed class SmoothLighting
     }
 
     /// <summary>
-    /// Handle an update to the light map.
+    /// Callback for updates to the light map texture.
     /// </summary>
     /// <param name="lightMapTexture">The texture used to sample the light map.</param>
-    /// <param name="samplingTransformation">A transformation matrix that converts world coordinates (in pixels) to normalized coordinates for sampling <paramref name="lightMapTexture"></paramref>.</param>
+    /// <param name="samplingTransformation">A transformation matrix that converts world coordinates (in pixels) to UV coordinates for sampling <paramref name="lightMapTexture"></paramref>.</param>
     /// <param name="lightMapArea">The area of the world covered by the light map, measured in tiles.</param>
     /// <param name="cameraMode">Whether the light map is for a camera mode capture.</param>
     /// <remarks>
     /// The dimensions of <paramref name="lightMapTexture"></paramref> may not match the dimensions of the light map in tiles.
     /// Do not rely on the values in the alpha channel of <paramref name="lightMapTexture"></paramref>. The alpha channel may be used by the Fancy Lighting mod for any purpose.
+    /// Switching to a new render target or doing any drawing in the callback may cause graphical glitches.
     /// </remarks>
-    public delegate void LightMapUpdateHandler(
+    public delegate void LightMapUpdateCallback(
         Texture2D lightMapTexture,
         Matrix samplingTransformation,
         Rectangle lightMapArea,
@@ -167,7 +165,7 @@ public sealed class SmoothLighting
     /// <summary>
     /// This event is invoked after the light map is updated.
     /// </summary>
-    public static event LightMapUpdateHandler PostUpdateLightMap;
+    public static event LightMapUpdateCallback PostUpdateLightMap;
 
     internal SmoothLighting()
     {
@@ -1352,7 +1350,7 @@ public sealed class SmoothLighting
                 TileLoader.TileCount
             );
 
-            // Can't be parallel due to thread safety issues
+            // Can't be parallel due to potential thread safety issues with tile light modifiers from other mods
             for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
             {
                 var i = (height * x1) + offset;
@@ -1469,7 +1467,7 @@ public sealed class SmoothLighting
                 TileLoader.TileCount
             );
 
-            // Can't be parallel due to thread safety issues
+            // Can't be parallel due to potential thread safety issues with tile light modifiers from other mods
             for (var x1 = clampedStart; x1 < clampedEnd; ++x1)
             {
                 var i = (height * x1) + offset;

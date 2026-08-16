@@ -16,7 +16,7 @@ internal static class ModCalls
                 args.Length == 3
                 && args[0] is "AddHook"
                 && args[1] is "PostUpdateLightMap"
-                && args[2].IsDelegate(out SmoothLighting.LightMapUpdateHandler hook)
+                && args[2].IsDelegate(out SmoothLighting.LightMapUpdateCallback hook)
             )
             {
                 SmoothLighting.PostUpdateLightMap += hook;
