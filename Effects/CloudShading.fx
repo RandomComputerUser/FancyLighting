@@ -34,7 +34,7 @@ float SampleTexture(float2 texCoord, bool wrap)
         color *= all(texCoord == saturate(texCoord));
     }
     
-    const float MIN_LUMA = 0.5;
+    const float MIN_LUMA = 0.6;
     const float MULT = 1.0 / (1.0 - MIN_LUMA);
     return saturate(MULT * Luma(color) - MULT * MIN_LUMA);
 }
@@ -49,19 +49,23 @@ float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
         [unroll]
         for (int dx = -3; dx <= 3; ++dx)
         {
-            if (abs(dx) + abs(dy) > 4 || dx == 0 && dy == 0)
+            float2 direction = float2(dx, dy);
+            float len = length(direction);
+            const float RADIUS = 3.5;
+        
+            if (len >= RADIUS || dx == 0 && dy == 0)
             {
                 continue;
             }
         
-            float2 direction = float2(dx, dy);
             sum += (SampleTexture(
                 texCoord + dx * diff.xy + dy * diff.zw, wrap
-            ) - center) * direction / dot(direction, direction);
+            ) - center) * (RADIUS - len) * direction / len;
         }
     }
     
-    sum *= -0.09375;
+    sum *= -0.0395402015765;
+    sum.y += 0.03;
     return sum;
 }
 

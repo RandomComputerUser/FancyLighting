@@ -63,7 +63,7 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("SkyLightMult", 0.75f * (float)skyLightMult);
+            .SetParameter("SkyLightMult", (float)skyLightMult);
 
         orig(self);
     }
