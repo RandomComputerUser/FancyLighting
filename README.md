@@ -17,21 +17,19 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 #### Features and Improvements
 - Added Fancy Sky Light Shading
-- Added tile entity normal maps
-- Added a setting to apply smooth lighting to tile entities
+- Added tile entity normal maps and smooth lighting
+- Added a new default tone mapping operator for full HDR rendering, *Neutral (LMS)*
+- Added bright light synchronization for full HDR rendering
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter
 - Improved enhanced light map blurring
+- Tweaked the appearance of Ambient Occlusion
 - The setting to disable HDRR during bosses and events now affects Smooth Lighting as a whole
-- Added bright light synchronization for full HDR rendering
 - Depth of field is no longer exclusive to full HDR rendering
-- Added a new default tone mapping operator for full HDR rendering
 - Adjusted overall brightness and contrast when using full HDR rendering
 - Slightly increased the brightness of the background when using full HDR rendering
 - Improved vibrance boost
-- Bloom and depth of field blur radius now scale with display zoom
 - Tweaked the appearance of bloom
-- Tweaked the appearance of Ambient Occlusion
 
 #### Settings Tweaks
 - Created two new configs: *Compatibility Settings* and *Developer Settings*
@@ -53,9 +51,10 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering
 
-#### Bug Fixes, Compatibility, and Optimization
-- Significantly optimized rendering
-- Fixed some graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
+#### Bug Fixes, Compatibility, and Performance
+- Rewrote and optimized all of the rendering code
+- Fixed graphical glitches that occurred when the mod was disabled when tModLoader was launched and then later enabled
+- Fixed bloom and depth of field blur radius not scaling with resolution
 - Fixed a minor bug with Ambient Occlusion when using full HDR rendering
 - Fixed screen flashing after saving configs when at high resolutions
 - Added compatibility with screen flipping from sources other than the Gravitation buff
