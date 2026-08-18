@@ -204,10 +204,10 @@ PreferencesConfig: {
 		Label: Fine Normal Maps
 		Tooltip:
 			'''
-			Toggles between coarse and fine simulated normal maps
+			Toggles between coarse and fine normal maps
 
-			Coarse normal maps are simulated at half resolution, matching vanilla textures
-			Fine normal maps are simulated at full resolution
+			Coarse normal maps are generated at half resolution, matching vanilla textures
+			Fine normal maps are generated at full resolution
 			Recommended to enable when using HD textures
 			'''
 	}
@@ -648,10 +648,9 @@ LightingConfig: {
 		Label: Fancy Sky Light Shading
 		Tooltip:
 			'''
-			Use improved shading for sunlight and moonlight
+			Use sunlight and moonlight shading
 
-			Improves the shading of clouds
-			Improves the shading of normal maps when using HDR rendering
+			Adds shading to clouds and normal maps from {$Snippets.SmoothLighting}
 			'''
 	}
 }
