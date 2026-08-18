@@ -1410,6 +1410,11 @@ public sealed class SmoothLighting
         int height
     )
     {
+        var skyLightArea = FancySkyLighting._lightMapArea;
+        var useLuma =
+            LightingConfig.Instance.UseSkyLightLuma()
+            && skyLightArea == _lightMapTileArea;
+
         var length = width * height;
 
         ArrayUtils.MakeAtLeastSize(ref _finalLights, length);
@@ -1431,6 +1436,7 @@ public sealed class SmoothLighting
                     var myBrightness = brightness;
                     var myShimmerAlpha = shimmerAlpha;
                     var finalLights = _finalLights;
+                    var myUseLuma = useLuma;
 
                     var i = (height * x1) + offset;
                     var x = x1 + xmin;
@@ -1450,7 +1456,20 @@ public sealed class SmoothLighting
                                 TileShine(ref lightColor, tile, myShimmerAlpha);
                             }
 
-                            ColorUtils.Assign(ref finalLights[i++], 1f, lightColor);
+                            if (myUseLuma)
+                            {
+                                ColorUtils.Assign(
+                                    ref finalLights[i],
+                                    lightColor,
+                                    FancySkyLighting._skyLightLuma[i]
+                                );
+                            }
+                            else
+                            {
+                                ColorUtils.Assign(ref finalLights[i], lightColor);
+                            }
+
+                            ++i;
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -1495,7 +1514,20 @@ public sealed class SmoothLighting
                             }
                         }
 
-                        ColorUtils.Assign(ref _finalLights[i++], 1f, lightColor);
+                        if (useLuma)
+                        {
+                            ColorUtils.Assign(
+                                ref _finalLights[i],
+                                lightColor,
+                                FancySkyLighting._skyLightLuma[i]
+                            );
+                        }
+                        else
+                        {
+                            ColorUtils.Assign(ref _finalLights[i], lightColor);
+                        }
+
+                        ++i;
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -1509,7 +1541,7 @@ public sealed class SmoothLighting
         _colors.SetData(0, new(0, 0, height, width), _finalLights, 0, length);
 
         _smoothLightingComplete = true;
-        _useAlphaChannelAsSkyLightLuma = false;
+        _useAlphaChannelAsSkyLightLuma = useLuma;
     }
 
     private void RenderHiResLighting(Texture2D lights)
@@ -1804,7 +1836,7 @@ public sealed class SmoothLighting
         var normalsEffectFlag =
             LightingConfig.Instance.SimulateNormalMaps
             && LightingConfig.Instance.SimulateTileEntityNormals;
-        var fancySkyEffectFlag = doOverbright && _useAlphaChannelAsSkyLightLuma;
+        var fancySkyEffectFlag = _useAlphaChannelAsSkyLightLuma;
 
         var needsLightMap = smoothEffectFlag || normalsEffectFlag;
         var cameraMode = MainGraphics.InCameraMode;

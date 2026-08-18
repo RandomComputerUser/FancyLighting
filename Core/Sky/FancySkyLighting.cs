@@ -7,6 +7,8 @@ public static class FancySkyLighting
     internal static Rectangle _lightMapArea;
     internal static float[] _skyLightLuma;
 
+    private static float _baseSkyLightLuma;
+
     internal static void Unload()
     {
         _skyLightLuma = null;
@@ -17,6 +19,8 @@ public static class FancySkyLighting
         _lightMapArea = area;
         var length = area.Width * area.Height;
         ArrayUtils.MakeAtLeastSize(ref _skyLightLuma, length);
+
+        _baseSkyLightLuma = ColorUtils.Luma(Main.tileColor.ToVector3());
     }
 
     internal static void SetSkyLightLuma(int x, int y, float luma)
@@ -35,7 +39,7 @@ public static class FancySkyLighting
         }
 
         var index = (_lightMapArea.Height * col) + row;
-        _skyLightLuma[index] = luma;
+        _skyLightLuma[index] = luma / _baseSkyLightLuma;
     }
 
     public static (
@@ -84,8 +88,14 @@ public static class FancySkyLighting
 
         var baseMult =
             -Math.Log(airDecayMult)
+            * _baseSkyLightLuma
             * Lighting.GlobalBrightness
             * SmoothLighting.NormalMapGradientBaseMult;
+
+        if (LightingConfig.Instance.HiDefFeaturesEnabled())
+        {
+            baseMult *= PostProcessing.HiDefBackgroundBrightnessMult;
+        }
 
         var angle = Math.PI * progress;
         amountVisible = MathUtils.Smoothstep(0.0, 1.0, amountVisible);

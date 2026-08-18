@@ -55,25 +55,38 @@ internal static class ColorUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Assign(ref Color color, float brightness, Vector3 rgb)
+    public static void Assign(ref Color color, Vector3 rgb)
     {
-        color.R = (byte)((255f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
-        color.G = (byte)((255f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
-        color.B = (byte)((255f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
+        color.R = (byte)((255f * MathHelper.Clamp(rgb.X, 0f, 1f)) + 0.5f);
+        color.G = (byte)((255f * MathHelper.Clamp(rgb.Y, 0f, 1f)) + 0.5f);
+        color.B = (byte)((255f * MathHelper.Clamp(rgb.Z, 0f, 1f)) + 0.5f);
         color.A = byte.MaxValue;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Assign(ref Rgba1010102 color, float brightness, Vector3 rgb)
+    public static void Assign(ref Rgba1010102 color, Vector3 rgb)
     {
-        var red = (uint)((1023f * MathHelper.Clamp(brightness * rgb.X, 0f, 1f)) + 0.5f);
-        var green = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Y, 0f, 1f)) + 0.5f);
-        var blue = (uint)((1023f * MathHelper.Clamp(brightness * rgb.Z, 0f, 1f)) + 0.5f);
+        var red = (uint)((1023f * MathHelper.Clamp(rgb.X, 0f, 1f)) + 0.5f);
+        var green = (uint)((1023f * MathHelper.Clamp(rgb.Y, 0f, 1f)) + 0.5f);
+        var blue = (uint)((1023f * MathHelper.Clamp(rgb.Z, 0f, 1f)) + 0.5f);
         const uint Alpha = 0b11;
 
         color.PackedValue = _swapRedAndBlueRgba1010102
             ? blue | (green << 10) | (red << 20) | (Alpha << 30)
             : red | (green << 10) | (blue << 20) | (Alpha << 30);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Assign(ref Rgba1010102 color, Vector3 rgb, float alpha)
+    {
+        var red = (uint)((1023f * MathHelper.Clamp(rgb.X, 0f, 1f)) + 0.5f);
+        var green = (uint)((1023f * MathHelper.Clamp(rgb.Y, 0f, 1f)) + 0.5f);
+        var blue = (uint)((1023f * MathHelper.Clamp(rgb.Z, 0f, 1f)) + 0.5f);
+        var encodedAlpha = (uint)((3f * MathHelper.Clamp(alpha, 0f, 1f)) + 0.5f);
+
+        color.PackedValue = _swapRedAndBlueRgba1010102
+            ? blue | (green << 10) | (red << 20) | (encodedAlpha << 30)
+            : red | (green << 10) | (blue << 20) | (encodedAlpha << 30);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

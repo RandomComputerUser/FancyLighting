@@ -695,14 +695,14 @@ public sealed class FancyLightingMod : Mod
     {
         orig(self, tile, x, y, ref lightColor);
 
-        if (SettingsSystem._hiDef)
-        {
-            lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
-        }
-
         if (SettingsSystem._useSkyLightLuma)
         {
             FancySkyLighting.SetSkyLightLuma(x, y, ColorUtils.Luma(lightColor));
+        }
+
+        if (SettingsSystem._hiDef)
+        {
+            lightColor *= PostProcessing.HiDefBackgroundBrightnessMult;
         }
     }
 

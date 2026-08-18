@@ -107,7 +107,6 @@ public sealed class FancySkyColors
 
         ColorUtils.Assign(
             ref bgColor,
-            1f,
             Instance.CalculateSkyColor(GameTimeUtils.CalculateCurrentHour())
         );
     }

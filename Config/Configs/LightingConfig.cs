@@ -57,8 +57,7 @@ public sealed class LightingConfig : ModConfig
     public bool FancySkyLightingEnabled() =>
         UseFancySkyLighting && Lighting.UsingNewLighting;
 
-    public bool UseSkyLightLuma() =>
-        FancySkyLightingEnabled() && SmoothLightingEnabled() && DrawOverbright();
+    public bool UseSkyLightLuma() => FancySkyLightingEnabled() && SmoothLightingEnabled();
 
     public override void OnChanged()
     {
