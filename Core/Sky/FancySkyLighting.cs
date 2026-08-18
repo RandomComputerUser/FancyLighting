@@ -8,6 +8,7 @@ public static class FancySkyLighting
     internal static float[] _skyLightLuma;
 
     private static float _baseSkyLightLuma;
+    private static float _lumaScaleFactor;
 
     internal static void Unload()
     {
@@ -21,6 +22,7 @@ public static class FancySkyLighting
         ArrayUtils.MakeAtLeastSize(ref _skyLightLuma, length);
 
         _baseSkyLightLuma = ColorUtils.Luma(Main.tileColor.ToVector3());
+        _lumaScaleFactor = _baseSkyLightLuma > 0f ? 1f / _baseSkyLightLuma : 1f;
     }
 
     internal static void SetSkyLightLuma(int x, int y, float luma)
@@ -39,7 +41,7 @@ public static class FancySkyLighting
         }
 
         var index = (_lightMapArea.Height * col) + row;
-        _skyLightLuma[index] = luma / _baseSkyLightLuma;
+        _skyLightLuma[index] = _lumaScaleFactor * luma;
     }
 
     public static (
@@ -88,9 +90,12 @@ public static class FancySkyLighting
 
         var baseMult =
             -Math.Log(airDecayMult)
-            * _baseSkyLightLuma
             * Lighting.GlobalBrightness
             * SmoothLighting.NormalMapGradientBaseMult;
+        if (_baseSkyLightLuma > 0f)
+        {
+            baseMult *= _baseSkyLightLuma;
+        }
 
         if (LightingConfig.Instance.HiDefFeaturesEnabled())
         {
