@@ -13,6 +13,6 @@ internal static class ToneMapping
         var luminance = ColorUtils.Luma(color);
         var mult =
             (1f + (luminance * (1f / (WhitePoint * WhitePoint)))) / (1f + luminance);
-        Vector3.Multiply(ref color, mult, out color);
+        VectorUtils.Multiply(ref color, mult, out color);
     }
 }

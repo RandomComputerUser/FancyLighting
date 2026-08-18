@@ -560,7 +560,7 @@ public sealed class SmoothLighting
                         {
                             ref var lightColor = ref myLights[i++];
                             ColorUtils.LinearToGamma(ref lightColor);
-                            Vector3.Multiply(
+                            VectorUtils.Multiply(
                                 ref lightColor,
                                 PostProcessing.HiDefBrightnessScale,
                                 out lightColor
@@ -1317,7 +1317,7 @@ public sealed class SmoothLighting
                     {
                         try
                         {
-                            Vector3.Multiply(
+                            VectorUtils.Multiply(
                                 ref lights[i],
                                 myBrightness,
                                 out var lightColor
@@ -1359,7 +1359,11 @@ public sealed class SmoothLighting
                 {
                     try
                     {
-                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+                        VectorUtils.Multiply(
+                            ref _lights[i],
+                            brightness,
+                            out var lightColor
+                        );
 
                         var tile = Main.tile[x, y];
                         if (tile.HasTile)
@@ -1444,7 +1448,7 @@ public sealed class SmoothLighting
                     {
                         try
                         {
-                            Vector3.Multiply(
+                            VectorUtils.Multiply(
                                 ref lights[i],
                                 myBrightness,
                                 out var lightColor
@@ -1495,7 +1499,11 @@ public sealed class SmoothLighting
                 {
                     try
                     {
-                        Vector3.Multiply(ref _lights[i], brightness, out var lightColor);
+                        VectorUtils.Multiply(
+                            ref _lights[i],
+                            brightness,
+                            out var lightColor
+                        );
 
                         var tile = Main.tile[x, y];
                         if (tile.HasTile)
