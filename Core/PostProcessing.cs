@@ -17,7 +17,7 @@ public sealed class PostProcessing
 
     private readonly Texture2D _ditherNoise;
 
-    private readonly SpriteBatchEffect _brightenSpriteBatchEffect;
+    private readonly SpriteBatchEffect _brightenEffect;
     private readonly FullscreenEffect _gammaToLinearEffect;
     private readonly FullscreenEffect _gammaToLinearColorGradedEffect;
     private readonly FullscreenEffect _combineLayersGammaToLinearEffect;
@@ -44,7 +44,7 @@ public sealed class PostProcessing
             .Value;
 
         var effect = EffectLoader.Load("PostProcessing");
-        _brightenSpriteBatchEffect = new(effect, "BrightenSpriteBatch");
+        _brightenEffect = new(effect, "Brighten");
         _gammaToLinearEffect = new(effect, "GammaToLinear");
         _gammaToLinearColorGradedEffect = new(effect, "GammaToLinearColorGraded");
         _combineLayersGammaToLinearEffect = new(effect, "CombineLayersGammaToLinear");
@@ -85,8 +85,8 @@ public sealed class PostProcessing
     private static bool InUnderworld() =>
         Main.screenPosition.Y + Main.screenHeight >= (Main.maxTilesY - 220) * 16f;
 
-    internal SpriteBatchEffect GetBrightenSpriteBatchEffect(float brightness) =>
-        _brightenSpriteBatchEffect.SetParameter("BrightnessMult", brightness);
+    internal SpriteBatchEffect GetBrightenEffect(float brightness) =>
+        _brightenEffect.SetParameter("BrightnessMult", brightness);
 
     internal FullscreenEffect GetGammaEffect(float gamma) =>
         _gammaToGammaNoDitherEffect.SetParameter("GammaRatio", gamma);

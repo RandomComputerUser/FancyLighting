@@ -1,4 +1,5 @@
 sampler ScreenSampler : register(s0);
+sampler TextureSampler : register(s0);
 sampler BackgroundSampler : register(s8);
 sampler DitherSampler : register(s8);
 sampler BloomBlurSampler : register(s8);
@@ -160,7 +161,7 @@ void Blit_VS(
     screenPos = position;
 }
 
-void SpriteBatch_VS(
+void Brighten_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
     inout float4 color : COLOR0,
@@ -168,15 +169,14 @@ void SpriteBatch_VS(
 )
 {
     screenPos = mul(position, MatrixTransform);
+    color.rgb *= BrightnessMult;
 }
 
 /* Pixel shaders ************************************************************************/
 
-float4 Brighten_PS(float2 coords : TEXCOORD0) : COLOR0
+float4 SpriteBatch_PS(float2 coords : TEXCOORD0, float4 color : COLOR0) : COLOR0
 {
-    float4 color = tex2D(ScreenSampler, coords);
-    color.rgb *= BrightnessMult;
-    return color;
+    return color * tex2D(TextureSampler, coords);
 }
 
 float4 GammaToLinear_PS(float2 coords : TEXCOORD0) : COLOR0
@@ -316,12 +316,12 @@ float4 ToneMapFilmicSrgb_PS(float2 coords : TEXCOORD0) : COLOR0
 
 /* Techniques ***************************************************************************/
 
-technique BrightenSpriteBatch
+technique Brighten
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SpriteBatch_VS();
-        PixelShader = compile ps_3_0 Brighten_PS();
+        VertexShader = compile vs_3_0 Brighten_VS();
+        PixelShader = compile ps_3_0 SpriteBatch_PS();
     }
 }
 

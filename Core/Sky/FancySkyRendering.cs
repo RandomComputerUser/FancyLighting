@@ -236,7 +236,7 @@ public sealed class FancySkyRendering
         }
         else if (hiDef)
         {
-            effect = postProcessingInstance.GetBrightenSpriteBatchEffect(1.5f);
+            effect = postProcessingInstance.GetBrightenEffect(1.5f);
         }
 
         SpriteBatchEffectLoader.Apply(effect);

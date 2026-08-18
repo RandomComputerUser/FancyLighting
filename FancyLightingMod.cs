@@ -932,7 +932,7 @@ public sealed class FancyLightingMod : Mod
         sunMoonBrightness /= PostProcessing.HiDefBackgroundBrightnessMult;
 
         SpriteBatchEffectLoader.Apply(
-            _postProcessingInstance.GetBrightenSpriteBatchEffect(sunMoonBrightness)
+            _postProcessingInstance.GetBrightenEffect(sunMoonBrightness)
         );
         Main.spriteBatch.Begin(
             SpriteSortMode.Deferred,
