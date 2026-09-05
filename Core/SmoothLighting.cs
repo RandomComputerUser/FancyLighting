@@ -9,8 +9,6 @@ namespace FancyLighting.Core;
 
 public sealed class SmoothLighting
 {
-    internal const float NormalMapGradientBaseMult = 1.5f;
-
     private readonly Texture2D _ditherNoise;
 
     private Texture2D _colors;
@@ -1742,17 +1740,12 @@ public sealed class SmoothLighting
         {
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-            var normalMapGradientMult = 16f * NormalMapGradientBaseMult * overbrightMult;
+            var normalMapGradientMult = 16f * overbrightMult;
             var normalMapStrength = Math.Clamp(
                 PreferencesConfig.Instance.NormalMapsMultiplier(),
                 0f,
                 1f
             );
-
-            if (background)
-            {
-                normalMapStrength *= 0.75f;
-            }
 
             effect
                 .SetParameter(
@@ -1919,8 +1912,7 @@ public sealed class SmoothLighting
 
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-            var normalMapGradientMult =
-                16f * NormalMapGradientBaseMult * overbrightMult * zoom;
+            var normalMapGradientMult = 16f * overbrightMult * zoom;
             var normalMapStrength = Math.Clamp(
                 PreferencesConfig.Instance.NormalMapsMultiplier(),
                 0f,

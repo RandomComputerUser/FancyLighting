@@ -94,7 +94,7 @@ float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
     return lerp(
         1.0,
         lightMult,
-        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (16.0 * lightGradientLength + 1))
     );
 }
 

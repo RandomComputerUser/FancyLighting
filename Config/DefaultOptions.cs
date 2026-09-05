@@ -43,7 +43,7 @@ public static class DefaultOptions
     public const bool UseTileEntitySmoothLighting = false;
 
     // Smooth Lighting Preferences
-    public const int NormalMapsIntensity = 6;
+    public const int NormalMapsIntensity = 7;
     public const bool FineNormalMaps = false;
     public const bool UseGrayscaleLighting = false;
 
@@ -85,7 +85,7 @@ public static class DefaultOptions
     // Fancy Sky Preferences
     public const int SkyBrightnessBoost = 5;
     public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
-    public const int CloudShadingStrength = 3;
+    public const int CloudShadingStrength = 4;
 
     // Miscellaneous Preferences
     public const bool DepthOfField = false;

@@ -187,7 +187,7 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     return lerp(
         1.0,
         lightMult,
-        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (16.0 * lightGradientLength + 1))
     );
 }
 
@@ -222,7 +222,7 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     return lerp(
         1.0,
         lightMult,
-        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (32.0 * lightGradientLength + 1))
+        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (16.0 * lightGradientLength + 1))
     );
 }
 

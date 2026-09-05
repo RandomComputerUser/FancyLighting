@@ -88,10 +88,7 @@ public static class FancySkyLighting
             }
         }
 
-        var baseMult =
-            -Math.Log(airDecayMult)
-            * Lighting.GlobalBrightness
-            * SmoothLighting.NormalMapGradientBaseMult;
+        var baseMult = -Math.Log(airDecayMult) * Lighting.GlobalBrightness;
         if (_baseSkyLightLuma > 0f)
         {
             baseMult *= _baseSkyLightLuma;
