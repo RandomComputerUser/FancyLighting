@@ -178,12 +178,20 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
         return 1.0;
     }
     
-    surfaceGradient /= surfaceGradientLength;
+    surfaceGradient = lerp(
+        surfaceGradient,
+        surfaceGradient / surfaceGradientLength,
+        saturate(16.0 * surfaceGradientLength)
+    );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
     lightGradientLength /= (luma + 0.1);
     
-    float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
+    float lightMult = 1.0 + clamp(
+        NormalMapStrength * dot(lightGradient, surfaceGradient),
+        -0.9,
+        0.9
+    );
     return lerp(
         1.0,
         lightMult,
@@ -213,12 +221,20 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
         return 1.0;
     }
     
-    surfaceGradient /= surfaceGradientLength;
+    surfaceGradient = lerp(
+        surfaceGradient,
+        surfaceGradient / surfaceGradientLength,
+        saturate(16.0 * surfaceGradientLength)
+    );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
     lightGradientLength /= (luma + 0.1);
     
-    float lightMult = 1.0 + NormalMapStrength * dot(lightGradient, surfaceGradient);
+    float lightMult = 1.0 + clamp(
+        NormalMapStrength * dot(lightGradient, surfaceGradient),
+        -0.9,
+        0.9
+    );
     return lerp(
         1.0,
         lightMult,

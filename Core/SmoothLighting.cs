@@ -1741,12 +1741,7 @@ public sealed class SmoothLighting
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
             var normalMapGradientMult = 16f * overbrightMult;
-            var normalMapStrength = Math.Clamp(
-                PreferencesConfig.Instance.NormalMapsMultiplier(),
-                0f,
-                1f
-            );
-
+            var normalMapStrength = PreferencesConfig.Instance.NormalMapsMultiplier();
             effect
                 .SetParameter(
                     "NormalMapResolution",
@@ -1913,11 +1908,7 @@ public sealed class SmoothLighting
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
             var normalMapGradientMult = 16f * overbrightMult * zoom;
-            var normalMapStrength = Math.Clamp(
-                PreferencesConfig.Instance.NormalMapsMultiplier(),
-                0f,
-                1f
-            );
+            var normalMapStrength = PreferencesConfig.Instance.NormalMapsMultiplier();
 
             effect
                 .SetParameter("Zoom", zoom)

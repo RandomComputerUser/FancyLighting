@@ -15,7 +15,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public bool UseCustomGamma() => OutputImageGamma != DefaultOptions.OutputImageGamma;
 
-    public float NormalMapsMultiplier() => NormalMapsIntensity / 10f;
+    public float NormalMapsMultiplier() => NormalMapsIntensity / 5f;
 
     public float ExposureMult() => MathF.Pow(2f, Exposure / 10f);
 

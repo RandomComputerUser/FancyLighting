@@ -39,7 +39,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Rearranged and renamed some settings
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
 - Tweaked normal maps rendering and adjusted the normal maps strength scale
-- Changed the default normal maps strength to 6 (from 3)
+- Changed the default normal maps strength to 5 (from 3)
 - Changed the maximum normal maps strength to 10 (from 15)
 - Increased the range of the gamma setting to 100–340 (from 140–300)
 - Gamma can now be adjusted in increments of 5 (from 10)
