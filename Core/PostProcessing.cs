@@ -32,7 +32,7 @@ public sealed class PostProcessing
     private readonly FullscreenEffect _toneMapNeutralOldEffect;
     private readonly FullscreenEffect _toneMapFilmicSrgbEffect;
 
-    private readonly BlurRenderer _blurRenderer = new(false, true);
+    private readonly BlurRenderer _blurRenderer = new();
 
     internal PostProcessing()
     {
@@ -90,13 +90,6 @@ public sealed class PostProcessing
 
     internal FullscreenEffect GetGammaEffect(float gamma) =>
         _gammaToGammaNoDitherEffect.SetParameter("GammaRatio", gamma);
-
-    internal RenderTarget2D Blur(
-        RenderTarget2D src,
-        RenderTarget2D dst,
-        int radius,
-        float zoom = 1f
-    ) => _blurRenderer.Blur(src, dst, radius, zoom: zoom);
 
     internal void BlitTwo(
         RenderTarget2D foreground,
@@ -276,8 +269,8 @@ public sealed class PostProcessing
                     currTarget,
                     null,
                     PreferencesConfig.Instance.BloomRadius,
-                    additiveBlend: true,
-                    zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
+                    zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X,
+                    additiveBlend: true
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);

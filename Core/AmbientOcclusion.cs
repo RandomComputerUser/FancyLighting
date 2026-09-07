@@ -15,7 +15,7 @@ public sealed class AmbientOcclusion
     private readonly FullscreenEffect _toneCurveEffect;
     private readonly FullscreenEffect _toneCurveDefaultEffect;
 
-    private readonly BlurRenderer _blurRenderer = new(true, false);
+    private readonly BlurRenderer _blurRenderer = new();
 
     internal AmbientOcclusion()
     {
@@ -30,6 +30,7 @@ public sealed class AmbientOcclusion
     internal void Unload()
     {
         _ambientOcclusionTarget?.Dispose();
+        _ambientOcclusionTarget = null;
 
         _blurRenderer?.Dispose();
     }
@@ -159,7 +160,7 @@ public sealed class AmbientOcclusion
                 }
 
                 SpriteBatchEffectLoader.Apply(_tileEntityEffect);
-                SpriteBatchEffectLoader.Apply(CustomBlendStates.MaxAlpha);
+                SpriteBatchEffectLoader.Apply(CustomBlendStates.MaxColor);
                 Main.instance.TilesRenderer.PostDrawTiles(false, false, false);
                 SpriteBatchEffectLoader.Reset();
             }
@@ -179,7 +180,12 @@ public sealed class AmbientOcclusion
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();
         var mult = PreferencesConfig.Instance.AmbientOcclusionMult();
 
-        var blurTarget = _blurRenderer.Blur(_ambientOcclusionTarget, null, radius);
+        var blurTarget = _blurRenderer.Blur(
+            _ambientOcclusionTarget,
+            null,
+            radius,
+            redOnly: true
+        );
 
         effect =
             PreferencesConfig.Instance.AmbientOcclusionIntensity

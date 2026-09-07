@@ -63,7 +63,7 @@ void TilesAndTiles2_VS(
 float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
 {
     float brightness = tex2D(TileSampler, tileCoord).a;
-    return float4(0, 0, 0, brightness);
+    return float4(brightness, 0, 0, 0);
 }
 
 float4 TilesAndTiles2_PS(float2 tileCoord : TEXCOORD0, float2 tile2Coord : TEXCOORD1) : COLOR0
@@ -72,18 +72,18 @@ float4 TilesAndTiles2_PS(float2 tileCoord : TEXCOORD0, float2 tile2Coord : TEXCO
         tex2D(TileSampler, tileCoord).a,
         NONSOLID_OCCLUSION_MULT * tex2D(Tile2Sampler, tile2Coord).a
     );
-    return float4(0, 0, 0, brightness);
+    return float4(brightness, 0, 0, 0);
 }
 
 float4 TileEntity_PS(float2 tileCoord : TEXCOORD0, float4 color : COLOR0) : COLOR0
 {
     float brightness = color.a * tex2D(TileSampler, tileCoord).a;
-    return float4(0, 0, 0, brightness);
+    return float4(brightness, 0, 0, 0);
 }
 
 float4 ToneCurve_PS(float2 texCoord : TEXCOORD0) : COLOR0
 {
-    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).a;
+    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).r;
     brightness = pow((1 - BlurMult) + BlurMult * pow(brightness, BlurPower), 1 / 2.2);
 
     return float4(0, 0, 0, brightness);
@@ -91,7 +91,7 @@ float4 ToneCurve_PS(float2 texCoord : TEXCOORD0) : COLOR0
 
 float4 ToneCurveHiDef_PS(float2 texCoord : TEXCOORD0) : COLOR0
 {
-    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).a;
+    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).r;
     brightness = (1 - BlurMult) + BlurMult * pow(brightness, BlurPower);
 
     return float4(0, 0, 0, brightness);
@@ -99,7 +99,7 @@ float4 ToneCurveHiDef_PS(float2 texCoord : TEXCOORD0) : COLOR0
 
 float4 ToneCurveDefault_PS(float2 texCoord : TEXCOORD0) : COLOR0
 {
-    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).a;
+    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).r;
     brightness *= brightness;
     brightness = pow((1 - BlurMult) + BlurMult * brightness, 1 / 2.2);
 
@@ -108,7 +108,7 @@ float4 ToneCurveDefault_PS(float2 texCoord : TEXCOORD0) : COLOR0
 
 float4 ToneCurveDefaultHiDef_PS(float2 texCoord : TEXCOORD0) : COLOR0
 {
-    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).a;
+    float brightness = 1.0 - tex2D(OccluderSampler, texCoord).r;
     brightness *= brightness;
     brightness = (1 - BlurMult) + BlurMult * brightness;
 

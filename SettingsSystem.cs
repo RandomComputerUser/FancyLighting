@@ -55,7 +55,8 @@ internal sealed class SettingsSystem : ModSystem
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerformanceTracker.Enabled = DeveloperConfig.Instance.MonitorPerformance;
 
-        var needsPostProcessing = NeedsPostProcessing(true) || NeedsCapture();
+        var needsPostProcessing =
+            NeedsPostProcessing(cameraModeOverride: true) || NeedsCapture();
         if (needsPostProcessing && !_prevNeedsPostProcessing)
         {
             Filters.Scene.OnPostDraw += DoNothing;
@@ -104,17 +105,23 @@ internal sealed class SettingsSystem : ModSystem
 
     private static bool IsEventOccurring() => Main.invasionProgressNearInvasion;
 
-    internal static bool NeedsPostProcessing(bool force = false) =>
+    internal static bool NeedsPostProcessing(
+        bool cameraModeOverride = false,
+        bool unloadCheck = false
+    ) =>
         (
-            (force || !MainGraphics.InCameraMode)
+            (cameraModeOverride || !MainGraphics.InCameraMode)
             && (
                 PreferencesConfig.Instance.UseCustomGamma()
                 || PreferencesConfig.Instance.UseSrgb
             )
         )
         || (
-            LightingConfig.Instance.SmoothLightingEnabled()
-            && LightingConfig.Instance.DrawOverbright()
+            (
+                unloadCheck
+                    ? LightingConfig.Instance.UseSmoothLighting
+                    : LightingConfig.Instance.SmoothLightingEnabled()
+            ) && LightingConfig.Instance.DrawOverbright()
         );
 
     private static bool NeedsCapture() =>

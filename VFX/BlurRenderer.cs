@@ -1,34 +1,31 @@
 ﻿namespace FancyLighting.VFX;
 
-internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
+internal sealed class BlurRenderer
 {
     private static FullscreenEffect _blurDownsampleEffect;
     private static FullscreenEffect _blurUpsampleEffect;
-    private static FullscreenEffect _blurDownsampleAlphaEffect;
-    private static FullscreenEffect _blurUpsampleAlphaEffect;
+    private static FullscreenEffect _blurDownsampleRedEffect;
+    private static FullscreenEffect _blurUpsampleRedEffect;
 
     private RenderTarget2D[] _blurTargets;
     private int _baseWidth;
     private int _baseHeight;
-
-    public bool AlphaOnly { get; private init; } = alphaOnly;
-    public bool SupportsAdditiveBlend { get; private init; } = supportAdditiveBlend;
 
     internal static void Load()
     {
         var effect = EffectLoader.Load("Blur");
         _blurDownsampleEffect = new(effect, "BlurDownsample");
         _blurUpsampleEffect = new(effect, "BlurUpsample");
-        _blurDownsampleAlphaEffect = new(effect, "BlurDownsampleAlpha");
-        _blurUpsampleAlphaEffect = new(effect, "BlurUpsampleAlpha");
+        _blurDownsampleRedEffect = new(effect, "BlurDownsampleRed");
+        _blurUpsampleRedEffect = new(effect, "BlurUpsampleRed");
     }
 
     internal static void Unload()
     {
         _blurDownsampleEffect = null;
         _blurUpsampleEffect = null;
-        _blurDownsampleAlphaEffect = null;
-        _blurUpsampleAlphaEffect = null;
+        _blurDownsampleRedEffect = null;
+        _blurUpsampleRedEffect = null;
     }
 
     public void Dispose()
@@ -43,7 +40,8 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         int width,
         int height,
         int targetCount,
-        SurfaceFormat format
+        SurfaceFormat format,
+        RenderTargetUsage usage
     )
     {
         if (
@@ -52,6 +50,7 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
             && _baseWidth == width
             && _baseHeight == height
             && _blurTargets[0]?.Format == format
+            && _blurTargets[0]?.RenderTargetUsage == usage
         )
         {
             return;
@@ -75,9 +74,7 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
                 format,
                 DepthFormat.None,
                 0,
-                SupportsAdditiveBlend
-                    ? RenderTargetUsage.PreserveContents
-                    : RenderTargetUsage.DiscardContents
+                usage
             );
         }
 
@@ -102,30 +99,31 @@ internal sealed class BlurRenderer(bool alphaOnly, bool supportAdditiveBlend)
         RenderTarget2D src,
         RenderTarget2D dst,
         int passCount,
+        float zoom = 1f,
+        bool redOnly = false,
         bool additiveBlend = false,
-        float zoom = 1f
+        SurfaceFormat? format = null
     )
     {
-        additiveBlend = additiveBlend && SupportsAdditiveBlend;
         passCount = Math.Clamp(passCount, 1, 5);
+        format ??= (redOnly ? SurfaceFormat.HalfSingle : TextureUtils.ScreenFormat);
 
         EnsureBlurTargets(
             (int)(src.Width / zoom),
             (int)(src.Height / zoom),
             passCount,
-            AlphaOnly
-                ? SurfaceFormat.Color // SurfaceFormat.Alpha8 is not supported
-                : TextureUtils.ScreenFormat
+            format.Value,
+            additiveBlend
+                ? RenderTargetUsage.PreserveContents
+                : RenderTargetUsage.DiscardContents
         );
 
         var upsampleBlend = additiveBlend
             ? CustomBlendStates.TrueAdditive
             : BlendState.Opaque;
         var skipFinalUpsample = dst is null;
-        var downsampleEffect = AlphaOnly
-            ? _blurDownsampleAlphaEffect
-            : _blurDownsampleEffect;
-        var upsampleEffect = AlphaOnly ? _blurUpsampleAlphaEffect : _blurUpsampleEffect;
+        var downsampleEffect = redOnly ? _blurDownsampleRedEffect : _blurDownsampleEffect;
+        var upsampleEffect = redOnly ? _blurUpsampleRedEffect : _blurUpsampleEffect;
 
         for (var i = 0; i < passCount; ++i)
         {

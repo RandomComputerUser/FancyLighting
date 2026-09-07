@@ -23,7 +23,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter
 - Improved enhanced light map blurring
-- Tweaked the appearance of Ambient Occlusion
+- Improved Ambient Occlusion visual quality
 - The setting to disable HDRR during bosses and events now affects Smooth Lighting as a whole
 - Depth of field is no longer exclusive to full HDR rendering
 - Adjusted overall brightness and contrast when using full HDR rendering
@@ -58,6 +58,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Fixed a minor bug with Ambient Occlusion when using full HDR rendering
 - Fixed screen flashing after saving configs when at high resolutions
 - Added compatibility with screen flipping from sources other than the Gravitation buff
+- Memory is now freed when disabling some features
 - Made unloading more thorough
 
 #### Mod.Call() Changes

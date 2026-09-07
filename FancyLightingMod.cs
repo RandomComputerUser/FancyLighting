@@ -35,6 +35,8 @@ public sealed class FancyLightingMod : Mod
     private FancySkyColors _fancySkyColorsInstance;
     private FancySkyRendering _fancySkyRenderingInstance;
 
+    private BlurRenderer _blurRenderer;
+
     private RenderTarget2D _tmpTarget1;
     private RenderTarget2D _tmpTarget2;
     private RenderTarget2D _tmpTarget3;
@@ -151,6 +153,8 @@ public sealed class FancyLightingMod : Mod
         _fancySkyRenderingInstance = new();
         FancySkyClouds.Load();
 
+        _blurRenderer = new();
+
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
         SpiritReforgedCompatibility.Load();
@@ -176,6 +180,8 @@ public sealed class FancyLightingMod : Mod
             _tmpTarget3?.Dispose();
             _tmpScreenTarget?.Dispose();
             _backgroundTarget?.Dispose();
+
+            _blurRenderer?.Dispose();
 
             FancySkyClouds.Unload();
             FancySkyLighting.Unload();
@@ -252,7 +258,27 @@ public sealed class FancyLightingMod : Mod
 
     internal void OnConfigChange()
     {
+        if (!LightingConfig.Instance.UseAmbientOcclusion)
+        {
+            _ambientOcclusionInstance?.Unload();
+        }
+
         SetFancyLightingEngineInstance();
+
+        if (
+            !SettingsSystem.NeedsPostProcessing(
+                cameraModeOverride: true,
+                unloadCheck: true
+            )
+        )
+        {
+            _postProcessingInstance?.Unload();
+        }
+
+        if (!PreferencesConfig.Instance.DepthOfField)
+        {
+            _blurRenderer?.Dispose();
+        }
 
         if (Main.gameMenu || Main.mapFullscreen)
         {
@@ -1023,8 +1049,6 @@ public sealed class FancyLightingMod : Mod
 
         if (!MainGraphics.InCameraMode || !(doOverbright || doDepthOfField))
         {
-            _backgroundTarget?.Dispose();
-            _backgroundTarget = null;
             return;
         }
 
@@ -1075,7 +1099,7 @@ public sealed class FancyLightingMod : Mod
 
             if (doDepthOfField)
             {
-                _postProcessingInstance.Blur(
+                _blurRenderer.Blur(
                     MainGraphics.ScreenTarget,
                     doOverbright ? _backgroundTarget : MainGraphics.ScreenTarget,
                     PreferencesConfig.Instance.DepthOfFieldRadius,
@@ -1122,7 +1146,7 @@ public sealed class FancyLightingMod : Mod
                 _postProcessingInstance.GetGammaEffect(gamma)
             );
 
-            _postProcessingInstance.Blur(
+            _blurRenderer.Blur(
                 MainGraphics.ScreenTargetSwap,
                 hdrCompatBlending ? MainGraphics.ScreenTargetSwap : _backgroundTarget,
                 PreferencesConfig.Instance.DepthOfFieldRadius,
