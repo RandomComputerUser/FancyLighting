@@ -52,7 +52,7 @@ internal static class Blitter
         FullscreenEffect effect = null,
         BlendState blendState = null,
         SamplerState samplerState = null,
-        Color? clearColor = null,
+        Vector4? clearColor = null,
         bool setTarget = true
     )
     {
@@ -64,7 +64,12 @@ internal static class Blitter
         }
         if (clearColor.HasValue)
         {
-            device.Clear(clearColor.Value);
+            device.Clear(
+                ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil,
+                clearColor.Value,
+                device.Viewport.MaxDepth,
+                0
+            );
         }
 
         if (_fullscreenTriangle is null)

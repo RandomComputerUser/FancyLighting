@@ -91,9 +91,7 @@ public sealed class FancySkyRendering
             ? PostProcessing.ContentGamma()
             : PostProcessing.DefaultGamma;
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
-        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
-        var transformMatrix = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
 
         var target = MainGraphics.ScreenTarget ?? Main.screenTarget;
@@ -162,15 +160,7 @@ public sealed class FancySkyRendering
             setTarget: false
         );
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transformMatrix
-        );
+        Main.spriteBatch.Begin(sbParams);
 
         var colorOfTheSkies = Main.ColorOfTheSkies;
         try
@@ -206,9 +196,7 @@ public sealed class FancySkyRendering
         var hiDef =
             LightingConfig.Instance.HiDefFeaturesEnabled() && MainGraphics.DoingCapture;
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
-        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
-        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
 
         if (!Main.gameMenu && !MainGraphics.InCameraMode)
@@ -241,27 +229,17 @@ public sealed class FancySkyRendering
 
         SpriteBatchEffectLoader.Apply(effect);
         Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.LinearClamp,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
+            sbParams with
+            {
+                samplerState = SamplerState.LinearClamp,
+                customEffect = null,
+            }
         );
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();
         SpriteBatchEffectLoader.Reset();
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Main.spriteBatch.Begin(sbParams);
     }
 
     private static int FancyAtmosphereBgTopY()

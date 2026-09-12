@@ -1771,7 +1771,7 @@ public sealed class SmoothLighting
         }
 
         var gamma = PostProcessing.ContentGamma();
-        effect.SetParameter("Gamma", gamma).SetParameter("ReciprocalGamma", 1f / gamma);
+        effect.SetParameter("Gamma", gamma).SetParameter("InverseGamma", 1f / gamma);
 
         MainGraphics.ResetSavedTextures();
 

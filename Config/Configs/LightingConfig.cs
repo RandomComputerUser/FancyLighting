@@ -17,7 +17,8 @@ public sealed class LightingConfig : ModConfig
         || UseAmbientOcclusion
         || UseFancyLightingEngine
         || UseFancySkyRendering
-        || UseFancySkyColors;
+        || UseFancySkyColors
+        || UseFancySkyLighting;
 
     // Smooth Lighting
 

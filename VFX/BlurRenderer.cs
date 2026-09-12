@@ -63,8 +63,8 @@ internal sealed class BlurRenderer
         for (var i = 0; i < targetCount; ++i)
         {
             scale *= 0.5f;
-            var currWidth = (int)(width * scale);
-            var currHeight = (int)(height * scale);
+            var currWidth = Math.Max((int)(width * scale), 1);
+            var currHeight = Math.Max((int)(height * scale), 1);
 
             _blurTargets[i] = new(
                 Main.graphics.GraphicsDevice,
@@ -102,11 +102,14 @@ internal sealed class BlurRenderer
         float zoom = 1f,
         bool redOnly = false,
         bool additiveBlend = false,
-        SurfaceFormat? format = null
+        int additiveBlendMinLevel = 0,
+        SurfaceFormat? format = null,
+        SamplerState samplerState = null
     )
     {
         passCount = Math.Clamp(passCount, 1, 5);
         format ??= (redOnly ? SurfaceFormat.HalfSingle : TextureUtils.ScreenFormat);
+        samplerState ??= SamplerState.LinearClamp;
 
         EnsureBlurTargets(
             (int)(src.Width / zoom),
@@ -138,7 +141,7 @@ internal sealed class BlurRenderer
                 currBlurTarget,
                 nextBlurTarget,
                 downsampleEffect,
-                samplerState: SamplerState.LinearClamp
+                samplerState: samplerState
             );
         }
 
@@ -157,8 +160,8 @@ internal sealed class BlurRenderer
                 currBlurTarget,
                 nextBlurTarget,
                 upsampleEffect,
-                blendState: upsampleBlend,
-                samplerState: SamplerState.LinearClamp
+                blendState: i < additiveBlendMinLevel ? BlendState.Opaque : upsampleBlend,
+                samplerState: samplerState
             );
         }
 

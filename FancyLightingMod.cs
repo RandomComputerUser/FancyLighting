@@ -265,6 +265,11 @@ public sealed class FancyLightingMod : Mod
 
         SetFancyLightingEngineInstance();
 
+        if (!LightingConfig.Instance.UseFancySkyLighting)
+        {
+            FancySkyClouds.Dispose();
+        }
+
         if (
             !SettingsSystem.NeedsPostProcessing(
                 cameraModeOverride: true,
@@ -949,9 +954,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
-        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
-        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
 
         var sunMoonBrightness = Main.dayTime ? 2.3f : 1.8f;
@@ -960,28 +963,12 @@ public sealed class FancyLightingMod : Mod
         SpriteBatchEffectLoader.Apply(
             _postProcessingInstance.GetBrightenEffect(sunMoonBrightness)
         );
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Main.spriteBatch.Begin(sbParams with { customEffect = null });
         orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
         Main.spriteBatch.End();
         SpriteBatchEffectLoader.Reset();
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Main.spriteBatch.Begin(sbParams);
     }
 
     private void _Main_DoLightTiles(On_Main.orig_DoLightTiles orig, Main self)
@@ -1002,9 +989,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
-        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
-        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
 
         var doSyncHdr =
@@ -1023,15 +1008,7 @@ public sealed class FancyLightingMod : Mod
             SyncHdrLighting(!usingSeparateBackground);
         }
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Main.spriteBatch.Begin(sbParams);
     }
 
     private void _Main_DrawUnderworldBackground(
@@ -1052,22 +1029,12 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        var samplerState = SpriteBatchAccessors.samplerState(Main.spriteBatch);
-        var rasterizerState = SpriteBatchAccessors.rasterizerState(Main.spriteBatch);
-        var transform = SpriteBatchAccessors.transformMatrix(Main.spriteBatch);
+        var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
 
         SeparateBackground(cameraMode: true);
 
-        Main.spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            samplerState,
-            DepthStencilState.None,
-            rasterizerState,
-            null,
-            transform
-        );
+        Main.spriteBatch.Begin(sbParams);
     }
 
     private bool SeparateBackground(

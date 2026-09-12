@@ -4,11 +4,11 @@ namespace FancyLighting.Utils.Accessors;
 
 internal static class SpriteBatchAccessors
 {
-    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "customEffect")]
-    public static extern ref Effect customEffect(SpriteBatch obj);
-
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "blendState")]
     public static extern ref BlendState blendState(SpriteBatch obj);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "sortMode")]
+    public static extern ref SpriteSortMode sortMode(SpriteBatch obj);
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "samplerState")]
     public static extern ref SamplerState samplerState(SpriteBatch obj);
@@ -18,6 +18,9 @@ internal static class SpriteBatchAccessors
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "rasterizerState")]
     public static extern ref RasterizerState rasterizerState(SpriteBatch obj);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "customEffect")]
+    public static extern ref Effect customEffect(SpriteBatch obj);
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "transformMatrix")]
     public static extern ref Matrix transformMatrix(SpriteBatch obj);

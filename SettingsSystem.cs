@@ -1,5 +1,4 @@
 ﻿using FancyLighting.Config;
-using FancyLighting.Config.Enums;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 
@@ -133,7 +132,9 @@ internal sealed class SettingsSystem : ModSystem
                     && LightingConfig.Instance.SimulateTileEntityNormals
                 ) || LightingConfig.Instance.UseTileEntitySmoothLighting
             )
-        ) || PreferencesConfig.Instance.DepthOfField;
+        )
+        || LightingConfig.Instance.FancySkyLightingEnabled()
+        || PreferencesConfig.Instance.DepthOfField;
 
     internal static bool HdrEnhancedAlphaBlendingDisabled() =>
         CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending

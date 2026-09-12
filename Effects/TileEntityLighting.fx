@@ -72,7 +72,7 @@ struct SamplingTransform
 {
     float2 TexelSize;
     float2 TextureSize;
-    float2x2 ScalingAndRotation;
+    float2x2 RotationMatrix;
 };
 
 // Assumes only rotation and/or flipping and no scaling or stretching
@@ -91,7 +91,7 @@ SamplingTransform CalculateSamplingTransform(float2 tileCoord)
     
     output.TexelSize = texelSize;
     output.TextureSize = textureSize;
-    output.ScalingAndRotation = float2x2(
+    output.RotationMatrix = float2x2(
         partialX * textureSize,
         partialY * textureSize
     );
@@ -170,7 +170,7 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     
     float luma = Luma(lightColor);
     float2 lightGradient = NormalsLightGradient(luma);
-    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
+    lightGradient = mul(lightGradient, samplingTransform.RotationMatrix);
     float lightGradientLength = length(lightGradient);
     
     if (luma <= 0 || surfaceGradientLength == 0 || lightGradientLength == 0)
@@ -213,7 +213,7 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     float luma = Luma(lightColor.rgb);
     float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
     float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
-    lightGradient = mul(lightGradient, samplingTransform.ScalingAndRotation);
+    lightGradient = mul(lightGradient, samplingTransform.RotationMatrix);
     float lightGradientLength = length(lightGradient);
     
     if (luma <= 0 || surfaceGradientLength == 0 || lightGradientLength == 0)

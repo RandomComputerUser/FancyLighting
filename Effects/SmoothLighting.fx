@@ -12,7 +12,7 @@ sampler DitherSampler : register(s12);
 float4x4 LightMapTransform;
 
 float Gamma;
-float ReciprocalGamma;
+float InverseGamma;
 
 float2 NormalMapResolution;
 float NormalMapGradientMult;
@@ -53,7 +53,7 @@ float3 GammaToLinear(float3 color)
 
 float3 LinearToGamma(float3 color)
 {
-    return pow(color, ReciprocalGamma);
+    return pow(color, InverseGamma);
 }
 
 float Luma(float3 color)
@@ -164,11 +164,6 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
         return 1.0;
     }
     
-    surfaceGradient = lerp(
-        surfaceGradient,
-        surfaceGradient / surfaceGradientLength,
-        saturate(16.0 * surfaceGradientLength)
-    );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
     lightGradientLength /= (luma + 0.1);

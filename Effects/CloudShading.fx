@@ -1,114 +1,73 @@
 sampler TextureSampler : register(s0);
 
+sampler LuminanceSampler : register(s0);
+sampler CloudSampler : register(s8);
+
 float4x4 MatrixTransform;
 
-float Scale;
+float2 Scale;
+float2 CloudScale;
+
+float Gamma;
+float InverseGamma;
+
+float3 ShadowColor;
+float LuminanceSlope;
+float LuminanceIntercept;
+
 float2 SkyLightGradient;
 float SkyLightMult;
-float ShadingStrength;
-
-struct PixelShaderInput
-{
-    float4 Position : SV_Position;
-    float4 Color : COLOR0;
-    float2 TexCoord : TEXCOORD0;
-};
+float NormalMapStrength;
 
 /* Helper functions *********************************************************************/
 
-float Square(float x)
+float Luminance(float3 color)
 {
-    return x * x;
+    return dot(pow(color, Gamma), float3(0.2126, 0.7152, 0.0722));
 }
 
-float Luma(float3 color)
+float2x2 CalculateRotationMatrix(float2 texCoord)
 {
-    return dot(color, float3(0.2126, 0.7152, 0.0722));
-}
-
-float SampleTexture(float2 texCoord, bool wrap)
-{
-    float3 color = tex2D(TextureSampler, texCoord).rgb;
-    if (!wrap)
-    {
-        color *= all(texCoord == saturate(texCoord));
-    }
+    float2 partialX = ddx(texCoord);
+    float2 partialY = ddy(texCoord);
     
-    const float MIN_LUMA = 0.6;
-    const float MULT = 1.0 / (1.0 - MIN_LUMA);
-    return saturate(MULT * Luma(color) - MULT * MIN_LUMA);
-}
-
-float2 NormalsSurfaceGradient(float2 texCoord, float4 diff, bool wrap)
-{
-    float center = SampleTexture(texCoord, wrap);
-    float2 sum = 0;
-    [unroll]
-    for (int dy = -3; dy <= 3; ++dy)
-    {
-        [unroll]
-        for (int dx = -3; dx <= 3; ++dx)
-        {
-            float2 direction = float2(dx, dy);
-            float len = length(direction);
-            const float RADIUS = 3.5;
-        
-            if (len >= RADIUS || dx == 0 && dy == 0)
-            {
-                continue;
-            }
-        
-            sum += (SampleTexture(
-                texCoord + dx * diff.xy + dy * diff.zw, wrap
-            ) - center) * (RADIUS - len) * direction / len;
-        }
-    }
+    float2 texelSize = float2(
+        length(float2(partialX.x, partialY.x)),
+        length(float2(partialX.y, partialY.y))
+    );
+    float2 textureSize = 1.0 / texelSize;
     
-    sum *= -0.0395402015765;
-    sum.y += 0.03;
-    return sum;
+    return float2x2(
+        partialX * textureSize,
+        partialY * textureSize
+    );
 }
 
-
-float NormalsMultiplierFancySky(float2 texCoord, bool wrap)
+float NormalsMultiplierFancySky(float2 surfaceGradient, float2 texCoord)
 {
-    float4 diff = Scale * float4(ddx(texCoord), ddy(texCoord));
+    float surfaceGradientLength = length(surfaceGradient);
     
     float2 lightGradient = SkyLightGradient;
+    float2x2 rotationMatrix = CalculateRotationMatrix(texCoord);
+    lightGradient = mul(lightGradient, rotationMatrix);
     float lightGradientLength = length(lightGradient);
     
-    if (lightGradientLength == 0)
+    if (surfaceGradientLength == 0)
     {
         return 1.0;
     }
     
     lightGradient /= lightGradientLength;
     
-    float2 surfaceGradient = NormalsSurfaceGradient(texCoord, diff, wrap);
-    float surfaceGradientLength = length(surfaceGradient);
-    surfaceGradient = surfaceGradientLength == 0
-        ? 0 
-        : surfaceGradient / surfaceGradientLength;
-    
-    float lightMult = 1.0 + ShadingStrength * dot(lightGradient, surfaceGradient);
+    float lightMult = 1.0 + clamp(
+        NormalMapStrength * dot(lightGradient, surfaceGradient),
+        -0.9,
+        0.9
+    );
     return lerp(
         1.0,
         lightMult,
-        sqrt(surfaceGradientLength) * Square(1 - 1.0 / (16.0 * lightGradientLength + 1))
-    );
-}
-
-float4 CloudShadingColor(PixelShaderInput input, bool wrap)
-{
-    float4 texColor = tex2D(TextureSampler, input.TexCoord);
-    
-    float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TexCoord, wrap);
-
-    return lightColor * lerp(
-        texColor, 
-        float4(mult * float3(196 / 255.0, 223 / 255.0, 244 / 255.0), 1) * texColor.a, 
-        SkyLightMult
+        saturate(surfaceGradientLength)
     );
 }
 
@@ -124,19 +83,111 @@ void SpriteBatch_VS(
     screenPos = mul(position, MatrixTransform);
 }
 
-/* Pixel shaders ************************************************************************/
-
-float4 CloudShading_PS(PixelShaderInput input) : COLOR0
+void ExtractLuminance_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    out float4 screenPos : SV_Position
+)
 {
-    return CloudShadingColor(input, false);
+    screenPos = position;
+    texCoord = Scale * (texCoord - 0.5) + 0.5;
 }
 
-float4 CloudShadingWrap_PS(PixelShaderInput input) : COLOR0
+void GenerateGradients_VS(
+    float4 position : POSITION0,
+    float2 texCoord : TEXCOORD0,
+    out float2 luminanceTexCoord : TEXCOORD0,
+    out float2 cloudTexCoord : TEXCOORD1,
+    out float4 screenPos : SV_Position
+)
 {
-    return CloudShadingColor(input, true);
+    screenPos = position;
+    luminanceTexCoord = Scale * (texCoord - 0.5) + 0.5;
+    cloudTexCoord = CloudScale * (texCoord - 0.5) + 0.5;
+}
+
+/* Pixel shaders ************************************************************************/
+
+float4 ExtractLuminance_PS(float2 texCoord : TEXCOORD0) : COLOR0
+{
+    float4 texColor = tex2D(TextureSampler, texCoord);
+    if (
+        texCoord.x < 0
+        || texCoord.x > 1
+        || texCoord.y < 0
+        || texCoord.y > 1
+    )
+    {
+        texColor = float4(0, 0, 0, 1);
+    }
+    float luminance = saturate(Luminance(max(texColor.rgb, 0)));
+    return float4(luminance, 0, 0, 1);
+}
+
+float4 GenerateGradients_PS(
+    float2 luminanceTexCoord : TEXCOORD0,
+    float2 cloudTexCoord : TEXCOORD1
+) : COLOR0
+{
+    float blurredLuminance = tex2D(LuminanceSampler, luminanceTexCoord).r;
+    float4 cloudColor = tex2D(CloudSampler, cloudTexCoord);
+    if (
+        cloudTexCoord.x < 0
+        || cloudTexCoord.x > 1
+        || cloudTexCoord.y < 0
+        || cloudTexCoord.y > 1
+    )
+    {
+        cloudColor = float4(0, 0, 0, 0);
+    }
+    
+    float2 luminanceGradient = 25.0 * float2(
+        ddx(blurredLuminance),
+        ddy(blurredLuminance) + 0.01
+    );
+    luminanceGradient = smoothstep(-1.0, 1.0, luminanceGradient);
+    float cloudLuma = pow(Luminance(max(cloudColor.rgb, 0)), InverseGamma);
+    return float4(luminanceGradient, cloudLuma, cloudColor.a);
+}
+
+float4 CloudShading_PS(float2 texCoord : TEXCOORD0, float4 color : COLOR0) : COLOR0
+{
+    float4 texColor = tex2D(TextureSampler, texCoord);
+    float2 surfaceGradient = -2 * texColor.xy + 1;
+    
+    float mult = NormalsMultiplierFancySky(surfaceGradient, texCoord);
+    return color * texColor.a * float4(
+        lerp(
+            texColor.z,
+            texColor.a * pow(
+                0.8 * mult,
+                InverseGamma
+            ),
+            SkyLightMult
+        ).xxx,
+        texColor.a
+    );
 }
 
 /* Techniques ***************************************************************************/
+
+technique ExtractLuminance
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 ExtractLuminance_VS();
+        PixelShader = compile ps_3_0 ExtractLuminance_PS();
+    }
+}
+
+technique GenerateGradients
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 GenerateGradients_VS();
+        PixelShader = compile ps_3_0 GenerateGradients_PS();
+    }
+}
 
 technique CloudShading
 {
@@ -144,14 +195,5 @@ technique CloudShading
     {
         VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 CloudShading_PS();
-    }
-}
-
-technique CloudShadingWrap
-{
-    pass Pass1
-    {
-        VertexShader = compile vs_3_0 SpriteBatch_VS();
-        PixelShader = compile ps_3_0 CloudShadingWrap_PS();
     }
 }

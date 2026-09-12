@@ -1,6 +1,6 @@
 ﻿namespace FancyLighting.Common.Graphics;
 
-public record struct TexturePosition(
+internal record struct TexturePosition(
     Vector2 TopLeftWorldCoords,
     Vector2 LeftToRightLength,
     Vector2 TopToBottomLength
