@@ -11,9 +11,7 @@ float2 CloudScale;
 float Gamma;
 float InverseGamma;
 
-float3 ShadowColor;
-float LuminanceSlope;
-float LuminanceIntercept;
+float3 BaseColor;
 
 float2 SkyLightGradient;
 float SkyLightMult;
@@ -73,7 +71,7 @@ float NormalsMultiplierFancySky(float2 surfaceGradient, float2 texCoord)
 
 /* Vertex shaders ***********************************************************************/
 
-void SpriteBatch_VS(
+void CloudShading_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
     inout float4 color : COLOR0,
@@ -81,6 +79,7 @@ void SpriteBatch_VS(
 )
 {
     screenPos = mul(position, MatrixTransform);
+    color.rgb *= BaseColor;
 }
 
 void ExtractLuminance_VS(
@@ -146,7 +145,7 @@ float4 GenerateGradients_PS(
         ddy(blurredLuminance) + 0.01
     );
     luminanceGradient = smoothstep(-1.0, 1.0, luminanceGradient);
-    float cloudLuma = pow(Luminance(max(cloudColor.rgb, 0)), InverseGamma);
+    float cloudLuma = pow(saturate(Luminance(max(cloudColor.rgb, 0))), InverseGamma);
     return float4(luminanceGradient, cloudLuma, cloudColor.a);
 }
 
@@ -193,7 +192,7 @@ technique CloudShading
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 SpriteBatch_VS();
+        VertexShader = compile vs_3_0 CloudShading_VS();
         PixelShader = compile ps_3_0 CloudShading_PS();
     }
 }

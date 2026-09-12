@@ -10,11 +10,11 @@ namespace FancyLighting.Core.Sky;
 public static class FancySkyClouds
 {
     private const int BlurPassCount = 5;
-
-    private static readonly Vector3 _shadowColor = new(
-        151 / 255f,
-        197 / 255f,
-        231 / 255f
+    private const float Mix = 0.6f;
+    private static readonly Vector3 _baseCloudColor = new(
+        198 / 255f,
+        224 / 255f,
+        244 / 255f
     );
 
     private static SamplerState _prevSamplerState = SamplerState.LinearClamp;
@@ -119,11 +119,10 @@ public static class FancySkyClouds
 
         var gamma = PostProcessing.ContentGamma();
 
-        var shadowColor = _shadowColor;
-        ColorUtils.GammaToLinear(ref shadowColor);
-        var shadowLuminance = ColorUtils.Luma(shadowColor);
-        var luminanceSlope = 1f / (1f - shadowLuminance);
-        var luminanceIntercept = -luminanceSlope * shadowLuminance;
+        var baseColor = _baseCloudColor;
+        ColorUtils.GammaToLinear(ref baseColor);
+        baseColor /= ColorUtils.Luma(baseColor);
+        ColorUtils.LinearToGamma(ref baseColor);
 
         var zoomWithFlipping = MainGraphics.InCameraMode
             ? Vector2.One
@@ -136,9 +135,7 @@ public static class FancySkyClouds
 
         _cloudShadingEffect
             .SetParameter("InverseGamma", 1f / gamma)
-            .SetParameter("ShadowColor", shadowColor)
-            .SetParameter("LuminanceSlope", luminanceSlope)
-            .SetParameter("LuminanceIntercept", luminanceIntercept)
+            .SetParameter("BaseColor", baseColor)
             .SetParameter(
                 "SkyLightGradient",
                 -normalMapSkyGradientMult
@@ -147,7 +144,7 @@ public static class FancySkyClouds
                         (float)Math.Sin(skyLightAngle)
                     )
             )
-            .SetParameter("SkyLightMult", (float)skyLightMult);
+            .SetParameter("SkyLightMult", Mix * (float)skyLightMult);
 
         _overrideCloudTextures = true;
         try

@@ -38,7 +38,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public float SkyBrightness() => SkyBrightnessBoost / 5f;
 
-    public float CloudShadingMultiplier() => CloudShadingStrength / 10f * 0.7f;
+    public float CloudShadingMultiplier() => CloudShadingStrength / 10f * 0.9f;
 
     public override void OnChanged()
     {
