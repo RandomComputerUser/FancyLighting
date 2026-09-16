@@ -2,6 +2,7 @@
 using FancyLighting.VFX;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using ReLogic.Content;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 
@@ -27,6 +28,8 @@ public static class FancySkyClouds
 
     private static Texture2D[] _vanillaCloudTextures;
     private static Texture2D[] _fancyCloudTextures;
+    private static Texture2D[] _vanillaCloudBgTextures;
+    private static Texture2D[] _fancyCloudBgTextures;
     private static bool _overrideCloudTextures;
 
     internal static void Load()
@@ -76,6 +79,17 @@ public static class FancySkyClouds
 
         _vanillaCloudTextures = null;
         _fancyCloudTextures = null;
+
+        if (_fancyCloudBgTextures is not null)
+        {
+            foreach (var texture in _fancyCloudBgTextures)
+            {
+                texture?.Dispose();
+            }
+        }
+
+        _vanillaCloudBgTextures = null;
+        _fancyCloudBgTextures = null;
     }
 
     private static void AddHooks()
@@ -169,6 +183,31 @@ public static class FancySkyClouds
             var endMethod = typeof(FancySkyClouds)
                 .GetMethod(nameof(End), BindingFlags.NonPublic | BindingFlags.Static)
                 .AssertNotNull();
+            var overrideCloudTexturesField = typeof(FancySkyClouds)
+                .GetField(
+                    nameof(_overrideCloudTextures),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var fancyCloudBgTexturesField = typeof(FancySkyClouds)
+                .GetField(
+                    nameof(_fancyCloudBgTextures),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var backgroundField = typeof(TextureAssets)
+                .GetField(
+                    nameof(TextureAssets.Background),
+                    BindingFlags.Public | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var cloudBGField = typeof(Main)
+                .GetField(nameof(Main.cloudBG), BindingFlags.Public | BindingFlags.Static)
+                .AssertNotNull();
+            var get_ValueMethod = typeof(Asset<Texture2D>)
+                .GetMethod("get_Value", BindingFlags.Public | BindingFlags.Instance)
+                .AssertNotNull();
+
             const float Layer1Mult = 0.6f;
             const float Layer2Mult = 1f;
             const float Layer3Mult = 1f;
@@ -202,6 +241,26 @@ public static class FancySkyClouds
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
             cursor.GotoNext(
+                MoveType.AfterLabel,
+                instruction => instruction.MatchLdsfld(backgroundField),
+                instruction => instruction.MatchLdsfld(cloudBGField),
+                instruction => instruction.MatchLdcI4(0),
+                instruction => instruction.MatchLdelemI4(),
+                instruction => instruction.MatchLdelemRef(),
+                instruction => instruction.MatchCallvirt(get_ValueMethod)
+            );
+            var middleLabel = cursor.DefineLabel();
+            var endLabel = cursor.DefineLabel();
+            cursor.Emit(OpCodes.Ldsfld, overrideCloudTexturesField);
+            cursor.Emit(OpCodes.Brtrue, middleLabel);
+            cursor.Index += 6;
+            cursor.Emit(OpCodes.Br, endLabel);
+            cursor.MarkLabel(middleLabel);
+            cursor.Emit(OpCodes.Ldsfld, fancyCloudBgTexturesField);
+            cursor.Emit(OpCodes.Ldc_I4_0);
+            cursor.Emit(OpCodes.Ldelem_Ref);
+            cursor.MarkLabel(endLabel);
+            cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(21),
                 instruction => instruction.OpCode == OpCodes.Ldarg_0,
@@ -219,6 +278,26 @@ public static class FancySkyClouds
             cursor.Emit(OpCodes.Ldc_R4, Layer3Mult);
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Call, beginMethod);
+            cursor.GotoNext(
+                MoveType.AfterLabel,
+                instruction => instruction.MatchLdsfld(backgroundField),
+                instruction => instruction.MatchLdsfld(cloudBGField),
+                instruction => instruction.MatchLdcI4(1),
+                instruction => instruction.MatchLdelemI4(),
+                instruction => instruction.MatchLdelemRef(),
+                instruction => instruction.MatchCallvirt(get_ValueMethod)
+            );
+            middleLabel = cursor.DefineLabel();
+            endLabel = cursor.DefineLabel();
+            cursor.Emit(OpCodes.Ldsfld, overrideCloudTexturesField);
+            cursor.Emit(OpCodes.Brtrue, middleLabel);
+            cursor.Index += 6;
+            cursor.Emit(OpCodes.Br, endLabel);
+            cursor.MarkLabel(middleLabel);
+            cursor.Emit(OpCodes.Ldsfld, fancyCloudBgTexturesField);
+            cursor.Emit(OpCodes.Ldc_I4_1);
+            cursor.Emit(OpCodes.Ldelem_Ref);
+            cursor.MarkLabel(endLabel);
             cursor.GotoNext(
                 MoveType.After,
                 instruction => instruction.MatchLdloc(22),
@@ -387,6 +466,34 @@ public static class FancySkyClouds
             _vanillaCloudTextures[textureIndex] = vanillaTexture;
         }
 
+        textureCount = Main.cloudBG.Length;
+        ArrayUtils.MakeSizePreserveContents(ref _vanillaCloudBgTextures, textureCount);
+        ArrayUtils.MakeSizePreserveContents(ref _fancyCloudBgTextures, textureCount);
+
+        for (var i = 0; i < textureCount; ++i)
+        {
+            var vanillaTexture = TextureAssets.Background[Main.cloudBG[i]].Value;
+            ref var savedVanillaTexture = ref _vanillaCloudBgTextures[i];
+
+            if (ReferenceEquals(savedVanillaTexture, vanillaTexture))
+            {
+                continue;
+            }
+
+            ref var fancyTexture = ref _fancyCloudBgTextures[i];
+            fancyTexture?.Dispose();
+
+            fancyTexture = GenerateFancyCloudTexture(vanillaTexture, wrap: true);
+
+            if (!rendered)
+            {
+                Main.spriteBatch.End();
+            }
+
+            rendered = true;
+            savedVanillaTexture = vanillaTexture;
+        }
+
         _blurRenderer.Dispose();
 
         if (rendered)
@@ -418,7 +525,7 @@ public static class FancySkyClouds
         var blurWidth = vanillaCloudTexture.Width + (wrap ? 0 : 2 * BlurPadding);
         var blurHeight = vanillaCloudTexture.Height + (2 * BlurPadding);
         var finalWidth = vanillaCloudTexture.Width + (wrap ? 0 : 2 * FinalPadding);
-        var finalHeight = vanillaCloudTexture.Height + (2 * FinalPadding);
+        var finalHeight = vanillaCloudTexture.Height + (wrap ? 0 : 2 * FinalPadding);
 
         var luminanceTarget = new RenderTarget2D(
             Main.graphics.GraphicsDevice,
