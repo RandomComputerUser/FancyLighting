@@ -1524,13 +1524,21 @@ public sealed class FancyLightingMod : Mod
         var ambientOcclusionTarget = (RenderTarget2D)null;
         if (ambientOcclusion)
         {
+            if (LightingConfig.Instance.DoTileEntityAmbientOcclusion)
+            {
+                TextureUtils.MatchSizeAndFormat(
+                    ref _tmpTarget1,
+                    Main.instance.wallTarget
+                );
+            }
+
             ambientOcclusionTarget = _ambientOcclusionInstance.DrawAmbientOcclusion(
                 Main.instance.wallTarget,
                 Main.instance.tileTarget,
                 LightingConfig.Instance.DoNonSolidAmbientOcclusion
                     ? Main.instance.tile2Target
                     : null,
-                tileEntityShadows: LightingConfig.Instance.DoTileEntityAmbientOcclusion,
+                LightingConfig.Instance.DoTileEntityAmbientOcclusion ? _tmpTarget1 : null,
                 cameraMode: false
             );
 
@@ -1600,12 +1608,19 @@ public sealed class FancyLightingMod : Mod
                     MainGraphics.ScreenTarget
                 );
             }
+            if (LightingConfig.Instance.DoTileEntityAmbientOcclusion)
+            {
+                TextureUtils.MatchSizeAndFormat(
+                    ref _tmpTarget3,
+                    MainGraphics.ScreenTarget
+                );
+            }
 
             ambientOcclusionTarget = _ambientOcclusionInstance.DrawAmbientOcclusion(
                 MainGraphics.ScreenTarget,
                 _tmpTarget1,
                 LightingConfig.Instance.DoNonSolidAmbientOcclusion ? _tmpTarget2 : null,
-                tileEntityShadows: LightingConfig.Instance.DoTileEntityAmbientOcclusion,
+                LightingConfig.Instance.DoTileEntityAmbientOcclusion ? _tmpTarget3 : null,
                 cameraMode: true
             );
 

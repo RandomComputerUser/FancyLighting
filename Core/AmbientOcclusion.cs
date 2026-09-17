@@ -11,7 +11,7 @@ public sealed class AmbientOcclusion
 
     private readonly FullscreenEffect _tilesEffect;
     private readonly FullscreenEffect _tilesAndTiles2Effect;
-    private readonly SpriteBatchEffect _tileEntityEffect;
+    private readonly FullscreenEffect _tilesAndTiles2AndTileEntitiesEffect;
     private readonly FullscreenEffect _toneCurveEffect;
     private readonly FullscreenEffect _toneCurveDefaultEffect;
 
@@ -22,7 +22,10 @@ public sealed class AmbientOcclusion
         var effect = EffectLoader.Load("AmbientOcclusion");
         _tilesEffect = new(effect, "Tiles");
         _tilesAndTiles2Effect = new(effect, "TilesAndTiles2");
-        _tileEntityEffect = new(effect, "TileEntity");
+        _tilesAndTiles2AndTileEntitiesEffect = new(
+            effect,
+            "TilesAndTiles2AndTileEntities"
+        );
         _toneCurveEffect = new(effect, "ToneCurve", EffectFeatures.HiDef);
         _toneCurveDefaultEffect = new(effect, "ToneCurveDefault", EffectFeatures.HiDef);
     }
@@ -39,11 +42,12 @@ public sealed class AmbientOcclusion
         RenderTarget2D wallTarget,
         RenderTarget2D tileTarget,
         RenderTarget2D tile2Target,
-        bool tileEntityShadows,
+        RenderTarget2D tileEntityTarget,
         bool cameraMode
     )
     {
         var tile2Shadows = tile2Target is not null;
+        var tileEntityShadows = tileEntityTarget is not null;
 
         if (cameraMode)
         {
@@ -78,67 +82,6 @@ public sealed class AmbientOcclusion
             Main.spriteBatch.End();
         }
 
-        TextureUtils.MakeSize(
-            ref _ambientOcclusionTarget,
-            wallTarget.Width,
-            wallTarget.Height,
-            SurfaceFormat.Color
-        );
-
-        var effect = tile2Target is null ? _tilesEffect : _tilesAndTiles2Effect;
-        MainGraphics.ResetSavedTextures();
-
-        if (cameraMode)
-        {
-            effect.SetParameter("MatrixTransform", Matrix.Identity);
-            if (tile2Target is not null)
-            {
-                effect.SetParameter("MatrixTransform2", Matrix.Identity);
-                MainGraphics.SetTexture(8, tile2Target, SamplerState.PointClamp);
-            }
-        }
-        else
-        {
-            var wallTexturePosition = TexturePosition.GetTileTargetPosition(wallTarget);
-            wallTexturePosition.TextureToWorldTransform(out var wallToWorldTransform);
-
-            {
-                var tileTexturePosition = TexturePosition.GetTileTargetPosition(
-                    tileTarget,
-                    Main.sceneTilePos
-                );
-                tileTexturePosition.WorldToTextureTransform(out var tileMatrixTransform);
-                Matrix.Multiply(
-                    ref wallToWorldTransform,
-                    ref tileMatrixTransform,
-                    out tileMatrixTransform
-                );
-                effect.SetParameter("MatrixTransform", tileMatrixTransform);
-            }
-
-            if (tile2Shadows)
-            {
-                var tile2TexturePosition = TexturePosition.GetTileTargetPosition(
-                    tile2Target,
-                    Main.sceneTile2Pos
-                );
-                tile2TexturePosition.WorldToTextureTransform(
-                    out var tile2MatrixTransform
-                );
-                Matrix.Multiply(
-                    ref wallToWorldTransform,
-                    ref tile2MatrixTransform,
-                    out tile2MatrixTransform
-                );
-                effect.SetParameter("MatrixTransform2", tile2MatrixTransform);
-
-                MainGraphics.SetTexture(8, tile2Target, SamplerState.PointClamp);
-            }
-        }
-
-        Blitter.Blit(tileTarget, _ambientOcclusionTarget, effect);
-        MainGraphics.RestoreSavedTextures();
-
         if (tileEntityShadows)
         {
             var currentScreenPosition = Main.screenPosition;
@@ -159,10 +102,9 @@ public sealed class AmbientOcclusion
                     Main.Rasterizer = RasterizerState.CullNone;
                 }
 
-                SpriteBatchEffectLoader.Apply(_tileEntityEffect);
-                SpriteBatchEffectLoader.Apply(CustomBlendStates.MaxColor);
+                Main.graphics.GraphicsDevice.SetRenderTarget(tileEntityTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.instance.TilesRenderer.PostDrawTiles(false, false, false);
-                SpriteBatchEffectLoader.Reset();
             }
             finally
             {
@@ -175,6 +117,90 @@ public sealed class AmbientOcclusion
                 Main.screenPosition = currentScreenPosition;
             }
         }
+
+        TextureUtils.MakeSize(
+            ref _ambientOcclusionTarget,
+            wallTarget.Width,
+            wallTarget.Height,
+            SurfaceFormat.Color
+        );
+
+        var effect = tile2Shadows
+            ? tileEntityShadows
+                ? _tilesAndTiles2AndTileEntitiesEffect
+                : _tilesAndTiles2Effect
+            : tileEntityShadows
+                ? _tilesAndTiles2Effect
+                : _tilesEffect;
+        MainGraphics.ResetSavedTextures();
+
+        Matrix wallToWorldTransform = default;
+        if (!cameraMode)
+        {
+            var wallTexturePosition = TexturePosition.GetTileTargetPosition(wallTarget);
+            wallTexturePosition.TextureToWorldTransform(out wallToWorldTransform);
+        }
+
+        if (cameraMode)
+        {
+            effect.SetParameter("MatrixTransform", Matrix.Identity);
+        }
+        else
+        {
+            var tileTexturePosition = TexturePosition.GetTileTargetPosition(
+                tileTarget,
+                Main.sceneTilePos
+            );
+            tileTexturePosition.WorldToTextureTransform(out var tileMatrixTransform);
+            Matrix.Multiply(
+                ref wallToWorldTransform,
+                ref tileMatrixTransform,
+                out tileMatrixTransform
+            );
+            effect.SetParameter("MatrixTransform", tileMatrixTransform);
+        }
+
+        if (tile2Shadows)
+        {
+            if (cameraMode)
+            {
+                effect.SetParameter("MatrixTransform2", Matrix.Identity);
+            }
+            else
+            {
+                var tile2TexturePosition = TexturePosition.GetTileTargetPosition(
+                    tile2Target,
+                    Main.sceneTile2Pos
+                );
+                tile2TexturePosition.WorldToTextureTransform(
+                    out var tile2MatrixTransform
+                );
+                Matrix.Multiply(
+                    ref wallToWorldTransform,
+                    ref tile2MatrixTransform,
+                    out tile2MatrixTransform
+                );
+                effect.SetParameter("MatrixTransform2", tile2MatrixTransform);
+            }
+
+            MainGraphics.SetTexture(8, tile2Target, SamplerState.PointClamp);
+        }
+
+        if (tileEntityShadows)
+        {
+            if (tile2Shadows)
+            {
+                MainGraphics.SetTexture(9, tileEntityTarget, SamplerState.PointClamp);
+            }
+            else
+            {
+                effect.SetParameter("MatrixTransform2", Matrix.Identity);
+                MainGraphics.SetTexture(8, tileEntityTarget, SamplerState.PointClamp);
+            }
+        }
+
+        Blitter.Blit(tileTarget, _ambientOcclusionTarget, effect);
+        MainGraphics.RestoreSavedTextures();
 
         var radius = PreferencesConfig.Instance.AmbientOcclusionRadius;
         var power = PreferencesConfig.Instance.AmbientOcclusionPower();

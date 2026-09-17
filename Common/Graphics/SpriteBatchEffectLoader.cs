@@ -6,7 +6,6 @@ namespace FancyLighting.Common.Graphics;
 internal static class SpriteBatchEffectLoader
 {
     private static SpriteBatchEffect _activeEffect;
-    private static BlendState _activeBlendState;
 
     internal static void Load()
     {
@@ -66,13 +65,7 @@ internal static class SpriteBatchEffectLoader
 
     internal static void Apply(SpriteBatchEffect effect) => _activeEffect = effect;
 
-    internal static void Apply(BlendState blendState) => _activeBlendState = blendState;
-
-    public static void Reset()
-    {
-        _activeEffect = null;
-        _activeBlendState = null;
-    }
+    public static void Reset() => _activeEffect = null;
 
     private delegate void orig_SpriteBatch_PrepRenderState(SpriteBatch self);
 
@@ -85,11 +78,6 @@ internal static class SpriteBatchEffectLoader
         {
             orig(self);
             return;
-        }
-
-        if (_activeBlendState is not null)
-        {
-            SpriteBatchAccessors.blendState(self) = _activeBlendState;
         }
 
         if (_activeEffect is null)

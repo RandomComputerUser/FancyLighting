@@ -2,6 +2,7 @@ sampler OccluderSampler : register(s0);
 
 sampler TileSampler : register(s0);
 sampler Tile2Sampler : register(s8);
+sampler TileEntitySampler : register(s9);
 
 float4x4 MatrixTransform;
 float4x4 MatrixTransform2;
@@ -21,17 +22,6 @@ void Blit_VS(
 )
 {
     screenPos = position;
-}
-
-void TileEntity_VS(
-    float4 position : POSITION0,
-    inout float2 texCoord : TEXCOORD0,
-    inout float4 color : COLOR0,
-    out float4 screenPos : SV_Position
-)
-{
-    screenPos = mul(position, MatrixTransform);
-    color.a *= NONSOLID_OCCLUSION_MULT;
 }
 
 void Tiles_VS(
@@ -58,6 +48,22 @@ void TilesAndTiles2_VS(
     tile2Coord = mul(homogeneousTexCoord, MatrixTransform2).xy;
 }
 
+void TilesAndTiles2AndTileEntities_VS(
+    float4 position : POSITION0,
+    float2 texCoord : TEXCOORD0,
+    out float2 tileCoord : TEXCOORD0,
+    out float2 tile2Coord : TEXCOORD1,
+    out float2 tileEntityCoord : TEXCOORD2,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = position;
+    float4 homogeneousTexCoord = float4(texCoord, 0, 1);
+    tileCoord = mul(homogeneousTexCoord, MatrixTransform).xy;
+    tile2Coord = mul(homogeneousTexCoord, MatrixTransform2).xy;
+    tileEntityCoord = texCoord;
+}
+
 /* Pixel shaders ************************************************************************/
 
 float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
@@ -66,11 +72,30 @@ float4 Tiles_PS(float2 tileCoord : TEXCOORD0) : COLOR0
     return float4(brightness, 0, 0, 0);
 }
 
-float4 TilesAndTiles2_PS(float2 tileCoord : TEXCOORD0, float2 tile2Coord : TEXCOORD1) : COLOR0
+float4 TilesAndTiles2_PS(
+    float2 tileCoord : TEXCOORD0,
+    float2 tile2Coord : TEXCOORD1
+) : COLOR0
 {
     float brightness = max(
         tex2D(TileSampler, tileCoord).a,
         NONSOLID_OCCLUSION_MULT * tex2D(Tile2Sampler, tile2Coord).a
+    );
+    return float4(brightness, 0, 0, 0);
+}
+
+float4 TilesAndTiles2AndTileEntities_PS(
+    float2 tileCoord : TEXCOORD0,
+    float2 tile2Coord : TEXCOORD1,
+    float2 tileEntityCoord : TEXCOORD2
+) : COLOR0
+{
+    float brightness = max(
+        tex2D(TileSampler, tileCoord).a,
+        NONSOLID_OCCLUSION_MULT * max(
+            tex2D(Tile2Sampler, tile2Coord).a,
+            tex2D(TileEntitySampler, tileEntityCoord).a
+        )
     );
     return float4(brightness, 0, 0, 0);
 }
@@ -135,12 +160,12 @@ technique TilesAndTiles2
     }
 }
 
-technique TileEntity
+technique TilesAndTiles2AndTileEntities
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 TileEntity_VS();
-        PixelShader = compile ps_3_0 TileEntity_PS();
+        VertexShader = compile vs_3_0 TilesAndTiles2AndTileEntities_VS();
+        PixelShader = compile ps_3_0 TilesAndTiles2AndTileEntities_PS();
     }
 }
 
