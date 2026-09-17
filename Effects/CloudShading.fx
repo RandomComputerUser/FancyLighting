@@ -41,7 +41,7 @@ float2x2 CalculateRotationMatrix(float2 texCoord)
     );
 }
 
-float NormalsMultiplierFancySky(float2 surfaceGradient, float2 texCoord)
+float NormalsMultiplierCloud(float2 surfaceGradient, float2 texCoord)
 {
     float surfaceGradientLength = length(surfaceGradient);
     
@@ -154,7 +154,7 @@ float4 CloudShading_PS(float2 texCoord : TEXCOORD0, float4 color : COLOR0) : COL
     float4 texColor = tex2D(TextureSampler, texCoord);
     float2 surfaceGradient = -2 * texColor.xy + 1;
     
-    float mult = NormalsMultiplierFancySky(surfaceGradient, texCoord);
+    float mult = NormalsMultiplierCloud(surfaceGradient, texCoord);
     return color * texColor.a * float4(
         lerp(
             texColor.z,

@@ -181,7 +181,7 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     surfaceGradient = lerp(
         surfaceGradient,
         surfaceGradient / surfaceGradientLength,
-        saturate(16.0 * surfaceGradientLength)
+        saturate(20.0 * surfaceGradientLength)
     );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
@@ -224,7 +224,7 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     surfaceGradient = lerp(
         surfaceGradient,
         surfaceGradient / surfaceGradientLength,
-        saturate(16.0 * surfaceGradientLength)
+        saturate(20.0 * surfaceGradientLength)
     );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
