@@ -23,6 +23,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter
 - Improved enhanced light map blurring
+- Improved normal maps rendering
 - Improved Ambient Occlusion visual quality
 - The setting to disable HDRR during bosses and events now affects Smooth Lighting as a whole
 - Depth of field is no longer exclusive to full HDR rendering
@@ -38,7 +39,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Made other improvements to settings tooltips
 - Rearranged and renamed some settings
 - Added a setting to toggle whether normal maps are rendered on non-solid tiles
-- Tweaked normal maps rendering and adjusted the normal maps strength scale
+- Adjusted the normal maps strength scale
 - Changed the default normal maps strength to 5 (from 3)
 - Changed the maximum normal maps strength to 10 (from 15)
 - Increased the range of the gamma setting to 100–340 (from 140–300)
