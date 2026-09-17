@@ -101,6 +101,7 @@ public static class FancySkyLighting
 
         var angle = Math.PI * progress;
         amountVisible = MathUtils.Smoothstep(0.0, 1.0, amountVisible);
+        amountVisible *= 1.0 - Math.Clamp(Main.maxRaining, 0f, 1f);
         var mult = baseMult * amountVisible;
         return (angle, mult, amountVisible);
     }
