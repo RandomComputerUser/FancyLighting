@@ -11,6 +11,7 @@ float4x4 LightMapMatrixTransform;
 float Zoom;
 
 float NormalMapResolution;
+float NormalMapLumaMult;
 float NormalMapGradientMult;
 float NormalMapStrength;
 float2 SkyLightGradient;
@@ -168,8 +169,9 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     
-    float luma = Luma(lightColor);
+    float luma = NormalMapLumaMult * Luma(lightColor);
     float2 lightGradient = NormalsLightGradient(luma);
+    lightGradient /= (luma + 0.05);
     lightGradient = mul(lightGradient, samplingTransform.RotationMatrix);
     float lightGradientLength = length(lightGradient);
     
@@ -185,7 +187,6 @@ float NormalsMultiplier(float2 tileCoord, float4 tileColor, float3 lightColor)
     );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
-    lightGradientLength /= (luma + 0.1);
     
     float lightMult = 1.0 + clamp(
         NormalMapStrength * dot(lightGradient, surfaceGradient),
@@ -210,8 +211,10 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     float2 surfaceGradient = surfaceGradientAndMult.xy;
     float surfaceGradientLength = length(surfaceGradient);
     
-    float luma = Luma(lightColor.rgb);
+    float luma = NormalMapLumaMult * Luma(lightColor.rgb);
     float4 lightAndSkyLightGradient = NormalsLightGradientFancySky(luma, lightColor.a);
+    lightAndSkyLightGradient.xy /= (luma + 0.05);
+    lightAndSkyLightGradient.zw /= (luma + 0.001);
     float2 lightGradient = lightAndSkyLightGradient.xy + lightAndSkyLightGradient.zw;
     lightGradient = mul(lightGradient, samplingTransform.RotationMatrix);
     float lightGradientLength = length(lightGradient);
@@ -228,7 +231,6 @@ float NormalsMultiplierFancySky(float2 tileCoord, float4 tileColor, float4 light
     );
     surfaceGradient *= surfaceGradientAndMult.z;
     lightGradient /= lightGradientLength;
-    lightGradientLength /= (luma + 0.1);
     
     float lightMult = 1.0 + clamp(
         NormalMapStrength * dot(lightGradient, surfaceGradient),

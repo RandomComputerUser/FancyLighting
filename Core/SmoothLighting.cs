@@ -1740,7 +1740,6 @@ public sealed class SmoothLighting
         {
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-            var normalMapGradientMult = 16f * overbrightMult;
             var normalMapStrength = PreferencesConfig.Instance.NormalMapsMultiplier();
             effect
                 .SetParameter(
@@ -1750,7 +1749,7 @@ public sealed class SmoothLighting
                         normalMapResolution / src.Height
                     )
                 )
-                .SetParameter("NormalMapGradientMult", normalMapGradientMult)
+                .SetParameter("NormalMapLumaMult", overbrightMult)
                 .SetParameter("NormalMapStrength", normalMapStrength);
 
             if (fancySkyEffectFlag)
@@ -1907,12 +1906,13 @@ public sealed class SmoothLighting
 
             var normalMapResolution = fineNormalMaps ? 1f : 2f;
             var overbrightMult = hiDef ? 1f / PostProcessing.HiDefBrightnessScale : 1f;
-            var normalMapGradientMult = 16f * overbrightMult * zoom;
+            var normalMapGradientMult = 16f * zoom;
             var normalMapStrength = PreferencesConfig.Instance.NormalMapsMultiplier();
 
             effect
                 .SetParameter("Zoom", zoom)
                 .SetParameter("NormalMapResolution", normalMapResolution)
+                .SetParameter("NormalMapLumaMult", overbrightMult)
                 .SetParameter("NormalMapGradientMult", normalMapGradientMult)
                 .SetParameter("NormalMapStrength", normalMapStrength);
 
