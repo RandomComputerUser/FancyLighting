@@ -31,6 +31,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Slightly increased the brightness of the background when using full HDR rendering
 - Improved vibrance boost
 - Tweaked the appearance of bloom
+- All graphical effects now work on the main menu
 
 #### Settings Tweaks
 - Created two new configs: *Compatibility Settings* and *Developer Settings*

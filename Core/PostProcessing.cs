@@ -148,9 +148,20 @@ public sealed class PostProcessing
         var gamma = ContentGamma();
         var disableDither =
             DeveloperConfig.Instance.DisableDithering || tmo is ToneMappingPreset.Linear;
+        var mainMenu = Main.gameMenu && separateBackground;
+
+        if (mainMenu)
+        {
+            Blitter.Blit(backgroundTarget, screenTargetSwap);
+            Blitter.Blit(screenTarget, backgroundTarget);
+            separateBackground = false;
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
+        }
 
         if (
-            LightingConfig.Instance.SmoothLightingEnabled()
+            !mainMenu
+            && LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
         )
         {
@@ -236,6 +247,18 @@ public sealed class PostProcessing
             }
             else
             {
+                if (mainMenu)
+                {
+                    exposure *= ColorUtils.GammaToLinear(
+                        CalculateHiDefBackgroundBrightness()
+                    );
+
+                    if (depthOfField)
+                    {
+                        gamma = 1f;
+                    }
+                }
+
                 Blitter.Blit(
                     currTarget,
                     nextTarget,
@@ -327,6 +350,19 @@ public sealed class PostProcessing
             }
             Blitter.Blit(currTarget, nextTarget, effect);
             MainGraphics.RestoreSavedTextures();
+
+            (currTarget, nextTarget) = (nextTarget, currTarget);
+        }
+
+        if (mainMenu)
+        {
+            Blitter.Blit(currTarget, nextTarget);
+            Blitter.Blit(
+                backgroundTarget,
+                currTarget,
+                blendState: BlendState.AlphaBlend,
+                setTarget: false
+            );
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
         }

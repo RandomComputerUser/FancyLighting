@@ -136,9 +136,15 @@ internal sealed class SettingsSystem : ModSystem
         || LightingConfig.Instance.FancySkyLightingEnabled()
         || PreferencesConfig.Instance.DepthOfField;
 
+    internal static bool NeedsMainMenuCapture() =>
+        NeedsPostProcessing()
+        || LightingConfig.Instance.FancySkyLightingEnabled()
+        || PreferencesConfig.Instance.DepthOfField;
+
     internal static bool HdrEnhancedAlphaBlendingDisabled() =>
         CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending
-        && LightingConfig.Instance.HiDefFeaturesEnabled();
+        && LightingConfig.Instance.HiDefFeaturesEnabled()
+        && !Main.gameMenu;
 
     internal static bool SmoothLightingDisabled() =>
         CompatibilityConfig.Instance.DisableSmoothLightingDuringBossFights

@@ -398,10 +398,97 @@ public sealed class FancyLightingMod : Mod
         IL_Main.RenderTiles += _ => { };
         IL_Main.RenderTiles2 += _ => { };
         IL_Main.RenderWalls += _ => { };
-        IL_Main.DoDraw += _ => { };
-        IL_Main.DrawCapture += _ => { };
         IL_LightingEngine.ProcessBlur += _ => { };
         IL_LightingEngine.ProcessArea += _ => { };
+        IL_Main.DrawCapture += _ => { };
+        IL_Main.DoDraw += IL_Main_DoDraw;
+    }
+
+    private void IL_Main_DoDraw(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var gameMenuField = typeof(Main)
+                .GetField(
+                    nameof(Main.gameMenu),
+                    BindingFlags.Public | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var needsMainMenuCaptureMethod = typeof(SettingsSystem)
+                .GetMethod(
+                    nameof(SettingsSystem.NeedsMainMenuCapture),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var preDrawMenuMethod = typeof(Main)
+                .GetMethod("PreDrawMenu", BindingFlags.NonPublic | BindingFlags.Instance)
+                .AssertNotNull();
+
+            var afterIfBlockLabel = cursor.DefineLabel();
+
+            /*
+            if (SettingsSystem.NeedsMainMenuCapture())
+            {
+                flag = false; // flag disables BeginCapture() on the main menu
+            }
+            */
+            cursor.GotoNext(
+                MoveType.After,
+                instruction => instruction.MatchLdsfld(gameMenuField),
+                instruction => instruction.MatchStloc(10)
+            );
+            cursor.Emit(OpCodes.Call, needsMainMenuCaptureMethod);
+            cursor.Emit(OpCodes.Brfalse, afterIfBlockLabel);
+            cursor.Emit(OpCodes.Ldc_I4_0);
+            cursor.Emit(OpCodes.Stloc, 10);
+            cursor.MarkLabel(afterIfBlockLabel);
+
+            cursor.GotoNext(
+                MoveType.AfterLabel,
+                instruction => instruction.MatchLdarg0(),
+                instruction => instruction.MatchLdloca(32),
+                instruction => instruction.MatchLdloca(33),
+                instruction => instruction.MatchCall(preDrawMenuMethod)
+            );
+            cursor.EmitDelegate(() =>
+            {
+                if (!MainGraphics.DoingCapture)
+                {
+                    return;
+                }
+
+                var doOverbright =
+                    LightingConfig.Instance.SmoothLightingEnabled()
+                    && LightingConfig.Instance.DrawOverbright();
+                var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
+
+                if (doOverbright || doDepthOfField)
+                {
+                    SeparateBackground(cameraMode: false, mainMenu: true);
+                    return;
+                }
+
+                if (!SettingsSystem.NeedsPostProcessing())
+                {
+                    return;
+                }
+
+                TextureUtils.MatchSizeAndFormat(
+                    ref _backgroundTarget,
+                    MainGraphics.ScreenTarget
+                );
+                Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
+                MainGraphics.AssignScreenTargets();
+                Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
+                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+            });
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
     }
 
     private static void IL_Dust_NewDust(ILContext context)
@@ -1039,12 +1126,15 @@ public sealed class FancyLightingMod : Mod
 
     private bool SeparateBackground(
         bool cameraMode,
+        bool mainMenu = false,
         bool willClearBackgroundLater = false
     )
     {
         var doOverbright =
-            LightingConfig.Instance.SmoothLightingEnabled()
-            && LightingConfig.Instance.DrawOverbright();
+            (
+                LightingConfig.Instance.SmoothLightingEnabled()
+                && LightingConfig.Instance.DrawOverbright()
+            ) || (mainMenu && SettingsSystem.NeedsPostProcessing());
         var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
