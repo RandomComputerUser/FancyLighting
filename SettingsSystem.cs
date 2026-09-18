@@ -17,6 +17,8 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool _useSkyLightLuma;
     internal static bool _useFancyClouds;
 
+    internal static bool _doDrawILHookFailed;
+
     private bool _prevNeedsPostProcessing;
     private bool _prevSmoothLightingDisabled;
     private bool _changedConfig;

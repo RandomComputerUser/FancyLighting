@@ -402,6 +402,11 @@ public sealed class FancyLightingMod : Mod
         IL_LightingEngine.ProcessArea += _ => { };
         IL_Main.DrawCapture += _ => { };
         IL_Main.DoDraw += IL_Main_DoDraw;
+
+        if (SettingsSystem._doDrawILHookFailed)
+        {
+            IL_Main.DoDraw += _ => { };
+        }
     }
 
     private void IL_Main_DoDraw(ILContext context)
@@ -454,7 +459,7 @@ public sealed class FancyLightingMod : Mod
             );
             cursor.EmitDelegate(() =>
             {
-                if (!MainGraphics.DoingCapture)
+                if (!MainGraphics.DoingCapture || SettingsSystem._doDrawILHookFailed)
                 {
                     return;
                 }
@@ -487,6 +492,7 @@ public sealed class FancyLightingMod : Mod
         }
         catch (Exception)
         {
+            SettingsSystem._doDrawILHookFailed = true;
             MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
         }
     }
@@ -973,7 +979,10 @@ public sealed class FancyLightingMod : Mod
     {
         MainGraphics.EndCapture_Pre();
 
-        if (!SettingsSystem.NeedsPostProcessing())
+        if (
+            !SettingsSystem.NeedsPostProcessing()
+            || (Main.gameMenu && SettingsSystem._doDrawILHookFailed)
+        )
         {
             MainGraphics.EndCapture_Post();
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
