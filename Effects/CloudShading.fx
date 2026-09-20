@@ -11,7 +11,10 @@ float2 CloudScale;
 float Gamma;
 float InverseGamma;
 
-float3 BaseColor;
+float3 BaseColorSlope;
+float3 BaseColorIntercept;
+float ShadowLuminance;
+float3 ShadowColorSlope;
 
 float2 SkyLightGradient;
 float SkyLightMult;
@@ -71,7 +74,7 @@ float NormalsMultiplierCloud(float2 surfaceGradient, float2 texCoord)
 
 /* Vertex shaders ***********************************************************************/
 
-void CloudShading_VS(
+void SpriteBatch_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
     inout float4 color : COLOR0,
@@ -79,7 +82,6 @@ void CloudShading_VS(
 )
 {
     screenPos = mul(position, MatrixTransform);
-    color.rgb *= BaseColor;
 }
 
 void ExtractLuminance_VS(
@@ -152,20 +154,22 @@ float4 GenerateGradients_PS(
 float4 CloudShading_PS(float2 texCoord : TEXCOORD0, float4 color : COLOR0) : COLOR0
 {
     float4 texColor = tex2D(TextureSampler, texCoord);
-    float2 surfaceGradient = -2 * texColor.xy + 1;
+    if (texColor.a == 0.0)
+    {
+        return float4(0, 0, 0, 0);
+    }
     
+    float2 surfaceGradient = -2 * texColor.xy + 1;
     float mult = NormalsMultiplierCloud(surfaceGradient, texCoord);
-    return color * texColor.a * float4(
-        lerp(
-            texColor.z,
-            texColor.a * pow(
-                0.8 * mult,
-                InverseGamma
-            ),
-            SkyLightMult
-        ).xxx,
-        texColor.a
-    );
+    
+    float baseLuminance = pow(texColor.z / texColor.a, Gamma);
+    float shadedLuminance = 0.8 * mult;
+    float mixedLuminance = lerp(baseLuminance, shadedLuminance, SkyLightMult);
+    float3 mixedColor = mixedLuminance < ShadowLuminance
+        ? ShadowColorSlope * mixedLuminance
+        : BaseColorSlope * mixedLuminance + BaseColorIntercept;
+    
+    return color * texColor.a * float4(pow(mixedColor, InverseGamma), 1);
 }
 
 /* Techniques ***************************************************************************/
@@ -192,7 +196,7 @@ technique CloudShading
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 CloudShading_VS();
+        VertexShader = compile vs_3_0 SpriteBatch_VS();
         PixelShader = compile ps_3_0 CloudShading_PS();
     }
 }
