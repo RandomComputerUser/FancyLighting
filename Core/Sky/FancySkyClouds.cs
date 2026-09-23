@@ -12,7 +12,7 @@ public static class FancySkyClouds
 {
     private const int BlurPassCount = 5;
     private const float Mix = 0.75f;
-    private static readonly Vector3 _cloudShadowColor = new(0.625f, 0.7f, 0.775f);
+    private static readonly Vector3 _cloudShadowColor = new(0.65f, 0.7f, 0.75f);
 
     private static SamplerState _prevSamplerState = SamplerState.LinearClamp;
 
@@ -566,7 +566,11 @@ public static class FancySkyClouds
 
         _generateGradientsEffect
             .SetParameter(
-                "PixelSize",
+                "BlurHalfPixelSize",
+                new Vector2(0.5f / luminanceTarget.Width, 0.5f / luminanceTarget.Height)
+            )
+            .SetParameter(
+                "CloudPixelSize",
                 new Vector2(
                     1f / vanillaCloudTexture.Width,
                     1f / vanillaCloudTexture.Height
@@ -589,7 +593,12 @@ public static class FancySkyClouds
             );
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(8, vanillaCloudTexture, SamplerState.PointClamp);
-        Blitter.Blit(luminanceTarget, fancyTexture, _generateGradientsEffect);
+        Blitter.Blit(
+            luminanceTarget,
+            fancyTexture,
+            _generateGradientsEffect,
+            samplerState: SamplerState.LinearClamp
+        );
         MainGraphics.RestoreSavedTextures();
 
         luminanceTarget.Dispose();
