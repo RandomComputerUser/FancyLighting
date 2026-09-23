@@ -235,15 +235,11 @@ float4 CloudShading_PS(float2 texCoord : TEXCOORD0, float4 color : COLOR0) : COL
     float2 surfaceGradient = -2 * texColor.xy + 1;
     float mult = NormalsMultiplierCloud(surfaceGradient, texCoord);
     
-    float baseLuminance = texColor.z;
-    float shadedLuminance = 0.8 * mult;
-    float mixedLuminance = lerp(baseLuminance, shadedLuminance, SkyLightMult);
-    float3 mixedColor =
-        mixedLuminance < ShadowLuminance
-            ? ShadowColorSlope * mixedLuminance
-        : mixedLuminance > 1.0
-            ? mixedLuminance.xxx
-        : BaseColorSlope * mixedLuminance + BaseColorIntercept;
+    float3 baseColor = texColor.z < ShadowLuminance
+        ? ShadowColorSlope * texColor.z
+        : BaseColorSlope * texColor.z + BaseColorIntercept;
+    float3 shadedColor = 0.8 * mult.xxx;
+    float3 mixedColor = lerp(baseColor, shadedColor, SkyLightMult);
     
     return color * texColor.a * float4(pow(mixedColor, InverseGamma), 1);
 }

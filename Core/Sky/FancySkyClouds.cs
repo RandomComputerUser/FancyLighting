@@ -12,7 +12,7 @@ public static class FancySkyClouds
 {
     private const int BlurPassCount = 5;
     private const float Mix = 0.75f;
-    private static readonly Vector3 _cloudShadowColor = new(0.65f, 0.7f, 0.75f);
+    private static readonly Vector3 _cloudShadowColor = new(0.6f, 0.75f, 0.9f);
 
     private static SamplerState _prevSamplerState = SamplerState.LinearClamp;
 
