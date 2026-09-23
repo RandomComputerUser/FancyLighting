@@ -1,6 +1,7 @@
 sampler TextureSampler : register(s0);
 
 sampler LuminanceSampler : register(s0);
+sampler GradientsSampler : register(s0);
 sampler CloudSampler : register(s8);
 
 float4x4 MatrixTransform;
@@ -77,6 +78,15 @@ float NormalsMultiplierCloud(float2 surfaceGradient, float2 texCoord)
 
 /* Vertex shaders ***********************************************************************/
 
+void Blit_VS(
+    float4 position : POSITION0,
+    inout float2 texCoord : TEXCOORD0,
+    out float4 screenPos : SV_Position
+)
+{
+    screenPos = position;
+}
+
 void SpriteBatch_VS(
     float4 position : POSITION0,
     inout float2 texCoord : TEXCOORD0,
@@ -97,16 +107,16 @@ void ExtractLuminance_VS(
     texCoord = Scale * (texCoord - 0.5) + 0.5;
 }
 
-void GenerateGradients_VS(
+void FinalTexture_VS(
     float4 position : POSITION0,
     float2 texCoord : TEXCOORD0,
-    out float2 luminanceTexCoord : TEXCOORD0,
+    out float2 gradientsTexCoord : TEXCOORD0,
     out float2 cloudTexCoord : TEXCOORD1,
     out float4 screenPos : SV_Position
 )
 {
     screenPos = position;
-    luminanceTexCoord = Scale * (texCoord - 0.5) + 0.5;
+    gradientsTexCoord = Scale * (texCoord - 0.5) + 0.5;
     cloudTexCoord = CloudScale * (texCoord - 0.5) + 0.5;
 }
 
@@ -128,8 +138,23 @@ float4 ExtractLuminance_PS(float2 texCoord : TEXCOORD0) : COLOR0
     return float4(luminance, 0, 0, 1);
 }
 
-float4 GenerateGradients_PS(
-    float2 luminanceTexCoord : TEXCOORD0,
+float4 GenerateGradients_PS(float2 texCoord : TEXCOORD0) : COLOR0
+{
+    float2 luminanceGradient = float2(
+        tex2D(LuminanceSampler, texCoord + float2(BlurHalfPixelSize.x, 0)).r
+            - tex2D(LuminanceSampler, texCoord - float2(BlurHalfPixelSize.x, 0)).r,
+        tex2D(LuminanceSampler, texCoord + float2(0, BlurHalfPixelSize.y)).r
+            - tex2D(LuminanceSampler, texCoord - float2(0, BlurHalfPixelSize.y)).r
+    );
+    luminanceGradient *= 70.0;
+    luminanceGradient = sign(luminanceGradient) * (
+        abs(luminanceGradient) / (abs(luminanceGradient) + 1)
+    );
+    return float4(luminanceGradient, 0, 1);
+}
+
+float4 FinalTexture_PS(
+    float2 gradientsTexCoord : TEXCOORD0,
     float2 cloudTexCoord : TEXCOORD1
 ) : COLOR0
 {
@@ -144,15 +169,7 @@ float4 GenerateGradients_PS(
         cloudColor = float4(0, 0, 0, 0);
     }
     
-    float2 luminanceGradient = 50.0 * float2(
-        tex2D(LuminanceSampler, luminanceTexCoord + float2(BlurHalfPixelSize.x, 0)).r
-            - tex2D(LuminanceSampler, luminanceTexCoord - float2(BlurHalfPixelSize.x, 0)).r,
-        tex2D(LuminanceSampler, luminanceTexCoord + float2(0, BlurHalfPixelSize.y)).r
-            - tex2D(LuminanceSampler, luminanceTexCoord - float2(0, BlurHalfPixelSize.y)).r
-    );
-    luminanceGradient = sign(luminanceGradient) * (
-        abs(luminanceGradient) / (abs(luminanceGradient) + 1)
-    );
+    float2 luminanceGradient = tex2D(GradientsSampler, gradientsTexCoord).rg;
     luminanceGradient = 0.5 * luminanceGradient + 0.5;
     
     float luminance;
@@ -246,8 +263,17 @@ technique GenerateGradients
 {
     pass Pass1
     {
-        VertexShader = compile vs_3_0 GenerateGradients_VS();
+        VertexShader = compile vs_3_0 Blit_VS();
         PixelShader = compile ps_3_0 GenerateGradients_PS();
+    }
+}
+
+technique FinalTexture
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 FinalTexture_VS();
+        PixelShader = compile ps_3_0 FinalTexture_PS();
     }
 }
 

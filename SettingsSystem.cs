@@ -80,7 +80,7 @@ internal sealed class SettingsSystem : ModSystem
             )
         )
         {
-            ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange();
+            ModContent.GetInstance<FancyLightingMod>()?.OnConfigChange(!_changedConfig);
         }
         _prevSmoothLightingDisabled = smoothLightingDisabled;
         _changedConfig = false;

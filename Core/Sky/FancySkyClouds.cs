@@ -18,6 +18,7 @@ public static class FancySkyClouds
 
     private static FullscreenEffect _extractLuminanceEffect;
     private static FullscreenEffect _generateGradientsEffect;
+    private static FullscreenEffect _finalTextureEffect;
     private static SpriteBatchEffect _cloudShadingEffect;
 
     private static BlurRenderer _blurRenderer;
@@ -33,6 +34,7 @@ public static class FancySkyClouds
         var effect = EffectLoader.Load("CloudShading");
         _extractLuminanceEffect = new(effect, "ExtractLuminance");
         _generateGradientsEffect = new(effect, "GenerateGradients");
+        _finalTextureEffect = new(effect, "FinalTexture");
         _cloudShadingEffect = new(effect, "CloudShading");
 
         _blurRenderer = new();
@@ -47,6 +49,7 @@ public static class FancySkyClouds
         _prevSamplerState = null;
         _extractLuminanceEffect = null;
         _generateGradientsEffect = null;
+        _finalTextureEffect = null;
         _cloudShadingEffect = null;
         _blurRenderer = null;
     }
@@ -536,6 +539,14 @@ public static class FancySkyClouds
             SurfaceFormat.Single,
             DepthFormat.None
         );
+        var gradientsTarget = new RenderTarget2D(
+            Main.graphics.GraphicsDevice,
+            blurWidth,
+            blurHeight,
+            false,
+            SurfaceFormat.Vector2,
+            DepthFormat.None
+        );
         var fancyTexture = new RenderTarget2D(
             Main.graphics.GraphicsDevice,
             finalWidth,
@@ -564,11 +575,26 @@ public static class FancySkyClouds
             samplerState: samplerState
         );
 
-        _generateGradientsEffect
-            .SetParameter(
-                "BlurHalfPixelSize",
-                new Vector2(0.5f / luminanceTarget.Width, 0.5f / luminanceTarget.Height)
-            )
+        _generateGradientsEffect.SetParameter(
+            "BlurHalfPixelSize",
+            new Vector2(0.5f / blurWidth, 0.5f / blurHeight)
+        );
+        Blitter.Blit(
+            luminanceTarget,
+            gradientsTarget,
+            _generateGradientsEffect,
+            samplerState: SamplerState.LinearClamp
+        );
+
+        _blurRenderer.Blur(
+            gradientsTarget,
+            gradientsTarget,
+            1,
+            format: SurfaceFormat.Vector2,
+            samplerState: samplerState
+        );
+
+        _finalTextureEffect
             .SetParameter(
                 "CloudPixelSize",
                 new Vector2(
@@ -593,15 +619,11 @@ public static class FancySkyClouds
             );
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(8, vanillaCloudTexture, SamplerState.PointClamp);
-        Blitter.Blit(
-            luminanceTarget,
-            fancyTexture,
-            _generateGradientsEffect,
-            samplerState: SamplerState.LinearClamp
-        );
+        Blitter.Blit(gradientsTarget, fancyTexture, _finalTextureEffect);
         MainGraphics.RestoreSavedTextures();
 
         luminanceTarget.Dispose();
+        gradientsTarget.Dispose();
         return fancyTexture;
     }
 

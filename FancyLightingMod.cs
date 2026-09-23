@@ -256,33 +256,36 @@ public sealed class FancyLightingMod : Mod
         }
     }
 
-    internal void OnConfigChange()
+    internal void OnConfigChange(bool quickChange)
     {
-        if (!LightingConfig.Instance.UseAmbientOcclusion)
-        {
-            _ambientOcclusionInstance?.Unload();
-        }
-
         SetFancyLightingEngineInstance();
 
-        if (!LightingConfig.Instance.UseFancySkyLighting)
+        if (!quickChange)
         {
-            FancySkyClouds.Dispose();
-        }
+            if (!LightingConfig.Instance.UseAmbientOcclusion)
+            {
+                _ambientOcclusionInstance?.Unload();
+            }
 
-        if (
-            !SettingsSystem.NeedsPostProcessing(
-                cameraModeOverride: true,
-                unloadCheck: true
+            if (!LightingConfig.Instance.UseFancySkyLighting)
+            {
+                FancySkyClouds.Dispose();
+            }
+
+            if (
+                !SettingsSystem.NeedsPostProcessing(
+                    cameraModeOverride: true,
+                    unloadCheck: true
+                )
             )
-        )
-        {
-            _postProcessingInstance?.Unload();
-        }
+            {
+                _postProcessingInstance?.Unload();
+            }
 
-        if (!PreferencesConfig.Instance.DepthOfField)
-        {
-            _blurRenderer?.Dispose();
+            if (!PreferencesConfig.Instance.DepthOfField)
+            {
+                _blurRenderer?.Dispose();
+            }
         }
 
         if (Main.gameMenu || Main.mapFullscreen)
