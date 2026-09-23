@@ -146,7 +146,6 @@ public static class FancySkyClouds
         var normalMapSkyGradientMult = zoomWithFlipping;
 
         _cloudShadingEffect
-            .SetParameter("Gamma", gamma)
             .SetParameter("InverseGamma", 1f / gamma)
             .SetParameter("BaseColorSlope", baseColorSlope)
             .SetParameter("BaseColorIntercept", baseColorIntercept)
@@ -566,8 +565,14 @@ public static class FancySkyClouds
         );
 
         _generateGradientsEffect
+            .SetParameter(
+                "PixelSize",
+                new Vector2(
+                    1f / vanillaCloudTexture.Width,
+                    1f / vanillaCloudTexture.Height
+                )
+            )
             .SetParameter("Gamma", gamma)
-            .SetParameter("InverseGamma", 1f / gamma)
             .SetParameter(
                 "Scale",
                 new Vector2(

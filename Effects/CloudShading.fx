@@ -8,6 +8,8 @@ float4x4 MatrixTransform;
 float2 Scale;
 float2 CloudScale;
 
+float2 PixelSize;
+
 float Gamma;
 float InverseGamma;
 
@@ -24,7 +26,7 @@ float NormalMapStrength;
 
 float Luminance(float3 color)
 {
-    return dot(pow(color, Gamma), float3(0.2126, 0.7152, 0.0722));
+    return dot(pow(max(color, 0), Gamma), float3(0.2126, 0.7152, 0.0722));
 }
 
 float2x2 CalculateRotationMatrix(float2 texCoord)
@@ -121,7 +123,7 @@ float4 ExtractLuminance_PS(float2 texCoord : TEXCOORD0) : COLOR0
     {
         texColor = float4(0, 0, 0, 1);
     }
-    float luminance = saturate(Luminance(max(texColor.rgb, 0)));
+    float luminance = saturate(Luminance(texColor.rgb));
     return float4(luminance, 0, 0, 1);
 }
 
@@ -147,22 +149,71 @@ float4 GenerateGradients_PS(
         ddy(blurredLuminance)
     );
     luminanceGradient = smoothstep(-1.0, 1.0, luminanceGradient);
-    float cloudLuma = pow(saturate(Luminance(max(cloudColor.rgb, 0))), InverseGamma);
-    return float4(luminanceGradient, cloudLuma, cloudColor.a);
+    
+    float luminance;
+    if (cloudColor.a <= 0.0)
+    {
+        luminance = 0.0;
+        float totalAlpha = 0.0;
+        float4 neighborColor;
+        
+        neighborColor = tex2D(CloudSampler, cloudTexCoord - float2(PixelSize.x, 0));
+        luminance += Luminance(neighborColor);
+        totalAlpha += neighborColor.a;
+        neighborColor = tex2D(CloudSampler, cloudTexCoord + float2(PixelSize.x, 0));
+        luminance += Luminance(neighborColor);
+        totalAlpha += neighborColor.a;
+        neighborColor = tex2D(CloudSampler, cloudTexCoord - float2(0, PixelSize.y));
+        luminance += Luminance(neighborColor);
+        totalAlpha += neighborColor.a;
+        neighborColor = tex2D(CloudSampler, cloudTexCoord + float2(0, PixelSize.y));
+        luminance += Luminance(neighborColor);
+        totalAlpha += neighborColor.a;
+        
+        if (totalAlpha <= 0.0)
+        {
+            luminance = 0.0;
+            totalAlpha = 0.0;
+            
+            neighborColor = tex2D(CloudSampler, cloudTexCoord - PixelSize);
+            luminance += Luminance(neighborColor);
+            totalAlpha += neighborColor.a;
+            neighborColor = tex2D(CloudSampler, cloudTexCoord + PixelSize);
+            luminance += Luminance(neighborColor);
+            totalAlpha += neighborColor.a;
+            neighborColor = tex2D(
+                CloudSampler, cloudTexCoord + float2(PixelSize.x, -PixelSize.y)
+            );
+            luminance += Luminance(neighborColor);
+            totalAlpha += neighborColor.a;
+            neighborColor = tex2D(
+                CloudSampler, cloudTexCoord + float2(-PixelSize.x, PixelSize.y)
+            );
+            luminance += Luminance(neighborColor);
+            totalAlpha += neighborColor.a;
+            
+            luminance = totalAlpha <= 0.0 ? 0.0 : luminance / totalAlpha;
+        }
+        else
+        {
+            luminance /= totalAlpha;
+        }
+    }
+    else
+    {
+        luminance = Luminance(cloudColor.rgb) / cloudColor.a;
+    }
+    
+    return float4(luminanceGradient, luminance, cloudColor.a);
 }
 
 float4 CloudShading_PS(float2 texCoord : TEXCOORD0, float4 color : COLOR0) : COLOR0
 {
     float4 texColor = tex2D(TextureSampler, texCoord);
-    if (texColor.a == 0.0)
-    {
-        return float4(0, 0, 0, 0);
-    }
-    
     float2 surfaceGradient = -2 * texColor.xy + 1;
     float mult = NormalsMultiplierCloud(surfaceGradient, texCoord);
     
-    float baseLuminance = pow(saturate(texColor.z / texColor.a), Gamma);
+    float baseLuminance = texColor.z;
     float shadedLuminance = 0.8 * mult;
     float mixedLuminance = lerp(baseLuminance, shadedLuminance, SkyLightMult);
     float3 mixedColor =
