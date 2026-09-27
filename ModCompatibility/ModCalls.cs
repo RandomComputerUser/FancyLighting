@@ -28,12 +28,13 @@ internal static class ModCalls
             if (
                 args.Length == 3
                 && args[0] is "AddHook"
-                && args[1] is "PreDrawSky"
-                && args[2].IsDelegate(out FancySkyRendering.SkyColorModifier hook)
+                && args[1] is "ModifyFancyAtmosphereColors"
+                && args[2]
+                    .IsDelegate(out FancySkyRendering.FancyAtmosphereColorsModifier hook)
             )
             {
-                FancySkyRendering.PreDrawSky += hook;
-                return () => FancySkyRendering.PreDrawSky -= hook;
+                FancySkyRendering.ModifyFancyAtmosphereColors += hook;
+                return () => FancySkyRendering.ModifyFancyAtmosphereColors -= hook;
             }
         }
 

@@ -40,15 +40,16 @@ Add a hook that runs after Smooth Lighting updates its light map texture. This e
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 
-#### `"AddHook", "PreDrawSky", void hook(ref Vector3, ref Vector3, ref Vector3)`
-Add a hook that runs before Fancy Atmosphere draws the sky. This allows the color of the sky to be modified.
+#### `"AddHook", "ModifyFancyAtmosphereColors", void hook(ref Vector3, ref Vector3, ref Vector3, ref Vector3)`
+Add a hook that modifies the colors used by Fancy Atmosphere.
 
 - **Call Parameters:**
-    - `void hook(ref Vector3, ref Vector3, ref Vector3)`: The hook.
+    - `void hook(ref Vector3, ref Vector3, ref Vector3, ref Vector3)`: The hook.
         - **Parameters:**
-            - `ref Vector3 highSkyColor`: The color of the high part of the sky.
             - `ref Vector3 lowSkyColor`: The color of the low part of the sky.
-            - `ref Vector3 skyColorMult`: A color multiplier applied to the entire sky. Typically, this changes based on the biome.
+            - `ref Vector3 middleSkyColor`: The color of the middle part of the sky.
+            - `ref Vector3 highSkyColor`: The color of the high part of the sky.
+            - `ref Vector3 skyColorMult`: A color multiplier applied to the entire sky. Typically, this changes based on the biome or weather.
         - **Remarks:** The hook will be run both while on the main menu and while in a world.
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.

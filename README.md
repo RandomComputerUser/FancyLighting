@@ -17,6 +17,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 #### Features and Improvements
 - Added Fancy Sky Light Shading
+- Improved Fancy Atmosphere
+- Replaced the sky color presets with new presets that affect both Fancy Atmosphere and Fancy Sky Light Colors
 - Added tile entity normal maps and smooth lighting
 - Added a new default tone mapping operator for full HDR rendering, *Neutral (LMS)*
 - Added bright light synchronization for full HDR rendering
@@ -66,4 +68,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 #### Mod.Call() Changes
 - Mod.Call() now returns the exception object if an exception occurs (previously, null was returned)
 - Added new constraints to the `PostUpdateLightMap` hook
+- Removed the `PreDrawSky` hook
+- Added the `ModifyFancyAtmosphereColors` hook
 - Added the `ModifyFancySkyLightShadingStrength` hook

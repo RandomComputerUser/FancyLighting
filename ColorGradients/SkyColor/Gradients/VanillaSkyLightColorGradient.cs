@@ -1,10 +1,10 @@
-﻿namespace FancyLighting.ColorProfiles.SkyColor;
+﻿namespace FancyLighting.ColorGradients.SkyColor.Gradients;
 
-public sealed class VanillaSkyLightColors : LoadableColorProfileBase, ISimpleColorProfile
+public sealed class VanillaSkyLightColorGradient : LoadableTimeBasedColorGradientBase
 {
-    private VanillaSkyLightColors() { }
+    private VanillaSkyLightColorGradient() { }
 
-    public Vector3 GetColor(double hour)
+    public override Vector3 GetColor(double hour)
     {
         // This code is adapted from vanilla
 

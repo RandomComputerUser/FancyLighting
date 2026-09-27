@@ -5,10 +5,11 @@ sampler DitherSampler : register(s0);
 
 float4x4 MatrixTransform;
 
-float HighSkyLevel;
 float LowSkyLevel;
-float3 HighSkyColor;
-float3 LowSkyColor;
+float HighSkyLevel;
+float3 AtmosphereColorCoefficients0;
+float3 AtmosphereColorCoefficients1;
+float3 AtmosphereColorCoefficients2;
 
 float Gamma;
 float InverseGamma;
@@ -36,7 +37,12 @@ float4 Dithered(float2 position, float4 color)
 float4 CalculateSkyColor(float2 coords)
 {
     float t = Smootherstep(coords.y);
-    return float4(pow(lerp(HighSkyColor, LowSkyColor, t), InverseGamma), 1);
+    float3 color = AtmosphereColorCoefficients0
+        + t * (
+            AtmosphereColorCoefficients1
+            + t * AtmosphereColorCoefficients2
+        );
+    return float4(pow(max(color, 0), InverseGamma), 1);
 }
 
 /* Vertex shaders ***********************************************************************/
@@ -58,7 +64,7 @@ void Sky_VS(
 )
 {
     screenPos = position;
-    texCoord.y = (texCoord.y - HighSkyLevel) / (LowSkyLevel - HighSkyLevel);
+    texCoord.y = (texCoord.y - LowSkyLevel) / (HighSkyLevel - LowSkyLevel);
 }
 
 /* Pixel shaders ************************************************************************/

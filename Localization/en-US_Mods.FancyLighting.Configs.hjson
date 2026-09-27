@@ -371,26 +371,15 @@ PreferencesConfig: {
 
 	# Fancy Sky
 	
-	SkyBrightnessBoost: {
-		Label: Sky Brightness Boost
+	FancySkyColorGradientsPreset: {
+		Label: Sky Light Color Gradients Preset
 		Tooltip:
 			'''
-			How much to boost the brightness of the sky
-
-			{$Snippets.RequireFancyAtmosphere}
-			'''
-	}
-
-	FancySkyColorsPreset: {
-		Label: Sky Light Color Preset
-		Tooltip:
-			'''
-			Which set of sky light colors is used
+			Which set of sky light color gradients is used
 
 			Has the largest effect around sunrise and sunset
-			Fancy Atmosphere is intended to be used with the Natural preset
 
-			{$Snippets.RequireFancySkyLightColors}
+			{$Snippets.RequireFancyAtmosphereOrFancySkyLightColors}
 			'''
 	}
 
@@ -732,31 +721,16 @@ SettingsPreset: {
 	}
 }
 
-SkyColorPreset: {
+SkyColorGradientsPreset: {
 	Tooltip: ""
 
-	Preset1: {
+	Natural: {
 		Label: Natural
 		Tooltip: ""
 	}
 
-	Preset2: {
-		Label: Reddish
-		Tooltip: ""
-	}
-
-	Preset3: {
-		Label: Darker
-		Tooltip: ""
-	}
-
-	Preset4: {
-		Label: Orangish
-		Tooltip: ""
-	}
-
-	Preset5: {
-		Label: Warmer
+	RedGoldenHour: {
+		Label: Red Golden Hour
 		Tooltip: ""
 	}
 }
@@ -807,7 +781,6 @@ Snippets: {
 	RequireLightMapBlurring: "[c/FF00FF:{$Snippets.LightMapBlurring}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireNormalMaps: "[c/FF00FF:{$Snippets.NormalMaps}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireGlobalIllumination: "[c/FF00FF:{$Snippets.GlobalIllumination}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
-	RequireFancyAtmosphere: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
-	RequireFancySkyLightColors: "[c/FF00FF:{$Snippets.FancySkyLightColors}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireFancyAtmosphereOrFancySkyLightColors: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FancySkyLightColors}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancySkyLightShading: "[c/FF00FF:{$Snippets.FancySkyLightShading}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 }

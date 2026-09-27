@@ -941,7 +941,7 @@ public sealed class FancyLightingMod : Mod
         )
         {
             orig(self, gameTime);
-            _fancySkyColorsInstance.DrawColorProfiles();
+            _fancySkyColorsInstance.DrawColorGradients();
             return;
         }
 
@@ -956,7 +956,7 @@ public sealed class FancyLightingMod : Mod
             BlendState.Additive.AlphaSourceBlend = originalAlphaSourceBlend;
         }
 
-        _fancySkyColorsInstance.DrawColorProfiles();
+        _fancySkyColorsInstance.DrawColorGradients();
     }
 
     private void _FilterManager_BeginCapture(

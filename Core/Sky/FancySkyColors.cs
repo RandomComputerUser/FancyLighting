@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-using FancyLighting.ColorProfiles;
-using FancyLighting.ColorProfiles.SkyColor;
+using FancyLighting.ColorGradients;
+using FancyLighting.ColorGradients.SkyColor.Gradients;
 using FancyLighting.Config.Enums;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -13,22 +13,11 @@ public sealed class FancySkyColors
 {
     public static FancySkyColors Instance { get; private set; }
 
-    private Texture2D _profilesTexture;
-
-    public Dictionary<SkyColorPreset, ISimpleColorProfile> Preset { get; private set; }
+    private Texture2D _gradientsTexture;
 
     internal FancySkyColors()
     {
         Instance = this;
-
-        Preset = new()
-        {
-            [SkyColorPreset.Preset1] = ModContent.GetInstance<SkyLightColors1>(),
-            [SkyColorPreset.Preset2] = ModContent.GetInstance<SkyLightColors2>(),
-            [SkyColorPreset.Preset3] = ModContent.GetInstance<SkyLightColors3>(),
-            [SkyColorPreset.Preset4] = ModContent.GetInstance<SkyLightColors4>(),
-            [SkyColorPreset.Preset5] = ModContent.GetInstance<SkyLightColors5>(),
-        };
 
         AddHooks();
     }
@@ -42,8 +31,8 @@ public sealed class FancySkyColors
     internal void Unload()
     {
         Instance = null;
-        _profilesTexture?.Dispose();
-        _profilesTexture = null;
+        _gradientsTexture?.Dispose();
+        _gradientsTexture = null;
     }
 
     private static void _Main_SetBackColor(
@@ -113,25 +102,26 @@ public sealed class FancySkyColors
 
     public Vector3 CalculateSkyColor(double hour)
     {
-        if (!LightingConfig.Instance.FancySkyColorsEnabled() || Preset is null)
+        if (!LightingConfig.Instance.FancySkyColorsEnabled())
         {
-            return ModContent.GetInstance<VanillaSkyLightColors>().GetColor(hour);
+            return ModContent.GetInstance<VanillaSkyLightColorGradient>().GetColor(hour);
         }
 
-        var foundProfile = Preset.TryGetValue(
-            PreferencesConfig.Instance.FancySkyColorsPreset,
-            out var profile
-        );
-
-        if (!foundProfile)
+        ITimedBasedColorGradient colorGradient = PreferencesConfig
+            .Instance
+            .FancySkyColorGradientsPreset switch
         {
-            profile = ModContent.GetInstance<VanillaSkyLightColors>();
-        }
+            SkyColorGradientsPreset.Natural =>
+                ModContent.GetInstance<NaturalSkyLightColorGradient>(),
+            SkyColorGradientsPreset.RedGoldenHour =>
+                ModContent.GetInstance<RedGoldenHourSkyLightColorGradient>(),
+            _ => ModContent.GetInstance<VanillaSkyLightColorGradient>(),
+        };
 
-        return profile.GetColor(hour);
+        return colorGradient.GetColor(hour);
     }
 
-    internal void DrawColorProfiles()
+    internal void DrawColorGradients()
     {
         if (
             !DeveloperConfig.Instance.ShowFancySkyColorGradients
@@ -143,9 +133,9 @@ public sealed class FancySkyColors
             return;
         }
 
-        if (_profilesTexture?.IsDisposed is not false)
+        if (_gradientsTexture?.IsDisposed is not false)
         {
-            _profilesTexture = CreateProfilesTexture();
+            _gradientsTexture = CreateGradientsTexture();
         }
 
         const float ScaleY = 50f;
@@ -158,12 +148,12 @@ public sealed class FancySkyColors
             RasterizerState.CullNone
         );
         Main.spriteBatch.Draw(
-            _profilesTexture,
+            _gradientsTexture,
             new Vector2(Main.screenWidth / 2f, Main.screenHeight / 2f),
             null,
             Color.White,
             0f,
-            new Vector2(_profilesTexture.Width / 2f, _profilesTexture.Height / 2f),
+            new Vector2(_gradientsTexture.Width / 2f, _gradientsTexture.Height / 2f),
             new Vector2(1f, ScaleY),
             SpriteEffects.None,
             0f
@@ -171,36 +161,47 @@ public sealed class FancySkyColors
         Main.spriteBatch.End();
     }
 
-    private static Texture2D CreateProfilesTexture()
+    private static Texture2D CreateGradientsTexture()
     {
+        ITimedBasedColorGradient[] colorGradients =
+        [
+            ModContent.GetInstance<VanillaSkyLightColorGradient>(),
+            ModContent.GetInstance<NaturalSkyLightColorGradient>(),
+            ModContent.GetInstance<NaturalSunColorGradient>(),
+            ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>()._lowGradient,
+            ModContent
+                .GetInstance<NaturalFancyAtmosphereColorGradientSet>()
+                ._middleGradient,
+            ModContent
+                .GetInstance<NaturalFancyAtmosphereColorGradientSet>()
+                ._highGradient,
+            ModContent.GetInstance<RedGoldenHourSkyLightColorGradient>(),
+            ModContent.GetInstance<RedGoldenHourSunColorGradient>(),
+            ModContent
+                .GetInstance<RedGoldenHourFancyAtmosphereColorGradientSet>()
+                ._lowGradient,
+            ModContent
+                .GetInstance<RedGoldenHourFancyAtmosphereColorGradientSet>()
+                ._middleGradient,
+            ModContent
+                .GetInstance<RedGoldenHourFancyAtmosphereColorGradientSet>()
+                ._highGradient,
+        ];
+
         var width = 24 * 60;
-        var height = (2 * 9) - 1;
+        var height = (2 * colorGradients.Length) - 1;
 
         var texture = new Texture2D(Main.graphics.GraphicsDevice, width, height);
         var colors = new Color[width * height];
 
         var i = 0;
-        foreach (
-            var colorProfile in (ISimpleColorProfile[])
-                [
-                    ModContent.GetInstance<VanillaSkyLightColors>(),
-                    ModContent.GetInstance<SkyLightColors1>(),
-                    ModContent.GetInstance<SkyLightColors2>(),
-                    ModContent.GetInstance<SkyLightColors3>(),
-                    ModContent.GetInstance<SkyLightColors4>(),
-                    ModContent.GetInstance<SkyLightColors5>(),
-                    ModContent.GetInstance<SkyColorsHigh>(),
-                    ModContent.GetInstance<SkyColorsLow>(),
-                    ModContent.GetInstance<SunColors>(),
-                ]
-        )
+        foreach (var colorGradient in colorGradients)
         {
             for (var minute = 0; minute < width; ++minute)
             {
                 var hour = minute / 60.0;
-                var colorVec = colorProfile.GetColor(hour);
-                ColorUtils.Convert(out Color color, colorVec);
-                colors[i++] = color;
+                var colorVec = colorGradient.GetColor(hour);
+                ColorUtils.Convert(out colors[i++], colorVec);
             }
 
             i += width;

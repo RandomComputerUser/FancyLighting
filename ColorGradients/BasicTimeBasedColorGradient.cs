@@ -1,19 +1,24 @@
-﻿namespace FancyLighting.ColorProfiles.SkyColor;
+﻿namespace FancyLighting.ColorGradients;
 
-public sealed class SkyColorProfile : ISimpleColorProfile
+public sealed class BasicTimeBasedColorGradient : ITimedBasedColorGradient
 {
     private readonly List<(double hour, Vector3 color)> _colors;
     private readonly InterpolationMode _interpolationMode;
+    private readonly bool _useLinearColorSpace;
 
-    public SkyColorProfile(InterpolationMode interpolationMode)
+    public BasicTimeBasedColorGradient(
+        InterpolationMode interpolationMode,
+        bool useLinearColorSpace
+    )
     {
         _colors = new();
         _interpolationMode = interpolationMode;
+        _useLinearColorSpace = useLinearColorSpace;
     }
 
     public void AddColor(double hour, Vector3 color) => _colors.Add((hour, color));
 
-    private (double hour, Vector3 color) HourColorAtIndex(int index)
+    private (double hour, Vector3 color) HourAndColorAtIndex(int index)
     {
         if (index < 0)
         {
@@ -90,15 +95,23 @@ public sealed class SkyColorProfile : ISimpleColorProfile
         var color = _colors[^1].color;
         for (var i = 1; i <= _colors.Count; ++i)
         {
-            if (hour > HourColorAtIndex(i).hour)
+            if (hour > HourAndColorAtIndex(i).hour)
             {
                 continue;
             }
 
-            var (hour0, color0) = HourColorAtIndex(i - 2);
-            var (hour1, color1) = HourColorAtIndex(i - 1);
-            var (hour2, color2) = HourColorAtIndex(i);
-            var (hour3, color3) = HourColorAtIndex(i + 1);
+            var (hour0, color0) = HourAndColorAtIndex(i - 2);
+            var (hour1, color1) = HourAndColorAtIndex(i - 1);
+            var (hour2, color2) = HourAndColorAtIndex(i);
+            var (hour3, color3) = HourAndColorAtIndex(i + 1);
+
+            if (_useLinearColorSpace)
+            {
+                ColorUtils.GammaToLinear(ref color0);
+                ColorUtils.GammaToLinear(ref color1);
+                ColorUtils.GammaToLinear(ref color2);
+                ColorUtils.GammaToLinear(ref color3);
+            }
 
             var diff = (float)(hour2 - hour1);
             var t = (float)(hour - hour1) / diff;
@@ -138,6 +151,11 @@ public sealed class SkyColorProfile : ISimpleColorProfile
             }
 
             break;
+        }
+
+        if (_useLinearColorSpace)
+        {
+            ColorUtils.LinearToGamma(ref color);
         }
 
         return Vector3.Clamp(color, Vector3.Zero, Vector3.One);

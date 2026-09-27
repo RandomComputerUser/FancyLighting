@@ -1,4 +1,7 @@
-﻿using FancyLighting.ColorProfiles.SkyColor;
+﻿using FancyLighting.ColorGradients;
+using FancyLighting.ColorGradients.SkyColor;
+using FancyLighting.ColorGradients.SkyColor.Gradients;
+using FancyLighting.Config.Enums;
 using ReLogic.Content;
 
 namespace FancyLighting.Core.Sky;
@@ -14,29 +17,31 @@ public sealed class FancySkyRendering
     private const float SkyBrightness = 1.25f;
     private const float SkyBrightnessHiDef = 1.3f;
 
-    private const float FadeBegin = 0.21f;
-    private const float FadeHeight = 0.42f;
-    private const float FadeHeightMult = 15f / 8; // 3f / 2 for smoothstep
+    private const float FadeBegin = 0.24f;
+    private const float FadeHeight = 0.36f;
+    private const float FadeHeightMult = 1f;
 
     /// <summary>
     /// Modify the colors of the sky used in Fancy Atmosphere.
     /// </summary>
-    /// <param name="highSkyColor">The color of the high part of the sky.</param>
     /// <param name="lowSkyColor">The color of the low part of the sky.</param>
-    /// <param name="skyColorMult">A color multiplier applied to the entire sky. Typically, this changes based on the biome.</param>
-    public delegate void SkyColorModifier(
-        ref Vector3 highSkyColor,
+    /// <param name="middleSkyColor">The color of the middle part of the sky.</param>
+    /// <param name="highSkyColor">The color of the high part of the sky.</param>
+    /// <param name="skyColorMult">A color multiplier applied to the entire sky. Typically, this changes based on the biome or weather.</param>
+    public delegate void FancyAtmosphereColorsModifier(
         ref Vector3 lowSkyColor,
+        ref Vector3 middleSkyColor,
+        ref Vector3 highSkyColor,
         ref Vector3 skyColorMult
     );
 
     /// <summary>
-    /// This event is invoked before the sky is drawn.
+    /// This event is invoked when the colors used for Fancy Atmosphere are calculated.
     /// </summary>
     /// <remarks>
     /// This event is invoked both while on the main menu and while in a world.
     /// </remarks>
-    public static event SkyColorModifier PreDrawSky;
+    public static event FancyAtmosphereColorsModifier ModifyFancyAtmosphereColors;
 
     internal FancySkyRendering()
     {
@@ -62,7 +67,7 @@ public sealed class FancySkyRendering
 
     internal void Unload()
     {
-        PreDrawSky = null;
+        ModifyFancyAtmosphereColors = null;
     }
 
     // Draw sky
@@ -87,9 +92,7 @@ public sealed class FancySkyRendering
             && LightingConfig.Instance.SmoothLightingEnabled()
             && doOverbright
             && !hiDef;
-        var gamma = MainGraphics.DoingCapture
-            ? PostProcessing.ContentGamma()
-            : PostProcessing.DefaultGamma;
+        var gamma = PostProcessing.ContentGamma();
 
         var sbParams = Main.spriteBatch.GetParameters();
         Main.spriteBatch.End();
@@ -102,27 +105,34 @@ public sealed class FancySkyRendering
             / new Color(FancySkyColors.Instance.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
         var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
-        skyBrightness = Math.Clamp(
-            MathUtils.Lerp(1f, skyBrightness, PreferencesConfig.Instance.SkyBrightness()),
-            0f,
-            10f
+
+        FancyAtmosphereColorGradientSetBase colorGradientSet = PreferencesConfig
+            .Instance
+            .FancySkyColorGradientsPreset switch
+        {
+            SkyColorGradientsPreset.Natural =>
+                ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
+            SkyColorGradientsPreset.RedGoldenHour =>
+                ModContent.GetInstance<RedGoldenHourFancyAtmosphereColorGradientSet>(),
+            _ => ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
+        };
+
+        var atmosphereColors = colorGradientSet.GetColors(hour);
+
+        ModifyFancyAtmosphereColors?.Invoke(
+            ref atmosphereColors.LowColor,
+            ref atmosphereColors.MiddleColor,
+            ref atmosphereColors.HighColor,
+            ref skyColorMult
         );
 
-        var highSkyColor = ModContent.GetInstance<SkyColorsHigh>().GetColor(hour);
-        var lowSkyColor = ModContent.GetInstance<SkyColorsLow>().GetColor(hour);
-
-        PreDrawSky?.Invoke(ref highSkyColor, ref lowSkyColor, ref skyColorMult);
-
-        highSkyColor *= skyColorMult;
-        lowSkyColor *= skyColorMult;
-        highSkyColor.X = MathF.Pow(highSkyColor.X, gamma);
-        highSkyColor.Y = MathF.Pow(highSkyColor.Y, gamma);
-        highSkyColor.Z = MathF.Pow(highSkyColor.Z, gamma);
-        lowSkyColor.X = MathF.Pow(lowSkyColor.X, gamma);
-        lowSkyColor.Y = MathF.Pow(lowSkyColor.Y, gamma);
-        lowSkyColor.Z = MathF.Pow(lowSkyColor.Z, gamma);
-        highSkyColor *= skyBrightness;
-        lowSkyColor *= skyBrightness;
+        skyColorMult *= skyBrightness;
+        atmosphereColors.LowColor *= skyColorMult;
+        atmosphereColors.MiddleColor *= skyColorMult;
+        atmosphereColors.HighColor *= skyColorMult;
+        ColorUtils.GammaToLinear(ref atmosphereColors.LowColor);
+        ColorUtils.GammaToLinear(ref atmosphereColors.MiddleColor);
+        ColorUtils.GammaToLinear(ref atmosphereColors.HighColor);
 
         var bgTopY =
             Main.gameMenu || MainGraphics.InCameraMode
@@ -132,8 +142,8 @@ public sealed class FancySkyRendering
         var lowLevel = highLevel + FadeHeight;
 
         var midLevel = (highLevel + lowLevel) / 2f;
-        highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
         lowLevel = midLevel + (FadeHeightMult * (lowLevel - midLevel));
+        highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
 
         if (
             !Main.gameMenu
@@ -141,16 +151,22 @@ public sealed class FancySkyRendering
             && Main.BackgroundViewMatrix.TransformationMatrix.M22 < 0f
         )
         {
-            (highSkyColor, lowSkyColor) = (lowSkyColor, highSkyColor);
+            (atmosphereColors.HighColor, atmosphereColors.LowColor) = (
+                atmosphereColors.LowColor,
+                atmosphereColors.HighColor
+            );
             (highLevel, lowLevel) = (1f - lowLevel, 1f - highLevel);
         }
 
+        var coefficients = atmosphereColors.CalculateCoefficients();
+
         var effect = doDithering ? _skyDitheredEffect : _skyEffect;
         effect
-            .SetParameter("HighSkyLevel", highLevel)
             .SetParameter("LowSkyLevel", lowLevel)
-            .SetParameter("HighSkyColor", highSkyColor)
-            .SetParameter("LowSkyColor", lowSkyColor)
+            .SetParameter("HighSkyLevel", highLevel)
+            .SetParameter("AtmosphereColorCoefficients0", coefficients.Coefficients0)
+            .SetParameter("AtmosphereColorCoefficients1", coefficients.Coefficients1)
+            .SetParameter("AtmosphereColorCoefficients2", coefficients.Coefficients2)
             .SetParameter("InverseGamma", 1f / gamma);
         Blitter.Blit(
             doDithering ? _ditherNoise : null,
@@ -207,17 +223,26 @@ public sealed class FancySkyRendering
 
         if (!Main.eclipse)
         {
+            ITimedBasedColorGradient colorGradient = PreferencesConfig
+                .Instance
+                .FancySkyColorGradientsPreset switch
+            {
+                SkyColorGradientsPreset.Natural =>
+                    ModContent.GetInstance<NaturalSunColorGradient>(),
+                SkyColorGradientsPreset.RedGoldenHour =>
+                    ModContent.GetInstance<RedGoldenHourSunColorGradient>(),
+                _ => ModContent.GetInstance<NaturalSunColorGradient>(),
+            };
+
             var hour = GameTimeUtils.CalculateCurrentHour();
-            var sunColorVec = ModContent.GetInstance<SunColors>().GetColor(hour);
+            var sunColorVec = colorGradient.GetColor(hour);
             ColorUtils.Convert(out sunColor, sunColorVec);
         }
 
         SpriteBatchEffect effect = null;
         if (Main.dayTime)
         {
-            var gamma = MainGraphics.DoingCapture
-                ? PostProcessing.ContentGamma()
-                : PostProcessing.DefaultGamma;
+            var gamma = PostProcessing.ContentGamma();
             effect = _sunEffect
                 .SetParameter("Gamma", gamma)
                 .SetParameter("InverseGamma", 1f / gamma);

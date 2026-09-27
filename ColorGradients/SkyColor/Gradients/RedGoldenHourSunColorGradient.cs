@@ -1,16 +1,17 @@
-﻿namespace FancyLighting.ColorProfiles.SkyColor;
+﻿namespace FancyLighting.ColorGradients.SkyColor.Gradients;
 
-public sealed class SunColors : LoadableColorProfileBase, ISimpleColorProfile
+public sealed class RedGoldenHourSunColorGradient : LoadableTimeBasedColorGradientBase
 {
-    private readonly SkyColorProfile _profile;
+    private readonly BasicTimeBasedColorGradient _gradient;
 
-    private SunColors()
+    private RedGoldenHourSunColorGradient()
     {
-        _profile = new(InterpolationMode.Cubic);
+        _gradient = new(InterpolationMode.Cubic, useLinearColorSpace: true);
 
         var noonTime = 12.0;
-        var sunriseTime = noonTime - (6.0 + (50.0 / 60.0));
-        var sunsetTime = noonTime + (6.0 + (50.0 / 60.0));
+        // Sunrise and sunset times are affected by resolution
+        var sunriseTime = noonTime - 7.0;
+        var sunsetTime = noonTime + 7.0;
 
         var nightColor = new Vector3(1f, 0.77f, 0.45f);
         var sunriseSunsetColor = new Vector3(1f, 0.84f, 0.62f);
@@ -40,9 +41,9 @@ public sealed class SunColors : LoadableColorProfileBase, ISimpleColorProfile
 
         foreach (var (hour, color) in colors)
         {
-            _profile.AddColor(hour, color);
+            _gradient.AddColor(hour, color);
         }
     }
 
-    public Vector3 GetColor(double hour) => _profile.GetColor(hour);
+    public override Vector3 GetColor(double hour) => _gradient.GetColor(hour);
 }

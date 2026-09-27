@@ -83,8 +83,8 @@ public static class DefaultOptions
     public const bool UseFancySkyLighting = true;
 
     // Fancy Sky Preferences
-    public const int SkyBrightnessBoost = 5;
-    public const SkyColorPreset FancySkyColorsPreset = SkyColorPreset.Preset1;
+    public const SkyColorGradientsPreset FancySkyColorGradientsPreset =
+        SkyColorGradientsPreset.Natural;
     public const int CloudShadingStrength = 5;
 
     // Miscellaneous Preferences
