@@ -65,4 +65,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 #### Mod.Call() Changes
 - Mod.Call() now returns the exception object if an exception occurs (previously, null was returned)
-- Added new remarks to the `PostUpdateLightMap` hook
+- Added new constraints to the `PostUpdateLightMap` hook
+- Added the `ModifyFancySkyLightShadingStrength` hook

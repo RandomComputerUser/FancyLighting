@@ -40,6 +40,22 @@ internal static class ModCalls
         {
             if (
                 args.Length == 3
+                && args[0] is "AddHook"
+                && args[1] is "ModifyFancySkyLightShadingStrength"
+                && args[2]
+                    .IsDelegate(
+                        out FancySkyLighting.FancySkyLightShadingStrengthModifier hook
+                    )
+            )
+            {
+                FancySkyLighting.ModifyFancySkyLightShadingStrength += hook;
+                return () => FancySkyLighting.ModifyFancySkyLightShadingStrength -= hook;
+            }
+        }
+
+        {
+            if (
+                args.Length == 3
                 && args[0] is "AddCustomTileLighting"
                 && args[1] is int tileType
                 && args[2]

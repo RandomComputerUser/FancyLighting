@@ -10,8 +10,28 @@ public static class FancySkyLighting
     private static float _baseSkyLightLuma;
     private static float _lumaScaleFactor;
 
+    /// <summary>
+    /// Modify the strength of Fancy Sky Light Shading.
+    /// </summary>
+    /// <param name="weatherMultiplier">The shading strength multiplier due to the weather.</param>
+    public delegate void FancySkyLightShadingStrengthModifier(
+        ref float weatherMultiplier
+    );
+
+    /// <summary>
+    /// This event is invoked when the strength of Fancy Sky Light Shading is calculated.
+    /// </summary>
+    /// <remarks>
+    /// This event is invoked both while on the main menu and while in a world.
+    /// This event may not be invoked at times during dawn and dusk.
+    /// This event is invoked after the shading strength is modified due to vanilla weather such as rain.
+    /// </remarks>
+    public static event FancySkyLightShadingStrengthModifier ModifyFancySkyLightShadingStrength;
+
     internal static void Unload()
     {
+        ModifyFancySkyLightShadingStrength = null;
+
         _skyLightLuma = null;
     }
 
@@ -101,8 +121,16 @@ public static class FancySkyLighting
 
         var angle = Math.PI * progress;
         amountVisible = MathUtils.Smoothstep(0.0, 1.0, amountVisible);
-        amountVisible *= 1.0 - Math.Clamp(Main.maxRaining, 0f, 1f);
+
+        var weatherMultiplier = CalculateSkyLightShadingMultiplierDueToWeather();
+        ModifyFancySkyLightShadingStrength?.Invoke(ref weatherMultiplier);
+        amountVisible *= Math.Clamp(weatherMultiplier, 0f, 1f);
+
         var mult = baseMult * amountVisible;
         return (angle, mult, amountVisible);
     }
+
+    public static float CalculateSkyLightShadingMultiplierDueToWeather() =>
+        (1f - Math.Clamp(Main.maxRaining, 0f, 1f))
+        * (1f - Math.Clamp(Main.GraveyardVisualIntensity, 0f, 1f));
 }

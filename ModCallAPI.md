@@ -53,6 +53,17 @@ Add a hook that runs before Fancy Atmosphere draws the sky. This allows the colo
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
 
+#### `"AddHook", "ModifyFancySkyLightShadingStrength", void hook(ref double)`
+Add a hook that modifies the strength of Fancy Sky Light Shading.
+
+- **Call Parameters:**
+    - `void hook(ref float)`: The hook.
+        - **Parameters:**
+            - `ref float weatherMultiplier`: The shading strength multiplier due to the weather.
+        - **Remarks:** The hook will be run both while on the main menu and while in a world. The hook may not be run at times during dawn and dusk. The hook will be run after the shading strength is modified due to vanilla weather such as rain.
+- **Call Returns:** `Action`
+    - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
+
 ### RemoveCustomTileLighting
 
 #### `"RemoveCustomTileLighting", int tileType`
