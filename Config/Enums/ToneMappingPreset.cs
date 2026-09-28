@@ -2,8 +2,7 @@
 
 public enum ToneMappingPreset
 {
-    NeutralLms = 1,
-    NeutralOld = 2,
-    FilmicSrgb = 3,
+    Brilliant = 1,
+    Vibrant = 2,
     Linear = 100,
 }

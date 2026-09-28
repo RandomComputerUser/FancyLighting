@@ -28,9 +28,8 @@ public sealed class PostProcessing
     private readonly FullscreenEffect _gammaToSrgbDitherEffect;
     private readonly FullscreenEffect _gammaToSrgbNoDitherEffect;
     private readonly FullscreenEffect _bloomCompositeEffect;
-    private readonly FullscreenEffect _toneMapNeutralLmsEffect;
-    private readonly FullscreenEffect _toneMapNeutralOldEffect;
-    private readonly FullscreenEffect _toneMapFilmicSrgbEffect;
+    private readonly FullscreenEffect _toneMapBrilliantEffect;
+    private readonly FullscreenEffect _toneMapVibrantEffect;
 
     private readonly BlurRenderer _blurRenderer = new();
 
@@ -58,9 +57,8 @@ public sealed class PostProcessing
         _gammaToSrgbDitherEffect = new(effect, "GammaToSrgbDither");
         _gammaToSrgbNoDitherEffect = new(effect, "GammaToSrgbNoDither");
         _bloomCompositeEffect = new(effect, "BloomComposite");
-        _toneMapNeutralLmsEffect = new(effect, "ToneMapNeutralLms");
-        _toneMapNeutralOldEffect = new(effect, "ToneMapNeutralOld");
-        _toneMapFilmicSrgbEffect = new(effect, "ToneMapFilmicSrgb");
+        _toneMapBrilliantEffect = new(effect, "ToneMapBrilliant");
+        _toneMapVibrantEffect = new(effect, "ToneMapVibrant");
     }
 
     internal void Unload()
@@ -205,7 +203,7 @@ public sealed class PostProcessing
             exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
             exposure *= tmo switch
             {
-                ToneMappingPreset.FilmicSrgb => 0.75f,
+                ToneMappingPreset.Vibrant => 0.75f,
                 _ => 1f,
             };
 
@@ -307,9 +305,8 @@ public sealed class PostProcessing
 
             var toneMappingEffect = tmo switch
             {
-                ToneMappingPreset.NeutralLms => _toneMapNeutralLmsEffect,
-                ToneMappingPreset.NeutralOld => _toneMapNeutralOldEffect,
-                ToneMappingPreset.FilmicSrgb => _toneMapFilmicSrgbEffect,
+                ToneMappingPreset.Brilliant => _toneMapBrilliantEffect,
+                ToneMappingPreset.Vibrant => _toneMapVibrantEffect,
                 _ => null,
             };
 

@@ -738,18 +738,13 @@ SkyColorGradientsPreset: {
 ToneMappingPreset: {
 	Tooltip: ""
 
-	NeutralLms: {
-		Label: Neutral (LMS)
+	Brilliant: {
+		Label: Brilliant
 		Tooltip: ""
 	}
 
-	NeutralOld: {
-		Label: Neutral (old WCG)
-		Tooltip: ""
-	}
-
-	FilmicSrgb: {
-		Label: Filmic (sRGB)
+	Vibrant: {
+		Label: Vibrant
 		Tooltip: ""
 	}
 
