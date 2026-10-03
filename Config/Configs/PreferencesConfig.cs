@@ -165,6 +165,7 @@ public sealed class PreferencesConfig : ModConfig
 
     // Fancy Sky
 
+    [Header("FancySky")]
     [DefaultValue(DefaultOptions.FancySkyColorGradientsPreset)]
     [Dropdown]
     public SkyColorGradientsPreset FancySkyColorGradientsPreset { get; set; }

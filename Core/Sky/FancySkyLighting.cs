@@ -75,8 +75,8 @@ public static class FancySkyLighting
         var diffFromNoon = hour - 12.0;
         var diffFromMidnight = hour < 12.0 ? hour : hour - 24.0;
 
-        const double SunsetOffset = 6.0 + (50.0 / 60.0);
-        const double MoonsetOffset = 4.0 + (21.0 / 60.0);
+        const double SunsetOffset = 7.25;
+        const double MoonsetOffset = 4.5;
 
         double progress;
         double amountVisible;
@@ -84,13 +84,13 @@ public static class FancySkyLighting
         {
             // sun is out
             progress = (diffFromNoon + SunsetOffset) / (2.0 * SunsetOffset);
-            amountVisible = (SunsetOffset - Math.Abs(diffFromNoon)) / (16.0 / 60.0);
+            amountVisible = (SunsetOffset - Math.Abs(diffFromNoon)) / (24.0 / 60.0);
         }
         else if (Math.Abs(diffFromMidnight) < MoonsetOffset)
         {
             // moon is out
             progress = (diffFromMidnight + MoonsetOffset) / (2.0 * MoonsetOffset);
-            amountVisible = (MoonsetOffset - Math.Abs(diffFromMidnight)) / (9.0 / 60.0);
+            amountVisible = (MoonsetOffset - Math.Abs(diffFromMidnight)) / (13.5 / 60.0);
         }
         else
         {
