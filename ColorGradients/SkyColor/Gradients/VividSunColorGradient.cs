@@ -1,10 +1,10 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor.Gradients;
 
-public sealed class RedGoldenHourSunColorGradient : LoadableTimeBasedColorGradientBase
+public sealed class VividSunColorGradient : LoadableTimeBasedColorGradientBase
 {
     private readonly BasicTimeBasedColorGradient _gradient;
 
-    private RedGoldenHourSunColorGradient()
+    private VividSunColorGradient()
     {
         _gradient = new(InterpolationMode.Cubic, useLinearColorSpace: true);
 

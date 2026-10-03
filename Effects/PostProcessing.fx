@@ -222,7 +222,7 @@ float4 BloomComposite_PS(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float3 ToneMapColorBrilliant(float3 x)
+float3 ToneMapColorNatural(float3 x)
 {
     const float c1 = 2.05;
     const float c2 = 5.25;
@@ -231,14 +231,14 @@ float3 ToneMapColorBrilliant(float3 x)
     return saturate(mul(x, CustomWcgToSrgb));
 }
 
-float4 ToneMapBrilliant_PS(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapNatural_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorBrilliant(color.rgb);
+    color.rgb = ToneMapColorNatural(color.rgb);
     return color;
 }
 
-float3 ToneMapColorVibrant(float3 x)
+float3 ToneMapColorVivid(float3 x)
 {
     const float c1 = 1.46666666667;
     const float c2 = 0.363636363636;
@@ -250,10 +250,10 @@ float3 ToneMapColorVibrant(float3 x)
     );
 }
 
-float4 ToneMapVibrant_PS(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapVivid_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorVibrant(color.rgb);
+    color.rgb = ToneMapColorVivid(color.rgb);
     return color;
 }
 
@@ -358,20 +358,20 @@ technique BloomComposite
     }
 }
 
-technique ToneMapBrilliant
+technique ToneMapNatural
 {    
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapBrilliant_PS();
+        PixelShader = compile ps_3_0 ToneMapNatural_PS();
     }
 }
 
-technique ToneMapVibrant
+technique ToneMapVivid
 {    
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapVibrant_PS();
+        PixelShader = compile ps_3_0 ToneMapVivid_PS();
     }
 }

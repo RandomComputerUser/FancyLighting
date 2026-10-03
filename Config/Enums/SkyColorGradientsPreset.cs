@@ -3,5 +3,5 @@
 public enum SkyColorGradientsPreset
 {
     Natural = 1,
-    RedGoldenHour = 2,
+    Vivid = 2,
 }

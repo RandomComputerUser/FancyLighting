@@ -112,8 +112,8 @@ public sealed class FancySkyRendering
         {
             SkyColorGradientsPreset.Natural =>
                 ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
-            SkyColorGradientsPreset.RedGoldenHour =>
-                ModContent.GetInstance<RedGoldenHourFancyAtmosphereColorGradientSet>(),
+            SkyColorGradientsPreset.Vivid =>
+                ModContent.GetInstance<VividFancyAtmosphereColorGradientSet>(),
             _ => ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
         };
 
@@ -229,8 +229,8 @@ public sealed class FancySkyRendering
             {
                 SkyColorGradientsPreset.Natural =>
                     ModContent.GetInstance<NaturalSunColorGradient>(),
-                SkyColorGradientsPreset.RedGoldenHour =>
-                    ModContent.GetInstance<RedGoldenHourSunColorGradient>(),
+                SkyColorGradientsPreset.Vivid =>
+                    ModContent.GetInstance<VividSunColorGradient>(),
                 _ => ModContent.GetInstance<NaturalSunColorGradient>(),
             };
 

@@ -1,9 +1,9 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor.Gradients;
 
-public class RedGoldenHourFancyAtmosphereColorGradientSet
+public class VividFancyAtmosphereColorGradientSet
     : LoadableFancyAtmosphereColorGradientSetBase
 {
-    private RedGoldenHourFancyAtmosphereColorGradientSet()
+    private VividFancyAtmosphereColorGradientSet()
     {
         var lowGradient = new BasicTimeBasedColorGradient(
             InterpolationMode.Cubic,

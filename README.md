@@ -20,7 +20,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Improved Fancy Atmosphere
 - Replaced the sky color presets with new presets that affect both Fancy Atmosphere and Fancy Sky Light Colors
 - Added tile entity normal maps and smooth lighting
-- Improved the default tone mapping operator for full HDR rendering and renamed *Neutral* and *Filmic* to *Brilliant* and *Vibrant*
+- Improved the default tone mapping operator for full HDR rendering and renamed *Neutral* and *Filmic* to *Natural* and *Vivid*
 - Added bright light synchronization for full HDR rendering
 - Improved basic glow rendering (without increased accuracy enabled) and made it the default for all quality presets
 - Made the *Bicubic* render mode a little brighter

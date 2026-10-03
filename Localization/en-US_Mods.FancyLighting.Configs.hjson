@@ -729,8 +729,8 @@ SkyColorGradientsPreset: {
 		Tooltip: ""
 	}
 
-	RedGoldenHour: {
-		Label: Red Golden Hour
+	Vivid: {
+		Label: Vivid
 		Tooltip: ""
 	}
 }
@@ -738,13 +738,13 @@ SkyColorGradientsPreset: {
 ToneMappingPreset: {
 	Tooltip: ""
 
-	Brilliant: {
-		Label: Brilliant
+	Natural: {
+		Label: Natural
 		Tooltip: ""
 	}
 
-	Vibrant: {
-		Label: Vibrant
+	Vivid: {
+		Label: Vivid
 		Tooltip: ""
 	}
 
