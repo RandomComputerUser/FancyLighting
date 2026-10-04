@@ -105,15 +105,15 @@ public sealed class FancySkyRendering
             / new Color(FancySkyColors.Instance.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
 
-        FancyAtmosphereColorGradientSetBase colorGradientSet = PreferencesConfig
+        AtmosphereColorGradientSetBase colorGradientSet = PreferencesConfig
             .Instance
             .FancySkyColorGradientsPreset switch
         {
             SkyColorGradientsPreset.Natural =>
-                ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
+                ModContent.GetInstance<NaturalAtmosphereColorGradientSet>(),
             SkyColorGradientsPreset.Vivid =>
-                ModContent.GetInstance<VividFancyAtmosphereColorGradientSet>(),
-            _ => ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>(),
+                ModContent.GetInstance<VividAtmosphereColorGradientSet>(),
+            _ => ModContent.GetInstance<NaturalAtmosphereColorGradientSet>(),
         };
 
         var atmosphereColors = colorGradientSet.GetColors(hour);

@@ -1,12 +1,12 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor;
 
-public abstract class FancyAtmosphereColorGradientSetBase
+public abstract class AtmosphereColorGradientSetBase
 {
     protected internal ITimedBasedColorGradient _lowGradient;
     protected internal ITimedBasedColorGradient _middleGradient;
     protected internal ITimedBasedColorGradient _highGradient;
 
-    public FancyAtmosphereColorSet GetColors(double hour) =>
+    public AtmosphereColorSet GetColors(double hour) =>
         new(
             _lowGradient.GetColor(hour),
             _middleGradient.GetColor(hour),

@@ -1,9 +1,8 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor.Gradients;
 
-public class NaturalFancyAtmosphereColorGradientSet
-    : LoadableFancyAtmosphereColorGradientSetBase
+public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSetBase
 {
-    private NaturalFancyAtmosphereColorGradientSet()
+    private NaturalAtmosphereColorGradientSet()
     {
         var lowGradient = new BasicTimeBasedColorGradient(
             InterpolationMode.Cubic,
@@ -27,23 +26,23 @@ public class NaturalFancyAtmosphereColorGradientSet
         var sunriseTime = noonTime - 7.0;
         var sunsetTime = noonTime + 7.0;
 
-        var nightColors = new FancyAtmosphereColorSet(
+        var nightColors = new AtmosphereColorSet(
             new(0.01f, 0.01f, 0.01f),
             new(0.01f, 0.01f, 0.01f),
             new(0.01f, 0.01f, 0.01f)
         );
-        var sunriseSunsetColors = new FancyAtmosphereColorSet(
+        var sunriseSunsetColors = new AtmosphereColorSet(
             new(1f, 1f, 0.01f),
             new(0.01f, 1f, 1f),
             new(0.01f, 0.01f, 1f)
         );
-        var dayColors = new FancyAtmosphereColorSet(
+        var dayColors = new AtmosphereColorSet(
             new(0.01f, 1f, 1f),
             new(0.01f, 0.5f, 1f),
             new(0.01f, 0.01f, 1f)
         );
 
-        (double hour, FancyAtmosphereColorSet color)[] colorSets =
+        (double hour, AtmosphereColorSet color)[] colorSets =
         [
             (0.00, nightColors),
             (sunriseTime, sunriseSunsetColors),

@@ -168,20 +168,14 @@ public sealed class FancySkyColors
             ModContent.GetInstance<VanillaSkyLightColorGradient>(),
             ModContent.GetInstance<NaturalSkyLightColorGradient>(),
             ModContent.GetInstance<NaturalSunColorGradient>(),
-            ModContent.GetInstance<NaturalFancyAtmosphereColorGradientSet>()._lowGradient,
-            ModContent
-                .GetInstance<NaturalFancyAtmosphereColorGradientSet>()
-                ._middleGradient,
-            ModContent
-                .GetInstance<NaturalFancyAtmosphereColorGradientSet>()
-                ._highGradient,
+            ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._lowGradient,
+            ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._middleGradient,
+            ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._highGradient,
             ModContent.GetInstance<VividSkyLightColorGradient>(),
             ModContent.GetInstance<VividSunColorGradient>(),
-            ModContent.GetInstance<VividFancyAtmosphereColorGradientSet>()._lowGradient,
-            ModContent
-                .GetInstance<VividFancyAtmosphereColorGradientSet>()
-                ._middleGradient,
-            ModContent.GetInstance<VividFancyAtmosphereColorGradientSet>()._highGradient,
+            ModContent.GetInstance<VividAtmosphereColorGradientSet>()._lowGradient,
+            ModContent.GetInstance<VividAtmosphereColorGradientSet>()._middleGradient,
+            ModContent.GetInstance<VividAtmosphereColorGradientSet>()._highGradient,
         ];
 
         var width = 24 * 60;

@@ -1,18 +1,14 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor;
 
-public struct FancyAtmosphereColorSet(
-    Vector3 lowColor,
-    Vector3 middleColor,
-    Vector3 highColor
-)
+public struct AtmosphereColorSet(Vector3 lowColor, Vector3 middleColor, Vector3 highColor)
 {
     public Vector3 LowColor = lowColor;
     public Vector3 MiddleColor = middleColor;
     public Vector3 HighColor = highColor;
 
-    public readonly FancyAtmosphereCoefficients CalculateCoefficients()
+    public readonly AtmosphereCoefficients CalculateCoefficients()
     {
-        var coefficients = default(FancyAtmosphereCoefficients);
+        var coefficients = default(AtmosphereCoefficients);
         (
             coefficients.Coefficients0.X,
             coefficients.Coefficients1.X,
@@ -43,7 +39,7 @@ public struct FancyAtmosphereColorSet(
         );
 }
 
-public struct FancyAtmosphereCoefficients
+public struct AtmosphereCoefficients
 {
     public Vector3 Coefficients0;
     public Vector3 Coefficients1;

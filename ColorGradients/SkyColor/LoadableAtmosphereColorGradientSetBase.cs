@@ -1,7 +1,7 @@
 ﻿namespace FancyLighting.ColorGradients.SkyColor;
 
-public abstract class LoadableFancyAtmosphereColorGradientSetBase
-    : FancyAtmosphereColorGradientSetBase,
+public abstract class LoadableAtmosphereColorGradientSetBase
+    : AtmosphereColorGradientSetBase,
         ILoadable
 {
     public virtual void Load(Mod mod) { }
