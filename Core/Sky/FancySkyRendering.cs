@@ -104,7 +104,6 @@ public sealed class FancySkyRendering
             Main.ColorOfTheSkies.ToVector3()
             / new Color(FancySkyColors.Instance.CalculateSkyColor(hour)).ToVector3();
         skyColorMult = Vector3.Clamp(skyColorMult, Vector3.Zero, Vector3.One);
-        var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
 
         FancyAtmosphereColorGradientSetBase colorGradientSet = PreferencesConfig
             .Instance
@@ -126,6 +125,7 @@ public sealed class FancySkyRendering
             ref skyColorMult
         );
 
+        var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
         skyColorMult *= skyBrightness;
         atmosphereColors.LowColor *= skyColorMult;
         atmosphereColors.MiddleColor *= skyColorMult;
