@@ -15,7 +15,6 @@ internal sealed class SettingsSystem : ModSystem
     internal static bool _hiDef;
     internal static bool _lightOnly;
     internal static bool _useSkyLightLuma;
-    internal static bool _useFancyClouds;
 
     internal static bool _doDrawILHookFailed;
 
@@ -51,7 +50,6 @@ internal sealed class SettingsSystem : ModSystem
             LightingConfig.Instance.SmoothLightingEnabled()
             && DeveloperConfig.Instance.RenderOnlyLight;
         _useSkyLightLuma = LightingConfig.Instance.UseSkyLightLuma();
-        _useFancyClouds = LightingConfig.Instance.FancySkyLightingEnabled();
         ColorUtils._gamma = PostProcessing.ContentGamma();
         ColorUtils._reciprocalGamma = 1f / ColorUtils._gamma;
         PerformanceTracker.Enabled = DeveloperConfig.Instance.MonitorPerformance;

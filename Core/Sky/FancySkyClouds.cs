@@ -29,6 +29,8 @@ public static class FancySkyClouds
     private static Texture2D[] _fancyCloudBgTextures;
     private static bool _overrideCloudTextures;
 
+    private static bool _loaded;
+
     internal static void Load()
     {
         var effect = EffectLoader.Load("CloudShading");
@@ -40,10 +42,14 @@ public static class FancySkyClouds
         _blurRenderer = new();
 
         AddHooks();
+
+        _loaded = true;
     }
 
     internal static void Unload()
     {
+        _loaded = false;
+
         Dispose();
 
         _prevSamplerState = null;
@@ -116,12 +122,11 @@ public static class FancySkyClouds
 
     private static void _Main_DrawSurfaceBG(On_Main.orig_DrawSurfaceBG orig, Main self)
     {
-        if (!MainGraphics.DoingCapture)
-        {
-            SettingsSystem._useFancyClouds = false;
-        }
-
-        if (!SettingsSystem._useFancyClouds)
+        if (
+            !LightingConfig.Instance.FancySkyLightingEnabled()
+            || !MainGraphics.DoingCapture
+            || !_loaded
+        )
         {
             _overrideCloudTextures = false;
             orig(self);
@@ -629,7 +634,7 @@ public static class FancySkyClouds
 
     private static void Begin(float mult, bool wrap)
     {
-        if (!SettingsSystem._useFancyClouds)
+        if (!_overrideCloudTextures)
         {
             return;
         }
@@ -664,7 +669,7 @@ public static class FancySkyClouds
 
     private static void End()
     {
-        if (!SettingsSystem._useFancyClouds)
+        if (!_overrideCloudTextures)
         {
             return;
         }
