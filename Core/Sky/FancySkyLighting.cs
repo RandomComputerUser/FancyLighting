@@ -98,13 +98,16 @@ public static class FancySkyLighting
         }
 
         var airDecayMult = (double)0.91f;
-        var activeEngine = LightingAccessors._activeEngine(null);
-        if (activeEngine is LightingEngine lightingEngine)
+        if (!Main.gameMenu)
         {
-            var lightMap = LightingEngineAccessors._activeLightMap(lightingEngine);
-            if (lightMap is not null)
+            var activeEngine = LightingAccessors._activeEngine(null);
+            if (activeEngine is LightingEngine lightingEngine)
             {
-                airDecayMult = lightMap.LightDecayThroughAir;
+                var lightMap = LightingEngineAccessors._activeLightMap(lightingEngine);
+                if (lightMap is not null)
+                {
+                    airDecayMult = lightMap.LightDecayThroughAir;
+                }
             }
         }
 
@@ -122,7 +125,9 @@ public static class FancySkyLighting
         var angle = Math.PI * progress;
         amountVisible = MathUtils.Smoothstep(0.0, 1.0, amountVisible);
 
-        var weatherMultiplier = CalculateSkyLightShadingMultiplierDueToWeather();
+        var weatherMultiplier = Main.gameMenu
+            ? 1f
+            : CalculateSkyLightShadingMultiplierDueToWeather();
         ModifyFancySkyLightShadingStrength?.Invoke(ref weatherMultiplier);
         amountVisible *= Math.Clamp(weatherMultiplier, 0f, 1f);
 
