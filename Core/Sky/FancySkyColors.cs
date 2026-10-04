@@ -167,15 +167,15 @@ public sealed class FancySkyColors
         [
             ModContent.GetInstance<VanillaSkyLightColorGradient>(),
             ModContent.GetInstance<NaturalSkyLightColorGradient>(),
-            ModContent.GetInstance<NaturalSunColorGradient>(),
             ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._lowGradient,
             ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._middleGradient,
             ModContent.GetInstance<NaturalAtmosphereColorGradientSet>()._highGradient,
+            ModContent.GetInstance<NaturalSunColorGradient>(),
             ModContent.GetInstance<VividSkyLightColorGradient>(),
-            ModContent.GetInstance<VividSunColorGradient>(),
             ModContent.GetInstance<VividAtmosphereColorGradientSet>()._lowGradient,
             ModContent.GetInstance<VividAtmosphereColorGradientSet>()._middleGradient,
             ModContent.GetInstance<VividAtmosphereColorGradientSet>()._highGradient,
+            ModContent.GetInstance<VividSunColorGradient>(),
         ];
 
         var width = 24 * 60;

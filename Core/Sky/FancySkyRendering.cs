@@ -14,11 +14,8 @@ public sealed class FancySkyRendering
     private readonly FullscreenEffect _skyDitheredEffect;
     private readonly SpriteBatchEffect _sunEffect;
 
-    private const float SkyBrightness = 1.25f;
-    private const float SkyBrightnessHiDef = 1.3f;
-
-    private const float FadeBegin = 0.24f;
-    private const float FadeHeight = 0.36f;
+    private const float FadeBegin = 0.10f;
+    private const float FadeHeight = 0.50f;
     private const float FadeHeightMult = 1f;
 
     /// <summary>
@@ -125,8 +122,6 @@ public sealed class FancySkyRendering
             ref skyColorMult
         );
 
-        var skyBrightness = hiDef ? SkyBrightnessHiDef : SkyBrightness;
-        skyColorMult *= skyBrightness;
         atmosphereColors.LowColor *= skyColorMult;
         atmosphereColors.MiddleColor *= skyColorMult;
         atmosphereColors.HighColor *= skyColorMult;
