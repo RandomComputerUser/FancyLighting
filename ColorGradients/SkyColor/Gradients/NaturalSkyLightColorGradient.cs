@@ -14,36 +14,30 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
         var sunsetTime = noonTime + 7.0;
 
         var nightColor = new Vector3(0.04f, 0.04f, 0.05f);
-        var nightColor3 = new Vector3(0.08f, 0.08f, 0.10f);
         var nightColor2 = new Vector3(0.11f, 0.10f, 0.16f);
-        var nightColor1 = new Vector3(0.17f, 0.15f, 0.27f);
-        var sunriseSunsetColor = new Vector3(0.49f, 0.41f, 0.33f);
-        var dayColor1 = new Vector3(0.80f, 0.67f, 0.44f);
-        var dayColor2 = new Vector3(0.88f, 0.82f, 0.72f);
-        var dayColor3 = new Vector3(0.95f, 0.90f, 0.85f);
+        var nightColor1 = new Vector3(0.18f, 0.16f, 0.28f);
+        var sunriseSunsetColor = new Vector3(0.49f, 0.41f, 0.32f);
+        var dayColor1 = new Vector3(0.90f, 0.75f, 0.38f);
+        var dayColor2 = new Vector3(0.96f, 0.89f, 0.71f);
         var dayColor = new Vector3(1.00f, 1.00f, 1.00f);
 
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
             (sunriseTime - 2.0, nightColor),
-            (sunriseTime - 1.5, nightColor3),
             (sunriseTime - 1.0, nightColor2),
             (sunriseTime - 0.5, nightColor1),
             (sunriseTime, sunriseSunsetColor),
             (sunriseTime + 0.5, dayColor1),
             (sunriseTime + 1.0, dayColor2),
-            (sunriseTime + 2.0, dayColor3),
             (sunriseTime + 3.0, dayColor),
             (noonTime, dayColor),
             (sunsetTime - 3.0, dayColor),
-            (sunsetTime - 2.0, dayColor3),
             (sunsetTime - 1.0, dayColor2),
             (sunsetTime - 0.5, dayColor1),
             (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 0.5, nightColor1),
             (sunsetTime + 1.0, nightColor2),
-            (sunsetTime + 1.5, nightColor3),
             (sunsetTime + 2.0, nightColor),
         ];
 

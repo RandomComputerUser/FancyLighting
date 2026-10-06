@@ -67,9 +67,9 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
             new(0.01f, 0.01f, 1f)
         );
         var dayColors = new AtmosphereColorSet(
-            new(0.65f, 0.85f, 1.00f),
+            new(0.60f, 0.90f, 1.00f),
             new(0.40f, 0.65f, 0.95f),
-            new(0.20f, 0.35f, 0.90f)
+            new(0.20f, 0.30f, 0.90f)
         );
 
         (double hour, AtmosphereColorSet color)[] colorSets =
