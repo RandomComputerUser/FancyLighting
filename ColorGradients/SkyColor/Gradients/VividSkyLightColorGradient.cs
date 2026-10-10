@@ -17,8 +17,8 @@ public sealed class VividSkyLightColorGradient : LoadableTimeBasedColorGradientB
         var nightColor2 = new Vector3(0.12f, 0.10f, 0.16f);
         var nightColor1 = new Vector3(0.22f, 0.14f, 0.29f);
         var sunriseSunsetColor = new Vector3(0.55f, 0.38f, 0.32f);
-        var dayColor1 = new Vector3(0.90f, 0.48f, 0.35f);
-        var dayColor2 = new Vector3(0.96f, 0.67f, 0.58f);
+        var dayColor1 = new Vector3(0.95f, 0.48f, 0.35f);
+        var dayColor2 = new Vector3(0.98f, 0.67f, 0.58f);
         var dayColor = new Vector3(1.00f, 1.00f, 1.00f);
 
         (double hour, Vector3 color)[] colors =
