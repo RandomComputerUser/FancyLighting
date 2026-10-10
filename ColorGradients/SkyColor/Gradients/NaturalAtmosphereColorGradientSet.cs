@@ -42,14 +42,14 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
             new(0.01f, 0.01f, 0.01f)
         );
         var sunriseSunsetColors = new AtmosphereColorSet(
-            new(1.00f, 0.70f, 0.25f),
+            new(1.00f, 0.70f, 0.30f),
             new(0.50f, 0.65f, 0.75f),
             new(0.15f, 0.25f, 0.50f)
         );
         var dayColors1 = new AtmosphereColorSet(
             new(1.00f, 0.90f, 0.60f),
             new(0.40f, 0.70f, 0.90f),
-            new(0.20f, 0.30f, 0.70f)
+            new(0.20f, 0.30f, 0.65f)
         );
         var dayColors2 = new AtmosphereColorSet(
             new(1.00f, 0.97f, 0.80f),
@@ -69,13 +69,13 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
             (sunriseTime - 1.0, nightColors2),
             (sunriseTime - 0.5, nightColors1),
             (sunriseTime, sunriseSunsetColors),
-            (sunriseTime + 0.5, dayColors1),
-            (sunriseTime + 1.0, dayColors2),
+            (sunriseTime + 0.75, dayColors1),
+            (sunriseTime + 1.5, dayColors2),
             (sunriseTime + 3.0, dayColors),
             (noonTime, dayColors),
             (sunsetTime - 3.0, dayColors),
-            (sunsetTime - 1.0, dayColors2),
-            (sunsetTime - 0.5, dayColors1),
+            (sunsetTime - 1.5, dayColors2),
+            (sunsetTime - 0.75, dayColors1),
             (sunsetTime, sunriseSunsetColors),
             (sunsetTime + 0.5, nightColors1),
             (sunsetTime + 1.0, nightColors2),
