@@ -10,8 +10,8 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
 
         var noonTime = 12.0;
         // Sunrise and sunset times are affected by resolution
-        var sunriseTime = noonTime - 7.0;
-        var sunsetTime = noonTime + 7.0;
+        var sunriseTime = noonTime - 6.75;
+        var sunsetTime = noonTime + 6.75;
 
         var nightColor = new Vector3(0.04f, 0.04f, 0.05f);
         var nightColor2 = new Vector3(0.11f, 0.10f, 0.16f);
@@ -24,7 +24,7 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 2.0, nightColor),
+            (sunriseTime - 2.5, nightColor),
             (sunriseTime - 1.0, nightColor2),
             (sunriseTime - 0.5, nightColor1),
             (sunriseTime, sunriseSunsetColor),
@@ -38,7 +38,7 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
             (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 0.5, nightColor1),
             (sunsetTime + 1.0, nightColor2),
-            (sunsetTime + 2.0, nightColor),
+            (sunsetTime + 2.5, nightColor),
         ];
 
         foreach (var (hour, color) in colors)

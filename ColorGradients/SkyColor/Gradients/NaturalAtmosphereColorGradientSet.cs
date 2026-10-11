@@ -23,28 +23,28 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
 
         var noonTime = 12.0;
         // Sunrise and sunset times are affected by resolution
-        var sunriseTime = noonTime - 7.0;
-        var sunsetTime = noonTime + 7.0;
+        var sunriseTime = noonTime - 6.75;
+        var sunsetTime = noonTime + 6.75;
 
         var nightColors = new AtmosphereColorSet(
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f)
+            new(0.03f, 0.06f, 0.10f),
+            new(0.02f, 0.03f, 0.08f),
+            new(0.01f, 0.02f, 0.06f)
         );
         var nightColors2 = new AtmosphereColorSet(
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f)
+            new(0.08f, 0.25f, 0.40f),
+            new(0.05f, 0.15f, 0.30f),
+            new(0.03f, 0.05f, 0.20f)
         );
         var nightColors1 = new AtmosphereColorSet(
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f),
-            new(0.01f, 0.01f, 0.01f)
+            new(0.70f, 0.50f, 0.20f),
+            new(0.35f, 0.40f, 0.45f),
+            new(0.05f, 0.10f, 0.35f)
         );
         var sunriseSunsetColors = new AtmosphereColorSet(
             new(1.00f, 0.70f, 0.30f),
-            new(0.50f, 0.60f, 0.70f),
-            new(0.15f, 0.25f, 0.50f)
+            new(0.50f, 0.65f, 0.75f),
+            new(0.18f, 0.25f, 0.50f)
         );
         var dayColors1 = new AtmosphereColorSet(
             new(1.00f, 0.90f, 0.60f),
@@ -58,14 +58,14 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
         );
         var dayColors = new AtmosphereColorSet(
             new(0.60f, 0.85f, 1.00f),
-            new(0.40f, 0.60f, 0.90f),
+            new(0.45f, 0.65f, 0.90f),
             new(0.20f, 0.30f, 0.80f)
         );
 
         (double hour, AtmosphereColorSet color)[] colorSets =
         [
             (0.00, nightColors),
-            (sunriseTime - 2.0, nightColors),
+            (sunriseTime - 2.5, nightColors),
             (sunriseTime - 1.0, nightColors2),
             (sunriseTime - 0.5, nightColors1),
             (sunriseTime, sunriseSunsetColors),
@@ -79,7 +79,7 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
             (sunsetTime, sunriseSunsetColors),
             (sunsetTime + 0.5, nightColors1),
             (sunsetTime + 1.0, nightColors2),
-            (sunsetTime + 2.0, nightColors),
+            (sunsetTime + 2.5, nightColors),
         ];
 
         foreach (var (hour, colorSet) in colorSets)
