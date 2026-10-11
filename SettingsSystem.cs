@@ -30,7 +30,7 @@ internal sealed class SettingsSystem : ModSystem
 
     internal void OnConfigChange() => _changedConfig = true;
 
-    internal void SettingsUpdate()
+    internal void SettingsUpdate(bool startup = false)
     {
         if (LightingConfig.Instance.NeedsColorLightMode())
         {
@@ -65,6 +65,11 @@ internal sealed class SettingsSystem : ModSystem
         {
             Filters.Scene.OnPostDraw -= DoNothing;
             _prevNeedsPostProcessing = false;
+        }
+
+        if (startup)
+        {
+            return;
         }
 
         EnsureRenderTargets();

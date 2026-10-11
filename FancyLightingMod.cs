@@ -159,6 +159,8 @@ public sealed class FancyLightingMod : Mod
         LightsCompatibility.Load();
         SpiritReforgedCompatibility.Load();
 
+        ModContent.GetInstance<SettingsSystem>()?.SettingsUpdate(startup: true);
+
         Main.QueueMainThreadAction(() =>
         {
             Blitter.Load();
