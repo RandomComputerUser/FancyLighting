@@ -44,16 +44,16 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
         var sunriseSunsetColors = new AtmosphereColorSet(
             new(1.00f, 0.70f, 0.30f),
             new(0.50f, 0.65f, 0.75f),
-            new(0.18f, 0.25f, 0.50f)
+            new(0.10f, 0.20f, 0.50f)
         );
         var dayColors1 = new AtmosphereColorSet(
-            new(1.00f, 0.90f, 0.60f),
+            new(1.00f, 0.87f, 0.60f),
             new(0.40f, 0.70f, 0.85f),
-            new(0.20f, 0.30f, 0.65f)
+            new(0.15f, 0.25f, 0.65f)
         );
         var dayColors2 = new AtmosphereColorSet(
             new(1.00f, 0.97f, 0.80f),
-            new(0.40f, 0.65f, 0.85f),
+            new(0.40f, 0.65f, 0.90f),
             new(0.20f, 0.30f, 0.75f)
         );
         var dayColors = new AtmosphereColorSet(
