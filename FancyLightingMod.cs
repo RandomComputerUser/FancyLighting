@@ -1001,26 +1001,37 @@ public sealed class FancyLightingMod : Mod
 
         if (SettingsSystem._optimizeRendering)
         {
-            _postProcessingInstance.ApplyPostProcessing(
-                ref MainGraphics.ScreenTarget,
-                ref MainGraphics.ScreenTargetSwap,
-                backgroundTarget,
-                _smoothLightingInstance
-            );
+            if (
+                MainGraphics.ScreenTarget is not null
+                && MainGraphics.ScreenTargetSwap is not null
+            )
+            {
+                _postProcessingInstance.ApplyPostProcessing(
+                    ref MainGraphics.ScreenTarget,
+                    ref MainGraphics.ScreenTargetSwap,
+                    backgroundTarget,
+                    _smoothLightingInstance
+                );
 
-            screenTarget1 = MainGraphics.ScreenTarget;
-            screenTarget2 = MainGraphics.ScreenTargetSwap;
+                screenTarget1 = MainGraphics.ScreenTarget;
+                screenTarget2 = MainGraphics.ScreenTargetSwap;
+            }
+
             MainGraphics.EndCapture_Post();
         }
         else
         {
             MainGraphics.EndCapture_Post();
-            _postProcessingInstance.ApplyPostProcessing(
-                ref screenTarget1,
-                ref screenTarget2,
-                backgroundTarget,
-                _smoothLightingInstance
-            );
+
+            if (screenTarget1 is not null && screenTarget2 is not null)
+            {
+                _postProcessingInstance.ApplyPostProcessing(
+                    ref screenTarget1,
+                    ref screenTarget2,
+                    backgroundTarget,
+                    _smoothLightingInstance
+                );
+            }
         }
 
         orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);

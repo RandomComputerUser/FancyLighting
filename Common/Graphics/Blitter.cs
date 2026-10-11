@@ -14,6 +14,7 @@ internal static class Blitter
     {
         _fullscreenTriangle?.Dispose();
         _fullscreenTriangle = null;
+        _basicBlitEffect = null;
     }
 
     private static void LoadFullscreenTriangle()
@@ -56,6 +57,12 @@ internal static class Blitter
         bool setTarget = true
     )
     {
+        effect ??= _basicBlitEffect;
+        if (effect is null)
+        {
+            return;
+        }
+
         var device = Main.graphics.GraphicsDevice;
 
         if (setTarget)
@@ -87,7 +94,7 @@ internal static class Blitter
             device.SamplerStates[0] = samplerState ?? SamplerState.PointClamp;
         }
 
-        (effect ?? _basicBlitEffect).ApplyPass();
+        effect.ApplyPass();
         device.SetVertexBuffer(_fullscreenTriangle);
         device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
 
