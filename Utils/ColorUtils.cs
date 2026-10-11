@@ -7,8 +7,8 @@ internal static class ColorUtils
 {
     private static bool _swapRedAndBlueRgba1010102 = false;
 
-    internal static float _gamma;
-    internal static float _reciprocalGamma;
+    internal static float _gamma = 2.2f;
+    internal static float _reciprocalGamma = 1f / 2.2f;
 
     internal static void Load()
     {
