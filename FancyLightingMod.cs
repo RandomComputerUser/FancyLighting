@@ -1299,7 +1299,7 @@ public sealed class FancyLightingMod : Mod
         }
 
         var useGlowMasks =
-            LightingConfig.Instance.UseTileEntitySmoothLighting
+            LightingConfig.Instance.TileEntitySmoothLightingEnabled()
             && !DeveloperConfig.Instance.RenderOnlyLight;
         var (effect, usedTmpTarget) = _smoothLightingInstance.GetTileEntityEffect(
             MainGraphics.ScreenTarget
@@ -1422,6 +1422,22 @@ public sealed class FancyLightingMod : Mod
         bool isBackground
     )
     {
+        if (SpiritReforgedCompatibility._useSpiritReforgedFixes)
+        {
+            var prevUseWhiteLightMap = _useWhiteLightMap;
+            UseWhiteLightMap(false);
+            try
+            {
+                orig(self, isBackground);
+            }
+            finally
+            {
+                UseWhiteLightMap(prevUseWhiteLightMap);
+            }
+
+            return;
+        }
+
         if (
             !isBackground
             || MainGraphics.InCameraMode
@@ -1453,6 +1469,7 @@ public sealed class FancyLightingMod : Mod
             !MainGraphics.InCameraMode
             || !LightingConfig.Instance.SmoothLightingEnabled()
             || (bg && DeveloperConfig.Instance.RenderOnlyLight)
+            || SpiritReforgedCompatibility._useSpiritReforgedFixes
         )
         {
             orig(self, bg, Style, Alpha, drawSinglePassLiquids);
@@ -1486,7 +1503,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || (
-                SpiritReforgedCompatibility._disableCustomLiquidRendering
+                SpiritReforgedCompatibility._useSpiritReforgedFixes
                 && !DeveloperConfig.Instance.RenderOnlyLight
             )
         )

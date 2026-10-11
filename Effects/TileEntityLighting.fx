@@ -262,7 +262,7 @@ float4 SmoothLightingColor(
         ? input.Color * tileColor
         : float4(
             lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
-            glow.a
+            input.Color.a * tileColor.a
         );
 }
 
@@ -284,7 +284,7 @@ float4 SmoothLightingColorDithered(
         ? input.Color * tileColor
         : float4(
             lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
-            glow.a
+            input.Color.a * tileColor.a
         );
 }
 

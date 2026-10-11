@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using FancyLighting.Config.Enums;
+using FancyLighting.ModCompatibility;
 using Newtonsoft.Json;
 using Terraria.ModLoader.Config;
 
@@ -37,6 +38,13 @@ public sealed class LightingConfig : ModConfig
 
     public bool HiDefFeaturesEnabled() =>
         SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
+
+    public bool TileEntityNormalsEnabled() =>
+        SimulateTileEntityNormals && !SpiritReforgedCompatibility._useSpiritReforgedFixes;
+
+    public bool TileEntitySmoothLightingEnabled() =>
+        UseTileEntitySmoothLighting
+        && !SpiritReforgedCompatibility._useSpiritReforgedFixes;
 
     // Ambient Occlusion
 

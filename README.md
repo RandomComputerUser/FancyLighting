@@ -64,6 +64,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added compatibility with screen flipping from sources other than the Gravitation buff
 - Memory is now freed when disabling some features
 - Made unloading more thorough
+- Fixed a bug with the sky in the Savanna biome in Spirit Reforged that was caused by Fancy Atmosphere
 
 #### Mod.Call() Changes
 - Mod.Call() now returns the exception object if an exception occurs (previously, null was returned)

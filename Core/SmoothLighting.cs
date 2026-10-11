@@ -1822,7 +1822,7 @@ public sealed class SmoothLighting
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
 
-        var smoothEffectFlag = LightingConfig.Instance.UseTileEntitySmoothLighting;
+        var smoothEffectFlag = LightingConfig.Instance.TileEntitySmoothLightingEnabled();
         var ditheredEffectFlag =
             !DeveloperConfig.Instance.DisableDithering
             && smoothEffectFlag
@@ -1830,7 +1830,7 @@ public sealed class SmoothLighting
             && !hiDef;
         var normalsEffectFlag =
             LightingConfig.Instance.SimulateNormalMaps
-            && LightingConfig.Instance.SimulateTileEntityNormals;
+            && LightingConfig.Instance.TileEntityNormalsEnabled();
         var fancySkyEffectFlag = _useAlphaChannelAsSkyLightLuma;
 
         var needsLightMap = smoothEffectFlag || normalsEffectFlag;
@@ -1952,7 +1952,7 @@ public sealed class SmoothLighting
     {
         var doDithering =
             !DeveloperConfig.Instance.DisableDithering
-            && LightingConfig.Instance.UseTileEntitySmoothLighting
+            && LightingConfig.Instance.TileEntitySmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
             && !LightingConfig.Instance.HiDefFeaturesEnabled();
 

@@ -2,7 +2,7 @@
 
 internal static class SpiritReforgedCompatibility
 {
-    internal static bool _disableCustomLiquidRendering = false;
+    internal static bool _useSpiritReforgedFixes = false;
 
     internal static void Load()
     {
@@ -11,11 +11,11 @@ internal static class SpiritReforgedCompatibility
             return;
         }
 
-        _disableCustomLiquidRendering = true;
+        _useSpiritReforgedFixes = true;
     }
 
     internal static void Unload()
     {
-        _disableCustomLiquidRendering = false;
+        _useSpiritReforgedFixes = false;
     }
 }

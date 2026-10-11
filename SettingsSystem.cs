@@ -134,8 +134,8 @@ internal sealed class SettingsSystem : ModSystem
             && (
                 (
                     LightingConfig.Instance.SimulateNormalMaps
-                    && LightingConfig.Instance.SimulateTileEntityNormals
-                ) || LightingConfig.Instance.UseTileEntitySmoothLighting
+                    && LightingConfig.Instance.TileEntityNormalsEnabled()
+                ) || LightingConfig.Instance.TileEntitySmoothLightingEnabled()
             )
         )
         || LightingConfig.Instance.FancySkyLightingEnabled()
