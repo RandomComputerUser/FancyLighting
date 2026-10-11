@@ -134,6 +134,10 @@ public sealed class FancySkyRendering
                 ? sceneArea.bgTopY
                 : FancyAtmosphereBgTopY();
         var highLevel = ((float)bgTopY / target.Height) + FadeBegin;
+        if (Main.gameMenu)
+        {
+            highLevel -= 0.10f;
+        }
         var lowLevel = highLevel + FadeHeight;
 
         var midLevel = (highLevel + lowLevel) / 2f;
