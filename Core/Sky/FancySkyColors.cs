@@ -49,6 +49,10 @@ public sealed class FancySkyColors
         {
             // night color is normally overridden on main menu
             info.isInGameMenuOrIsServer = false;
+            if (Main.gameMenu)
+            {
+                info.CorruptionBiomeInfluence = 0;
+            }
         }
 
         orig(info, out sunColor, out moonColor);
