@@ -50,7 +50,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Changed the exposure setting to be logarithmic and increased its range
 - Increased the default vibrance boost to 3 (from 2)
 - Increased the max vibrance boost to 15 (from 10)
-- Changed the bloom strength scale and increased its default and maximum values
+- Changed the bloom strength scale and increased its maximum value
 - Increased the max sky brightness boost to 15 (from 10)
 - Added a setting to disable frame timing optimizations used by the Fancy Lighting Engine
 - Added a setting to disable dithering

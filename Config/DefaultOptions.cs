@@ -53,7 +53,7 @@ public static class DefaultOptions
     public const int VibranceBoost = 3;
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
-    public const int BloomStrength = 4;
+    public const int BloomStrength = 3;
 
     // Ambient Occlusion
     public const bool UseAmbientOcclusion = true;
