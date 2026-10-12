@@ -13,7 +13,7 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.0 (2026-??-??)
+### v1.2.0 (2026-10-11)
 
 #### Features and Improvements
 - Added Fancy Sky Light Shading
