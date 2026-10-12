@@ -34,7 +34,7 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
         var nightColors2 = new AtmosphereColorSet(
             new(0.06f, 0.18f, 0.35f),
             new(0.05f, 0.10f, 0.30f),
-            new(0.04f, 0.04f, 0.25f)
+            new(0.04f, 0.04f, 0.20f)
         );
         var nightColors1 = new AtmosphereColorSet(
             new(0.70f, 0.40f, 0.20f),
@@ -65,7 +65,7 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
         (double hour, AtmosphereColorSet color)[] colorSets =
         [
             (0.00, nightColors),
-            (sunriseTime - 2.5, nightColors),
+            (sunriseTime - 2.0, nightColors),
             (sunriseTime - 1.0, nightColors2),
             (sunriseTime - 0.5, nightColors1),
             (sunriseTime, sunriseSunsetColors),
@@ -79,7 +79,7 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
             (sunsetTime, sunriseSunsetColors),
             (sunsetTime + 0.5, nightColors1),
             (sunsetTime + 1.0, nightColors2),
-            (sunsetTime + 2.5, nightColors),
+            (sunsetTime + 2.0, nightColors),
         ];
 
         foreach (var (hour, colorSet) in colorSets)

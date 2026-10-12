@@ -24,7 +24,7 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
         (double hour, Vector3 color)[] colors =
         [
             (0.00, nightColor),
-            (sunriseTime - 2.5, nightColor),
+            (sunriseTime - 2.0, nightColor),
             (sunriseTime - 1.0, nightColor2),
             (sunriseTime - 0.5, nightColor1),
             (sunriseTime, sunriseSunsetColor),
@@ -38,7 +38,7 @@ public sealed class NaturalSkyLightColorGradient : LoadableTimeBasedColorGradien
             (sunsetTime, sunriseSunsetColor),
             (sunsetTime + 0.5, nightColor1),
             (sunsetTime + 1.0, nightColor2),
-            (sunsetTime + 2.5, nightColor),
+            (sunsetTime + 2.0, nightColor),
         ];
 
         foreach (var (hour, color) in colors)
