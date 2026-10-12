@@ -132,11 +132,13 @@ public sealed class PostProcessing
         var currTarget = screenTarget;
         var nextTarget = screenTargetSwap;
 
+        var mainMenu = Main.gameMenu;
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var doBloom = hiDef && PreferencesConfig.Instance.HdrBloom;
         var depthOfField = PreferencesConfig.Instance.DepthOfField;
         var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
-        var separateBackground = backgroundTarget is not null && !hdrCompatBlending;
+        var separateBackground =
+            backgroundTarget is not null && !hdrCompatBlending && !mainMenu;
         var cameraMode = MainGraphics.InCameraMode;
         var tmo = PreferencesConfig.Instance.ToneMappingOperator;
         var doColorGrading = hiDef && PreferencesConfig.Instance.VibranceBoost != 0;
@@ -146,16 +148,6 @@ public sealed class PostProcessing
         var gamma = ContentGamma();
         var disableDither =
             DeveloperConfig.Instance.DisableDithering || tmo is ToneMappingPreset.Linear;
-        var mainMenu = Main.gameMenu && separateBackground;
-
-        if (mainMenu)
-        {
-            Blitter.Blit(backgroundTarget, screenTargetSwap);
-            Blitter.Blit(screenTarget, backgroundTarget);
-            separateBackground = false;
-
-            (currTarget, nextTarget) = (nextTarget, currTarget);
-        }
 
         if (
             !mainMenu
@@ -347,19 +339,6 @@ public sealed class PostProcessing
             }
             Blitter.Blit(currTarget, nextTarget, effect);
             MainGraphics.RestoreSavedTextures();
-
-            (currTarget, nextTarget) = (nextTarget, currTarget);
-        }
-
-        if (mainMenu)
-        {
-            Blitter.Blit(currTarget, nextTarget);
-            Blitter.Blit(
-                backgroundTarget,
-                currTarget,
-                blendState: BlendState.AlphaBlend,
-                setTarget: false
-            );
 
             (currTarget, nextTarget) = (nextTarget, currTarget);
         }

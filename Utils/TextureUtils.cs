@@ -120,4 +120,11 @@ internal static class TextureUtils
         texture?.Dispose();
         texture = new(Main.graphics.GraphicsDevice, width, height, false, format);
     }
+
+    public static bool IsValidTexture(Texture texture) =>
+        texture is not null
+        && !texture.IsDisposed
+        && texture.GraphicsDevice is not null
+        && !texture.GraphicsDevice.IsDisposed
+        && ReferenceEquals(texture.GraphicsDevice, Main.instance.GraphicsDevice);
 }

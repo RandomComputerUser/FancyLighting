@@ -469,15 +469,9 @@ public sealed class FancyLightingMod : Mod
                     return;
                 }
 
-                var doOverbright =
-                    LightingConfig.Instance.SmoothLightingEnabled()
-                    && LightingConfig.Instance.DrawOverbright();
-                var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
-
-                if (doOverbright || doDepthOfField)
+                if (PreferencesConfig.Instance.DepthOfField)
                 {
                     SeparateBackground(cameraMode: false, mainMenu: true);
-                    return;
                 }
 
                 if (!SettingsSystem.NeedsPostProcessing())
@@ -485,14 +479,9 @@ public sealed class FancyLightingMod : Mod
                     return;
                 }
 
-                TextureUtils.MatchSizeAndFormat(
-                    ref _backgroundTarget,
-                    MainGraphics.ScreenTarget
-                );
-                Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
-                MainGraphics.AssignScreenTargets();
-                Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
-                Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+                var screenTarget = MainGraphics.ScreenTarget;
+                var screenTargetSwap = MainGraphics.ScreenTargetSwap;
+                CustomEndCapture(ref screenTarget, ref screenTargetSwap);
             });
         }
         catch (Exception)
@@ -625,7 +614,7 @@ public sealed class FancyLightingMod : Mod
             {
                 return;
             }
-            
+
             if (_modifyParticleLighting)
             {
                 _instance.UseWhiteLightMap(false);
@@ -982,17 +971,34 @@ public sealed class FancyLightingMod : Mod
         Color clearColor
     )
     {
-        MainGraphics.EndCapture_Pre();
+        if (!MainGraphics.DoingCapture)
+        {
+            orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+            return;
+        }
 
         if (
             !SettingsSystem.NeedsPostProcessing()
             || (Main.gameMenu && SettingsSystem._doDrawILHookFailed)
         )
         {
+            MainGraphics.EndCapture_Pre();
             MainGraphics.EndCapture_Post();
             orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
             return;
         }
+
+        CustomEndCapture(ref screenTarget1, ref screenTarget2);
+
+        orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
+    }
+
+    private void CustomEndCapture(
+        ref RenderTarget2D screenTarget1,
+        ref RenderTarget2D screenTarget2
+    )
+    {
+        MainGraphics.EndCapture_Pre();
 
         var backgroundTarget =
             MainGraphics.InCameraMode && !MainGraphics.CameraModeCaptureBackground
@@ -1002,8 +1008,8 @@ public sealed class FancyLightingMod : Mod
         if (SettingsSystem._optimizeRendering)
         {
             if (
-                MainGraphics.ScreenTarget is not null
-                && MainGraphics.ScreenTargetSwap is not null
+                TextureUtils.IsValidTexture(MainGraphics.ScreenTarget)
+                && TextureUtils.IsValidTexture(MainGraphics.ScreenTargetSwap)
             )
             {
                 _postProcessingInstance.ApplyPostProcessing(
@@ -1023,7 +1029,10 @@ public sealed class FancyLightingMod : Mod
         {
             MainGraphics.EndCapture_Post();
 
-            if (screenTarget1 is not null && screenTarget2 is not null)
+            if (
+                TextureUtils.IsValidTexture(screenTarget1)
+                && TextureUtils.IsValidTexture(screenTarget2)
+            )
             {
                 _postProcessingInstance.ApplyPostProcessing(
                     ref screenTarget1,
@@ -1033,8 +1042,6 @@ public sealed class FancyLightingMod : Mod
                 );
             }
         }
-
-        orig(self, finalTexture, screenTarget1, screenTarget2, clearColor);
     }
 
     private void _Main_DrawSunAndMoon(
@@ -1156,13 +1163,13 @@ public sealed class FancyLightingMod : Mod
     )
     {
         var doOverbright =
-            (
-                LightingConfig.Instance.SmoothLightingEnabled()
-                && LightingConfig.Instance.DrawOverbright()
-            ) || (mainMenu && SettingsSystem.NeedsPostProcessing());
+            LightingConfig.Instance.SmoothLightingEnabled()
+            && LightingConfig.Instance.DrawOverbright()
+            && !mainMenu;
         var doDepthOfField = PreferencesConfig.Instance.DepthOfField;
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
-        var hdrCompatBlending = SettingsSystem.HdrEnhancedAlphaBlendingDisabled();
+        var hdrCompatBlending =
+            SettingsSystem.HdrEnhancedAlphaBlendingDisabled() && !mainMenu;
 
         if (!hiDef)
         {
@@ -1188,14 +1195,13 @@ public sealed class FancyLightingMod : Mod
                     zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
                 );
             }
-            else
+            else if (doOverbright)
             {
-                // doOverbright must be true here
                 Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
                 MainGraphics.AssignScreenTargets();
             }
 
-            if (doOverbright)
+            if (doOverbright && !willClearBackgroundLater)
             {
                 Main.graphics.GraphicsDevice.SetRenderTarget(MainGraphics.ScreenTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
@@ -1211,7 +1217,7 @@ public sealed class FancyLightingMod : Mod
             _backgroundTarget = null;
             switchedTargets = _smoothLightingInstance.CalculateSmoothLighting(cameraMode);
         }
-        else
+        else if (!mainMenu)
         {
             TextureUtils.MatchSizeAndFormat(
                 ref _backgroundTarget,
@@ -1230,7 +1236,9 @@ public sealed class FancyLightingMod : Mod
 
             _blurRenderer.Blur(
                 MainGraphics.ScreenTargetSwap,
-                hdrCompatBlending ? MainGraphics.ScreenTargetSwap : _backgroundTarget,
+                mainMenu ? MainGraphics.ScreenTarget
+                    : hdrCompatBlending ? MainGraphics.ScreenTargetSwap
+                    : _backgroundTarget,
                 PreferencesConfig.Instance.DepthOfFieldRadius,
                 zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X
             );
@@ -1245,10 +1253,15 @@ public sealed class FancyLightingMod : Mod
                 switchedTargets = false;
             }
         }
-        else if (!hdrCompatBlending)
+        else if (!hdrCompatBlending && !mainMenu)
         {
             Blitter.BlitOrSwap(ref MainGraphics.ScreenTarget, ref _backgroundTarget);
             MainGraphics.AssignScreenTargets();
+        }
+
+        if (mainMenu)
+        {
+            return false;
         }
 
         if (!hdrCompatBlending)
@@ -1284,6 +1297,10 @@ public sealed class FancyLightingMod : Mod
                 overbrightPass: true,
                 invertOverbright: true
             );
+        }
+        else if (switchedTargets)
+        {
+            Blitter.Blit(MainGraphics.ScreenTargetSwap, MainGraphics.ScreenTarget);
         }
 
         return false;

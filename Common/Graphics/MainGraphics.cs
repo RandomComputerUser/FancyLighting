@@ -60,7 +60,9 @@ internal static class MainGraphics
             ScreenTargetSwap = Main.screenTargetSwap;
         }
 
-        DoingCapture = ScreenTarget is not null && ScreenTargetSwap is not null;
+        DoingCapture =
+            TextureUtils.IsValidTexture(ScreenTarget)
+            && TextureUtils.IsValidTexture(ScreenTargetSwap);
     }
 
     internal static void EndCapture_Pre() => DoingCapture = false;
@@ -134,7 +136,9 @@ internal static class MainGraphics
         _field_filterFrameBuffer2.SetValue(self, target);
         ScreenTargetSwap = target;
 
-        InCameraMode = true;
+        InCameraMode =
+            TextureUtils.IsValidTexture(ScreenTarget)
+            && TextureUtils.IsValidTexture(ScreenTargetSwap);
         try
         {
             orig(self);
