@@ -13,6 +13,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.1 (2026-10-??)
+### v1.2.1 (2026-10-13)
 - Fixed graphical glitches that occurred when other mods added IL hooks to Main.DoDraw()
 - Tweaked some of the colors used by Fancy Atmosphere
