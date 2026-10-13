@@ -142,9 +142,15 @@ internal sealed class SettingsSystem : ModSystem
         || PreferencesConfig.Instance.DepthOfField;
 
     internal static bool NeedsMainMenuCapture() =>
-        NeedsPostProcessing()
-        || LightingConfig.Instance.FancySkyLightingEnabled()
-        || PreferencesConfig.Instance.DepthOfField;
+        (
+            NeedsPostProcessing()
+            || LightingConfig.Instance.FancySkyLightingEnabled()
+            || PreferencesConfig.Instance.DepthOfField
+        )
+        && (
+            TextureUtils.IsValidTexture(Main.screenTarget)
+            && TextureUtils.IsValidTexture(Main.screenTargetSwap)
+        );
 
     internal static bool HdrEnhancedAlphaBlendingDisabled() =>
         CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending

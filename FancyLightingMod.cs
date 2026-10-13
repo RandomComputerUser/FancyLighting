@@ -7,6 +7,7 @@ using FancyLighting.ModCompatibility;
 using FancyLighting.VFX;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using Terraria.GameContent.Drawing;
 using Terraria.GameContent.Events;
 using Terraria.Graphics;
@@ -406,7 +407,30 @@ public sealed class FancyLightingMod : Mod
         IL_LightingEngine.ProcessBlur += _ => { };
         IL_LightingEngine.ProcessArea += _ => { };
         IL_Main.DrawCapture += _ => { };
-        IL_Main.DoDraw += IL_Main_DoDraw;
+
+        var hasDetours = true;
+        try
+        {
+            var doDrawMethod = typeof(Main)
+                .GetMethod("DoDraw", BindingFlags.NonPublic | BindingFlags.Instance)
+                .AssertNotNull();
+
+            var detourInfo = DetourManager.GetDetourInfo(doDrawMethod);
+            hasDetours = detourInfo.ILHooks.Any();
+        }
+        catch (Exception)
+        {
+            // GetMethod() probably failed
+        }
+
+        if (hasDetours)
+        {
+            SettingsSystem._doDrawILHookFailed = true;
+        }
+        else
+        {
+            IL_Main.DoDraw += IL_Main_DoDraw;
+        }
 
         if (SettingsSystem._doDrawILHookFailed)
         {

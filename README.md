@@ -14,3 +14,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.1 (2026-10-??)
+- Fixed graphical glitches that occurred when other mods added IL hooks to Main.DoDraw()
