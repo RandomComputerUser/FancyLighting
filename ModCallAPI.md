@@ -67,6 +67,11 @@ Add a hook that modifies the strength of Fancy Sky Light Shading.
 
 ### GetConfigState{_}
 
+#### Example
+
+An example of using these mod calls can be found [on the FancyLightingModCallTest repository](https://github.com/RexBerry/FancyLightingModCallTest/blob/main/FancyLightingConfigStateSystem.cs).
+This example is not exhaustive, so to find out what information can be gotten from these mod calls, it is recommended that you inspect the output of these mod calls yourself and/or look at the [ConfigState source code](ModCompatibility/ConfigState.cs).
+
 #### `"GetConfigStateInfo"`
 
 - **Call Returns:** `int[]`
