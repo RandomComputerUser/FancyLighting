@@ -40,11 +40,10 @@ public sealed class LightingConfig : ModConfig
         SmoothLightingEnabled() && LightMapRenderMode is RenderMode.EnhancedHdr;
 
     public bool TileEntityNormalsEnabled() =>
-        SimulateTileEntityNormals && !SpiritReforgedCompatibility._useSpiritReforgedFixes;
+        SimulateTileEntityNormals && !SpiritReforgedCompatibility._useFixes;
 
     public bool TileEntitySmoothLightingEnabled() =>
-        UseTileEntitySmoothLighting
-        && !SpiritReforgedCompatibility._useSpiritReforgedFixes;
+        UseTileEntitySmoothLighting && !SpiritReforgedCompatibility._useFixes;
 
     // Ambient Occlusion
 

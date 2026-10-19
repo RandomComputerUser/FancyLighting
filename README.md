@@ -14,3 +14,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.2 (2026-10-??)
+- Added GetConfigState{_} mod calls for developers of other mods

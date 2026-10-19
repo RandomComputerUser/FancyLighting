@@ -19,7 +19,7 @@ Add custom lighting for a particular tile type when using Smooth Lighting.
 - **Call Returns:** `bool`
     - Whether any changes were made.
 
-**Remarks:** If the affect tile type already has custom lighting, it will be replaced. Only one lighting modifier for a tile type can be active at a time. Custom tile lighting affects only how tiles appear to be lit when using Smooth Lighting; there is no effect on any other part of the game. Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting. In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
+**Remarks:** If the affected tile type already has custom lighting, it will be replaced. Only one lighting modifier for a tile type can be active at a time. Custom tile lighting affects only how tiles appear to be lit when using Smooth Lighting; there is no effect on any other part of the game. Before adding custom tile lighting, it is recommended to test whether a tile appears differently using Smooth Lighting compared to vanilla lighting. In most cases, custom tile lighting is not needed since Smooth Lighting preserves glow effects.
 
 #### `"AddCustomTileLighting", ushort tileType, void tileLightModifier(Tile, int, int, ref Vector3)`
 Same as above, except `tileType` is passed as a ushort.
@@ -64,6 +64,35 @@ Add a hook that modifies the strength of Fancy Sky Light Shading.
         - **Remarks:** The hook will be run both while on the main menu and while in a world. The hook may not be run at times during dawn and dusk. The hook will be run after the shading strength is modified due to vanilla weather such as rain.
 - **Call Returns:** `Action`
     - A function that removes the hook. The mod cleans everything up while unloading, so calling this function is not necessary.
+
+### GetConfigState{_}
+
+#### `"GetConfigStateInfo"`
+
+- **Call Returns:** `int[]`
+    - An array of entries of information about configuration and active rendering state. Use the `GetConfigStateInfoMetadataNames` and `GetConfigStateInfoMetadataTypes` calls to get more information about this array.
+      - The first entry of this array (index 0) is a dummy value that is always set to an invalid value (-1) not in any enumeration, which can be used as a fallback.
+    - **Remarks:** The returned array is global and lasts the lifetime of the mod. All calls will return the same object. Do not modify the array. This call may return null if the Fancy Lighting mod hasn't loaded yet.
+
+#### `"GetConfigStateInfoMetadataNames"`
+
+- **Call Returns:** `string[]`
+    - An array of the names of the entries in the array returned by `GetConfigStateInfo`. The name of each entry corresponds to what configuration or rendering state that entry is for.
+    - **Remarks:** This will return a new object every time.
+
+#### `"GetConfigStateInfoMetadataTypes"`
+
+- **Call Returns:** `string[]`
+    - An array of the names of the types of the entries in the array returned by `GetConfigStateInfo`. Use the `GetConfigStateTypeMetadata` call to get more information about these types.
+    - **Remarks:** This will return a new object every time.
+
+#### `"GetConfigStateTypeMetadata"`
+
+- **Call Returns:** `Dictionary<string, string[]>`
+    - A dictionary containing metadata about the enumeration types used for configuration and rendering state.
+        - The keys correspond to the names of the type.
+        - The values correspond to the names of the enumeration values.
+    - **Remarks:** This will return a new object every time.
 
 ### RemoveCustomTileLighting
 

@@ -1,4 +1,5 @@
 ﻿using FancyLighting.Config;
+using FancyLighting.ModCompatibility;
 using FancyLighting.VFX;
 
 namespace FancyLighting.Core;
@@ -7,7 +8,7 @@ public sealed class AmbientOcclusion
 {
     private RenderTarget2D _ambientOcclusionTarget;
 
-    internal bool _drawingTileEntities;
+    internal bool _drawingForAmbientOcclusion;
 
     private readonly FullscreenEffect _tilesEffect;
     private readonly FullscreenEffect _tilesAndTiles2Effect;
@@ -64,22 +65,59 @@ public sealed class AmbientOcclusion
 
             if (tile2Shadows)
             {
-                Main.graphics.GraphicsDevice.SetRenderTarget(tile2Target);
+                _drawingForAmbientOcclusion = true;
+                ConfigState.SetConfigState(
+                    ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                    (int)ConfigState.AmbientOcclusionRenderState.NonSolidTiles
+                );
+                try
+                {
+                    Main.graphics.GraphicsDevice.SetRenderTarget(tile2Target);
+                    Main.graphics.GraphicsDevice.Clear(Color.Transparent);
+                    Main.tileBatch.Begin();
+                    Main.spriteBatch.Begin();
+                    Main.instance.TilesRenderer.Draw(
+                        false,
+                        false,
+                        false,
+                        waterStyleOverride
+                    );
+                    Main.tileBatch.End();
+                    Main.spriteBatch.End();
+                }
+                finally
+                {
+                    ConfigState.SetConfigState(
+                        ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                        (int)ConfigState.AmbientOcclusionRenderState.Inactive
+                    );
+                    _drawingForAmbientOcclusion = false;
+                }
+            }
+
+            _drawingForAmbientOcclusion = true;
+            ConfigState.SetConfigState(
+                ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                (int)ConfigState.AmbientOcclusionRenderState.SolidTiles
+            );
+            try
+            {
+                Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
                 Main.graphics.GraphicsDevice.Clear(Color.Transparent);
                 Main.tileBatch.Begin();
                 Main.spriteBatch.Begin();
-                Main.instance.TilesRenderer.Draw(false, false, false, waterStyleOverride);
+                Main.instance.TilesRenderer.Draw(true, false, false, waterStyleOverride);
                 Main.tileBatch.End();
                 Main.spriteBatch.End();
             }
-
-            Main.graphics.GraphicsDevice.SetRenderTarget(tileTarget);
-            Main.graphics.GraphicsDevice.Clear(Color.Transparent);
-            Main.tileBatch.Begin();
-            Main.spriteBatch.Begin();
-            Main.instance.TilesRenderer.Draw(true, false, false, waterStyleOverride);
-            Main.tileBatch.End();
-            Main.spriteBatch.End();
+            finally
+            {
+                ConfigState.SetConfigState(
+                    ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                    (int)ConfigState.AmbientOcclusionRenderState.Inactive
+                );
+                _drawingForAmbientOcclusion = false;
+            }
         }
 
         if (tileEntityShadows)
@@ -90,8 +128,12 @@ public sealed class AmbientOcclusion
             var currentRasterizerState = Main.Rasterizer;
 
             var prevPreventTileParticles = FancyLightingMod._preventTileParticles;
-            _drawingTileEntities = true;
             FancyLightingMod._preventTileParticles = true;
+            _drawingForAmbientOcclusion = true;
+            ConfigState.SetConfigState(
+                ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                (int)ConfigState.AmbientOcclusionRenderState.TileEntities
+            );
             try
             {
                 if (!cameraMode)
@@ -108,7 +150,11 @@ public sealed class AmbientOcclusion
             }
             finally
             {
-                _drawingTileEntities = false;
+                ConfigState.SetConfigState(
+                    ConfigState.ConfigStateIndex.AmbientOcclusionActiveRenderState,
+                    (int)ConfigState.AmbientOcclusionRenderState.Inactive
+                );
+                _drawingForAmbientOcclusion = false;
                 FancyLightingMod._preventTileParticles = prevPreventTileParticles;
 
                 Main.Rasterizer = currentRasterizerState;

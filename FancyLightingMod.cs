@@ -58,6 +58,15 @@ public sealed class FancyLightingMod : Mod
         if (OverrideLightMap(enable, _smoothLightingInstance._whiteLights))
         {
             _useWhiteLightMap = enable;
+
+            ConfigState.SetConfigState(
+                ConfigState.ConfigStateIndex.SmoothLightingActiveLightMapOverride,
+                (int)(
+                    enable
+                        ? ConfigState.SmoothLightingLightMapOverride.FullBright
+                        : ConfigState.SmoothLightingLightMapOverride.None
+                )
+            );
         }
     }
 
@@ -71,6 +80,15 @@ public sealed class FancyLightingMod : Mod
         if (OverrideLightMap(enable, _smoothLightingInstance._blackLights))
         {
             _useBlackLightMap = enable;
+
+            ConfigState.SetConfigState(
+                ConfigState.ConfigStateIndex.SmoothLightingActiveLightMapOverride,
+                (int)(
+                    enable
+                        ? ConfigState.SmoothLightingLightMapOverride.NearBlack
+                        : ConfigState.SmoothLightingLightMapOverride.None
+                )
+            );
         }
     }
 
@@ -156,6 +174,7 @@ public sealed class FancyLightingMod : Mod
 
         _blurRenderer = new();
 
+        ConfigState.Load();
         CalamityModCompatibility.Load();
         LightsCompatibility.Load();
         SpiritReforgedCompatibility.Load();
@@ -198,7 +217,7 @@ public sealed class FancyLightingMod : Mod
             SettingsSystem.EnsureRenderTargets(true);
 
             LightsCompatibility.Unload();
-            SpiritReforgedCompatibility.Unload();
+            ConfigState.Unload();
 
             PerformanceTracker.Unload();
             PresetOptions.Unload();
@@ -1342,7 +1361,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !MainGraphics.DoingCapture
             || (solidLayer || intoRenderTargets)
-            || _ambientOcclusionInstance._drawingTileEntities
+            || _ambientOcclusionInstance._drawingForAmbientOcclusion
             || !LightingConfig.Instance.SmoothLightingEnabled()
         )
         {
@@ -1474,7 +1493,7 @@ public sealed class FancyLightingMod : Mod
         bool isBackground
     )
     {
-        if (SpiritReforgedCompatibility._useSpiritReforgedFixes)
+        if (SpiritReforgedCompatibility._useFixes)
         {
             var prevUseWhiteLightMap = _useWhiteLightMap;
             UseWhiteLightMap(false);
@@ -1521,7 +1540,7 @@ public sealed class FancyLightingMod : Mod
             !MainGraphics.InCameraMode
             || !LightingConfig.Instance.SmoothLightingEnabled()
             || (bg && DeveloperConfig.Instance.RenderOnlyLight)
-            || SpiritReforgedCompatibility._useSpiritReforgedFixes
+            || SpiritReforgedCompatibility._useFixes
         )
         {
             orig(self, bg, Style, Alpha, drawSinglePassLiquids);
@@ -1555,7 +1574,7 @@ public sealed class FancyLightingMod : Mod
         if (
             !LightingConfig.Instance.SmoothLightingEnabled()
             || (
-                SpiritReforgedCompatibility._useSpiritReforgedFixes
+                SpiritReforgedCompatibility._useFixes
                 && !DeveloperConfig.Instance.RenderOnlyLight
             )
         )

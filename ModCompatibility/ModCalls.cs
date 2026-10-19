@@ -12,6 +12,40 @@ internal static class ModCalls
         }
 
         {
+            if (args.Length == 1 && args[0] is "GetConfigStateInfo")
+            {
+                return ConfigState.ConfigStateInfo;
+            }
+        }
+
+        {
+            if (args.Length == 1 && args[0] is "GetConfigStateInfoMetadataNames")
+            {
+                return ConfigState
+                    .GetConfigStateInfoMetadata()
+                    .Select(entry => entry.Name)
+                    .ToArray();
+            }
+        }
+
+        {
+            if (args.Length == 1 && args[0] is "GetConfigStateInfoMetadataTypes")
+            {
+                return ConfigState
+                    .GetConfigStateInfoMetadata()
+                    .Select(entry => entry.Type)
+                    .ToArray();
+            }
+        }
+
+        {
+            if (args.Length == 1 && args[0] is "GetConfigStateTypeMetadata")
+            {
+                return ConfigState.GetConfigStateTypeMetadata();
+            }
+        }
+
+        {
             if (
                 args.Length == 3
                 && args[0] is "AddHook"

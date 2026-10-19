@@ -2,7 +2,7 @@
 
 internal static class SpiritReforgedCompatibility
 {
-    internal static bool _useSpiritReforgedFixes = false;
+    internal static bool _useFixes = false;
 
     internal static void Load()
     {
@@ -11,11 +11,6 @@ internal static class SpiritReforgedCompatibility
             return;
         }
 
-        _useSpiritReforgedFixes = true;
-    }
-
-    internal static void Unload()
-    {
-        _useSpiritReforgedFixes = false;
+        _useFixes = true;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FancyLighting.Config;
+using FancyLighting.ModCompatibility;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 
@@ -87,6 +88,8 @@ internal sealed class SettingsSystem : ModSystem
         }
         _prevSmoothLightingDisabled = smoothLightingDisabled;
         _changedConfig = false;
+
+        ConfigState.Update();
     }
 
     internal static void EnsureRenderTargets(bool reset = false)
