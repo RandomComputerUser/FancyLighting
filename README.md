@@ -14,3 +14,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.3 (2026-10-??)
+- Made a small optimization to HDR rendering
+- Slightly improved the quality of Basic HDRR

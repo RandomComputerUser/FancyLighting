@@ -62,9 +62,6 @@ public sealed class SmoothLighting
     private readonly FullscreenEffect _normalsDitheredEnhancedGlowFancySkyEffect;
     private readonly FullscreenEffect _lightColorEffect;
     private readonly FullscreenEffect _lightColorDitheredEffect;
-    private readonly FullscreenEffect _overbrightMaxEffect;
-    private readonly FullscreenEffect _overbrightMaxDitheredEffect;
-    private readonly FullscreenEffect _overbrightMaxInplaceEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxEffect;
     private readonly FullscreenEffect _inverseOverbrightMaxInplaceEffect;
 
@@ -248,9 +245,6 @@ public sealed class SmoothLighting
         );
         _lightColorEffect = new(effect, "LightColor");
         _lightColorDitheredEffect = new(effect, "LightColorDithered");
-        _overbrightMaxEffect = new(effect, "OverbrightMax");
-        _overbrightMaxDitheredEffect = new(effect, "OverbrightMaxDithered");
-        _overbrightMaxInplaceEffect = new(effect, "OverbrightMaxInplace");
         _inverseOverbrightMaxEffect = new(effect, "InverseOverbrightMax");
         _inverseOverbrightMaxInplaceEffect = new(effect, "InverseOverbrightMaxInplace");
 
@@ -1589,6 +1583,30 @@ public sealed class SmoothLighting
         );
     }
 
+    internal (Texture2D, TexturePosition) GetLightMapTextureAndPosition()
+    {
+        var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
+
+        var lightMapTexture = _colors;
+        var lightMapScale = 1f;
+        if (doBicubicUpscaling && _colorsHiRes is not null)
+        {
+            lightMapTexture = _colorsHiRes;
+            lightMapScale = 0.25f;
+        }
+
+        return (
+            lightMapTexture,
+            TexturePosition.FromTextureTileCoords(
+                lightMapTexture,
+                _lightMapTileArea.X,
+                _lightMapTileArea.Y,
+                lightMapScale,
+                true
+            )
+        );
+    }
+
     internal void DrawSmoothLighting(
         Texture2D src,
         RenderTarget2D dst,
@@ -1596,8 +1614,7 @@ public sealed class SmoothLighting
         bool disableNormalMaps,
         bool doScaling,
         bool lightColorPass = false,
-        bool overbrightPass = false,
-        bool invertOverbright = false,
+        bool inverseOverbrightPass = false,
         Texture2D glow = null,
         Texture2D lightedGlow = null,
         Texture2D ambientOcclusion = null
@@ -1615,15 +1632,14 @@ public sealed class SmoothLighting
         }
 
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
-        var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var lightOnly = DeveloperConfig.Instance.RenderOnlyLight;
         var doOverbright = LightingConfig.Instance.DrawOverbright();
-        var srcUsed = !lightColorPass && !(overbrightPass && dst is null);
+        var srcUsed = !lightColorPass && !(inverseOverbrightPass && dst is null);
 
         var normalsEffectFlag =
             !lightColorPass
-            && !overbrightPass
+            && !inverseOverbrightPass
             && !disableNormalMaps
             && LightingConfig.Instance.SimulateNormalMaps;
         var ditheredEffectFlag =
@@ -1634,38 +1650,24 @@ public sealed class SmoothLighting
         var ambientOcclusionEffectFlag = ambientOcclusion is not null;
         var opaqueEffectFlag =
             !lightColorPass
-            && !overbrightPass
+            && !inverseOverbrightPass
             && lightOnly
             && background
             && ambientOcclusion is null;
-
-        var lightMapTexture = _colors;
-        var lightMapScale = 1f;
-        if (doBicubicUpscaling && _colorsHiRes is not null)
-        {
-            lightMapTexture = _colorsHiRes;
-            lightMapScale = 0.25f;
-        }
 
         var effect = lightColorPass
             ? ditheredEffectFlag
                 ? _lightColorDitheredEffect
                 : _lightColorEffect
-            : overbrightPass
-                ? invertOverbright
-                    ? (
-                        dst is null
-                            ? _inverseOverbrightMaxInplaceEffect
-                            : _inverseOverbrightMaxEffect
-                    ).SetParameter(
-                        "Brightness",
-                        PostProcessing.CalculateHiDefBackgroundBrightness()
-                    )
-                    : dst is null
-                        ? _overbrightMaxInplaceEffect
-                        : ditheredEffectFlag
-                            ? _overbrightMaxDitheredEffect
-                            : _overbrightMaxEffect
+            : inverseOverbrightPass
+                ? (
+                    dst is null
+                        ? _inverseOverbrightMaxInplaceEffect
+                        : _inverseOverbrightMaxEffect
+                ).SetParameter(
+                    "Brightness",
+                    PostProcessing.CalculateHiDefBackgroundBrightness()
+                )
                 : normalsEffectFlag
                     ? ditheredEffectFlag
                         ? enhancedGlowEffectFlag
@@ -1717,17 +1719,9 @@ public sealed class SmoothLighting
         var position = doScaling
             ? TexturePosition.GetScreenPosition(src)
             : TexturePosition.GetTileTargetPosition(src);
-
         position.TextureToWorldTransform(out var tileToWorldTransform);
-        TexturePosition
-            .FromTextureTileCoords(
-                lightMapTexture,
-                _lightMapTileArea.X,
-                _lightMapTileArea.Y,
-                lightMapScale,
-                true
-            )
-            .WorldToTextureTransform(out var lightMapTransform);
+        var (lightMapTexture, lightMapPosition) = GetLightMapTextureAndPosition();
+        lightMapPosition.WorldToTextureTransform(out var lightMapTransform);
         Matrix.Multiply(
             ref tileToWorldTransform,
             ref lightMapTransform,
@@ -1804,7 +1798,7 @@ public sealed class SmoothLighting
                     ? lightOnly
                         ? BlendState.Opaque
                         : CustomBlendStates.MultiplyColor
-                    : overbrightPass
+                    : inverseOverbrightPass
                         ? CustomBlendStates.MultiplyColor
                         : BlendState.AlphaBlend
                 : BlendState.Opaque,
@@ -1816,7 +1810,6 @@ public sealed class SmoothLighting
 
     internal (SpriteBatchEffect, bool) GetTileEntityEffect(RenderTarget2D screenTarget)
     {
-        var doBicubicUpscaling = LightingConfig.Instance.UseBicubicScaling();
         var doOverbright = LightingConfig.Instance.DrawOverbright();
         var hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         var fineNormalMaps = PreferencesConfig.Instance.FineNormalMaps;
@@ -1877,20 +1870,11 @@ public sealed class SmoothLighting
                 usedTmpTarget = true;
             }
 
-            var lightMapTexture = doBicubicUpscaling ? _colorsHiRes : _colors;
-            var lightMapScale = doBicubicUpscaling ? 0.25f : 1f;
             TexturePosition
                 .GetScreenPosition(screenTarget)
                 .VertexToWorldTransform(out var tileToWorldTransform);
-            TexturePosition
-                .FromTextureTileCoords(
-                    lightMapTexture,
-                    _lightMapTileArea.X,
-                    _lightMapTileArea.Y,
-                    lightMapScale,
-                    true
-                )
-                .WorldToTextureTransform(out var lightMapTransform);
+            var (_, lightMapPosition) = GetLightMapTextureAndPosition();
+            lightMapPosition.WorldToTextureTransform(out var lightMapTransform);
             Matrix.Multiply(
                 ref tileToWorldTransform,
                 ref lightMapTransform,
@@ -1956,9 +1940,10 @@ public sealed class SmoothLighting
             && LightingConfig.Instance.DrawOverbright()
             && !LightingConfig.Instance.HiDefFeaturesEnabled();
 
-        var lightMapTexture = LightingConfig.Instance.UseBicubicScaling()
-            ? _colorsHiRes
-            : _colors;
+        var lightMapTexture =
+            LightingConfig.Instance.UseBicubicScaling() && _colorsHiRes is not null
+                ? _colorsHiRes
+                : _colors;
 
         MainGraphics.ResetSavedTextures();
         MainGraphics.SetTexture(8, lightMapTexture, SamplerState.LinearClamp);

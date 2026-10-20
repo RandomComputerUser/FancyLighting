@@ -18,11 +18,13 @@ public sealed class PostProcessing
     private readonly Texture2D _ditherNoise;
 
     private readonly SpriteBatchEffect _brightenEffect;
-    private readonly FullscreenEffect _gammaToLinearEffect;
-    private readonly FullscreenEffect _gammaToLinearColorGradedEffect;
-    private readonly FullscreenEffect _combineLayersGammaToLinearEffect;
-    private readonly FullscreenEffect _combineLayersGammaToLinearColorGradedEffect;
     private readonly FullscreenEffect _combineLayersEffect;
+    private readonly FullscreenEffect _overbrightCombineLayersEffect;
+    private readonly FullscreenEffect _overbrightCombineLayersDitheredEffect;
+    private readonly FullscreenEffect _overbrightCombineLayersGammaToLinearEffect;
+    private readonly FullscreenEffect _overbrightCombineLayersGammaToLinearColorGradedEffect;
+    private readonly FullscreenEffect _overbrightGammaToLinearEffect;
+    private readonly FullscreenEffect _overbrightGammaToLinearColorGradedEffect;
     private readonly FullscreenEffect _gammaToGammaDitherEffect;
     private readonly FullscreenEffect _gammaToGammaNoDitherEffect;
     private readonly FullscreenEffect _gammaToSrgbDitherEffect;
@@ -44,14 +46,25 @@ public sealed class PostProcessing
 
         var effect = EffectLoader.Load("PostProcessing");
         _brightenEffect = new(effect, "Brighten");
-        _gammaToLinearEffect = new(effect, "GammaToLinear");
-        _gammaToLinearColorGradedEffect = new(effect, "GammaToLinearColorGraded");
-        _combineLayersGammaToLinearEffect = new(effect, "CombineLayersGammaToLinear");
-        _combineLayersGammaToLinearColorGradedEffect = new(
-            effect,
-            "CombineLayersGammaToLinearColorGraded"
-        );
         _combineLayersEffect = new(effect, "CombineLayers");
+        _overbrightCombineLayersEffect = new(effect, "OverbrightCombineLayers");
+        _overbrightCombineLayersDitheredEffect = new(
+            effect,
+            "OverbrightCombineLayersDithered"
+        );
+        _overbrightCombineLayersGammaToLinearEffect = new(
+            effect,
+            "OverbrightCombineLayersGammaToLinear"
+        );
+        _overbrightCombineLayersGammaToLinearColorGradedEffect = new(
+            effect,
+            "OverbrightCombineLayersGammaToLinearColorGraded"
+        );
+        _overbrightGammaToLinearEffect = new(effect, "OverbrightGammaToLinear");
+        _overbrightGammaToLinearColorGradedEffect = new(
+            effect,
+            "OverbrightGammaToLinearColorGraded"
+        );
         _gammaToGammaDitherEffect = new(effect, "GammaToGammaDither");
         _gammaToGammaNoDitherEffect = new(effect, "GammaToGammaNoDither");
         _gammaToSrgbDitherEffect = new(effect, "GammaToSrgbDither");
@@ -149,39 +162,50 @@ public sealed class PostProcessing
         var disableDither =
             DeveloperConfig.Instance.DisableDithering || tmo is ToneMappingPreset.Linear;
 
+        var lightMapTexture = _ditherNoise; // fallback that won't brighten anything
+        var lightMapTransform = Matrix.Identity;
+
         if (
             !mainMenu
             && LightingConfig.Instance.SmoothLightingEnabled()
             && LightingConfig.Instance.DrawOverbright()
         )
         {
-            var switchedTargets = smoothLightingInstance.CalculateSmoothLighting(
-                cameraMode
-            );
+            smoothLightingInstance.CalculateSmoothLighting(cameraMode);
             if (smoothLightingInstance.CanDrawSmoothLighting)
             {
-                var inplace = hiDef && !switchedTargets;
-
-                smoothLightingInstance.DrawSmoothLighting(
-                    currTarget,
-                    inplace ? null : nextTarget,
-                    background: false,
-                    disableNormalMaps: true,
-                    doScaling: true,
-                    overbrightPass: true
+                TexturePosition
+                    .GetScreenPosition(currTarget)
+                    .TextureToWorldTransform(out var tileToWorldTransform);
+                (lightMapTexture, var lightMapPosition) =
+                    smoothLightingInstance.GetLightMapTextureAndPosition();
+                lightMapPosition.WorldToTextureTransform(out lightMapTransform);
+                Matrix.Multiply(
+                    ref tileToWorldTransform,
+                    ref lightMapTransform,
+                    out lightMapTransform
                 );
-
-                if (!inplace)
-                {
-                    (currTarget, nextTarget) = (nextTarget, currTarget);
-                }
             }
 
             if (separateBackground && !hiDef)
             {
                 MainGraphics.ResetSavedTextures();
                 MainGraphics.SetTexture(8, backgroundTarget, SamplerState.PointClamp);
-                Blitter.Blit(currTarget, nextTarget, _combineLayersEffect);
+                MainGraphics.SetTexture(9, lightMapTexture, SamplerState.LinearClamp);
+                if (!disableDither)
+                {
+                    MainGraphics.SetTexture(10, _ditherNoise, SamplerState.PointClamp);
+                }
+
+                Blitter.Blit(
+                    currTarget,
+                    nextTarget,
+                    (
+                        disableDither
+                            ? _overbrightCombineLayersEffect
+                            : _overbrightCombineLayersDitheredEffect
+                    ).SetParameter("MatrixTransform", lightMapTransform)
+                );
                 MainGraphics.RestoreSavedTextures();
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);
@@ -217,21 +241,23 @@ public sealed class PostProcessing
 
                 MainGraphics.ResetSavedTextures();
                 MainGraphics.SetTexture(8, backgroundTarget, SamplerState.PointClamp);
+                MainGraphics.SetTexture(9, lightMapTexture, SamplerState.LinearClamp);
                 Blitter.Blit(
                     currTarget,
                     nextTarget,
                     (
                         doColorGrading
                             ? SetColorGradeParameters(
-                                _combineLayersGammaToLinearColorGradedEffect,
+                                _overbrightCombineLayersGammaToLinearColorGradedEffect,
                                 vibrance
                             )
-                            : _combineLayersGammaToLinearEffect
+                            : _overbrightCombineLayersGammaToLinearEffect
                     )
                         .SetParameter("Exposure", exposure)
                         .SetParameter("BackgroundExposure", backgroundExposure)
                         .SetParameter("GammaRatio", gamma)
                         .SetParameter("BackgroundGamma", backgroundGamma)
+                        .SetParameter("MatrixTransform", lightMapTransform)
                 );
                 MainGraphics.RestoreSavedTextures();
             }
@@ -249,20 +275,24 @@ public sealed class PostProcessing
                     }
                 }
 
+                MainGraphics.ResetSavedTextures();
+                MainGraphics.SetTexture(9, lightMapTexture, SamplerState.LinearClamp);
                 Blitter.Blit(
                     currTarget,
                     nextTarget,
                     (
                         doColorGrading
                             ? SetColorGradeParameters(
-                                _gammaToLinearColorGradedEffect,
+                                _overbrightGammaToLinearColorGradedEffect,
                                 vibrance
                             )
-                            : _gammaToLinearEffect
+                            : _overbrightGammaToLinearEffect
                     )
                         .SetParameter("Exposure", exposure)
                         .SetParameter("GammaRatio", gamma)
+                        .SetParameter("MatrixTransform", lightMapTransform)
                 );
+                MainGraphics.RestoreSavedTextures();
             }
             gamma = 1f;
 

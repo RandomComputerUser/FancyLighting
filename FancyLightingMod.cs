@@ -1337,8 +1337,7 @@ public sealed class FancyLightingMod : Mod
                 background: false,
                 disableNormalMaps: true,
                 doScaling: true,
-                overbrightPass: true,
-                invertOverbright: true
+                inverseOverbrightPass: true
             );
         }
         else if (switchedTargets)
