@@ -13,6 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.2 (2026-10-18)
-- Added GetConfigState{_} mod calls for developers of other mods
-- Tweaked some of the colors used by Fancy Atmosphere
+### v1.2.3 (2026-10-??)
