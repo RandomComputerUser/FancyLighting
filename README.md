@@ -13,7 +13,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.3 (2026-10-??)
+### v1.2.3 (2026-10-25)
 - Tweaked Fancy Atmosphere
 - Made a small optimization to HDR rendering
 - Slightly improved the quality of Basic HDRR
+- Fixed a bug that caused the screen to go black when using the Lights and Shadows mod with Basic HDRR

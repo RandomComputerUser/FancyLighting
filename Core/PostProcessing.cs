@@ -376,7 +376,7 @@ public sealed class PostProcessing
         if (ReferenceEquals(currTarget, screenTargetSwap))
         {
             Blitter.BlitOrSwap(ref screenTargetSwap, ref screenTarget);
-            MainGraphics.AssignScreenTargets();
+            // screen targets will be assigned after this method is called in the EndCapture hook
         }
     }
 }

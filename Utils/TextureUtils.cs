@@ -12,8 +12,17 @@ internal static class TextureUtils
             ? SurfaceFormat.Vector4 // unfortunately HalfVector4 is not precise enough to prevent artifacts with ddx and ddy
             : SurfaceFormat.Rgba1010102;
 
-    public static void MatchSizeAndFormat(ref RenderTarget2D target, Texture2D other) =>
-        MakeSize(ref target, other.Width, other.Height, other.Format);
+    public static void MatchSizeFormatAndUsage(
+        ref RenderTarget2D target,
+        RenderTarget2D other
+    ) =>
+        MakeSize(
+            ref target,
+            other.Width,
+            other.Height,
+            other.Format,
+            other.RenderTargetUsage
+        );
 
     public static void MakeSize(
         ref RenderTarget2D target,
