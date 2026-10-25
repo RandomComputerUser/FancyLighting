@@ -28,7 +28,7 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
 
         var nightColors = new AtmosphereColorSet(
             new(0.03f, 0.06f, 0.12f),
-            new(0.02f, 0.03f, 0.10f),
+            new(0.02f, 0.04f, 0.10f),
             new(0.01f, 0.02f, 0.08f)
         );
         var nightColors2 = new AtmosphereColorSet(
@@ -43,7 +43,7 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
         );
         var sunriseSunsetColors = new AtmosphereColorSet(
             new(1.00f, 0.55f, 0.30f),
-            new(0.65f, 0.50f, 0.80f),
+            new(0.70f, 0.60f, 0.80f),
             new(0.40f, 0.18f, 0.60f)
         );
         var dayColors1 = new AtmosphereColorSet(
@@ -57,8 +57,8 @@ public class VividAtmosphereColorGradientSet : LoadableAtmosphereColorGradientSe
             new(0.30f, 0.25f, 0.85f)
         );
         var dayColors = new AtmosphereColorSet(
-            new(0.55f, 0.85f, 1.00f),
-            new(0.35f, 0.50f, 0.95f),
+            new(0.65f, 0.85f, 1.00f),
+            new(0.40f, 0.60f, 0.95f),
             new(0.20f, 0.30f, 0.90f)
         );
 
