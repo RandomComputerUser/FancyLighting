@@ -38,7 +38,7 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
         );
         var nightColors1 = new AtmosphereColorSet(
             new(0.75f, 0.52f, 0.20f),
-            new(0.45f, 0.60f, 0.70f),
+            new(0.45f, 0.55f, 0.65f),
             new(0.10f, 0.13f, 0.35f)
         );
         var sunriseSunsetColors = new AtmosphereColorSet(

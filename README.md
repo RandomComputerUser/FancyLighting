@@ -14,3 +14,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.4 (2026-10-??)
+- Tweaked Fancy Atmosphere

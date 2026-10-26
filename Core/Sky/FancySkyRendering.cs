@@ -14,7 +14,7 @@ public sealed class FancySkyRendering
     private readonly FullscreenEffect _skyDitheredEffect;
     private readonly SpriteBatchEffect _sunEffect;
 
-    private const float FadeBegin = 0.08f;
+    private const float FadeBegin = 0.10f;
     private const float FadeHeight = 0.50f;
     private const float FadeHeightMult = 1f;
 
