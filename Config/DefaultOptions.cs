@@ -13,6 +13,7 @@ public static class DefaultOptions
     public const bool DisableHdrEnhancedAlphaBlending = false;
     public const bool DisableHdrLightingSync = false;
     public const bool DisableFrameTimingOptimizations = false;
+    public const bool DisableSunAndMoonShaders = false;
 
     // Developer Settings
     public const bool MonitorPerformance = false;

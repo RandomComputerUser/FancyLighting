@@ -1095,7 +1095,19 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
-        if (LightingConfig.Instance.FancySkyRenderingEnabled())
+        var fancyAtmosphere = LightingConfig.Instance.FancySkyRenderingEnabled();
+
+        if (
+            !MainGraphics.DoingCapture
+            || CompatibilityConfig.Instance.DisableSunAndMoonShaders
+            || !(fancyAtmosphere || LightingConfig.Instance.HiDefFeaturesEnabled())
+        )
+        {
+            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+            return;
+        }
+
+        if (fancyAtmosphere)
         {
             _fancySkyRenderingInstance.DrawSunAndMoon(
                 orig,
@@ -1106,12 +1118,6 @@ public sealed class FancyLightingMod : Mod
                 tempMushroomInfluence,
                 _postProcessingInstance
             );
-            return;
-        }
-
-        if (!LightingConfig.Instance.HiDefFeaturesEnabled() || !MainGraphics.DoingCapture)
-        {
-            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;
         }
 

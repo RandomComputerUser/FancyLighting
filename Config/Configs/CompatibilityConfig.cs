@@ -36,4 +36,8 @@ public sealed class CompatibilityConfig : ModConfig
     [Header("FancyLightingEngine")]
     [DefaultValue(DefaultOptions.DisableFrameTimingOptimizations)]
     public bool DisableFrameTimingOptimizations { get; set; }
+
+    [Header("FancySky")]
+    [DefaultValue(DefaultOptions.DisableSunAndMoonShaders)]
+    public bool DisableSunAndMoonShaders { get; set; }
 }

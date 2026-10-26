@@ -6,6 +6,7 @@ CompatibilityConfig: {
 		SmoothLighting: Smooth Lighting
 		FullHdrRendering: Full HDR Rendering
 		FancyLightingEngine: Fancy Lighting Engine
+		FancySky: Fancy Sky
 	}
 
 	# General
@@ -53,7 +54,7 @@ CompatibilityConfig: {
 			When this setting is disabled, alpha blending is done in a linear color space
 			Vanilla graphics does alpha blending in a gamma-encoded color space
 			Alpha blending in a gamma-encoded color space can make blended colors appear dull
-			May prevent some visual issues with semitransparent objects from other mods
+			May prevent visual issues with semitransparent objects from other mods
 
 			{$Snippets.RequireRenderModeFullHdr}
 			'''
@@ -65,7 +66,7 @@ CompatibilityConfig: {
 			'''
 			Disable synchronization between bright areas of the light map and the tile layers
 
-			May cause some visual issues with bright, moving light sources
+			May cause visual issues with bright, moving light sources
 
 			{$Snippets.RequireRenderModeFullHdr}
 			{$Snippets.PerformanceBenefit}
@@ -77,6 +78,20 @@ CompatibilityConfig: {
 	DisableFrameTimingOptimizations: {
 		Label: Disable Frame Timing Optimizations
 		Tooltip: Disable frame timing optimizations used by the {$Snippets.FancyLightingEngine}
+	}
+
+	# Fancy Sky
+	
+	DisableSunAndMoonShaders: {
+		Label: Disable Sun and Moon Shaders
+		Tooltip:
+			'''
+			Disable custom sun and moon shaders used by this mod
+
+			May prevent visual issues with other mods that modify sun or moon rendering
+
+			{$Snippets.RequireFancyAtmosphereOrFullHdr}
+			'''
 	}
 }
 
@@ -777,5 +792,6 @@ Snippets: {
 	RequireNormalMaps: "[c/FF00FF:{$Snippets.NormalMaps}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireGlobalIllumination: "[c/FF00FF:{$Snippets.GlobalIllumination}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancyAtmosphereOrFancySkyLightColors: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FancySkyLightColors}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
+	RequireFancyAtmosphereOrFullHdr: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancySkyLightShading: "[c/FF00FF:{$Snippets.FancySkyLightShading}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 }

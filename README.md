@@ -14,4 +14,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.4 (2026-10-??)
+- Added a compatibility setting to disable custom sun and moon shaders
 - Tweaked Fancy Atmosphere
