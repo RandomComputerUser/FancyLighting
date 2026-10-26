@@ -53,11 +53,11 @@ public class NaturalAtmosphereColorGradientSet : LoadableAtmosphereColorGradient
         );
         var dayColors2 = new AtmosphereColorSet(
             new(1.00f, 0.97f, 0.80f),
-            new(0.50f, 0.65f, 0.90f),
+            new(0.51f, 0.65f, 0.90f),
             new(0.20f, 0.30f, 0.75f)
         );
         var dayColors = new AtmosphereColorSet(
-            new(0.65f, 0.85f, 1.00f),
+            new(0.70f, 0.90f, 1.00f),
             new(0.40f, 0.60f, 0.95f),
             new(0.20f, 0.30f, 0.80f)
         );
