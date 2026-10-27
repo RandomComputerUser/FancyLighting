@@ -12,6 +12,18 @@ internal static class ModCalls
         }
 
         {
+            if (
+                args.Length == 2
+                && args[0] is "ForceEnableCompatibilitySetting"
+                && args[1] is string settingName
+            )
+            {
+                return CompatibilityConfig.Instance?.ForceEnableSetting(settingName)
+                    is true;
+            }
+        }
+
+        {
             if (args.Length == 1 && args[0] is "GetConfigStateInfo")
             {
                 return ConfigState.ConfigStateInfo;

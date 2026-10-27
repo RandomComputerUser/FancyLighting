@@ -25,6 +25,7 @@ internal static class ConfigState
         FancySkyLightShadingEnabled = 16,
         SmoothLightingActiveLightMapOverride = 17,
         AmbientOcclusionActiveRenderState = 18,
+        RenderingOptimizationsEnabled = 19,
     }
 
     public const int InvalidValue = -1;
@@ -91,6 +92,7 @@ internal static class ConfigState
             ("FancySkyLightShadingEnabled", "bool"),
             ("SmoothLightingActiveLightMapOverride", "SmoothLightingLightMapOverride"),
             ("AmbientOcclusionActiveRenderState", "AmbientOcclusionRenderState"),
+            ("RenderingOptimizationsEnabled", "bool"),
         ];
 
     public static Dictionary<string, string[]> GetConfigStateTypeMetadata() =>
@@ -111,7 +113,7 @@ internal static class ConfigState
 
     internal static void Load()
     {
-        ConfigStateInfo = new int[19];
+        ConfigStateInfo = new int[20];
         Array.Fill(ConfigStateInfo, InvalidValue);
     }
 
@@ -177,7 +179,7 @@ internal static class ConfigState
             ConfigStateIndex.SmoothLightingGlowRenderMode,
             (int)(
                 smoothLighting
-                    ? compatConfig.UseAccurateGlowRendering
+                    ? compatConfig.AccurateGlowRenderingEnabled()
                         ? SmoothLightingGlowRenderMode.Accurate
                         : SmoothLightingGlowRenderMode.Fast
                     : SmoothLightingGlowRenderMode.Disabled
@@ -242,6 +244,10 @@ internal static class ConfigState
         SetConfigState(
             ConfigStateIndex.AmbientOcclusionActiveRenderState,
             (int)AmbientOcclusionRenderState.Inactive
+        );
+        SetConfigState(
+            ConfigStateIndex.RenderingOptimizationsEnabled,
+            !compatConfig.RenderingOptimizationsDisabled()
         );
     }
 }

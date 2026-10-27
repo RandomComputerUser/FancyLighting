@@ -442,7 +442,7 @@ public sealed class FancyLightingMod : Mod
             // GetMethod() probably failed
         }
 
-        if (hasDetours || CompatibilityConfig.Instance.DisableMainMenuCapture)
+        if (hasDetours || CompatibilityConfig.Instance.MainMenuCaptureDisabled())
         {
             SettingsSystem._doDrawILHookFailed = true;
         }
@@ -1098,7 +1098,7 @@ public sealed class FancyLightingMod : Mod
         var fancyAtmosphere = LightingConfig.Instance.FancySkyRenderingEnabled();
 
         if (
-            CompatibilityConfig.Instance.DisableSunAndMoonShaders
+            CompatibilityConfig.Instance.SunAndMoonShadersDisabled()
             || !(
                 fancyAtmosphere
                 || (
@@ -1166,7 +1166,7 @@ public sealed class FancyLightingMod : Mod
 
         var doSyncHdr =
             LightingConfig.Instance.HiDefFeaturesEnabled()
-            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+            && !CompatibilityConfig.Instance.HdrLightingSyncDisabled()
             && Main.instance.tileTarget is { Width: > 0, Height: > 0 }
             && !_smoothLightingInstance.CanDrawSmoothLighting;
 
@@ -1885,7 +1885,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
+            useGlowMasks && CompatibilityConfig.Instance.AccurateGlowRenderingEnabled();
         var optimize = SettingsSystem._optimizeRendering;
 
         _smoothLightingInstance.CalculateSmoothLighting();
@@ -2004,7 +2004,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
+            useGlowMasks && CompatibilityConfig.Instance.AccurateGlowRenderingEnabled();
 
         _smoothLightingInstance.CalculateSmoothLighting(cameraMode: true);
         if (!_smoothLightingInstance.CanDrawSmoothLighting)
@@ -2209,7 +2209,7 @@ public sealed class FancyLightingMod : Mod
         );
         orig(self);
 
-        if (!CompatibilityConfig.Instance.DisableFrameTimingOptimizations)
+        if (!CompatibilityConfig.Instance.FrameTimingOptimizationsDisabled())
         {
             Main.renderCount = 2;
         }

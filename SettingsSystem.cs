@@ -45,7 +45,8 @@ internal sealed class SettingsSystem : ModSystem
             PreferencesConfig.Instance.ThreadCount,
             1
         );
-        _optimizeRendering = !CompatibilityConfig.Instance.DisableRenderingOptimizations;
+        _optimizeRendering =
+            !CompatibilityConfig.Instance.RenderingOptimizationsDisabled();
         _hiDef = LightingConfig.Instance.HiDefFeaturesEnabled();
         _lightOnly =
             LightingConfig.Instance.SmoothLightingEnabled()
@@ -156,12 +157,12 @@ internal sealed class SettingsSystem : ModSystem
         );
 
     internal static bool HdrEnhancedAlphaBlendingDisabled() =>
-        CompatibilityConfig.Instance.DisableHdrEnhancedAlphaBlending
+        CompatibilityConfig.Instance.HdrEnhancedAlphaBlendingDisabled()
         && LightingConfig.Instance.HiDefFeaturesEnabled()
         && !Main.gameMenu;
 
     internal static bool SmoothLightingDisabled() =>
-        CompatibilityConfig.Instance.DisableSmoothLightingDuringBossFights
+        CompatibilityConfig.Instance.SmoothLightingDuringBossFightsDisabled()
         && (IsBossFightOccurring() || IsEventOccurring());
 
     private static void DoNothing() { }

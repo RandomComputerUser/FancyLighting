@@ -1546,7 +1546,7 @@ public sealed class SmoothLighting
     {
         if (
             LightingConfig.Instance.HiDefFeaturesEnabled()
-            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+            && !CompatibilityConfig.Instance.HdrLightingSyncDisabled()
         )
         {
             (_colorsHiRes, _prevColorsHiRes) = (_prevColorsHiRes, _colorsHiRes);

@@ -73,6 +73,7 @@ An example of using these mod calls can be found [on the FancyLightingModCallTes
 This example is not exhaustive, so to find out what information can be gotten from these mod calls, it is recommended that you inspect the output of these mod calls yourself and/or look at the [ConfigState source code](ModCompatibility/ConfigState.cs).
 
 #### `"GetConfigStateInfo"`
+Get information about the current configuration and rendering state.
 
 - **Call Returns:** `int[]`
     - An array of entries of information about configuration and active rendering state. Use the `GetConfigStateInfoMetadataNames` and `GetConfigStateInfoMetadataTypes` calls to get more information about this array.
@@ -80,24 +81,71 @@ This example is not exhaustive, so to find out what information can be gotten fr
     - **Remarks:** The returned array is global and lasts the lifetime of the mod. All calls will return the same object. Do not modify the array. This call may return null if the Fancy Lighting mod hasn't loaded yet.
 
 #### `"GetConfigStateInfoMetadataNames"`
+Get the names of the entries in the configuration and rendering state.
 
 - **Call Returns:** `string[]`
     - An array of the names of the entries in the array returned by `GetConfigStateInfo`. The name of each entry corresponds to what configuration or rendering state that entry is for.
     - **Remarks:** This will return a new object every time.
 
+The names of the entries are (this list may expand in future versions):
+- `"Invalid"`
+- `"SmoothLightingEnabled"`
+- `"SmoothLightingRenderMode"`
+- `"SmoothLightingGlowRenderMode"`
+- `"SmoothLightingNormalMapsEnabled"`
+- `"SmoothLightingNormalMapsNonSolidTilesEnabled"`
+- `"SmoothLightingNormalMapsTileEntitiesEnabled"`
+- `"AmbientOcclusionEnabled"`
+- `"AmbientOcclusionNonSolidTilesEnabled"`
+- `"AmbientOcclusionTileEntitiesEnabled"`
+- `"FancyLightingEngineEnabled"`
+- `"FancyLightingEngineQuality"`
+- `"FancyLightingEngineTemporalOptimizationsEnabled"`
+- `"FancyLightingEngineGlobalIlluminationEnabled"`
+- `"FancyAtmosphereEnabled"`
+- `"FancySkyLightColorsEnabled"`
+- `"FancySkyLightShadingEnabled"`
+- `"SmoothLightingActiveLightMapOverride"`
+- `"AmbientOcclusionActiveRenderState"`
+- `"RenderingOptimizationsEnabled"`
+
 #### `"GetConfigStateInfoMetadataTypes"`
+Get the types of the entries in the configuration and rendering state.
 
 - **Call Returns:** `string[]`
     - An array of the names of the types of the entries in the array returned by `GetConfigStateInfo`. Use the `GetConfigStateTypeMetadata` call to get more information about these types.
     - **Remarks:** This will return a new object every time.
 
 #### `"GetConfigStateTypeMetadata"`
+Get metadata about the enumeration types used in the configuration and rendering state.
 
 - **Call Returns:** `Dictionary<string, string[]>`
     - A dictionary containing metadata about the enumeration types used for configuration and rendering state.
         - The keys correspond to the names of the type.
         - The values correspond to the names of the enumeration values.
     - **Remarks:** This will return a new object every time.
+
+### ForceEnableCompatibilitySetting
+
+#### `"ForceEnableCompatibilitySetting", string settingName`
+Force a particular compatibility setting to be enabled.
+
+- **Call Parameters:**
+    - `string settingName`: The name of the setting to force enable.
+- **Call Returns:** `bool`
+    - Whether `settingName` is a valid setting and was thus force enabled.
+
+**Remarks:** This should be called during `Load()`, or else there may not be an effect.
+
+Valid values of `settingName` are (this list may expand in future versions):
+- `"DisableRenderingOptimizations"`
+- `"DisableMainMenuCapture"`
+- `"DisableSmoothLightingDuringBossFights"`
+- `"UseAccurateGlowRendering"`
+- `"DisableHdrEnhancedAlphaBlending"`
+- `"DisableHdrLightingSync"`
+- `"DisableFrameTimingOptimizations"`
+- `"DisableSunAndMoonShaders"`
 
 ### RemoveCustomTileLighting
 
