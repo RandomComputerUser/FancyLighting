@@ -14,6 +14,8 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.4 (2026-10-??)
+- Added a compatibility setting to disable filters on the main menu
 - Added a compatibility setting to disable custom sun and moon shaders
+- Updated some compatibility settings tooltips with more information
 - Tweaked Fancy Atmosphere
 - Fixed a bug that could cause the strength of Fancy Sky Light Shading to be reduced even when it wasn't raining

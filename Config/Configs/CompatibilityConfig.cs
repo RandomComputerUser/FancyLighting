@@ -19,6 +19,10 @@ public sealed class CompatibilityConfig : ModConfig
     [DefaultValue(DefaultOptions.DisableRenderingOptimizations)]
     public bool DisableRenderingOptimizations { get; set; }
 
+    [DefaultValue(DefaultOptions.DisableMainMenuCapture)]
+    [ReloadRequired]
+    public bool DisableMainMenuCapture { get; set; }
+
     [Header("SmoothLighting")]
     [DefaultValue(DefaultOptions.DisableSmoothLightingDuringBossFights)]
     public bool DisableSmoothLightingDuringBossFights { get; set; }

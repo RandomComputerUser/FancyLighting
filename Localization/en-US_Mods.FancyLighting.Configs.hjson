@@ -13,7 +13,24 @@ CompatibilityConfig: {
 	
 	DisableRenderingOptimizations: {
 		Label: Disable Rendering Optimizations
-		Tooltip: Disable some of the riskier rendering optimizations used by this mod
+		Tooltip:
+			'''
+			Disable some of the riskier rendering optimizations used by this mod
+
+			May prevent black screens and flickering when using other mods
+			'''
+	}
+
+	DisableMainMenuCapture: {
+		Label: Disable Filters on the Main Menu
+		Tooltip:
+			'''
+			Disable forced usage of the game's built-in Filter Manager on the main menu
+
+			This disables some graphical effects on the main menu
+			May prevent crashes on the main menu when using other mods
+
+			'''
 	}
 
 	# Smooth Lighting
@@ -37,7 +54,8 @@ CompatibilityConfig: {
 			'''
 			Use a more accurate technique to render tile glow effects
 
-			When disabled, glow effect brightness may differ slightly from vanilla lighting
+			When disabled, glow effect brightness may differ from vanilla lighting
+			This setting should have minimal effect when using {$Snippets.FullHdr}
 
 			{$Snippets.HighPerformanceImpact}
 			'''

@@ -442,7 +442,7 @@ public sealed class FancyLightingMod : Mod
             // GetMethod() probably failed
         }
 
-        if (hasDetours)
+        if (hasDetours || CompatibilityConfig.Instance.DisableMainMenuCapture)
         {
             SettingsSystem._doDrawILHookFailed = true;
         }
@@ -1098,9 +1098,14 @@ public sealed class FancyLightingMod : Mod
         var fancyAtmosphere = LightingConfig.Instance.FancySkyRenderingEnabled();
 
         if (
-            !MainGraphics.DoingCapture
-            || CompatibilityConfig.Instance.DisableSunAndMoonShaders
-            || !(fancyAtmosphere || LightingConfig.Instance.HiDefFeaturesEnabled())
+            CompatibilityConfig.Instance.DisableSunAndMoonShaders
+            || !(
+                fancyAtmosphere
+                || (
+                    LightingConfig.Instance.HiDefFeaturesEnabled()
+                    && MainGraphics.DoingCapture
+                )
+            )
         )
         {
             orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
