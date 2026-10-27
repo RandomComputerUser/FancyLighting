@@ -18,8 +18,7 @@ internal static class ModCalls
                 && args[1] is string settingName
             )
             {
-                return CompatibilityConfig.Instance?.ForceEnableSetting(settingName)
-                    is true;
+                return CompatibilityConfig.ForceEnableSetting(settingName);
             }
         }
 

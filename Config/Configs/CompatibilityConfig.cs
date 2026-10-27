@@ -35,14 +35,14 @@ public sealed class CompatibilityConfig : ModConfig
     public bool SunAndMoonShadersDisabled() =>
         _forceDisableSunAndMoonShaders || DisableSunAndMoonShaders;
 
-    private bool _forceDisableRenderingOptimizations;
-    private bool _forceDisableMainMenuCapture;
-    private bool _forceDisableSmoothLightingDuringBossFights;
-    private bool _forceUseAccurateGlowRendering;
-    private bool _forceDisableHdrEnhancedAlphaBlending;
-    private bool _forceDisableHdrLightingSync;
-    private bool _forceDisableFrameTimingOptimizations;
-    private bool _forceDisableSunAndMoonShaders;
+    private static bool _forceDisableRenderingOptimizations;
+    private static bool _forceDisableMainMenuCapture;
+    private static bool _forceDisableSmoothLightingDuringBossFights;
+    private static bool _forceUseAccurateGlowRendering;
+    private static bool _forceDisableHdrEnhancedAlphaBlending;
+    private static bool _forceDisableHdrLightingSync;
+    private static bool _forceDisableFrameTimingOptimizations;
+    private static bool _forceDisableSunAndMoonShaders;
 
     /// <summary>
     /// Force a particular compatibility setting to be enabled.
@@ -50,7 +50,7 @@ public sealed class CompatibilityConfig : ModConfig
     /// <param name="settingName">The name of the setting to force enable.</param>
     /// <returns>Whether <paramref name="settingName" /> is a valid setting and was thus force enabled.</returns>
     /// <remarks>This should be called during `Load()`, or else there may not be an effect.</remarks>
-    public bool ForceEnableSetting(string settingName)
+    public static bool ForceEnableSetting(string settingName)
     {
         switch (settingName)
         {
