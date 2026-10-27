@@ -67,6 +67,8 @@ Add a hook that modifies the strength of Fancy Sky Light Shading.
 
 ### GetConfigState{_}
 
+These should be called during `PostSetupContent()` or later, or else the configuration and rendering state array may not be initialized.
+
 #### Example
 
 An example of using these mod calls can be found [on the FancyLightingModCallTest repository](https://github.com/RexBerry/FancyLightingModCallTest/blob/main/FancyLightingConfigStateSystem.cs).
