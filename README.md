@@ -14,3 +14,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.5 (2026-11-??)
+- Added a setting to control the brightness of highlights when using full HDR rendering
+- Tweaked how highlights appear by default when using full HDR rendering
+- Replaced the Vivid tone mapping operator with Filmic

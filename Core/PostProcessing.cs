@@ -31,7 +31,7 @@ public sealed class PostProcessing
     private readonly FullscreenEffect _gammaToSrgbNoDitherEffect;
     private readonly FullscreenEffect _bloomCompositeEffect;
     private readonly FullscreenEffect _toneMapNaturalEffect;
-    private readonly FullscreenEffect _toneMapVividEffect;
+    private readonly FullscreenEffect _toneMapFilmicEffect;
 
     private readonly BlurRenderer _blurRenderer = new();
 
@@ -71,7 +71,7 @@ public sealed class PostProcessing
         _gammaToSrgbNoDitherEffect = new(effect, "GammaToSrgbNoDither");
         _bloomCompositeEffect = new(effect, "BloomComposite");
         _toneMapNaturalEffect = new(effect, "ToneMapNatural");
-        _toneMapVividEffect = new(effect, "ToneMapVivid");
+        _toneMapFilmicEffect = new(effect, "ToneMapFilmic");
     }
 
     internal void Unload()
@@ -133,6 +133,74 @@ public sealed class PostProcessing
                 new Vector4((float)c1, (float)c2, (float)c3, (float)c4)
             )
             .SetParameter("VibranceBoostParams2", new Vector2((float)c5, (float)c6));
+    }
+
+    private static void SetToneMappingParameters(
+        FullscreenEffect effect,
+        float highlightBoost
+    )
+    {
+        Matrix colorSpaceTransform;
+        Matrix inverseColorSpaceTransform;
+
+        if (highlightBoost <= 0f)
+        {
+            colorSpaceTransform = Matrix.Identity;
+            inverseColorSpaceTransform = Matrix.Identity;
+        }
+        else
+        {
+            if (highlightBoost == 1f)
+            {
+                // csharpier-ignore
+                colorSpaceTransform = new Matrix(
+                    0.60f, 0.10f, 0.01f, 0f,
+                    0.39f, 0.88f, 0.08f, 0f,
+                    0.01f, 0.02f, 0.91f, 0f,
+                       0f,    0f,    0f, 1f
+                );
+            }
+            else
+            {
+                // csharpier-ignore
+                var P = new Matrix(
+                     0.69804193f, -0.24123395f, -0.17879663f, 0f,
+                    -0.71583577f, -0.94133683f, -0.60054648f, 0f,
+                     0.01779384f, -0.23598973f,  0.77934311f, 0f,
+                              0f,           0f,           0f, 1f
+                );
+                // csharpier-ignore
+                var D = new Matrix(
+                    0.4977058f, 0f,         0f, 0f,
+                            0f, 1f,         0f, 0f,
+                            0f, 0f, 0.8922942f, 0f,
+                            0f, 0f,         0f, 1f
+                );
+                // csharpier-ignore
+                var Pinv = new Matrix(
+                     1.12769027f, -0.29655920f,  0.03019163f, 0f,
+                    -0.70493997f, -0.70493997f, -0.70493997f, 0f,
+                    -0.23920726f, -0.20668903f,  1.06898254f, 0f,
+                              0f,           0f,           0f, 1f
+                );
+
+                D.M11 = MathF.Pow(D.M11, highlightBoost);
+                D.M22 = MathF.Pow(D.M22, highlightBoost);
+                D.M33 = MathF.Pow(D.M33, highlightBoost);
+                Matrix.Multiply(ref P, ref D, out colorSpaceTransform);
+                Matrix.Multiply(
+                    ref colorSpaceTransform,
+                    ref Pinv,
+                    out colorSpaceTransform
+                );
+            }
+
+            Matrix.Invert(ref colorSpaceTransform, out inverseColorSpaceTransform);
+        }
+
+        effect
+            .SetParameter("ColorSpaceTransform", colorSpaceTransform)
+            .SetParameter("InverseColorSpaceTransform", inverseColorSpaceTransform);
     }
 
     internal void ApplyPostProcessing(
@@ -219,7 +287,7 @@ public sealed class PostProcessing
             exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
             exposure *= tmo switch
             {
-                ToneMappingPreset.Vivid => 0.75f,
+                ToneMappingPreset.Filmic => 0.75f,
                 _ => 1f,
             };
 
@@ -328,12 +396,16 @@ public sealed class PostProcessing
             var toneMappingEffect = tmo switch
             {
                 ToneMappingPreset.Natural => _toneMapNaturalEffect,
-                ToneMappingPreset.Vivid => _toneMapVividEffect,
+                ToneMappingPreset.Filmic => _toneMapFilmicEffect,
                 _ => null,
             };
 
             if (toneMappingEffect is not null)
             {
+                SetToneMappingParameters(
+                    toneMappingEffect,
+                    PreferencesConfig.Instance.HighlightBoost / 5f
+                );
                 Blitter.Blit(currTarget, nextTarget, toneMappingEffect);
 
                 (currTarget, nextTarget) = (nextTarget, currTarget);

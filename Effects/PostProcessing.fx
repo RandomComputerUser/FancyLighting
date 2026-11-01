@@ -20,20 +20,9 @@ float BloomStrength;
 
 float4 VibranceBoostParams1;
 float2 VibranceBoostParams2;
-     
-static const float3x3 SrgbToCustomWcg =
-{
-    0.60, 0.13, 0.02,
-    0.39, 0.85, 0.10,
-    0.01, 0.02, 0.88
-};
 
-static const float3x3 CustomWcgToSrgb =
-{
-     1.85065741e+00, -2.82808236e-01, -9.92309601e-03,
-    -8.48920863e-01,  1.30935252e+00, -1.29496403e-01,
-    -1.73654180e-03, -2.65442818e-02,  1.13941950e+00
-};
+float3x3 ColorSpaceTransform;
+float3x3 InverseColorSpaceTransform;
 
 /* Helper functions *********************************************************************/
 
@@ -300,9 +289,9 @@ float3 ToneMapColorNatural(float3 x)
 {
     const float c1 = 2.05;
     const float c2 = 5.25;
-    x = mul(x, SrgbToCustomWcg);
+    x = mul(x, ColorSpaceTransform);
     x = saturate(c1 * (x / (x + c2)));
-    return saturate(mul(x, CustomWcgToSrgb));
+    return saturate(mul(x, InverseColorSpaceTransform));
 }
 
 float4 ToneMapNatural_PS(float2 coords : TEXCOORD0) : COLOR0
@@ -312,22 +301,24 @@ float4 ToneMapNatural_PS(float2 coords : TEXCOORD0) : COLOR0
     return color;
 }
 
-float3 ToneMapColorVivid(float3 x)
+float3 ToneMapColorFilmic(float3 x)
 {
     const float c1 = 1.46666666667;
     const float c2 = 0.363636363636;
     const float c3 = 256;
     const float c4 = 2;
     const float c5 = 2.33333333333;
-    return saturate(
+    x = mul(x, ColorSpaceTransform);
+    x = saturate(
         c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))
     );
+    return saturate(mul(x, InverseColorSpaceTransform));
 }
 
-float4 ToneMapVivid_PS(float2 coords : TEXCOORD0) : COLOR0
+float4 ToneMapFilmic_PS(float2 coords : TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
-    color.rgb = ToneMapColorVivid(color.rgb);
+    color.rgb = ToneMapColorFilmic(color.rgb);
     return color;
 }
 
@@ -459,11 +450,11 @@ technique ToneMapNatural
     }
 }
 
-technique ToneMapVivid
+technique ToneMapFilmic
 {    
     pass Pass1
     {
         VertexShader = compile vs_3_0 Blit_VS();
-        PixelShader = compile ps_3_0 ToneMapVivid_PS();
+        PixelShader = compile ps_3_0 ToneMapFilmic_PS();
     }
 }
