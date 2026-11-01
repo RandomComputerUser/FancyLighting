@@ -17,3 +17,5 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 - Added a setting to control the brightness of highlights when using full HDR rendering
 - Tweaked how highlights appear by default when using full HDR rendering
 - Replaced the Vivid tone mapping operator with Filmic
+- Improved how semitransparent tile entities are rendered when using Smooth Lighting
+  - This fixes a bug where blooming fireblossoms had the wrong color
