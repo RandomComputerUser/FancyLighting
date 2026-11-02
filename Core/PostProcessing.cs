@@ -262,7 +262,7 @@ public sealed class PostProcessing
                 MainGraphics.SetTexture(9, lightMapTexture, SamplerState.LinearClamp);
                 if (!disableDither)
                 {
-                    MainGraphics.SetTexture(10, _ditherNoise, SamplerState.PointClamp);
+                    MainGraphics.SetTexture(10, _ditherNoise, SamplerState.PointWrap);
                 }
 
                 Blitter.Blit(
