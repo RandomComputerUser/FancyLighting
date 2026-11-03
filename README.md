@@ -13,5 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.6 (2026-11-01)
-- Fixed a bug with dithering when using basic HDR rendering
+### v1.2.7 (2026-11-02)
