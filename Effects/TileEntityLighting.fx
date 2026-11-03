@@ -383,7 +383,7 @@ float4 NormalsLightOnly_PS(PixelShaderInput input) : COLOR0
     float mult = NormalsMultiplier(
         input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), smoothLightColor.rgb
     );
-    return float4(mult * lightColor.rgb, 1) * tileColor.a;
+    return lightColor * float4(mult.xxx, 1) * tileColor.a;
 }
 
 float4 NormalsFancySky_PS(PixelShaderInput input) : COLOR0
