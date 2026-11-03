@@ -296,7 +296,7 @@ float4 SmoothLightingColorLightOnly(
 )
 {
     float alpha = tileColor.a;
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * alpha
@@ -311,7 +311,7 @@ float4 SmoothLightingColorDitheredLightOnly(
 )
 {
     float alpha = tileColor.a;
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     float4 result = float4(lightColor, input.Color.a) * alpha;
     result.rgb = Dithered(input.Position, result.rgb);
@@ -367,9 +367,10 @@ float4 LightOnly_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 float4 Normals_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
     tileColor.a *= lightColor.a;
-    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
+    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, smoothLightColor.rgb);
     tileColor.rgb *= lightColor.rgb;
     return float4(mult.xxx, 1) * tileColor;
 }
@@ -377,9 +378,10 @@ float4 Normals_PS(PixelShaderInput input) : COLOR0
 float4 NormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
     float mult = NormalsMultiplier(
-        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), lightColor.rgb
+        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), smoothLightColor.rgb
     );
     return float4(mult * lightColor.rgb, 1) * tileColor.a;
 }
@@ -387,9 +389,10 @@ float4 NormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 float4 NormalsFancySky_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
     tileColor.a *= lightColor.a;
-    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
+    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, smoothLightColor);
     tileColor.rgb *= lightColor.rgb;
     return float4(mult.xxx, 1) * tileColor;
 }
@@ -397,9 +400,10 @@ float4 NormalsFancySky_PS(PixelShaderInput input) : COLOR0
 float4 NormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
     float mult = NormalsMultiplierFancySky(
-        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), lightColor
+        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), smoothLightColor
     );
     return lightColor * float4(mult.xxx, 1) * tileColor.a;
 }
