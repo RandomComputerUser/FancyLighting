@@ -87,7 +87,7 @@ float4 Sun_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
         1
         + 20 * pow(
             max(baseColor.r, max(baseColor.g, baseColor.b)), 
-            8
+            14
         )
     );
     
@@ -105,9 +105,9 @@ float4 SunHiDef_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
     baseColor.rgb = pow(baseColor.rgb, Gamma);
     baseColor.rgb *= (
         1
-        + 100 * pow(
+        + 80 * pow(
             max(baseColor.r, max(baseColor.g, baseColor.b)), 
-            12
+            14
         )
     );
     

@@ -15,4 +15,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ### v1.2.8 (2026-11-08)
 - Improved Natural and Filmic tone mapping
-- Tweaked the appearance of the sun when using Fancy Atmosphere and full HDR rendering
+- Tweaked the appearance of the sun when using Fancy Atmosphere
