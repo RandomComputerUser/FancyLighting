@@ -287,8 +287,8 @@ float4 BloomComposite_PS(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColorNatural(float3 x)
 {
-    const float c1 = 2.05;
-    const float c2 = 5.25;
+    const float c1 = 3.25;
+    const float c2 = 9.0;
     x = mul(x, ColorSpaceTransform);
     x = saturate(c1 * (x / (x + c2)));
     return saturate(mul(x, InverseColorSpaceTransform));
@@ -303,11 +303,11 @@ float4 ToneMapNatural_PS(float2 coords : TEXCOORD0) : COLOR0
 
 float3 ToneMapColorFilmic(float3 x)
 {
-    const float c1 = 1.46666666667;
+    const float c1 = 2.75;
     const float c2 = 0.363636363636;
-    const float c3 = 256;
-    const float c4 = 2;
-    const float c5 = 2.33333333333;
+    const float c3 = 256.0;
+    const float c4 = 2.0;
+    const float c5 = 7.0;
     x = mul(x, ColorSpaceTransform);
     x = saturate(
         c1 * (1 - c2 / (c3 * pow(x, c4) + 1)) * (x / (x + c5))

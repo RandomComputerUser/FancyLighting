@@ -107,7 +107,7 @@ float4 SunHiDef_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
         1
         + 100 * pow(
             max(baseColor.r, max(baseColor.g, baseColor.b)), 
-            10
+            12
         )
     );
     

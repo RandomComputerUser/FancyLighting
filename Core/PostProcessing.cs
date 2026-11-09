@@ -285,12 +285,6 @@ public sealed class PostProcessing
             var exposure = 1f / HiDefBrightnessScale;
             exposure = MathF.Pow(exposure, gamma);
             exposure *= Math.Max(0f, PreferencesConfig.Instance.ExposureMult());
-            exposure *= tmo switch
-            {
-                ToneMappingPreset.Filmic => 0.75f,
-                _ => 1f,
-            };
-
             var vibrance = Math.Clamp(
                 PreferencesConfig.Instance.VibranceIncrease(),
                 -0.2,
