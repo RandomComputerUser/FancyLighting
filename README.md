@@ -13,6 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.7 (2026-11-02)
-- Fixed more bugs with tile entity rendering when using Smooth Lighting
-- Updated the mod icon
+### v1.2.8 (2026-11-08)
