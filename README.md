@@ -13,8 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.8 (2026-11-08)
-- Improved Natural and Filmic tone mapping
-- Decreased the default highlight boost setting from 7 to 6
-- Tweaked the appearance of the sun when using Fancy Atmosphere
-- Updated the mod icon
+### v1.2.9 (2026-11-22)
