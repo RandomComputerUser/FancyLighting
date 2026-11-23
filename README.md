@@ -14,3 +14,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.9 (2026-11-22)
+- Tweaked Fancy Atmosphere colors during dawn and dusk
