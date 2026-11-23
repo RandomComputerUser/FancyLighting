@@ -338,8 +338,6 @@ public sealed class SmoothLighting
         if (shimmerAlpha > 0f)
         {
             // This code is adapted from vanilla
-            // The vanilla Main.shine() method limits each component to a max of 1
-            // We don't want that
             var inverseShimmerAlpha = 1f - shimmerAlpha;
             color.X *= inverseShimmerAlpha + (shimmerAlpha * 1.2f);
             color.Z *= inverseShimmerAlpha + (shimmerAlpha * 1.6f);
@@ -1548,7 +1546,7 @@ public sealed class SmoothLighting
     {
         if (
             LightingConfig.Instance.HiDefFeaturesEnabled()
-            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+            && !CompatibilityConfig.Instance.HdrLightingSyncDisabled()
         )
         {
             (_colorsHiRes, _prevColorsHiRes) = (_prevColorsHiRes, _colorsHiRes);

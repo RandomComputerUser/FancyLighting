@@ -84,6 +84,7 @@ internal static class LightsCompatibility
         }
 
         orig(self);
+        MainGraphics.ScreenTarget = Main.screenTarget;
     }
 
     private delegate void orig_UseLightAndShadow(
@@ -163,7 +164,7 @@ internal static class LightsCompatibility
     {
         if (SettingsSystem._hiDef)
         {
-            // Use the included bloom effect instead
+            // Use the Fancy Lighting bloom effect instead
             return;
         }
 

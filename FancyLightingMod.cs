@@ -442,7 +442,7 @@ public sealed class FancyLightingMod : Mod
             // GetMethod() probably failed
         }
 
-        if (hasDetours)
+        if (hasDetours || CompatibilityConfig.Instance.MainMenuCaptureDisabled())
         {
             SettingsSystem._doDrawILHookFailed = true;
         }
@@ -1064,9 +1064,8 @@ public sealed class FancyLightingMod : Mod
 
                 screenTarget1 = MainGraphics.ScreenTarget;
                 screenTarget2 = MainGraphics.ScreenTargetSwap;
+                MainGraphics.EndCapture_Post();
             }
-
-            MainGraphics.EndCapture_Post();
         }
         else
         {
@@ -1096,7 +1095,24 @@ public sealed class FancyLightingMod : Mod
         float tempMushroomInfluence
     )
     {
-        if (LightingConfig.Instance.FancySkyRenderingEnabled())
+        var fancyAtmosphere = LightingConfig.Instance.FancySkyRenderingEnabled();
+
+        if (
+            CompatibilityConfig.Instance.SunAndMoonShadersDisabled()
+            || !(
+                fancyAtmosphere
+                || (
+                    LightingConfig.Instance.HiDefFeaturesEnabled()
+                    && MainGraphics.DoingCapture
+                )
+            )
+        )
+        {
+            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
+            return;
+        }
+
+        if (fancyAtmosphere)
         {
             _fancySkyRenderingInstance.DrawSunAndMoon(
                 orig,
@@ -1107,12 +1123,6 @@ public sealed class FancyLightingMod : Mod
                 tempMushroomInfluence,
                 _postProcessingInstance
             );
-            return;
-        }
-
-        if (!LightingConfig.Instance.HiDefFeaturesEnabled() || !MainGraphics.DoingCapture)
-        {
-            orig(self, sceneArea, moonColor, sunColor, tempMushroomInfluence);
             return;
         }
 
@@ -1156,7 +1166,7 @@ public sealed class FancyLightingMod : Mod
 
         var doSyncHdr =
             LightingConfig.Instance.HiDefFeaturesEnabled()
-            && !CompatibilityConfig.Instance.DisableHdrLightingSync
+            && !CompatibilityConfig.Instance.HdrLightingSyncDisabled()
             && Main.instance.tileTarget is { Width: > 0, Height: > 0 }
             && !_smoothLightingInstance.CanDrawSmoothLighting;
 
@@ -1218,7 +1228,7 @@ public sealed class FancyLightingMod : Mod
         {
             if (doOverbright)
             {
-                TextureUtils.MatchSizeAndFormat(
+                TextureUtils.MatchSizeFormatAndUsage(
                     ref _backgroundTarget,
                     MainGraphics.ScreenTarget
                 );
@@ -1262,7 +1272,7 @@ public sealed class FancyLightingMod : Mod
         }
         else if (!mainMenu)
         {
-            TextureUtils.MatchSizeAndFormat(
+            TextureUtils.MatchSizeFormatAndUsage(
                 ref _backgroundTarget,
                 MainGraphics.ScreenTarget
             );
@@ -1383,7 +1393,7 @@ public sealed class FancyLightingMod : Mod
 
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(
+            TextureUtils.MatchSizeFormatAndUsage(
                 ref _tmpScreenTarget,
                 MainGraphics.ScreenTarget
             );
@@ -1717,7 +1727,7 @@ public sealed class FancyLightingMod : Mod
         {
             if (LightingConfig.Instance.DoTileEntityAmbientOcclusion)
             {
-                TextureUtils.MatchSizeAndFormat(
+                TextureUtils.MatchSizeFormatAndUsage(
                     ref _tmpTarget1,
                     Main.instance.wallTarget
                 );
@@ -1791,17 +1801,20 @@ public sealed class FancyLightingMod : Mod
         var ambientOcclusionTarget = (RenderTarget2D)null;
         if (ambientOcclusion)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, MainGraphics.ScreenTarget);
+            TextureUtils.MatchSizeFormatAndUsage(
+                ref _tmpTarget1,
+                MainGraphics.ScreenTarget
+            );
             if (LightingConfig.Instance.DoNonSolidAmbientOcclusion)
             {
-                TextureUtils.MatchSizeAndFormat(
+                TextureUtils.MatchSizeFormatAndUsage(
                     ref _tmpTarget2,
                     MainGraphics.ScreenTarget
                 );
             }
             if (LightingConfig.Instance.DoTileEntityAmbientOcclusion)
             {
-                TextureUtils.MatchSizeAndFormat(
+                TextureUtils.MatchSizeFormatAndUsage(
                     ref _tmpTarget3,
                     MainGraphics.ScreenTarget
                 );
@@ -1872,7 +1885,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
+            useGlowMasks && CompatibilityConfig.Instance.AccurateGlowRenderingEnabled();
         var optimize = SettingsSystem._optimizeRendering;
 
         _smoothLightingInstance.CalculateSmoothLighting();
@@ -1882,10 +1895,10 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, tileTarget);
+        TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget1, tileTarget);
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, tileTarget);
+            TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget2, tileTarget);
 
             if (optimize)
             {
@@ -1917,7 +1930,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MatchSizeAndFormat(ref _tmpTarget3, tileTarget);
+                TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget3, tileTarget);
 
                 if (optimize)
                 {
@@ -1991,7 +2004,7 @@ public sealed class FancyLightingMod : Mod
     {
         var useGlowMasks = !DeveloperConfig.Instance.RenderOnlyLight;
         var enhancedGlowMasks =
-            useGlowMasks && CompatibilityConfig.Instance.UseAccurateGlowRendering;
+            useGlowMasks && CompatibilityConfig.Instance.AccurateGlowRenderingEnabled();
 
         _smoothLightingInstance.CalculateSmoothLighting(cameraMode: true);
         if (!_smoothLightingInstance.CanDrawSmoothLighting)
@@ -2004,10 +2017,13 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, MainGraphics.ScreenTarget);
+        TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget1, MainGraphics.ScreenTarget);
         if (useGlowMasks)
         {
-            TextureUtils.MatchSizeAndFormat(ref _tmpTarget2, MainGraphics.ScreenTarget);
+            TextureUtils.MatchSizeFormatAndUsage(
+                ref _tmpTarget2,
+                MainGraphics.ScreenTarget
+            );
 
             UseBlackLightMap(true);
             _preventTileParticles = true;
@@ -2029,7 +2045,7 @@ public sealed class FancyLightingMod : Mod
 
             if (enhancedGlowMasks)
             {
-                TextureUtils.MatchSizeAndFormat(
+                TextureUtils.MatchSizeFormatAndUsage(
                     ref _tmpTarget3,
                     MainGraphics.ScreenTarget
                 );
@@ -2122,7 +2138,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, MainGraphics.ScreenTarget);
+        TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget1, MainGraphics.ScreenTarget);
         Main.graphics.GraphicsDevice.SetRenderTarget(_tmpTarget1);
         Main.graphics.GraphicsDevice.Clear(Color.Transparent);
 
@@ -2193,7 +2209,7 @@ public sealed class FancyLightingMod : Mod
         );
         orig(self);
 
-        if (!CompatibilityConfig.Instance.DisableFrameTimingOptimizations)
+        if (!CompatibilityConfig.Instance.FrameTimingOptimizationsDisabled())
         {
             Main.renderCount = 2;
         }
@@ -2260,7 +2276,7 @@ public sealed class FancyLightingMod : Mod
             return;
         }
 
-        TextureUtils.MatchSizeAndFormat(ref _tmpTarget1, Main.instance.tileTarget);
+        TextureUtils.MatchSizeFormatAndUsage(ref _tmpTarget1, Main.instance.tileTarget);
 
         MainGraphics.ResetSavedTextures();
         _smoothLightingInstance.BindHdrSyncTextures();

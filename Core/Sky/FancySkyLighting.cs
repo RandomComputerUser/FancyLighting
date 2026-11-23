@@ -136,6 +136,6 @@ public static class FancySkyLighting
     }
 
     public static float CalculateSkyLightShadingMultiplierDueToWeather() =>
-        (1f - Math.Clamp(Main.maxRaining, 0f, 1f))
+        (Main.IsItRaining ? 1f - Math.Clamp(Main.maxRaining, 0f, 1f) : 1f)
         * (1f - Math.Clamp(Main.GraveyardVisualIntensity, 0f, 1f));
 }

@@ -8,11 +8,13 @@ public static class DefaultOptions
 
     // Compatibility Settings
     public const bool DisableRenderingOptimizations = false;
+    public const bool DisableMainMenuCapture = false;
     public const bool DisableSmoothLightingDuringBossFights = false;
     public const bool UseAccurateGlowRendering = false;
     public const bool DisableHdrEnhancedAlphaBlending = false;
     public const bool DisableHdrLightingSync = false;
     public const bool DisableFrameTimingOptimizations = false;
+    public const bool DisableSunAndMoonShaders = false;
 
     // Developer Settings
     public const bool MonitorPerformance = false;
@@ -50,7 +52,8 @@ public static class DefaultOptions
     // Full HDR Rendering Preferences
     public const ToneMappingPreset ToneMappingOperator = ToneMappingPreset.Natural;
     public const int Exposure = 0;
-    public const int VibranceBoost = 3;
+    public const int VibranceBoost = 0;
+    public const int HighlightBoost = 6;
     public const bool HdrBloom = true;
     public const int BloomRadius = 5;
     public const int BloomStrength = 3;

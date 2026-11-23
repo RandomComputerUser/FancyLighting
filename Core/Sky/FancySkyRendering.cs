@@ -16,7 +16,6 @@ public sealed class FancySkyRendering
 
     private const float FadeBegin = 0.08f;
     private const float FadeHeight = 0.50f;
-    private const float FadeHeightMult = 1f;
 
     /// <summary>
     /// Modify the colors of the sky used in Fancy Atmosphere.
@@ -140,10 +139,6 @@ public sealed class FancySkyRendering
         }
         var lowLevel = highLevel + FadeHeight;
 
-        var midLevel = (highLevel + lowLevel) / 2f;
-        lowLevel = midLevel + (FadeHeightMult * (lowLevel - midLevel));
-        highLevel = midLevel + (FadeHeightMult * (highLevel - midLevel));
-
         if (
             !Main.gameMenu
             && !MainGraphics.InCameraMode
@@ -182,7 +177,7 @@ public sealed class FancySkyRendering
         {
             // prevent stars from appearing during sunrise/sunset
             var colorOfTheSkiesVec = colorOfTheSkies.ToVector3();
-            colorOfTheSkiesVec *= 2f;
+            colorOfTheSkiesVec *= 2.25f;
             ColorUtils.Convert(out Main.ColorOfTheSkies, colorOfTheSkiesVec);
             orig(self, sceneArea, artificial);
         }

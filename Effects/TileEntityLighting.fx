@@ -251,7 +251,7 @@ float4 SmoothLightingColor(
     float lightMult
 )
 {
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     float3 smoothColor = lightColor * tileColor.rgb;
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
@@ -262,7 +262,7 @@ float4 SmoothLightingColor(
         ? input.Color * tileColor
         : float4(
             lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
-            input.Color.a * tileColor.a
+            tileColor.a
         );
 }
 
@@ -273,7 +273,7 @@ float4 SmoothLightingColorDithered(
     float lightMult
 )
 {
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     float3 smoothColor = Dithered(input.Position, lightColor * tileColor.rgb);
     float3 selector = tex2D(GlowSampler, input.GlowTexCoord).rgb;
@@ -284,7 +284,7 @@ float4 SmoothLightingColorDithered(
         ? input.Color * tileColor
         : float4(
             lerp(smoothColor.rgb, bright, step(2.5 / 255, selector)),
-            input.Color.a * tileColor.a
+            tileColor.a
         );
 }
 
@@ -296,7 +296,7 @@ float4 SmoothLightingColorLightOnly(
 )
 {
     float alpha = tileColor.a;
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     return (input.Color.a <= 0 && max(input.Color.r, max(input.Color.g, input.Color.b)) > 0)
         ? input.Color * alpha
@@ -311,7 +311,7 @@ float4 SmoothLightingColorDitheredLightOnly(
 )
 {
     float alpha = tileColor.a;
-    lightColor = input.Color.a * lightMult * saturate(lightColor);
+    lightColor = lightMult * saturate(lightColor);
     
     float4 result = float4(lightColor, input.Color.a) * alpha;
     result.rgb = Dithered(input.Position, result.rgb);
@@ -367,36 +367,44 @@ float4 LightOnly_PS(float4 color : COLOR0, float2 texCoord : TEXCOORD0) : COLOR0
 float4 Normals_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
-    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
-
-    return lightColor * float4(mult.xxx, 1) * tileColor;
+    tileColor.a *= lightColor.a;
+    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, smoothLightColor.rgb);
+    tileColor.rgb *= lightColor.rgb;
+    return float4(mult.xxx, 1) * tileColor;
 }
 
 float4 NormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
-    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
-    
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), smoothLightColor.rgb
+    );
     return lightColor * float4(mult.xxx, 1) * tileColor.a;
 }
 
 float4 NormalsFancySky_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
-
-    return lightColor * float4(mult.xxx, 1) * tileColor;
+    tileColor.a *= lightColor.a;
+    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, smoothLightColor);
+    tileColor.rgb *= lightColor.rgb;
+    return float4(mult.xxx, 1) * tileColor;
 }
 
 float4 NormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
+    float4 smoothLightColor = tex2D(LightSampler, input.LightTexCoord);
     float4 lightColor = input.Color;
-    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
-    
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, lightColor.a), smoothLightColor
+    );
     return lightColor * float4(mult.xxx, 1) * tileColor.a;
 }
 
@@ -418,6 +426,7 @@ float4 SmoothNormals_PS(GlowPixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    tileColor.a *= input.Color.a;
     float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
     return SmoothLightingColor(input, tileColor, lightColor.rgb, mult);
 }
@@ -426,7 +435,9 @@ float4 SmoothNormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
-    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, input.Color.a), lightColor.rgb
+    );
     return SmoothLightingColorLightOnly(input, tileColor, lightColor.rgb, mult);
 }
 
@@ -434,6 +445,7 @@ float4 SmoothNormalsFancySky_PS(GlowPixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    tileColor.a *= input.Color.a;
     float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
     return SmoothLightingColor(input, tileColor, lightColor.rgb, mult);
 }
@@ -442,7 +454,9 @@ float4 SmoothNormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
-    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, input.Color.a), lightColor
+    );
     return SmoothLightingColorLightOnly(input, tileColor, lightColor.rgb, mult);
 }
 
@@ -464,6 +478,7 @@ float4 SmoothDitheredNormals_PS(GlowPixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    tileColor.a *= input.Color.a;
     float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
     return SmoothLightingColorDithered(input, tileColor, lightColor.rgb, mult);
 }
@@ -472,7 +487,9 @@ float4 SmoothDitheredNormalsLightOnly_PS(PixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
-    float mult = NormalsMultiplier(input.TileTexCoord, tileColor, lightColor.rgb);
+    float mult = NormalsMultiplier(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, input.Color.a), lightColor.rgb
+    );
     return SmoothLightingColorDitheredLightOnly(input, tileColor, lightColor.rgb, mult);
 }
 
@@ -480,6 +497,7 @@ float4 SmoothDitheredNormalsFancySky_PS(GlowPixelShaderInput input) : COLOR0
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
+    tileColor.a *= input.Color.a;
     float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
     return SmoothLightingColorDithered(input, tileColor, lightColor.rgb, mult);
 }
@@ -488,7 +506,9 @@ float4 SmoothDitheredNormalsFancySkyLightOnly_PS(PixelShaderInput input) : COLOR
 {
     float4 tileColor = tex2D(TextureSampler, input.TileTexCoord);
     float4 lightColor = tex2D(LightSampler, input.LightTexCoord);
-    float mult = NormalsMultiplierFancySky(input.TileTexCoord, tileColor, lightColor);
+    float mult = NormalsMultiplierFancySky(
+        input.TileTexCoord, tileColor * float4(1, 1, 1, input.Color.a), lightColor
+    );
     return SmoothLightingColorDitheredLightOnly(input, tileColor, lightColor.rgb, mult);
 }
 
