@@ -251,7 +251,7 @@ PreferencesConfig: {
 			'''
 			Display light in grayscale
 
-			Enable to remove all color from light
+			Enable to remove all color from lighting
 			'''
 	}
 
