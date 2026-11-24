@@ -212,7 +212,8 @@ public sealed class FancySkyRendering
         if (!Main.gameMenu && !MainGraphics.InCameraMode)
         {
             // shift sun/moon downward
-            sceneArea.bgTopY += (int)Math.Round(25f * Main.BackgroundViewMatrix.Zoom.Y);
+            sceneArea.bgTopY += (int)
+                Math.Round(25f * SettingsSystem._fancyAtmosphereBackgroundZoom);
         }
 
         if (!Main.eclipse)

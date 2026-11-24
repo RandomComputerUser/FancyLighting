@@ -13,5 +13,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.9 (2026-11-22)
-- Tweaked Fancy Atmosphere colors during dawn and dusk
+### v1.2.10 (2026-11-24)
+- The time at which the sun and moon rise and set no longer differ based on the resolution when using Fancy Atmosphere
+  - This fixes a bug with the vanilla code; the buggy vanilla behavior is preserved when Fancy Atmosphere is disabled

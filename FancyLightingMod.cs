@@ -388,6 +388,7 @@ public sealed class FancyLightingMod : Mod
         On_FilterManager.EndCapture += _FilterManager_EndCapture;
 
         // Fancy Sky
+        IL_Main.DrawSunAndMoon += IL_Main_DrawSunAndMoon;
         On_Main.DrawSunAndMoon += _Main_DrawSunAndMoon;
 
         // Foreground/background separation
@@ -838,6 +839,76 @@ public sealed class FancyLightingMod : Mod
             cursor.Emit(OpCodes.Ldc_R4, 0f);
             cursor.Emit(OpCodes.Call, fancySkyLightingSetSkyLightLumaMethod);
             cursor.MarkLabel(afterIfBlockLabel);
+        }
+        catch (Exception)
+        {
+            MonoModHooks.DumpIL(ModContent.GetInstance<FancyLightingMod>(), context);
+        }
+    }
+
+    private static void IL_Main_DrawSunAndMoon(ILContext context)
+    {
+        try
+        {
+            var cursor = new ILCursor(context);
+
+            var settingsSystemUseFancyAtmosphereBackgroundZoomField =
+                typeof(SettingsSystem)
+                    .GetField(
+                        nameof(SettingsSystem._fancyAtmosphereBackgroundZoom),
+                        BindingFlags.NonPublic | BindingFlags.Static
+                    )
+                    .AssertNotNull();
+            var mainMouseLeftField = typeof(Main)
+                .GetField(
+                    nameof(Main.mouseLeft),
+                    BindingFlags.Public | BindingFlags.Static
+                )
+                .AssertNotNull();
+            var texture2Dget_WidthMethod = typeof(Texture2D)
+                .GetMethod("get_Width", BindingFlags.Public | BindingFlags.Instance)
+                .AssertNotNull();
+            var utilsWidthMethod = typeof(Terraria.Utils)
+                .GetMethod(
+                    nameof(Terraria.Utils.Width),
+                    BindingFlags.Public | BindingFlags.Static
+                )
+                .AssertNotNull();
+
+            for (var i = 0; i < 4; ++i)
+            {
+                cursor.GotoNext(
+                    MoveType.After,
+                    instruction => instruction.MatchCallvirt(texture2Dget_WidthMethod)
+                );
+                cursor.Emit(OpCodes.Conv_R4);
+                cursor.Emit(
+                    OpCodes.Ldsfld,
+                    settingsSystemUseFancyAtmosphereBackgroundZoomField
+                );
+                cursor.Emit(OpCodes.Mul);
+                cursor.Emit(OpCodes.Conv_I4);
+            }
+
+            cursor.GotoNext(
+                MoveType.After,
+                instruction => instruction.MatchLdsfld(mainMouseLeftField)
+            );
+
+            for (var i = 0; i < 4; ++i)
+            {
+                cursor.GotoNext(
+                    MoveType.After,
+                    instruction => instruction.MatchCall(utilsWidthMethod)
+                );
+                cursor.Emit(OpCodes.Conv_R4);
+                cursor.Emit(
+                    OpCodes.Ldsfld,
+                    settingsSystemUseFancyAtmosphereBackgroundZoomField
+                );
+                cursor.Emit(OpCodes.Mul);
+                cursor.Emit(OpCodes.Conv_I4);
+            }
         }
         catch (Exception)
         {
