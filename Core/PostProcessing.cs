@@ -375,7 +375,10 @@ public sealed class PostProcessing
                     null,
                     PreferencesConfig.Instance.BloomRadius,
                     zoom: cameraMode ? 1f : Main.BackgroundViewMatrix.Zoom.X,
-                    additiveBlend: true
+                    additiveBlend: true,
+                    starburstCount: PreferencesConfig.Instance.UseStarburstEffect ? 6 : 0,
+                    starburstPassCount: 4,
+                    starburstStrength: 0.015f
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);

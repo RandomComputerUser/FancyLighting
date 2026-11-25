@@ -3,6 +3,13 @@
 sampler TextureSampler : register(s0);
 
 float2 PixelSize;
+float2 PixelSize2;
+float2 PixelSize3;
+
+float Mult0;
+float Mult1;
+float Mult2;
+float Mult3;
 
 void Blit_VS(
     float4 position : POSITION0,
@@ -59,6 +66,25 @@ float4 BlurUpsampleRed_PS(float2 coords : TEXCOORD0) : COLOR0
     return float4((1.0 / 12) * sum, 0, 0, 1);
 }
 
+float4 SampleOrBlack(float2 coords)
+{
+    float4 color = tex2D(TextureSampler, coords);
+    if (coords.x < 0 || coords.y < 0 || coords.x > 1 || coords.y > 1)
+    {
+        color *= 0.0;
+    }
+    
+    return color;
+}
+
+float4 BlurLine_PS(float2 coords : TEXCOORD0) : COLOR0
+{
+    return Mult0 * SampleOrBlack(coords)
+        + Mult1 * SampleOrBlack(coords + PixelSize)
+        + Mult2 * SampleOrBlack(coords + PixelSize2)
+        + Mult3 * SampleOrBlack(coords + PixelSize3);
+}
+
 technique BlurDownsample
 {
     pass Pass1
@@ -92,5 +118,14 @@ technique BlurUpsampleRed
     {
         VertexShader = compile vs_3_0 Blit_VS();
         PixelShader = compile ps_3_0 BlurUpsampleRed_PS();
+    }
+}
+
+technique BlurLine
+{
+    pass Pass1
+    {
+        VertexShader = compile vs_3_0 Blit_VS();
+        PixelShader = compile ps_3_0 BlurLine_PS();
     }
 }

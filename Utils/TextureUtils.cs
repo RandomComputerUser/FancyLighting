@@ -24,6 +24,12 @@ internal static class TextureUtils
             other.RenderTargetUsage
         );
 
+    public static void MatchSizeAndFormat(
+        ref RenderTarget2D target,
+        RenderTarget2D other,
+        RenderTargetUsage usage = RenderTargetUsage.DiscardContents
+    ) => MakeSize(ref target, other.Width, other.Height, other.Format, usage);
+
     public static void MakeSize(
         ref RenderTarget2D target,
         int width,

@@ -123,6 +123,9 @@ public sealed class PreferencesConfig : ModConfig
     [Slider]
     public int BloomStrength { get; set; }
 
+    [DefaultValue(DefaultOptions.UseStarburstEffect)]
+    public bool UseStarburstEffect { get; set; }
+
     // Ambient Occlusion
 
     [Header("AmbientOcclusion")]

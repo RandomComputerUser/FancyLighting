@@ -345,6 +345,18 @@ PreferencesConfig: {
 			'''
 	}
 
+	UseStarburstEffect: {
+		Label: Diffraction Spikes
+		Tooltip:
+			'''
+			Render diffraction spikes
+
+			Adds a starburst effect radiating from bright objects in addition to bloom
+
+			{$Snippets.RequireRequireRenderModeFullHdrAndHdrBloom}
+			'''
+	}
+
 	# Ambient Occlusion
 	
 	AmbientOcclusionRadius: {
@@ -822,6 +834,7 @@ Snippets: {
 	FancySkyLightColors: "{$LightingConfig.UseFancySkyColors.Label}"
 	FancySkyLightShading: "{$LightingConfig.UseFancySkyLighting.Label}"
 	ToneMappingOperator: "{$PreferencesConfig.ToneMappingOperator.Label}"
+	HdrBloom: "{$PreferencesConfig.HdrBloom.Label}"
 	BasicHdr: "{$RenderMode.BicubicOverbright.Label}"
 	FullHdr: "{$RenderMode.EnhancedHdr.Label}"
 	RequireRenderModeHdr: "[c/FF00FF:{$Snippets.RenderMode}] [c/FF80FF:must be set to] [c/FF00FF:{$Snippets.BasicHdr}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:for this setting to have an effect]"
@@ -833,4 +846,5 @@ Snippets: {
 	RequireFancyAtmosphereOrFullHdr: "[c/FF00FF:{$Snippets.FancyAtmosphere}] [c/FF80FF:or] [c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	RequireFancySkyLightShading: "[c/FF00FF:{$Snippets.FancySkyLightShading}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 	NoEffectLinearToneMapping: "[c/FF80FF:This setting has no effect when] [c/FF00FF:{$Snippets.ToneMappingOperator}] [c/FF80FF:is set to] [c/FF00FF:{$ToneMappingPreset.Linear.Label}]"
+	RequireRequireRenderModeFullHdrAndHdrBloom: "[c/FF00FF:{$Snippets.FullHdr}] [c/FF80FF:and] [c/FF00FF:{$Snippets.HdrBloom}] [c/FF80FF:must be] [c/FF00FF:enabled] [c/FF80FF:for this setting to have an effect]"
 }
