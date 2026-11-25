@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <Title>Fancy Lighting</Title>
     <Authors>Rex Berry</Authors>
-    <AssemblyVersion>1.2.10</AssemblyVersion>
-    <Version>1.2.10</Version>
+    <AssemblyVersion>1.2.11</AssemblyVersion>
+    <Version>1.2.11</Version>
   </PropertyGroup>
 </Project>

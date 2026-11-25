@@ -13,6 +13,4 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 
 ## Latest Version
 
-### v1.2.10 (2026-11-24)
-- The time at which the sun and moon rise and set no longer differ based on the resolution when using Fancy Atmosphere
-  - This fixes a bug with the vanilla code; the buggy vanilla behavior is preserved when Fancy Atmosphere is disabled
+### v1.2.11 (2026-11-??)
