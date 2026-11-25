@@ -378,7 +378,7 @@ public sealed class PostProcessing
                     additiveBlend: true,
                     starburstCount: PreferencesConfig.Instance.UseStarburstEffect ? 6 : 0,
                     starburstPassCount: 4,
-                    starburstStrength: 0.015f
+                    starburstStrength: 0.02f
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);
