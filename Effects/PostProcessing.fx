@@ -192,6 +192,8 @@ float4 CombineLayersGammaToLinearColor(float4 foregroundColor, float4 background
 {
     foregroundColor.rgb = GammaToLinearColor(foregroundColor.rgb, Exposure, GammaRatio);
     backgroundColor.rgb = GammaToLinearColor(backgroundColor.rgb, BackgroundExposure, BackgroundGamma);
+    foregroundColor.a = saturate(foregroundColor.a);
+    backgroundColor.a = saturate(backgroundColor.a);
     return (1 - foregroundColor.a) * backgroundColor + foregroundColor;
 }
 
@@ -227,6 +229,7 @@ float4 OverbrightGammaToLinear_PS(
 ) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    color.a = saturate(color.a);
     float4 lightColor = tex2D(LightMapSampler, lightTexCoord);
     color.rgb *= max(lightColor.rgb, 1);
     color.rgb = GammaToLinearColor(color.rgb, Exposure, GammaRatio);
@@ -239,6 +242,7 @@ float4 OverbrightGammaToLinearColorGraded_PS(
 ) : COLOR0
 {
     float4 color = tex2D(ScreenSampler, coords);
+    color.a = saturate(color.a);
     float4 lightColor = tex2D(LightMapSampler, lightTexCoord);
     color.rgb *= max(lightColor.rgb, 1);
     color.rgb = ColorGrade(GammaToLinearColor(color.rgb, Exposure, GammaRatio));
