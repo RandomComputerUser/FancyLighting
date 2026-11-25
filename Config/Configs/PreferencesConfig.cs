@@ -19,9 +19,11 @@ public sealed class PreferencesConfig : ModConfig
 
     public float ExposureMult() => MathF.Pow(2f, Exposure / 10f);
 
+    public double VibranceIncrease() => VibranceBoost / 75.0;
+
     public float BloomLerp() => 0.005f * BloomStrength;
 
-    public double VibranceIncrease() => VibranceBoost / 75.0;
+    public float StarburstMult() => 0.004f * StarburstStrength;
 
     public float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
@@ -125,6 +127,11 @@ public sealed class PreferencesConfig : ModConfig
 
     [DefaultValue(DefaultOptions.UseStarburstEffect)]
     public bool UseStarburstEffect { get; set; }
+
+    [Range(1, 15)]
+    [DefaultValue(DefaultOptions.StarburstStrength)]
+    [Slider]
+    public int StarburstStrength { get; set; }
 
     // Ambient Occlusion
 

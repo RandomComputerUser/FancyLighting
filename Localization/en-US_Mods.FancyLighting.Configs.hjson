@@ -224,7 +224,7 @@ PreferencesConfig: {
 	# Smooth Lighting
 	
 	NormalMapsIntensity: {
-		Label: Normal Maps Strength
+		Label: Normal Map Strength
 		Tooltip:
 			'''
 			The strength of rendered normal maps
@@ -352,6 +352,18 @@ PreferencesConfig: {
 			Render diffraction spikes
 
 			Adds a starburst effect radiating from bright objects in addition to bloom
+
+			{$Snippets.RequireRequireRenderModeFullHdrAndHdrBloom}
+			'''
+	}
+
+	StarburstStrength: {
+		Label: Diffraction Spike Strength
+		Tooltip:
+			'''
+			The strength of the starburst effect
+
+			Higher values result in more pronounced diffraction spikes
 
 			{$Snippets.RequireRequireRenderModeFullHdrAndHdrBloom}
 			'''

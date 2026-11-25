@@ -369,6 +369,11 @@ public sealed class PostProcessing
                     0f,
                     1f
                 );
+                var starburstStrength = Math.Clamp(
+                    PreferencesConfig.Instance.StarburstMult(),
+                    0f,
+                    1f
+                );
 
                 var bloomTarget = _blurRenderer.Blur(
                     currTarget,
@@ -378,7 +383,7 @@ public sealed class PostProcessing
                     additiveBlend: true,
                     starburstCount: PreferencesConfig.Instance.UseStarburstEffect ? 6 : 0,
                     starburstPassCount: 4,
-                    starburstStrength: 0.02f
+                    starburstStrength: starburstStrength
                 );
 
                 _bloomCompositeEffect.SetParameter("BloomStrength", bloomStrength);
