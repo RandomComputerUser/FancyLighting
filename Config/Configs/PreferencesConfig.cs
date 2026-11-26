@@ -23,7 +23,7 @@ public sealed class PreferencesConfig : ModConfig
 
     public float BloomLerp() => 0.005f * BloomStrength;
 
-    public float StarburstMult() => 0.004f * StarburstStrength;
+    public float StarburstMult() => 0.01f * StarburstStrength;
 
     public float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 

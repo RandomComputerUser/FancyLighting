@@ -233,12 +233,12 @@ internal sealed class BlurRenderer
         float strength
     )
     {
-        var decay = (float)Math.Pow(1e-12, 1.0 / Math.Pow(4.0, passCount));
+        var decay = (float)Math.Pow(1e-24, 1.0 / Math.Pow(4.0, passCount));
         var angleMult = (float)(Math.Tau / count);
 
         for (var spike = 0; spike < count; ++spike)
         {
-            var angle = angleMult * spike;
+            var angle = angleMult * (spike - 0.25f);
             var offset = new Vector2(
                 MathF.Cos(angle) / dst.Width,
                 MathF.Sin(angle) / dst.Height
