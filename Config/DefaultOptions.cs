@@ -55,7 +55,7 @@ public static class DefaultOptions
     public const int VibranceBoost = 0;
     public const int HighlightBoost = 6;
     public const bool HdrBloom = true;
-    public const int BloomRadius = 5;
+    public const int BloomRadius = 4;
     public const int BloomStrength = 3;
     public const bool UseStarburstEffect = true;
     public const int StarburstStrength = 5;
