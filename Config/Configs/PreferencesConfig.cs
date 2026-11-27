@@ -25,6 +25,8 @@ public sealed class PreferencesConfig : ModConfig
 
     public float StarburstMult() => 0.01f * StarburstStrength;
 
+    public float StarburstTipMult() => (float)Math.Pow(1e-8, 15.0 / StarburstLength);
+
     public float AmbientOcclusionPower() => AmbientOcclusionIntensity / 100f;
 
     public float AmbientOcclusionMult() => AmbientLightProportion / 100f;
@@ -132,6 +134,11 @@ public sealed class PreferencesConfig : ModConfig
     [DefaultValue(DefaultOptions.StarburstStrength)]
     [Slider]
     public int StarburstStrength { get; set; }
+
+    [Range(1, 15)]
+    [DefaultValue(DefaultOptions.StarburstLength)]
+    [Slider]
+    public int StarburstLength { get; set; }
 
     // Ambient Occlusion
 

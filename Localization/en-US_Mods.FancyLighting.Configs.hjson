@@ -346,7 +346,7 @@ PreferencesConfig: {
 	}
 
 	UseStarburstEffect: {
-		Label: Diffraction Spikes
+		Label: Starburst
 		Tooltip:
 			'''
 			Render diffraction spikes
@@ -358,12 +358,24 @@ PreferencesConfig: {
 	}
 
 	StarburstStrength: {
-		Label: Diffraction Spike Strength
+		Label: Starburst Strength
 		Tooltip:
 			'''
 			The strength of the starburst effect
 
 			Higher values result in more pronounced diffraction spikes
+
+			{$Snippets.RequireRequireRenderModeFullHdrAndHdrBloom}
+			'''
+	}
+
+	StarburstLength: {
+		Label: Starburst Size
+		Tooltip:
+			'''
+			The size of the starburst effect
+
+			Higher values result in longer diffraction spikes
 
 			{$Snippets.RequireRequireRenderModeFullHdrAndHdrBloom}
 			'''

@@ -135,7 +135,8 @@ internal sealed class BlurRenderer
         SamplerState samplerState = null,
         int starburstCount = 0,
         int starburstPassCount = 0,
-        float starburstStrength = 0f
+        float starburstStrength = 0f,
+        float starburstTipMult = 0f
     )
     {
         passCount = Math.Clamp(passCount, 1, 5);
@@ -196,7 +197,8 @@ internal sealed class BlurRenderer
                 _starburstTarget2,
                 starburstCount,
                 starburstPassCount,
-                starburstStrength
+                starburstStrength,
+                starburstTipMult
             );
         }
 
@@ -230,15 +232,16 @@ internal sealed class BlurRenderer
         RenderTarget2D tmp2,
         int count,
         int passCount,
-        float strength
+        float strength,
+        float tipMult
     )
     {
-        var decay = (float)Math.Pow(1e-24, 1.0 / Math.Pow(4.0, passCount));
+        var decay = (float)Math.Pow(tipMult, 1.0 / Math.Pow(4.0, passCount));
         var angleMult = (float)(Math.Tau / count);
 
         for (var spike = 0; spike < count; ++spike)
         {
-            var angle = angleMult * (spike - 0.25f);
+            var angle = angleMult * (spike + 0.25f);
             var offset = new Vector2(
                 MathF.Cos(angle) / dst.Width,
                 MathF.Sin(angle) / dst.Height

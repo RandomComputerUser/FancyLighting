@@ -14,7 +14,6 @@ View the [Mod.Call() API documentation](ModCallAPI.md) for mod developers.
 ## Latest Version
 
 ### v1.2.11 (2026-11-??)
-- Added diffraction spikes to full HDR rendering
-- Decreased the default bloom radius from 5 to 4
+- Added a starburst effect to full HDR rendering
 - Fixed a graphical glitch that occurred in the Salt Flats biome in the Spirit Reforged mod when using Fancy Atmosphere
 - Fixed a graphical glitch that occurred with VFX using invalid alpha values when using full HDR rendering
