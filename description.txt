@@ -4,8 +4,8 @@ Features:
 - Smooth lighting
 - Ambient occlusion
 - Accurate shadows
-- Improved sky rendering
-- Simulated normal maps
+- Improved sky and cloud rendering
+- Auto-generated normal maps
 - HDR rendering (tone mapped to SDR)
 - Bloom and depth of field
 - Camera mode compatibility
